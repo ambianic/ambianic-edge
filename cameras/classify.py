@@ -19,7 +19,7 @@ import re
 import svgwrite
 import os
 from edgetpu.classification.engine import ClassificationEngine
-import gstreamer
+from gstreamer import InputStreamProcessor
 
 def load_labels(path):
     p = re.compile(r'\s*(\d+)(.+)')
@@ -29,8 +29,8 @@ def load_labels(path):
 
 def generate_svg(dwg, text_lines):
     for y, line in enumerate(text_lines):
-      dwg.add(dwg.text(line, insert=(11, y*20+1), fill='black', font_size='20'))
-      dwg.add(dwg.text(line, insert=(10, y*20), fill='white', font_size='20'))
+      dwg.add(dwg.text(line, insert=(101, 10 + (y+1)*20+1), fill='black', font_size='20'))
+      dwg.add(dwg.text(line, insert=(100, 10 + (y+1)*20), fill='white', font_size='20'))
 
 def main():
     default_model_dir = "ai_models"
@@ -52,10 +52,10 @@ def main():
     labels = load_labels(args.labels)
 
     last_time = time.monotonic()
-    def user_callback(image, svg_canvas):
+    def inference_callback(image, svg_canvas):
       nonlocal last_time
       start_time = time.monotonic()
-      print('Running TF/Coral classification model.\n ')
+      #print('Running TF/Coral classification model.\n ')
       results = engine.ClassifyWithImage(image, threshold=args.threshold, top_k=args.top_k)
       end_time = time.monotonic()
       text_lines = [
@@ -68,7 +68,8 @@ def main():
       last_time = end_time
       generate_svg(svg_canvas, text_lines)
 
-    result = gstreamer.run_pipeline(user_callback)
+    input_proc = InputStreamProcessor()
+    result = input_proc.run_pipeline(inference_callback)
 
 if __name__ == '__main__':
     main()
