@@ -2,6 +2,7 @@ import os
 import threading
 import logging
 from flask import Flask
+import flask
 from werkzeug.serving import make_server
 
 log = logging.getLogger(__name__)

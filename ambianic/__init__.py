@@ -33,6 +33,7 @@ class ThreadedJob(threading.Thread):
         # indicates whether the thread should be terminated.
         # self.shutdown_flag = threading.Event()
         # ... Other thread setup code here ...
+        self.stopping = False
 
     def run(self):
         log.info('Thread #%s started with job: %s', self.ident, self.job.__class__.__name__)
@@ -63,20 +64,20 @@ class ServiceExit(Exception):
 
 
 def service_shutdown(signum, frame):
-    log.info('Caught signal %d' % signum)
+    log.info('Caught signal %d', signum)
     raise ServiceExit
 
 
 def start():
     if not is_configured:
         configure()
-    log.info('Started')
 
     # Register the signal handlers
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
+    stopping = False
 
-    print('Starting main program')
+    log.info('Starting main program...')
 
     # Start the job threads
     try:
@@ -91,15 +92,28 @@ def start():
         j1.start()
         j2.start()
 
+        last_time = time.monotonic()
+
         def heartbeat():
-            log.info("Main loop alive.")
+            nonlocal last_time
+            new_time = time.monotonic()
+            # print a heartbeat message every 2 seconds
+            if new_time - last_time > 2:
+                log.info("Main thread alive.")
+                last_time = new_time
+                if stopping:
+                    for thread in threading.enumerate():
+                        log.info("Waiting for child thread %s with job %s to clean up and exit...",
+                                 thread.ident, thread.job.__class__.__name__)
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
             time.sleep(0.5)
-            threading.Timer(10, heartbeat).start()
+            heartbeat()
+
 
     except ServiceExit:
+        stopping = True
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         # j1.shutdown_flag.set()

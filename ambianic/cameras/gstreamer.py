@@ -48,7 +48,7 @@ class InputStreamProcessor:
         self.pipeline = None
         self.video_source = None
         # shape of the input stream image or video
-        self.source_shape = self.Shape()
+        self.source_shape = None
         # appsink handlies GStreamer callbacks for TF inference
         self.appsink = None
         # shape of the image passed to Tensorflow for inference
@@ -62,16 +62,17 @@ class InputStreamProcessor:
         self.inference_callback = inf_callback
 
     def on_autoplug_continue(self, src_bin, src_pad, src_caps):
-        #print('on_autoplug_continue called for uridecodebin')
-        #print('src_bin: {}'.format(str(src_bin)))
-        #print('src_pad: {}'.format(str(src_pad)))
-        #print('src_caps: {}'.format(str(src_caps)))
+        # print('on_autoplug_continue called for uridecodebin')
+        # print('src_bin: {}'.format(str(src_bin)))
+        # print('src_pad: {}'.format(str(src_pad)))
+        # print('src_caps: {}'.format(str(src_caps)))
         struct = src_caps.get_structure(0)
-        #print("src caps struct: {}".format(struct))
+        # print("src caps struct: {}".format(struct))
+        self.source_shape = self.Shape()
         self.source_shape.width = struct["width"]
         self.source_shape.height = struct["height"]
         if self.source_shape.width:
-            print("Input source width: {}, height: {}".format(self.source_shape.width, self.source_shape.height))
+            log.info("Input source width: %d, height: %d", self.source_shape.width, self.source_shape.height)
         return True
 
     def on_bus_message(self, bus, message, loop):
@@ -90,6 +91,10 @@ class InputStreamProcessor:
 
     def on_new_sample(self, sink):
         # print('New image sample received.')
+        if not self.source_shape:
+            # source stream shape still unknown
+            log.warning('New image sample received but source shape still unknown?!')
+            return Gst.FlowReturn.OK
         sample = sink.emit('pull-sample')
         buf = sample.get_buffer()
         caps = sample.get_caps()
