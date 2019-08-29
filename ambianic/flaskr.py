@@ -29,7 +29,7 @@ class FlaskServer:
 def create_app(test_config=None):
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
-    app = Flask(__name__, instance_relative_config=True, static_url_path='')
+    app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
@@ -41,6 +41,8 @@ def create_app(test_config=None):
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    app.config['DEBUG'] = True
 
     # ensure the instance folder exists
     try:
@@ -59,7 +61,7 @@ def create_app(test_config=None):
         return 'Ambianic is running in a cheerful healthy state!'
 
     @app.route('/html/<path:path>')
-    def send_js(path):
-        return flask.send_from_directory('html', path)
+    def static_html(path):
+        return flask.send_from_directory('../html/', path)
 
     return app

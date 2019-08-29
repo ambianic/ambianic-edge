@@ -75,7 +75,6 @@ def start():
     # Register the signal handlers
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
-    stopping = False
 
     log.info('Starting main program...')
 
@@ -101,19 +100,13 @@ def start():
             if new_time - last_time > 2:
                 log.info("Main thread alive.")
                 last_time = new_time
-                if stopping:
-                    for thread in threading.enumerate():
-                        log.info("Waiting for child thread %s with job %s to clean up and exit...",
-                                 thread.ident, thread.job.__class__.__name__)
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
-            time.sleep(0.5)
+            time.sleep(1)
             heartbeat()
 
-
     except ServiceExit:
-        stopping = True
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         # j1.shutdown_flag.set()
@@ -125,5 +118,4 @@ def start():
         j2.join()
 
     log.info('Exiting main program...')
-    log.info('It may take a few moments for associated system resources to cleanup and exit.')
 
