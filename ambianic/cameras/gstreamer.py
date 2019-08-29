@@ -41,7 +41,9 @@ class InputStreamProcessor:
         width = height = None
         pass
 
-    def __init__(self, inf_callback = None):
+    def __init__(self, inf_callback=None):
+        # Reference to Gstreamer main loop structure
+        self.mainloop = None
         # Gstreamer pipeline for a given input source (could be image, audio or video)
         self.pipeline = None
         self.video_source = None
@@ -75,14 +77,14 @@ class InputStreamProcessor:
     def on_bus_message(self, bus, message, loop):
         t = message.type
         if t == Gst.MessageType.EOS:
-            print('End of stream. Exiting gstreamer loop for this video stream.')
+            log.info('End of stream. Exiting gstreamer loop for this video stream.')
             loop.quit()
         elif t == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
-            sys.stderr.write('Warning: %s: %s\n' % (err, debug))
+            log.warning('Warning: %s: %s', err, debug)
         elif t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            sys.stderr.write('Error: %s: %s\n' % (err, debug))
+            log.warning('Error: %s: %s', err, debug)
             loop.quit()
         return True
 
@@ -108,6 +110,8 @@ class InputStreamProcessor:
 
     def run_pipeline(self):
         """ Start the gstreamer pipeline """
+
+        log.info("Starting %s", self.__class__.__name__)
 
         # Note to self: The pipeline args below work but slow. Work fine with AI inference, but peg the CPU at 200%
         #   turns out certain gstreamer video conversion operations are challenging to move to GPU and are taxing on CPU.
@@ -147,7 +151,7 @@ class InputStreamProcessor:
         print("Connecting AI model and detection overlay to video stream")
         self.appsink.connect('new-sample', self.on_new_sample)
         self.inference_callback = self.inference_callback
-        loop = GObject.MainLoop()
+        self.mainloop = GObject.MainLoop()
 
         # set Gst debug log level
     #    Gst.debug_set_active(True)
@@ -156,29 +160,28 @@ class InputStreamProcessor:
         # Set up a pipeline bus watch to catch errors.
         bus = self.pipeline.get_bus()
         bus.add_signal_watch()
-        bus.connect('message', self.on_bus_message, loop)
+        bus.connect('message', self.on_bus_message, self.mainloop)
 
         # Run pipeline.
         self.pipeline.set_state(Gst.State.PLAYING)
         try:
-            print("Entering main gstreamer loop")
-            loop.run()
-            print("Exited gstreamer loop")
+            log.info("Entering main gstreamer loop")
+            self.mainloop.run()
+            log.info("Exited gstreamer loop")
         except Exception as e:
             sys.stderr("GST loop exited with error: {} ".format(str(e)))
             pass
 
         # Clean up.
-        print("Cleaning up GST resources")
+        log.info("Cleaning up GST resources")
         self.pipeline.set_state(Gst.State.NULL)
         while GLib.MainContext.default().iteration(False):
             pass
-        print("Done.")
+        log.info("Stopped %s", self.__class__.__name__)
 
     def stop_pipeline(self):
         """ Gracefully stop the gstream pipeline """
-        loop = GLib.MainLoop.quit()
-        print('Exiting...')
+        log.info("Stopping... %s", self.__class__.__name__)
         Gst.debug_bin_to_dot_file(self.pipeline, Gst.DebugGraphDetails.ALL, 'stream')
         self.pipeline.set_state(Gst.State.NULL)
-        loop.quit()
+        self.mainloop.quit()

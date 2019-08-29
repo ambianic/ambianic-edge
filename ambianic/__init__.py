@@ -35,7 +35,7 @@ class ThreadedJob(threading.Thread):
         # ... Other thread setup code here ...
 
     def run(self):
-        log.info('Thread #%s started' % self.ident)
+        log.info('Thread #%s started with job: %s', self.ident, self.job.__class__.__name__)
 
         self.job.start()
         # the following technique is helpful when the job is not stoppable
@@ -44,10 +44,10 @@ class ThreadedJob(threading.Thread):
         #    time.sleep(0.5)
 
         # ... Clean shutdown code here ...
-        log.info('Thread #%s stopped' % self.ident)
+        log.info('Thread #%s for job %s stopped', self.ident, self.job.__class__.__name__)
 
     def stop(self):
-        log.info('Thread #%s is signalled to stop' % self.ident)
+        log.info('Thread #%s for job %s is signalled to stop', self.ident, self.job.__class__.__name__)
         self.job.stop()
 
 
@@ -110,5 +110,6 @@ def start():
         j1.join()
         j2.join()
 
-    log.info('Exiting main program.')
+    log.info('Exiting main program...')
+    log.info('It may take a few moments for associated system resources to cleanup and exit.')
 
