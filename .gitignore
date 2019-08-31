@@ -6,4 +6,4 @@ tmp/
 **/._**
 **/*tmp___*
 venv
-
+./secrets.yaml
