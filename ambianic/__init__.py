@@ -17,8 +17,10 @@ log = logging.getLogger(__name__)
 
 
 def configure():
-    # TODO: read from an environment configured config file
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S')
     logging.info('configured')
     return
 
@@ -96,8 +98,8 @@ def start():
         def heartbeat():
             nonlocal last_time
             new_time = time.monotonic()
-            # print a heartbeat message every 2 seconds
-            if new_time - last_time > 2:
+            # print a heartbeat message every so many seconds
+            if new_time - last_time > 60:
                 log.info("Main thread alive.")
                 last_time = new_time
 

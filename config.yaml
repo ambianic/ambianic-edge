@@ -99,3 +99,8 @@ masks:
   # audio_hz_trim: ambian.masks.AudioHzTrim
   #  arguments:
   #    - hz_band # lower and upper frequency range to cut out
+
+# print a heartbeat message to the log
+# helps debug why some threads hang up or go idle for a variety of potential reasons
+#heartbeat:
+#  interval: 60 # once a minute

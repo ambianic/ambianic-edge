@@ -98,11 +98,9 @@ class CameraStreamProcessor():
                                         keep_aspect_ratio=True, relative_coord=True,
                                         top_k=args.top_k)
           end_time = time.monotonic()
-          text_lines = [
-              'Inference: %.2f ms' %((end_time - start_time) * 1000),
-              'FPS: %.2f fps' %(1.0/(end_time - last_time)),
-          ]
-          print(' '.join(text_lines))
+          inf_time = (end_time - start_time) * 1000
+          fps = 1.0/(end_time - last_time)
+          log.info('Inference: %.2f ms  FPS: %.2f fps', inf_time, fps)
           last_time = end_time
           generate_svg(svg_canvas, objs, labels, text_lines)
 
