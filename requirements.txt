@@ -15,7 +15,6 @@ cookies==2.2.1
 cryptography==2.6.1
 cycler==0.10.0
 decorator==4.3.0
-distro-info==0.21
 docutils==0.14
 edgetpu==2.11.1
 entrypoints==0.3
