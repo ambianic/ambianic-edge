@@ -4,25 +4,69 @@ import time
 import logging
 import threading
 import signal
+import os
+import yaml
 import ambianic.flaskr
-from ambianic.cameras.detect import CameraStreamProcessor
+from .pipelines.interpreter import Pipeline
 
-
+WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
-CONFIG_DIR = "config"
+CONFIG_FILE = "config.yaml"
+SECRETS_FILE = "secrets.yaml"
 
+# whether the main configuration for an Ambianic runtime is loaded
 is_configured = False
 
 log = logging.getLogger(__name__)
 
 
 def configure():
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.INFO,
-        datefmt='%Y-%m-%d %H:%M:%S')
-    logging.info('configured')
-    return
+    """ Load configuration settings
+
+        :returns True if configuration was loaded without issues. False otherwise.
+    """
+    global WORK_DIR
+    WORK_DIR = os.environ.get('AMBIANIC_DIR')
+    if not WORK_DIR:
+        WORK_DIR = os.getcwd()
+    secrets_file = os.path.join(WORK_DIR, SECRETS_FILE)
+    config_file = os.path.join(WORK_DIR, CONFIG_FILE)
+    try:
+        if os.path.isfile(secrets_file):
+            with open(secrets_file) as sf:
+                secrets_config = sf.read()
+        else:
+            secrets_config = ""
+            log.warning("Secrets file not found. Proceeding without it: %s", secrets_file)
+        with open(config_file) as cf:
+            base_config = cf.read()
+            all_config = secrets_config + "\n" + base_config
+        config = yaml.safe_load(all_config)
+        # configure logging
+        default_log_level = "WARNING"
+        log_level = config.get("log_level", default_log_level)
+        numeric_level = getattr(logging, log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            log.warning('Invalid log level: %s', log_level)
+            log.warning('Defaulting log level to %s', default_log_level)
+            numeric_level = getattr(logging, default_log_level)
+        logging.basicConfig(
+            format='%(asctime)s %(levelname)-8s %(message)s',
+            level=numeric_level,
+            datefmt='%Y-%m-%d %H:%M:%S')
+        log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
+
+        if numeric_level <= logging.DEBUG:
+            log.debug('Configuration dump:')
+            log.debug(yaml.dump(config))
+
+        global is_configured
+        is_configured = True
+        return config
+    except Exception as e:
+        log.error("Failed to load configuration: %s", str(e))
+        return False
+
 
 
 class ThreadedJob(threading.Thread):
@@ -72,26 +116,30 @@ def service_shutdown(signum, frame):
 
 def start():
     if not is_configured:
-        configure()
+        config = configure()
 
+    log.info('Starting Ambianic runtime...')
     # Register the signal handlers
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
 
-    log.info('Starting main program...')
+    threaded_jobs = []
 
     # Start the job threads
     try:
-        # start AI inference loop on camera streams
-        cams = CameraStreamProcessor()
-        j1 = ThreadedJob(cams)
+        # start AI inference pipelines
+        pipeline_processors = pipelines.get_pipelines(config)
+        for pp in pipeline_processors:
+            pj = ThreadedJob(pp)
+            threaded_jobs.append(pj)
 
         # start web app server
-        flask_server = flaskr.FlaskServer()
-        j2 = ThreadedJob(flask_server)
+        flask_server = flaskr.FlaskServer(config)
+        fj = ThreadedJob(flask_server)
+        threaded_jobs.append(fj)
 
-        j1.start()
-        j2.start()
+        for j in threaded_jobs:
+            j.start()
 
         last_time = time.monotonic()
 
@@ -112,12 +160,12 @@ def start():
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         # j1.shutdown_flag.set()
-        j1.stop()
         # j2.shutdown_flag.set()
-        j2.stop()
+        for j in threaded_jobs:
+            j.stop()
         # Wait for the threads to close...
-        j1.join()
-        j2.join()
+        for j in threaded_jobs:
+            j.join()
 
     log.info('Exiting main program...')
 

@@ -51,6 +51,7 @@ def main():
     labels = load_labels(args.labels)
 
     last_time = time.monotonic()
+
     def inference_callback(image, svg_canvas):
       nonlocal last_time
       start_time = time.monotonic()

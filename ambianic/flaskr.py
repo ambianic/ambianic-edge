@@ -11,11 +11,12 @@ log = logging.getLogger(__name__)
 class FlaskServer:
     """ Thin wrapper around Flask constructs that allows controlled start and stop of the web app server. """
 
-    def __init__(self):
+    def __init__(self, config):
         self.app = create_app()
         self.srv = make_server('0.0.0.0', 8778, self.app)
         self.ctx = self.app.app_context()
         self.ctx.push()
+        self.config = config
 
     def start(self):
         log.info('starting Flask server')

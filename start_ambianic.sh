@@ -1,3 +1,3 @@
-# python3 cameras/classify.py
+# python3 pipelines/classify.py
 python3 main.py
 

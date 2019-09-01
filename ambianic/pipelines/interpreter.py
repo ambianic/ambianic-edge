@@ -25,17 +25,21 @@ python3 -m edgetpuvision.detect \
   --model ${TEST_DATA}/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
   --labels ${TEST_DATA}/coco_labels.txt
 """
-import argparse
 import time
 import re
 import os
 import logging
 from edgetpu.detection.engine import DetectionEngine
 import ambianic
-from ambianic.cameras.gstreamer import InputStreamProcessor
+from .gstreamer import InputStreamProcessor
+from .inference import AiInference
+
+DEFAULT_IMAGE_DETECTION_MODEL = {
+    'graph': 'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite',
+    'labels': 'coco_labels.txt',
+}
 
 log = logging.getLogger(__name__)
-
 
 def load_labels(path):
     p = re.compile(r'\s*(\d+)(.+)')
@@ -64,30 +68,66 @@ def generate_svg(dwg, objs, labels, text_lines):
         #dwg.add(dwg.rect(insert=(0,0), size=(width, height),
         #                fill='green', fill_opacity=0.2, stroke='white'))
 
-class CameraStreamProcessor():
 
-    def __init__(self):
-        self.input_proc = None
+class Pipe:
+    def __init__(self, pipe_conf=None):
+        assert pipe_conf, 'Pipe configuration required.'
+
+class Pipeline:
+
+    # valid pipeline operators
+    PIPELINE_OPS = {
+        'source': InputStreamProcessor,
+        'ai': AiInference,
+    }
+
+    def __init__(self, pname=None, pdef=None):
+        """ Load pipeline definition """
+        assert pname, "Pipeline name required"
+        self.name = pname
+        assert pdef, "Pipeline definition required"
+        self.definition = pdef
+        assert self.definition[0]["source"], "Pipeline definition must begin with a source element"
+        self.pipeline_ops = {}
+        for op_def in self.definition[1:]:
+            log.info('pipile loading next operator: %s', op_def)
+            log.info('pipile operator *: %s', [*op_def])
+            op_name = [*op_def][0]
+            op_conf = op_def[op_name]
+            op_class = self.PIPELINE_OPS.get(op_name, None)
+            if op_class:
+                log.info('pipeline %s adding operator %s', pname, op_name)
+                op = op_class(op_def)
+                self.pipeline_ops
+            else:
+                log.warning('unknown pipeline operation: %s ', op_name)
+        return
+
 
     def start(self):
         log.info("Starting %s ", self.__class__.__name__)
         default_model_dir = ambianic.AI_MODELS_DIR
-        default_model = 'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
-        default_labels = 'coco_labels.txt'
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--model', help='.tflite model path',
-                            default=os.path.join(default_model_dir,default_model))
-        parser.add_argument('--labels', help='label file path',
-                            default=os.path.join(default_model_dir, default_labels))
-        parser.add_argument('--top_k', type=int, default=3,
-                            help='number of classes with highest score to display')
-        parser.add_argument('--threshold', type=float, default=0.2,
-                            help='class score threshold')
-        args = parser.parse_args()
+        default_model = '' # TODO: Read from config
+        default_labels = '' # TODO: Read from config
 
-        print("Loading %s with %s labels."%(args.model, args.labels))
-        engine = DetectionEngine(args.model)
-        labels = load_labels(args.labels)
+        ai_models = self.config.get('ai_models', None)
+        model = None
+        if not ai_models:
+            model = DEFAULT_IMAGE_DETECTION_MODEL
+        else:
+            model = ai_models.get('image_detection', None)
+            if not model:
+                model = DEFAULT_IMAGE_DETECTION_MODEL
+        graph_file = model['graph']
+        if not os.path.isfile(graph_file):
+            ValueError('AI model %s graph file does not exist: %s')
+        labels_file = model['labels']
+        if not os.path.isfile(labels_file):
+            ValueError('AI model %s labels file does not exist: %s')
+        log.info("Loading AI model graph %s with labels %s", graph_file, labels_file)
+
+        engine = DetectionEngine(graph_file)
+        labels = load_labels(labels_file)
 
         last_time = time.monotonic()
 
@@ -104,10 +144,9 @@ class CameraStreamProcessor():
           last_time = end_time
           generate_svg(svg_canvas, objs, labels, text_lines)
 
-        self.input_proc = InputStreamProcessor(inference_callback)
-        result = self.input_proc.run_pipeline()
+        result = self.input_processor.run_pipeline(inference_callback)
         log.info("Stopped %s", self.__class__.__name__)
 
     def stop(self):
         log.info("Stopping %s", self.__class__.__name__)
-        self.input_proc.stop_pipeline()
+        self.input_processor.stop_pipeline()
