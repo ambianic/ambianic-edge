@@ -16,7 +16,6 @@ cryptography==2.6.1
 cycler==0.10.0
 decorator==4.3.0
 docutils==0.14
-edgetpu==2.11.1
 entrypoints==0.3
 Flask==1.0.2
 gast==0.2.2
