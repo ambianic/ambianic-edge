@@ -74,7 +74,6 @@ PyJWT==1.7.0
 pylint==2.2.2
 pyOpenSSL==19.0.0
 pyparsing==2.2.0
-python-apt==1.8.4
 python-dateutil==2.7.3
 pyxdg==0.25
 PyYAML==5.1.2
