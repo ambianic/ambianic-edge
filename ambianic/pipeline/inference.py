@@ -34,7 +34,7 @@ class AiInference(PipeElement):
         self.labels = load_labels(labels)
         self.last_time = time.monotonic()
         self.confidence_threshold = self.config.get('confidence_threshold', 0.6)
-        log.info("AI model confidence threshold: 0:.0f%", self.confidence_threshold)
+        log.info("AI model confidence threshold: %.0f%%", self.confidence_threshold*100)
 
     def receive_next_sample(self, image):
         log.info("AI inference received new sample")
