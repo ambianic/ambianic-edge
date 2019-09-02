@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import sys
-from functools import partial
 import svgwrite
 import gi
 import logging
@@ -21,20 +20,41 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
 from gi.repository import GLib, GObject, Gst, GstBase
 from PIL import Image
+from . import PipeElement
 
 GObject.threads_init()
 Gst.init(None)
 
 log = logging.getLogger(__name__)
 
-class InputStreamProcessor:
+
+def shadow_text(dwg, x, y, text, font_size=20):
+    dwg.add(dwg.text(text, insert=(x + 1, y + 1), fill='black', font_size=font_size))
+    dwg.add(dwg.text(text, insert=(x, y), fill='white', font_size=font_size))
+
+
+def generate_svg(dwg, objs, labels, text_lines):
+    width, height = dwg.attribs['width'], dwg.attribs['height']
+    for y, line in enumerate(text_lines):
+        shadow_text(dwg, 10, y * 20, line)
+    for obj in objs:
+        x0, y0, x1, y1 = obj.bounding_box.flatten().tolist()
+        x, y, w, h = x0, y0, x1 - x0, y1 - y0
+        x, y, w, h = int(x * width), int(y * height), int(w * width), int(h * height)
+        percent = int(100 * obj.score)
+        label = '%d%% %s' % (percent, labels[obj.label_id])
+        shadow_text(dwg, x, y - 5, label)
+        dwg.add(dwg.rect(insert=(x, y), size=(w, h),
+                         fill='red', fill_opacity=0.3, stroke='white'))
+        # print("SVG canvas width: {w}, height: {h}".format(w=width,h=height))
+        # dwg.add(dwg.rect(insert=(0,0), size=(width, height),
+        #                fill='green', fill_opacity=0.2, stroke='white'))
+
+
+class InputStreamProcessor(PipeElement):
     """
-        Handles a wide range of media input sources and calls back for TF inference.
-        This class is not thread safe. Should not be called from multiple threads simultaneously.
-
-        :argument inf_callback the callback function that applies TF inference (e.g. object detection)
-            to a streamed image
-
+        Pipe element that handles a wide range of media input sources and passes on samples to the next
+        pipe element.
     """
 
     class ImageShape:
@@ -44,29 +64,27 @@ class InputStreamProcessor:
     class PipelineSource:
         def __init__(self, source_conf=None):
             assert source_conf, "pipeline source configuration required."
-            assert source_conf['uri'], "pipeline source definition missing uri element"
+            assert source_conf['uri'], "pipeline source config missing uri element"
             self.uri = source_conf['uri']  # rtsp://..., rtmp://..., http://..., file:///...
             self.type = source_conf.get('type', 'auto')  # video, image, audio, auto
         pass
 
-    def __init__(self, inf_callback=None, source_conf=None):
+    def __init__(self, source_conf=None):
+        PipeElement.__init__(self)
+
         # pipeline source info
         self.source = self.PipelineSource(source_conf=source_conf)
         # Reference to Gstreamer main loop structure
         self.mainloop = None
-        # Gstreamer pipelines for a given input source (could be image, audio or video)
+        # Gstreamer pipeline for a given input source (could be image, audio or video)
         self.gst_pipeline = None
         self.gst_video_source = None
         # shape of the input stream image or video
         self.source_shape = self.ImageShape()
-        # gst_appsink handlies GStreamer callbacks for TF inference
+        # gst_appsink handlies GStreamer callbacks for new media samples which it passes on to the next pipe element
         self.gst_appsink = None
-        # shape of the image passed to Tensorflow for inference
-        # default values that are close to most TF image model input tensors
         # gst_overlay is where we draw labels and bounding boxes for users to see inference results
         self.gst_overlay = None
-        # inference callback
-        self.inference_callback = inf_callback
 
     def on_autoplug_continue(self, src_bin, src_pad, src_caps):
         # print('on_autoplug_continue called for uridecodebin')
@@ -96,7 +114,7 @@ class InputStreamProcessor:
         return True
 
     def on_new_sample(self, sink):
-        # print('New image sample received.')
+        log.info('Input stream received new image sample.')
         if not (self.source_shape.width or self.source_shape.height):
             # source stream shape still unknown
             log.warning('New image sample received but source shape still unknown?!')
@@ -112,22 +130,27 @@ class InputStreamProcessor:
         result, mapinfo = buf.map(Gst.MapFlags.READ)
         if result:
             img = Image.frombytes('RGB', (app_width, app_height), mapinfo.data, 'raw')
-            svg_canvas = svgwrite.Drawing('', size=(self.source_shape.width, self.source_shape.height))
-            # run TF model and draw results on SVG canvas
-            self.inference_callback(img, svg_canvas)
-            self.gst_overlay.set_property('data', svg_canvas.tostring())
+            # svg_canvas = svgwrite.Drawing('', size=(self.source_shape.width, self.source_shape.height))
+            # pass image sample to next pipe element, e.g. ai inference
+            if self.next_element:
+                log.info('Input stream sending sample to next element.')
+                self.next_element.receive_next_sample(img)
+            else:
+                log.info('Input stream has no next pipe element to send sample to.')
+            # generate_svg(svg_canvas, objs, labels, text_lines)
+            # self.gst_overlay.set_property('data', svg_canvas.tostring())
         buf.unmap(mapinfo)
         return Gst.FlowReturn.OK
 
-    def run_pipeline(self):
-        """ Start the gstreamer pipelines """
+    def start(self):
+        """ Start the gstreamer pipeline """
 
         log.info("Starting %s", self.__class__.__name__)
 
-        # Note to self: The pipelines args below work but slow. Work fine with AI inference, but peg the CPU at 200%
-        #   turns out certain gstreamer video conversion operations are challenging to move to GPU and are taxing on CPU.
-        #   TODO: figure out RPI4 hardware acceleration for h264 to RGB conversion, gst_overlay and scaling.
-        #    Default gst ops: videoconvert, videoscale and gst_overlay are slow and use CPU.
+        # Note to self: The pipeline args below work but slow.
+        # The good thing is that these parameters don't expect specialized hardware.
+        # The bad thing is that they don't take advantage of hardware acceleration.
+        # Consider implementing dynamic hardware acceleration detection or allow users to pass gst parameters.
         PIPELINE = ' uridecodebin name=source latency=0 '
         PIPELINE += """ ! tee name=t
             t. ! {leaky_q} ! videoconvert ! videoscale ! {sink_caps} ! {sink_element}
@@ -148,7 +171,7 @@ class InputStreamProcessor:
         pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q,
                                    sink_caps=SINK_CAPS,
                                    sink_element=SINK_ELEMENT)
-        log.info('Gstreamer pipelines: %s', pipeline_args)
+        log.info('Gstreamer pipeline: %s', pipeline_args)
         self.gst_pipeline = Gst.parse_launch(pipeline_args)
         self.gst_video_source = self.gst_pipeline.get_by_name('source')
         self.gst_video_source.props.uri = self.source.uri
@@ -168,12 +191,12 @@ class InputStreamProcessor:
             Gst.debug_set_active(True)
             Gst.debug_set_default_threshold(3)
 
-        # Set up a pipelines bus watch to catch errors.
+        # Set up a pipeline bus watch to catch errors.
         bus = self.gst_pipeline.get_bus()
         bus.add_signal_watch()
         bus.connect('message', self.on_bus_message, self.mainloop)
 
-        # Run pipelines.
+        # Run pipeline.
         self.gst_pipeline.set_state(Gst.State.PLAYING)
         try:
             log.info("Entering main gstreamer loop")
@@ -185,14 +208,16 @@ class InputStreamProcessor:
 
         # Clean up.
         log.info("Cleaning up GST resources")
-        self.gst_pipeline.set_state(Gst.State.NULL)
+        if self.gst_pipeline:
+            self.gst_pipeline.set_state(Gst.State.NULL)
         while GLib.MainContext.default().iteration(False):
             pass
         log.info("Stopped %s", self.__class__.__name__)
 
-    def stop_pipeline(self):
-        """ Gracefully stop the gstream pipelines """
+    def stop(self):
+        """ Gracefully stop the gstream pipeline """
         log.info("Stopping... %s", self.__class__.__name__)
-        Gst.debug_bin_to_dot_file(self.gst_pipeline, Gst.DebugGraphDetails.ALL, 'stream')
-        self.gst_pipeline.set_state(Gst.State.NULL)
+        # Gst.debug_bin_to_dot_file(self.gst_pipeline, Gst.DebugGraphDetails.ALL, 'stream')
+        if self.gst_pipeline:
+            self.gst_pipeline.set_state(Gst.State.NULL)
         self.mainloop.quit()

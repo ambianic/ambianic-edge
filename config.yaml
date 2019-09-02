@@ -19,10 +19,10 @@ ai_models:
 #    tf_graph:
 #    labels:
   image_detection: &tfm_image_detection
-    graph: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
+    model: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
   face_detection: &tfm_face_detection
-    graph: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
+    model: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
 
 
@@ -37,16 +37,16 @@ pipelines:
         <<: *tfm_image_detection
         confidence_threshold: 0.6
     - save_samples: # save samples from the inference results
-      location: *data_dir
-      detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-      idle_interval: 60*30 #  how often (in seconds) to save samples without any detections
-    - gate: [category: person] # select the labels that will be used as input by the next ai model
-    - ai: # run the next ai model inference on data from the previous section of the pipeline
-      <<: *tfm_face_detection
-      confidence_threshold: 0.6
-      save_samples:
-      location: *data_dir
-      detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+        output_directory: *data_dir
+        detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+        idle_interval: 60*30 #  how often (in seconds) to save samples without any detections
+    # - gate: [category: person] # select the labels that will be used as input by the next ai model
+    # - ai: # run the next ai model inference on data from the previous section of the pipeline
+        # <<: *tfm_face_detection
+        # confidence_threshold: 0.6
+        # save_samples:
+        # location: *data_dir
+        # detections_interval: 2 # how often (in seconds) to save samples with positive label detections
       # - gate: [category: face] # select detected faces and pass on to face recognition model
       # - ai: *tfm_face_recognition
           # confidence_threshold: 0.6
@@ -68,7 +68,7 @@ pipelines:
 #
 #  vacation_front_door_watch:
 
-# Policies group pipelines and are mutually exclusive.
+# Policies group pipeline and are mutually exclusive.
 #  Only one policy is active at a time.
 #  When a specific policy is activated, all other policies are idle
 # policies:

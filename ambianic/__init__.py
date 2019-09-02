@@ -7,7 +7,8 @@ import signal
 import os
 import yaml
 import ambianic.flaskr
-from .pipelines.interpreter import Pipeline
+from .pipeline.interpreter import Pipeline
+from .pipeline.interpreter import get_pipelines
 
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
@@ -68,8 +69,10 @@ def configure():
         return False
 
 
-
 class ThreadedJob(threading.Thread):
+    """ A job that runs in its own python thread. """
+    # Reminder: even though multiple processes can work well for pipelines, since they are mostly independent,
+    # Google Coral does not allow access to it from different processes yet.
 
     def __init__(self, job):
         threading.Thread.__init__(self)
@@ -86,7 +89,7 @@ class ThreadedJob(threading.Thread):
 
         self.job.start()
         # the following technique is helpful when the job is not stoppable
-        #while not self.shutdown_flag.is_set():
+        # while not self.shutdown_flag.is_set():
         #    # ... Job code here ...
         #    time.sleep(0.5)
 
@@ -123,22 +126,22 @@ def start():
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
 
-    threaded_jobs = []
+    mpjobs = []
 
     # Start the job threads
     try:
-        # start AI inference pipelines
-        pipeline_processors = pipelines.get_pipelines(config)
+        # start AI inference pipeline
+        pipeline_processors = get_pipelines(config)
         for pp in pipeline_processors:
             pj = ThreadedJob(pp)
-            threaded_jobs.append(pj)
+            mpjobs.append(pj)
 
         # start web app server
         flask_server = flaskr.FlaskServer(config)
         fj = ThreadedJob(flask_server)
-        threaded_jobs.append(fj)
+        mpjobs.append(fj)
 
-        for j in threaded_jobs:
+        for j in mpjobs:
             j.start()
 
         last_time = time.monotonic()
@@ -147,7 +150,7 @@ def start():
             nonlocal last_time
             new_time = time.monotonic()
             # print a heartbeat message every so many seconds
-            if new_time - last_time > 60:
+            if new_time - last_time > 5:
                 log.info("Main thread alive.")
                 last_time = new_time
 
@@ -161,10 +164,10 @@ def start():
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         # j1.shutdown_flag.set()
         # j2.shutdown_flag.set()
-        for j in threaded_jobs:
+        for j in mpjobs:
             j.stop()
         # Wait for the threads to close...
-        for j in threaded_jobs:
+        for j in mpjobs:
             j.join()
 
     log.info('Exiting main program...')
