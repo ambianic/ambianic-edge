@@ -1,25 +1,61 @@
 version: '0.0.1'
 
-sources:
-  cameras:
-    front_door:
-      video_stream: uri
-      still_image: uri
+# Set logging level to one of DEBUG, INFO, WARNING, ERROR
+log_level: INFO
 
-# Define inference pipelines that apply AI models to input data.
-# Pipelines are structured as directed acyclic graphs (DAG)
+# path to the data directory
+data_dir: &data_dir ./data
+# !include secrets1.yaml
+
+# Cameras and other input data sources
+# Using Home Assistant conventions to ease upcoming integration
+sources:
+  front_door_camera: &src_front_door_cam
+    uri: *secret_uri_front_door_camera
+    type: video
+
+ai_models:
+#  image_classification:
+#    tf_graph:
+#    labels:
+  image_detection: &tfm_image_detection
+    model: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
+    labels: ai_models/coco_labels.txt
+  face_detection: &tfm_face_detection
+    model: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
+    labels: ai_models/coco_labels.txt
+
+
+# A named pipeline defines an ordered sequence of operations
+# such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
+  # sequence of piped operations for use in daytime front door watch
   daytime_front_door_watch:
-    - source: @front_door
-      -  mask: svg
-         - uri: ...
-    - inference: @find_person_or_vehicle
-    - fork:
-        - label_selector: [person]
-            - inference: @detect_face
-            - inference: @recognize_face
-        - label_selector: [vehicle]
-            - inference: @detect_license_plate
+    - source: *src_front_door_cam
+    # - mask: svg # apply a mask to the input data
+    - ai: # run ai inference on the input data
+        <<: *tfm_image_detection
+        confidence_threshold: 0.6
+    - save_samples: # save samples from the inference results
+        output_directory: *data_dir
+        detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+        idle_interval: 60*30 #  how often (in seconds) to save samples without any detections
+    # - gate: [category: person] # select the labels that will be used as input by the next ai model
+    # - ai: # run the next ai model inference on data from the previous section of the pipeline
+        # <<: *tfm_face_detection
+        # confidence_threshold: 0.6
+        # save_samples:
+        # location: *data_dir
+        # detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+      # - gate: [category: face] # select detected faces and pass on to face recognition model
+      # - ai: *tfm_face_recognition
+          # confidence_threshold: 0.6
+      # - save_samples:
+          # location: *data_dir
+          # detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+    # - tee: # a tee splits the pipeline into independent streams, each with its own thread and copy of the input data from the previous pipe
+    #   - gate: [category: vehicle]
+    #   - ai: *detect_license_plate
 
 #  nighttime_front_door_watch:
 #    source: @front_door
@@ -32,7 +68,7 @@ pipelines:
 #
 #  vacation_front_door_watch:
 
-# Policies group pipelines and are mutually exclusive.
+# Policies group pipeline and are mutually exclusive.
 #  Only one policy is active at a time.
 #  When a specific policy is activated, all other policies are idle
 # policies:
@@ -42,59 +78,15 @@ pipelines:
 #   nighttime:
 #   vacation:
 
-inferences:
-  find_person_or_vehicle:
-    ai_model: image_detection
-    frequency: 2 # in seconds
-    filter:
-      labels: person
-    confidence_threshold: 0.6
-    save_samples:
-      location: @data
-      detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-      background_interval: 60*30 #  how often (in seconds) to save samples without any detections
-    next_inference:
-      on_labels: person, vehicle
-      model: front_door_faces
-
-  find_faces:
-    ai_model: face_detection
-    mask: svg uri
-    frequency: 2 # in seconds
-    filter:
-      labels: person
-    confidence_threshold: 0.6
-    save_samples:
-      location: @data
-      detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-      background_interval: 60*30 #  how often (in seconds) to save samples without any detections
-    next_inference:
-      on_labels: person, vehicle
-      model: front_door_faces
-
-
-  # front_door_listen:
-  #   source: front_door
-  #   ai_model: voice_detection
-  #   mask: audio_hz_trim
-
-ai_models:
-  image_classification:
-    tf_graph:
-    labels:
-  image_detection:
-    tf_graph:
-    labels:
-
 # Masks allow filtering out input signal before an AI model sees it
-masks:
+# masks:
   # svg mask applies an SVG graphics onto an input image
-  svg: ambianic.masks.SvgMask
-    arguments:
-      - uri # of the svg file
+#  svg: ambianic.masks.SvgMask
+#    arguments:
+#      - uri # of the svg file
       # scale_to_fit indicates whether to scale the mask to fit the stream source shape
       # default True
-      - scale_to_fit
+#      - scale_to_fit
   # audio_hz_trim is a simple mask that cuts out frequency ranges from an input audio stream
   # audio_hz_trim: ambian.masks.AudioHzTrim
   #  arguments:
