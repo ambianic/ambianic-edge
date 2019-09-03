@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ambianic/ambianic.svg?branch=master)](https://travis-ci.org/ambianic/ambianic)
+
 ![Ambianic logo][logo]
 
 # Project mission
