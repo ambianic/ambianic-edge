@@ -9,7 +9,7 @@ before_install:
   - sudo apt-get install python-gst-1.0
 # install google coral edgetpu libs
   - sudo wget https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz -O edgetpu_api.tar.gz --trust-server-names \
-  && tar xzf edgetpu_api.tar.gz
+      && tar xzf edgetpu_api.tar.gz
   - sudo scripts/install_edgetpu_api.sh edgetpu_api/install.sh
   - sudo cd edgetpu_api && /bin/bash install.sh
 # command to install dependencies
