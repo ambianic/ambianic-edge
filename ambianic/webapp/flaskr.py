@@ -4,7 +4,7 @@ import logging
 from flask import Flask
 import flask
 from werkzeug.serving import make_server
-from .service import ServiceExit
+from ambianic.service import ServiceExit
 log = logging.getLogger(__name__)
 
 

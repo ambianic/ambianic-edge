@@ -6,7 +6,7 @@ import threading
 import signal
 import os
 import yaml
-from .flaskr import FlaskServer
+from ambianic.webapp.flaskr import FlaskServer
 from .pipeline.interpreter import get_pipelines
 from .service import ServiceExit
 

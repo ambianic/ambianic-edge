@@ -3,8 +3,7 @@ import time
 import re
 import os
 import abc
-
-from edgetpu.detection.engine import DetectionEngine
+from importlib import import_module
 
 from ambianic.pipeline import PipeElement
 
@@ -30,7 +29,12 @@ class TfInference(PipeElement):
         labels = self.config.get('labels', None)
         assert os.path.isfile(labels), 'AI model labels file does not exist: {}'.format(labels)
         log.info("Loading AI model %s with labels %s", model, labels)
-        self.engine = DetectionEngine(model)
+        # EdgeTPU is not available in testing and other environments
+        # load dynamically as needed
+        edgetpu_class = 'DetectionEngine'
+        module_object = import_module('edgetpu.detection.engine', package=edgetpu_class)
+        target_class = getattr(module_object, edgetpu_class)
+        self.engine = target_class(model)
         self.labels = load_labels(labels)
         self.last_time = time.monotonic()
         self.confidence_threshold = self.config.get('confidence_threshold', 0.6)
