@@ -50,12 +50,10 @@ class AiInference(PipeElement):
         inf_info = 'Inference: %.2f ms  FPS: %.2f fps'
         log.info(inf_info, inf_time, fps)
         self.last_time = end_time
-        text_lines = inf_info % (inf_time, fps)
         inference_result = []
         for obj in objs:
             x0, y0, x1, y1 = obj.bounding_box.flatten().tolist()
             confidence = obj.score
-            label = '%d%% %s' % (percent, self.labels[obj.label_id])
             category = self.labels[obj.label_id]
             inference_result.append((category, confidence, (x0, y0, x1, y1)))
         # pass on the results to the next connected pipe element

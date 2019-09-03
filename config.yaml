@@ -39,7 +39,7 @@ pipelines:
     - save_samples: # save samples from the inference results
         output_directory: *data_dir
         detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-        idle_interval: 60*30 #  how often (in seconds) to save samples without any detections
+        idle_interval: 600 #  how often (in seconds) to save samples without any detections
     # - gate: [category: person] # select the labels that will be used as input by the next ai model
     # - ai: # run the next ai model inference on data from the previous section of the pipeline
         # <<: *tfm_face_detection
