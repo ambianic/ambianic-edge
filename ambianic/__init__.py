@@ -15,21 +15,18 @@ AI_MODELS_DIR = "ai_models"
 CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
 
-# whether the main configuration for an Ambianic runtime is loaded
-is_configured = False
-
 log = logging.getLogger(__name__)
 
 
-def configure():
+def configure(env_work_dir):
     """ Load configuration settings
 
-        :returns True if configuration was loaded without issues. False otherwise.
+        :returns config if configuration was loaded without issues. None or a specific exception otherwise.
     """
+    assert env_work_dir, 'Working directory required.'
+    assert os.path.exists(env_work_dir), 'working directory invalid: {}'.format(env_work_dir)
     global WORK_DIR
-    WORK_DIR = os.environ.get('AMBIANIC_DIR')
-    if not WORK_DIR:
-        WORK_DIR = os.getcwd()
+    WORK_DIR = env_work_dir
     secrets_file = os.path.join(WORK_DIR, SECRETS_FILE)
     config_file = os.path.join(WORK_DIR, CONFIG_FILE)
     try:
@@ -61,12 +58,10 @@ def configure():
             log.debug('Configuration dump:')
             log.debug(yaml.dump(config))
 
-        global is_configured
-        is_configured = True
         return config
     except Exception as e:
         log.error("Failed to load configuration: %s", str(e))
-        return False
+        return None
 
 
 class ThreadedJob(threading.Thread):
@@ -117,9 +112,12 @@ def service_shutdown(signum, frame):
     raise ServiceExit
 
 
-def start():
-    if not is_configured:
-        config = configure()
+def start(env_work_dir):
+    config = configure(env_work_dir)
+
+    if not config:
+        log.info('Cannot start. Valid configuration file required.')
+        return False
 
     log.info('Starting Ambianic runtime...')
     # Register the signal handlers
@@ -171,4 +169,5 @@ def start():
             j.join()
 
     log.info('Exiting main program...')
+    return True
 

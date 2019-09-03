@@ -22,7 +22,6 @@ from gi.repository import GLib, GObject, Gst, GstBase
 from PIL import Image
 from . import PipeElement
 
-GObject.threads_init()
 Gst.init(None)
 
 log = logging.getLogger(__name__)
