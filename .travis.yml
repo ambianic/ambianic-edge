@@ -10,11 +10,10 @@ before_install:
 # install google coral edgetpu libs
   - sudo wget "https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz" -O edgetpu_api.tar.gz --trust-server-names 
   - sudo tar xzf edgetpu_api.tar.gz
-  - cd edgetpu_api
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install edgetpu-2.11.1-py3-none-any.whl
+  - pip install edgetpu_api/edgetpu-2.11.1-py3-none-any.whl
 # command to run tests
 script:
   - pytest
