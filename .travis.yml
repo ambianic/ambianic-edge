@@ -4,11 +4,16 @@ python:
 before_install:
   - sudo apt-get update
   - sudo apt install libgirepository1.0-dev
-- sudo apt-get install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-pulseaudio
+# install gstreamer libs  
+  - sudo apt-get install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-pulseaudio
   - sudo apt-get install python-gst-1.0
+# install google coral edgetpu libs
+  - sudo wget "https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz" -O edgetpu_api.tar.gz --trust-server-names 
+  - sudo tar xzf edgetpu_api.tar.gz
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install edgetpu_api/edgetpu-2.11.1-py3-none-any.whl
 # command to run tests
 script:
   - pytest
