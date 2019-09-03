@@ -35,7 +35,7 @@ class SaveSamples(PipeElement):
         time_prefix = now.strftime("%Y%m%d-%H%M%S-{ftype}.{fext}")
         image_file = time_prefix.format(ftype='image', fext='jpg')
         image_path = self.output_directory / image_file
-        json_file = time_prefix.format(ftype='ai', fext='json')
+        json_file = time_prefix.format(ftype='json', fext='txt')
         json_path = self.output_directory / json_file
         inf_json = []
         for category, confidence, box in inference_result:
@@ -63,6 +63,8 @@ class SaveSamples(PipeElement):
         # ... save samples to local disk
         # ... pass notifications to flask server via cross-process queue or pipe or topic
         # ... run flask web app in a separate process. It does not need to get in the way of pipeline processing
+        if self.next_element:
+            self.next_element.receive_next_sample(image, inference_result)
 
     def receive_next_sample(self, image, inference_result):
         log.info("Pipe element %s received new sample: %s", self.__class__.__name__, str(inference_result))

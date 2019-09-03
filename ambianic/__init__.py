@@ -48,12 +48,12 @@ def configure(env_work_dir):
             log.warning('Invalid log level: %s', log_level)
             log.warning('Defaulting log level to %s', default_log_level)
             numeric_level = getattr(logging, default_log_level)
-        logging.basicConfig(
-            format='%(asctime)s %(levelname)-8s %(message)s',
-            level=numeric_level,
-            datefmt='%Y-%m-%d %H:%M:%S')
+        if numeric_level <= logging.INFO:
+            logging.basicConfig(
+                format='%(asctime)s %(levelname)-4s %(module)s.%(funcName)s(%(lineno)d): %(message)s',
+                level=numeric_level,
+                datefmt='%Y-%m-%d %H:%M:%S')
         log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
-
         if numeric_level <= logging.DEBUG:
             log.debug('Configuration dump:')
             log.debug(yaml.dump(config))

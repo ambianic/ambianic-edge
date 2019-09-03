@@ -2,10 +2,11 @@ import logging
 import time
 import re
 import os
+import abc
 
 from edgetpu.detection.engine import DetectionEngine
 
-from . import PipeElement
+from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
@@ -17,12 +18,11 @@ def load_labels(path):
         return {int(num): text.strip() for num, text in lines}
 
 
-class AiInference(PipeElement):
-    """ AiInference is a pipeline element responsible for applying AI (Tensorflow) model inference  """
+class TfInference(PipeElement):
+    """ TfInference is a pipeline element responsible for applying Tensorflow model inference  """
 
     def __init__(self, element_config=None):
         PipeElement.__init__(self)
-
         self.config = element_config
         model = self.config.get('model', None)
         assert model, 'pipeline element ai: requires argument model:'
@@ -36,10 +36,9 @@ class AiInference(PipeElement):
         self.confidence_threshold = self.config.get('confidence_threshold', 0.6)
         log.info("AI model confidence threshold: %.0f%%", self.confidence_threshold*100)
 
-    def receive_next_sample(self, image):
-        log.info("AI inference received new sample")
+    def detect(self, image):
         start_time = time.monotonic()
-        log.info("Calling Coral engine for inference")
+        log.debug("Calling Coral engine for inference")
         objs = self.engine.DetectWithImage(image, threshold=self.confidence_threshold,
                                     keep_aspect_ratio=True, relative_coord=True,
                                     top_k=3)
@@ -56,7 +55,8 @@ class AiInference(PipeElement):
             confidence = obj.score
             category = self.labels[obj.label_id]
             inference_result.append((category, confidence, (x0, y0, x1, y1)))
-        # pass on the results to the next connected pipe element
-        if self.next_element:
-          self.next_element.receive_next_sample(image, inference_result)
-        # generate_svg(svg_canvas, objs, labels, text_lines)
+        return inference_result
+
+    @abc.abstractmethod
+    def receive_next_sample(self, image):
+        pass

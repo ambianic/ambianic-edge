@@ -133,7 +133,7 @@ class InputStreamProcessor(PipeElement):
             # pass image sample to next pipe element, e.g. ai inference
             if self.next_element:
                 log.info('Input stream sending sample to next element.')
-                self.next_element.receive_next_sample(img)
+                self.next_element.receive_next_sample(image=img)
             else:
                 log.info('Input stream has no next pipe element to send sample to.')
             # generate_svg(svg_canvas, objs, labels, text_lines)

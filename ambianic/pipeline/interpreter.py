@@ -1,6 +1,7 @@
 import logging
 from .gstreamer import InputStreamProcessor
-from .inference import AiInference
+from ambianic.pipeline.ai.object_detect import ObjectDetect
+from ambianic.pipeline.ai.face_detect import FaceDetect
 from .store import SaveSamples
 from . import PipeElement
 
@@ -23,8 +24,9 @@ class Pipeline:
     # valid pipeline operators
     PIPELINE_OPS = {
         'source': InputStreamProcessor,
-        'ai': AiInference,
+        'detect_objects': ObjectDetect,
         'save_samples': SaveSamples,
+        'detect_faces': FaceDetect,
     }
 
     def __init__(self, pname=None, pconfig=None):
