@@ -29,6 +29,8 @@ class PipeElement:
         self.next_element = next_element
 
     @abc.abstractmethod
-    def receive_next_sample(self, sample):
-        """ Receive next sample from a connected previous element """
+    def receive_next_sample(self, **sample):
+        """ Receive next sample from a connected previous element
+            :argument **kwargs a variable list of (key, value) pairs that represent the sample
+        """
         pass

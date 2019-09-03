@@ -51,7 +51,14 @@ class AiInference(PipeElement):
         log.info(inf_info, inf_time, fps)
         self.last_time = end_time
         text_lines = inf_info % (inf_time, fps)
+        inference_result = []
+        for obj in objs:
+            x0, y0, x1, y1 = obj.bounding_box.flatten().tolist()
+            confidence = obj.score
+            label = '%d%% %s' % (percent, self.labels[obj.label_id])
+            category = self.labels[obj.label_id]
+            inference_result.append((category, confidence, (x0, y0, x1, y1)))
         # pass on the results to the next connected pipe element
         if self.next_element:
-          self.next_element.receive_next_sample([objs, self.labels, text_lines]) # TODO: clean this up
+          self.next_element.receive_next_sample(image, inference_result)
         # generate_svg(svg_canvas, objs, labels, text_lines)

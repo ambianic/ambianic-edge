@@ -7,3 +7,4 @@ tmp/
 **/*tmp___*
 venv
 secrets.yaml
+data/**
