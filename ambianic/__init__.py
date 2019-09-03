@@ -66,6 +66,7 @@ def configure(env_work_dir):
 
 class ThreadedJob(threading.Thread):
     """ A job that runs in its own python thread. """
+
     # Reminder: even though multiple processes can work well for pipelines, since they are mostly independent,
     # Google Coral does not allow access to it from different processes yet.
 
@@ -102,6 +103,8 @@ def service_shutdown(signum, frame):
 
 
 def start(env_work_dir):
+    """ Programmatic start of the main service """
+
     config = configure(env_work_dir)
 
     if not config:
@@ -140,6 +143,9 @@ def start(env_work_dir):
             if new_time - last_time > 5:
                 log.info("Main thread alive.")
                 last_time = new_time
+            global _service_exit_requested
+            if _service_exit_requested:
+                raise ServiceExit
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
@@ -159,3 +165,13 @@ def start(env_work_dir):
 
     log.info('Exiting main program...')
     return True
+
+
+_service_exit_requested = False
+
+
+def stop():
+    """ Programmatic stop of the main service """
+
+    global _service_exit_requested
+    _service_exit_requested = True
