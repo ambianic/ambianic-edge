@@ -1,30 +1,67 @@
 import os
-import threading
+from multiprocessing import Process
 import logging
 from flask import Flask
 import flask
 from werkzeug.serving import make_server
-
+from .service import ServiceExit
 log = logging.getLogger(__name__)
 
 
-class FlaskServer:
-    """ Thin wrapper around Flask constructs that allows controlled start and stop of the web app server. """
+class FlaskProcess(Process):
 
     def __init__(self, config):
-        self.app = create_app()
-        self.srv = make_server('0.0.0.0', 8778, self.app)
-        self.ctx = self.app.app_context()
-        self.ctx.push()
+        super(FlaskProcess, self).__init__(name='flask_web_server')
         self.config = config
+        self.srv = None
+        app = create_app()
+        self.srv = make_server('0.0.0.0', 8778, app)
+        ctx = app.app_context()
+        ctx.push()
+        self.flask_stopped = True
+        log.debug('Flask process created')
 
-    def start(self):
-        log.info('starting Flask server')
-        log.info('Flask server started')
-        self.srv.serve_forever()
+    def run(self):
+        log.debug('Flask starting main loop')
+        log.debug('Flask process id: %d', self.pid)
+        self.flask_stopped = False
+        try:
+            self.srv.serve_forever()
+        except ServiceExit:
+            log.info('Service exit requested')
+        self.flask_stopped = True
+        log.debug('Flask ended main loop')
 
     def stop(self):
-        self.srv.shutdown()
+        if not self.flask_stopped:
+            log.debug('Flask stopping main loop')
+            self.srv.shutdown()
+            log.debug('Flask main loop ended')
+
+
+class FlaskServer:
+    """
+        Thin wrapper around Flask constructs that allows
+        controlled start and stop of the web app server in a separate process.
+
+        :argument config section of the configuration file
+    """
+
+    def __init__(self, config):
+        self.config = config
+        self.flask_process = None
+
+    def start(self):
+        log.info('Starting Flask server')
+        self.flask_process = FlaskProcess(self.config)
+        self.flask_process.start()
+        self.flask_process.join()
+        log.info('Flask server stopped')
+
+    def stop(self):
+        if self.flask_process:
+            self.flask_process.stop()
+            self.flask_process.join()
 
 
 def create_app(test_config=None):

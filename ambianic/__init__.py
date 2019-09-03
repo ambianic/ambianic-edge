@@ -6,9 +6,9 @@ import threading
 import signal
 import os
 import yaml
-import ambianic.flaskr
-from .pipeline.interpreter import Pipeline
+from .flaskr import FlaskServer
 from .pipeline.interpreter import get_pipelines
+from .service import ServiceExit
 
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
@@ -96,17 +96,6 @@ class ThreadedJob(threading.Thread):
         self.job.stop()
 
 
-class ServiceExit(Exception):
-    """
-    Custom exception which is used to trigger the clean exit
-    of all running threads and the main program.
-
-    Method for controlled multi-threaded Python app exit suggested by George Notaras:
-    https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
-    """
-    pass
-
-
 def service_shutdown(signum, frame):
     log.info('Caught signal %d', signum)
     raise ServiceExit
@@ -135,7 +124,7 @@ def start(env_work_dir):
             mpjobs.append(pj)
 
         # start web app server
-        flask_server = flaskr.FlaskServer(config)
+        flask_server = FlaskServer(config)
         fj = ThreadedJob(flask_server)
         mpjobs.append(fj)
 
@@ -170,4 +159,3 @@ def start(env_work_dir):
 
     log.info('Exiting main program...')
     return True
-
