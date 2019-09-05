@@ -150,9 +150,9 @@ class InputStreamProcessor(PipeElement):
         # The good thing is that these parameters don't expect specialized hardware.
         # The bad thing is that they don't take advantage of hardware acceleration.
         # Consider implementing dynamic hardware acceleration detection or allow users to pass gst parameters.
-        PIPELINE = ' uridecodebin name=source latency=0 '
+        PIPELINE = ' uridecodebin name=source latency=200 '
         PIPELINE += """ 
-             ! {leaky_q} ! videoconvert ! videoscale ! {sink_caps} ! {sink_element}
+             ! {leaky_q} ! videoconvert ! {sink_caps} ! {sink_element}
              """
         # below is the gst pipeline version that saves videos to local files
         # PIPELINE += """ ! tee name=t
@@ -163,7 +163,7 @@ class InputStreamProcessor(PipeElement):
         # save video stream to files with 1 minute duration
         # PIPELINE += " ! omxh264enc ! h264parse ! splitmuxsink muxer=matroskamux location=\"tmp/test1-%02d.mkv\" max-size-time=60000000000"
 
-        LEAKY_Q = 'queue max-size-buffers=1 leaky=downstream'
+        LEAKY_Q = 'queue max-size-buffers=10 leaky=downstream'
         # Ask gstreamer to format the images in a way that are close to the TF model tensor
         # Note: Having gstreamer resize doesn't appear to make a big performance difference.
         # Need to look closer at hardware acceleration options where available.

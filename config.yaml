@@ -1,3 +1,6 @@
+######################################
+#  Ambianic main configuration file  #
+######################################
 version: '0.0.1'
 
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
@@ -42,28 +45,28 @@ pipelines:
         confidence_threshold: 0.6
     - save_samples: # save samples from the inference results
         output_directory: *object_detect_dir
-        detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-        idle_interval: 600 #  how often (in seconds) to save samples without any detections
+        positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
+        idle_interval: 600 # how often (in seconds) to save samples with ALL results under the confidence threshold
     - detect_faces: # run ai inference on the samples from the previous element output
         <<: *tfm_face_detection
         confidence_threshold: 0.6
     - save_samples: # save samples from the inference results
         output_directory: *face_detect_dir
-        detections_interval: 2 # how often (in seconds) to save samples with positive label detections
-        idle_interval: 600 #  how often (in seconds) to save samples without any detections
+        positive_interval: 2
+        idle_interval: 600
     # - gate: [category: person] # select the labels that will be used as input by the next ai model
     # - ai: # run the next ai model inference on data from the previous section of the pipeline
         # <<: *tfm_face_detection
         # confidence_threshold: 0.6
         # save_samples:
         # location: *data_dir
-        # detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+        # positive_interval: 2 # how often (in seconds) to save samples with positive label detections
       # - gate: [category: face] # select detected faces and pass on to face recognition model
       # - ai: *tfm_face_recognition
           # confidence_threshold: 0.6
       # - save_samples:
           # location: *data_dir
-          # detections_interval: 2 # how often (in seconds) to save samples with positive label detections
+          # positive_interval: 2 # how often (in seconds) to save samples with positive label detections
     # - tee: # a tee splits the pipeline into independent streams, each with its own thread and copy of the input data from the previous pipe
     #   - gate: [category: vehicle]
     #   - ai: *detect_license_plate

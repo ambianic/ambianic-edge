@@ -22,8 +22,8 @@ class SaveSamples(PipeElement):
         self.output_directory.mkdir(parents=True, exist_ok=True)
         os.makedirs(self.output_directory, exist_ok=True)  # succeeds even if directory exists.
         # by default save samples with detections every 2 seconds
-        di = float(self.config.get('detections_interval', 2))
-        self.detections_interval = datetime.timedelta(seconds=di)
+        di = float(self.config.get('positive_interval', 2))
+        self.positive_interval = datetime.timedelta(seconds=di)
         # set the clock to sufficiently outdated timestamp to ensure that we won't miss saving the very first sample
         self.time_latest_saved_detection = datetime.datetime.now() - datetime.timedelta(days=1)
         # by default save samples without any detections every ten minutes
@@ -71,15 +71,15 @@ class SaveSamples(PipeElement):
         now = datetime.datetime.now()
         if inference_result:
             # non-empty result, there is a detection
-            # let's save it if its been longer than the user specified detections_interval
-            if now - self.time_latest_saved_detection >= self.detections_interval:
+            # let's save it if its been longer than the user specified positive_interval
+            if now - self.time_latest_saved_detection >= self.positive_interval:
                 self._save_sample(now, image, inference_result)
                 self.time_latest_saved_detection = now
             else:
                 pass
         else:
             # non-empty result, there is a detection
-            # let's save it if its been longer than the user specified detections_interval
+            # let's save it if its been longer than the user specified positive_interval
             if now - self.time_latest_saved_idle >= self.idle_interval:
                 self._save_sample(now, image, inference_result)
                 self.time_latest_saved_idle = now

@@ -8,3 +8,5 @@ tmp/
 venv
 secrets.yaml
 data/**
+ambianic/webapp/bower_components/paper/
+

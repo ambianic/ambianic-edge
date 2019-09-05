@@ -50,7 +50,7 @@ def configure(env_work_dir):
             numeric_level = getattr(logging, default_log_level)
         if numeric_level <= logging.INFO:
             logging.basicConfig(
-                format='%(asctime)s %(levelname)-4s %(module)s.%(funcName)s(%(lineno)d): %(message)s',
+                format='%(asctime)s %(levelname)-4s %(pathname)s.%(funcName)s(%(lineno)d): %(message)s',
                 level=numeric_level,
                 datefmt='%Y-%m-%d %H:%M:%S')
         log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
@@ -121,7 +121,8 @@ def start(env_work_dir):
     # Start the job threads
     try:
         # start AI inference pipeline
-        pipeline_processors = get_pipelines(config)
+        pipeline_processors = []
+# TODO: uncomment        pipeline_processors = get_pipelines(config)
         for pp in pipeline_processors:
             pj = ThreadedJob(pp)
             mpjobs.append(pj)

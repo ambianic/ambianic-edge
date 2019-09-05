@@ -14,7 +14,7 @@ line.lineTo(start + [ 100, -50 ]);
 var circle = new Path.Circle({
 	center: view.center,
 	radius: 30,
-	strokeColor: 'black'
+	strokeColor: 'red'
 });
 
 circle.moveTo(view.center)

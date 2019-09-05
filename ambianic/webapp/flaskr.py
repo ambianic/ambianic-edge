@@ -3,8 +3,10 @@ from multiprocessing import Process
 import logging
 from flask import Flask
 import flask
+from flask_bower import Bower
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit
+
 log = logging.getLogger(__name__)
 
 
@@ -64,23 +66,20 @@ class FlaskServer:
             self.flask_process.join()
 
 
-def create_app(test_config=None):
+def create_app():
+    log.debug('Creating Flask app...')
+
+    # if Ambianic is in INFO or DEBUG mode, pass that info on to Flask
+    if log.level <= logging.INFO:
+        os.environ['FLASK_ENV'] = 'development'
+
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
-
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    app.config['DEBUG'] = True
+    # Turn on Bower version of js file names to avoid browser cache using outdated files
+    app.config['BOWER_QUERYSTRING_REVVING'] = True
+    # register Bower file handler with Flask
+    Bower(app)
 
     # ensure the instance folder exists
     try:
@@ -93,13 +92,23 @@ def create_app(test_config=None):
     def hello():
         return 'Ambianic! Halpful AI for home and business automation.'
 
-    # a simple page that says hello
+    # healthcheck page available to docker-compose and other health monitoring tools
     @app.route('/healthcheck')
     def health_check():
         return 'Ambianic is running in a cheerful healthy state!'
 
-    @app.route('/html/<path:path>')
-    def static_html(path):
-        return flask.send_from_directory('../html/', path)
+    # live view of ambianic pipelines
+    @app.route('/pipelines')
+    def view_pipelines():
+        return flask.render_template('pipelines.html')
 
+    @app.route('/static/<path:path>')
+    def static_file(path):
+        return flask.send_from_directory('static', path)
+
+    log.debug('Flask url map: %s', str(app.url_map))
+    log.debug('Flask config map: %s', str(app.config))
+    log.debug('Flask running in %s mode', 'development' if app.config['DEBUG'] else 'production')
+
+    log.debug('Flask app created.')
     return app
