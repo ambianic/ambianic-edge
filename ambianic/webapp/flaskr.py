@@ -106,6 +106,12 @@ def create_app():
     def static_file(path):
         return flask.send_from_directory('static', path)
 
+
+    @app.route('/data/<path:path>')
+    def data_file(path):
+        return flask.send_from_directory('../../data', path)
+
+
     log.debug('Flask url map: %s', str(app.url_map))
     log.debug('Flask config map: %s', str(app.config))
     log.debug('Flask running in %s mode', 'development' if app.config['DEBUG'] else 'production')
