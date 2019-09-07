@@ -1,3 +1,3 @@
-# python3 pipeline/classify.py
-python3 main.py
+#!/bin/sh
+python3 ambianic.py
 

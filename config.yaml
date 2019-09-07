@@ -3,11 +3,14 @@
 ######################################
 version: '0.0.1'
 
-# Set logging level to one of DEBUG, INFO, WARNING, ERROR
-log_level: DEBUG
-
 # path to the data directory
 data_dir: &data_dir ./data
+
+# Set logging level to one of DEBUG, INFO, WARNING, ERROR
+logging:
+#  file: ./data/ambianic-log.txt
+  level: DEBUG
+
 # path to saved object detections
 object_detect_dir: &object_detect_dir ./data/objects
 # path to saved face detections

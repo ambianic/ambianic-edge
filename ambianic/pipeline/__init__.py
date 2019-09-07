@@ -34,3 +34,22 @@ class PipeElement:
             :argument **kwargs a variable list of (key, value) pairs that represent the sample
         """
         pass
+
+
+class HealthChecker(PipeElement):
+    """
+        Attaches at the end of a pipe to monitor its health status
+        based on received output samples and their frequency.
+    """
+
+    def __init__(self, health_status_callback=None):
+        super()
+        assert health_status_callback
+        self._health_status_callback = health_status_callback
+
+    def receive_next_sample(self, **sample):
+        """ update pipeline heartbeat status """
+        log.debug('%s received sample from the connected preceding pipe element.')
+        self._health_status_callback()
+        pass
+

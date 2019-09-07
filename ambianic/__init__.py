@@ -7,8 +7,8 @@ import signal
 import os
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
-from .pipeline.interpreter import get_pipelines
-from .service import ServiceExit
+from .pipeline.interpreter import PipelineServer
+from .service import ServiceExit, ThreadedJob
 
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
@@ -16,6 +16,37 @@ CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
 
 log = logging.getLogger(__name__)
+
+
+def _configure_logging(config=None):
+    default_log_level = "WARNING"
+    if not config:
+        logging.basicConfig()
+    log_level = config.get("level", default_log_level)
+    numeric_level = getattr(logging, log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        log.warning('Invalid log level: %s', log_level)
+        log.warning('Defaulting log level to %s', default_log_level)
+        numeric_level = getattr(logging, default_log_level)
+    if numeric_level <= logging.INFO:
+        format_cfg = '%(asctime)s %(levelname)-4s %(pathname)s.%(funcName)s(%(lineno)d): %(message)s'
+        datefmt_cfg = '%Y-%m-%d %H:%M:%S'
+    else:
+        format_cfg = None
+        datefmt_cfg = None
+
+    log_filename = config.get('file', None)
+
+    logging.basicConfig(
+        format=format_cfg,
+        level=numeric_level,
+        datefmt=datefmt_cfg,
+        filename=log_filename)
+
+    log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
+    if numeric_level <= logging.DEBUG:
+        log.debug('Configuration dump:')
+        log.debug(yaml.dump(config))
 
 
 def configure(env_work_dir):
@@ -40,23 +71,10 @@ def configure(env_work_dir):
             base_config = cf.read()
             all_config = secrets_config + "\n" + base_config
         config = yaml.safe_load(all_config)
+
         # configure logging
-        default_log_level = "WARNING"
-        log_level = config.get("log_level", default_log_level)
-        numeric_level = getattr(logging, log_level.upper(), None)
-        if not isinstance(numeric_level, int):
-            log.warning('Invalid log level: %s', log_level)
-            log.warning('Defaulting log level to %s', default_log_level)
-            numeric_level = getattr(logging, default_log_level)
-        if numeric_level <= logging.INFO:
-            logging.basicConfig(
-                format='%(asctime)s %(levelname)-4s %(pathname)s.%(funcName)s(%(lineno)d): %(message)s',
-                level=numeric_level,
-                datefmt='%Y-%m-%d %H:%M:%S')
-        log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
-        if numeric_level <= logging.DEBUG:
-            log.debug('Configuration dump:')
-            log.debug(yaml.dump(config))
+        logging_config = config.get('logging', None)
+        _configure_logging(logging_config)
 
         return config
     except Exception as e:
@@ -64,42 +82,28 @@ def configure(env_work_dir):
         return None
 
 
-class ThreadedJob(threading.Thread):
-    """ A job that runs in its own python thread. """
-
-    # Reminder: even though multiple processes can work well for pipelines, since they are mostly independent,
-    # Google Coral does not allow access to it from different processes yet.
-
-    def __init__(self, job):
-        threading.Thread.__init__(self)
-
-        self.job = job
-        # The shutdown_flag is a threading.Event object that
-        # indicates whether the thread should be terminated.
-        # self.shutdown_flag = threading.Event()
-        # ... Other thread setup code here ...
-        self.stopping = False
-
-    def run(self):
-        log.info('Thread #%s started with job: %s', self.ident, self.job.__class__.__name__)
-
-        self.job.start()
-        # the following technique is helpful when the job is not stoppable
-        # while not self.shutdown_flag.is_set():
-        #    # ... Job code here ...
-        #    time.sleep(0.5)
-
-        # ... Clean shutdown code here ...
-        log.info('Thread #%s for job %s stopped', self.ident, self.job.__class__.__name__)
-
-    def stop(self):
-        log.info('Thread #%s for job %s is signalled to stop', self.ident, self.job.__class__.__name__)
-        self.job.stop()
-
-
 def service_shutdown(signum, frame):
     log.info('Caught signal %d', signum)
     raise ServiceExit
+
+
+def _stop_servers(servers):
+    log.debug('Stopping servers...')
+    for s in servers:
+        s.stop()
+
+
+def _healthcheck(servers):
+    """ Check the health of managed servers """
+    for s in servers:
+        latest_heartbeat, status = s.healthcheck()
+        now = time.monotonic()
+        if now - latest_heartbeat > 5:
+            # more than a reasonable amount of time has passed
+            # since the server had a good heartbeat.
+            # Let's recycle it
+            s.stop()
+            s.start()
 
 
 def start(env_work_dir):
@@ -116,33 +120,35 @@ def start(env_work_dir):
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
 
-    mpjobs = []
+    # AI inferencing server
+    pipeline_server = None
+    # web server
+    flask_server = None
+
+    servers = []
 
     # Start the job threads
     try:
-        # start AI inference pipeline
-        pipeline_processors = []
-# TODO: uncomment        pipeline_processors = get_pipelines(config)
-        for pp in pipeline_processors:
-            pj = ThreadedJob(pp)
-            mpjobs.append(pj)
+        # start AI inference pipelines
+        pipeline_server = PipelineServer(config)
+        pipeline_server.start()
+        servers.append(pipeline_server)
 
         # start web app server
         flask_server = FlaskServer(config)
-        fj = ThreadedJob(flask_server)
-        mpjobs.append(fj)
-
-        for j in mpjobs:
-            j.start()
+        flask_server.start()
+        servers.append(flask_server)
 
         last_time = time.monotonic()
 
-        def heartbeat():
+        def _heartbeat():
+            """ Notify external monitoring services that we are in good health """
             nonlocal last_time
             new_time = time.monotonic()
             # print a heartbeat message every so many seconds
             if new_time - last_time > 5:
                 log.info("Main thread alive.")
+                # this is where hooks to external monitoring services will come in
                 last_time = new_time
             global _service_exit_requested
             if _service_exit_requested:
@@ -151,18 +157,17 @@ def start(env_work_dir):
         # Keep the main thread running, otherwise signals are ignored.
         while True:
             time.sleep(1)
-            heartbeat()
+            _healthcheck(servers)
+            _heartbeat()
 
-    except ServiceExit:
+    except ServiceExit as e:
+        log.info('Service exit requested.')
+        log.debug('Cleaning up before exit...')
         # Terminate the running threads.
         # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
         # j1.shutdown_flag.set()
         # j2.shutdown_flag.set()
-        for j in mpjobs:
-            j.stop()
-        # Wait for the threads to close...
-        for j in mpjobs:
-            j.join()
+        _stop_servers(servers)
 
     log.info('Exiting main program...')
     return True
@@ -176,3 +181,4 @@ def stop():
 
     global _service_exit_requested
     _service_exit_requested = True
+

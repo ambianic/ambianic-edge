@@ -13,6 +13,7 @@ class SaveSamples(PipeElement):
     """ Saves samples to an external storage location """
 
     def __init__(self, element_config=None):
+        super()
         log.info('Loading pipe element: %s with config %s', self.__class__.__name__, element_config)
         PipeElement.__init__(self)
         self.config = element_config
@@ -61,29 +62,38 @@ class SaveSamples(PipeElement):
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(ai_json, f, ensure_ascii=False, indent=4)
         # ... save samples to local disk
-        # ... pass notifications to flask server via cross-process queue or pipe or topic
-        # ... run flask web app in a separate process. It does not need to get in the way of pipeline processing
-        if self.next_element:
-            self.next_element.receive_next_sample(image, inference_result)
 
-    def receive_next_sample(self, image, inference_result):
-        log.info("Pipe element %s received new sample: %s", self.__class__.__name__, str(inference_result))
-        now = datetime.datetime.now()
-        if inference_result:
-            # non-empty result, there is a detection
-            # let's save it if its been longer than the user specified positive_interval
-            if now - self.time_latest_saved_detection >= self.positive_interval:
-                self._save_sample(now, image, inference_result)
-                self.time_latest_saved_detection = now
-            else:
-                pass
+    def receive_next_sample(self, **sample):
+        log.debug("Pipe element %s received new sample with keys %s.", self.__class__.__name__, str([*sample]))
+        if not sample:
+            # pass through empty samples to next element
+            if self.next_element:
+                self.next_element.receive_next_sample()
         else:
-            # non-empty result, there is a detection
-            # let's save it if its been longer than the user specified positive_interval
-            if now - self.time_latest_saved_idle >= self.idle_interval:
-                self._save_sample(now, image, inference_result)
-                self.time_latest_saved_idle = now
-            else:
-                pass
+            try:
+                image = sample['image']
+                inference_result = sample.get('inference_result', None)
+                log.debug("sample: %s", str(inference_result))
+                now = datetime.datetime.now()
+                if inference_result:
+                    # non-empty result, there is a detection
+                    # let's save it if its been longer than the user specified positive_interval
+                    if now - self.time_latest_saved_detection >= self.positive_interval:
+                        self._save_sample(now, image, inference_result)
+                        self.time_latest_saved_detection = now
+                else:
+                    # non-empty result, there is a detection
+                    # let's save it if its been longer than the user specified positive_interval
+                    if now - self.time_latest_saved_idle >= self.idle_interval:
+                        self._save_sample(now, image, inference_result)
+                        self.time_latest_saved_idle = now
+                # pass on the sample to the next pipe element if there is one
+                if self.next_element:
+                    log.debug('Pipe element %s passing sample to next pipe element %s',
+                              self.__class__.__name__, self.next_element.__class__.__name__)
+                    self.next_element.receive_next_sample(image=image, inference_result=inference_result)
+            except Exception as e:
+                log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
+
 
 

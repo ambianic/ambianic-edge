@@ -1,19 +1,19 @@
 import os
 from multiprocessing import Process
 import logging
+import time
 from flask import Flask
 import flask
 from flask_bower import Bower
 from werkzeug.serving import make_server
-from ambianic.service import ServiceExit
+from ambianic.service import ServiceExit, ThreadedJob
 
 log = logging.getLogger(__name__)
 
 
-class FlaskProcess(Process):
+class FlaskJob:
 
     def __init__(self, config):
-        super(FlaskProcess, self).__init__(name='flask_web_server')
         self.config = config
         self.srv = None
         app = create_app()
@@ -23,9 +23,8 @@ class FlaskProcess(Process):
         self.flask_stopped = True
         log.debug('Flask process created')
 
-    def run(self):
+    def start(self):
         log.debug('Flask starting main loop')
-        log.debug('Flask process id: %d', self.pid)
         self.flask_stopped = False
         try:
             self.srv.serve_forever()
@@ -51,20 +50,26 @@ class FlaskServer:
 
     def __init__(self, config):
         self.config = config
-        self.flask_process = None
+        self.flask_job = None
 
     def start(self):
-        log.info('Starting Flask server')
-        self.flask_process = FlaskProcess(self.config)
-        self.flask_process.start()
-        self.flask_process.join()
-        log.info('Flask server stopped')
+        log.info('Flask server job starting...')
+        f = FlaskJob(self.config)
+        self.flask_job = ThreadedJob(f)
+        self.flask_job.start()
+        log.info('Flask server job started')
+
+    def healthcheck(self):
+        # TODO: Implement actual health check for Flask
+        # See if the /healthcheck URL returns a 200 quickly
+        return time.monotonic()
 
     def stop(self):
-        if self.flask_process:
-            self.flask_process.stop()
-            self.flask_process.join()
-
+        if self.flask_job:
+            log.info('Flask server job stopping...')
+            self.flask_job.stop()
+            self.flask_job.join()
+            log.info('Flask server job stopped.')
 
 def create_app():
     log.debug('Creating Flask app...')

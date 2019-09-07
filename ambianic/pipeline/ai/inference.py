@@ -21,7 +21,7 @@ class TfInference(PipeElement):
     """ TfInference is a pipeline element responsible for applying Tensorflow model inference  """
 
     def __init__(self, element_config=None):
-        PipeElement.__init__(self)
+        super()
         self.config = element_config
         model = self.config.get('model', None)
         assert model, 'pipeline element ai: requires argument model:'
