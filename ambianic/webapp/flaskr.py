@@ -1,17 +1,19 @@
 import os
 from multiprocessing import Process
 import logging
+import time
 from flask import Flask
 import flask
+from flask_bower import Bower
 from werkzeug.serving import make_server
-from ambianic.service import ServiceExit
+from ambianic.service import ServiceExit, ThreadedJob
+
 log = logging.getLogger(__name__)
 
 
-class FlaskProcess(Process):
+class FlaskJob:
 
     def __init__(self, config):
-        super(FlaskProcess, self).__init__(name='flask_web_server')
         self.config = config
         self.srv = None
         app = create_app()
@@ -21,9 +23,8 @@ class FlaskProcess(Process):
         self.flask_stopped = True
         log.debug('Flask process created')
 
-    def run(self):
+    def start(self):
         log.debug('Flask starting main loop')
-        log.debug('Flask process id: %d', self.pid)
         self.flask_stopped = False
         try:
             self.srv.serve_forever()
@@ -49,38 +50,41 @@ class FlaskServer:
 
     def __init__(self, config):
         self.config = config
-        self.flask_process = None
+        self.flask_job = None
 
     def start(self):
-        log.info('Starting Flask server')
-        self.flask_process = FlaskProcess(self.config)
-        self.flask_process.start()
-        self.flask_process.join()
-        log.info('Flask server stopped')
+        log.info('Flask server job starting...')
+        f = FlaskJob(self.config)
+        self.flask_job = ThreadedJob(f)
+        self.flask_job.start()
+        log.info('Flask server job started')
+
+    def healthcheck(self):
+        # TODO: Implement actual health check for Flask
+        # See if the /healthcheck URL returns a 200 quickly
+        return time.monotonic()
 
     def stop(self):
-        if self.flask_process:
-            self.flask_process.stop()
-            self.flask_process.join()
+        if self.flask_job:
+            log.info('Flask server job stopping...')
+            self.flask_job.stop()
+            self.flask_job.join()
+            log.info('Flask server job stopped.')
 
+def create_app():
+    log.debug('Creating Flask app...')
 
-def create_app(test_config=None):
+    # if Ambianic is in INFO or DEBUG mode, pass that info on to Flask
+    if log.level <= logging.INFO:
+        os.environ['FLASK_ENV'] = 'development'
+
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
-
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    app.config['DEBUG'] = True
+    # Turn on Bower version of js file names to avoid browser cache using outdated files
+    app.config['BOWER_QUERYSTRING_REVVING'] = True
+    # register Bower file handler with Flask
+    Bower(app)
 
     # ensure the instance folder exists
     try:
@@ -93,13 +97,29 @@ def create_app(test_config=None):
     def hello():
         return 'Ambianic! Halpful AI for home and business automation.'
 
-    # a simple page that says hello
+    # healthcheck page available to docker-compose and other health monitoring tools
     @app.route('/healthcheck')
     def health_check():
         return 'Ambianic is running in a cheerful healthy state!'
 
-    @app.route('/html/<path:path>')
-    def static_html(path):
-        return flask.send_from_directory('../html/', path)
+    # live view of ambianic pipelines
+    @app.route('/pipelines')
+    def view_pipelines():
+        return flask.render_template('pipelines.html')
 
+    @app.route('/static/<path:path>')
+    def static_file(path):
+        return flask.send_from_directory('static', path)
+
+
+    @app.route('/data/<path:path>')
+    def data_file(path):
+        return flask.send_from_directory('../../data', path)
+
+
+    log.debug('Flask url map: %s', str(app.url_map))
+    log.debug('Flask config map: %s', str(app.config))
+    log.debug('Flask running in %s mode', 'development' if app.config['DEBUG'] else 'production')
+
+    log.debug('Flask app created.')
     return app

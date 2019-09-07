@@ -1,6 +1,4 @@
 import logging
-import time
-import os
 
 from .inference import TfInference
 
@@ -11,7 +9,7 @@ class FaceDetect(TfInference):
     """ FaceDetect is a pipeline element responsible for detecting objects in an image """
 
     def __init__(self, element_config=None):
-        TfInference.__init__(self, element_config)
+        super().__init__(element_config=element_config)
         self.topk = element_config.get('top-k', 3)  # default to top 3 person detections
 
     @staticmethod
@@ -31,19 +29,38 @@ class FaceDetect(TfInference):
         im1 = image.crop((left, top, right, bottom))
         return im1
 
-    def receive_next_sample(self, image, inference_result=None, **kwargs):
-        # - crop out top-k person detections
-        # - apply face detection to cropped person areas
-        # - pass face detections on to next pipe element
-        face_regions = []
-        for category, confidence, box in inference_result:
-            if category == 'person' and confidence >= self.confidence_threshold:
-                face_regions.append(box)
-        face_regions = face_regions[:self.topk]  # get only topk person detecions
-        log.debug('Detected %d faces', len(face_regions))
-        for box in face_regions:
-            person_image = self.crop_image(image, box)
-            inference_result = super().detect(image=person_image)
+    def receive_next_sample(self, **sample):
+        log.debug("Pipe element %s received new sample with keys %s.", self.__class__.__name__, str([*sample]))
+        if not sample:
+            # pass through empty samples to next element
             if self.next_element:
-                self.next_element.receive_next_sample(person_image, inference_result)
+                self.next_element.receive_next_sample()
+        else:
+            try:
+                image = sample['image']
+                inference_result = sample.get('inference_result', None)
+                log.debug("sample: %s", str(inference_result))
+                # - crop out top-k person detections
+                # - apply face detection to cropped person areas
+                # - pass face detections on to next pipe element
+                face_regions = []
+                for category, confidence, box in inference_result:
+                    if category == 'person' and confidence >= self.confidence_threshold:
+                        face_regions.append(box)
+                face_regions = face_regions[:self.topk]  # get only topk person detecions
+                log.debug('Detected %d faces', len(face_regions))
+                if not face_regions:
+                    # if no faces were detected, let the next pipe element know that we have nothing to share
+                    if self.next_element:
+                        self.next_element.receive_next_sample()
+                else:
+                    for box in face_regions:
+                        person_image = self.crop_image(image, box)
+                        inference_result = super().detect(image=person_image)
+                        if self.next_element:
+                            self.next_element.receive_next_sample(image=person_image, inference_result=inference_result)
+            except Exception as e:
+                log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
+
+
 
