@@ -141,6 +141,7 @@ class Pipeline:
         if not self.pipe_elements:
             return
 
+        self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self.pipe_elements)):
             e = self.pipe_elements[i-1]
