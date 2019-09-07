@@ -62,7 +62,7 @@ class FlaskServer:
     def healthcheck(self):
         # TODO: Implement actual health check for Flask
         # See if the /healthcheck URL returns a 200 quickly
-        return time.monotonic()
+        return time.monotonic(), True
 
     def stop(self):
         if self.flask_job:

@@ -49,7 +49,7 @@ class HealthChecker(PipeElement):
 
     def receive_next_sample(self, **sample):
         """ update pipeline heartbeat status """
-        log.debug('%s received sample from the connected preceding pipe element.')
+        log.debug('%s received sample from the connected preceding pipe element.', self.__class__.__name__)
         self._health_status_callback()
         pass
 

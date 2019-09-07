@@ -28,10 +28,10 @@ class PipelineServer:
         self._config = config
         pipelines_config = config['pipelines']
         self._pipelines = get_pipelines(pipelines_config)
-        self._jobs = []
+        self._threaded_jobs = []
         for pp in self._pipelines:
             pj = ThreadedJob(pp)
-            self._jobs.append(pj)
+            self._threaded_jobs.append(pj)
 
     def healthcheck(self):
         """
@@ -43,35 +43,44 @@ class PipelineServer:
                 among managed pipelines
         """
         oldest_heartbeat = time.monotonic()
-        for p in self._pipelines:
+        for j in self._threaded_jobs:
+            p = j.job # get the pipeline object out of the threaded job wrapper
             latest_heartbeat, status = p.healthcheck()
             now = time.monotonic()
-            if now - latest_heartbeat > 4:
+            lapse = now - latest_heartbeat
+            if lapse > 100:
                 # more than a reasonable amount of time has passed
                 # since the pipeline reported a heartbeat.
                 # Let's recycle it
-                p.stop()
-                p.start()
+                log.warning('Pipeline "%s" is not responsive. Latest heart beat was %f seconds ago. Will restart.', p.name, lapse)
+                self.restart_pipeline_job(j)
             if oldest_heartbeat > latest_heartbeat:
                 oldest_heartbeat = latest_heartbeat
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
 
+    def restart_pipeline_job(self, threaded_job=None):
+        assert threaded_job
+        pipeline = threaded_job.job
+        log.debug('pipline %s restarting...', pipeline.name)
+        threaded_job.heal()
+        log.debug('pipline %s restarted.', pipeline.name)
+
     def start(self):
         # Start pipeline interpreter threads
         log.info('pipeline jobs starting...')
-        for j in self._jobs:
-            j.start()
+        for tj in self._threaded_jobs:
+            tj.start()
         log.info('pipeline jobs started')
 
     def stop(self):
         log.info('pipeline jobs stopping...')
         # Signal pipeline interpreter threads to close
-        for j in self._jobs:
-            j.stop()
+        for tj in self._threaded_jobs:
+            tj.stop()
         # Wait for the pipeline interpreter threads to close...
-        for j in self._jobs:
-            j.join()
+        for tj in self._threaded_jobs:
+            tj.join()
         log.info('pipeline jobs stopped.')
 
 
@@ -116,7 +125,10 @@ class Pipeline:
             Sets the heartbeat timestamp to time.monotonic()
         """
         log.debug('Pipeline %s heartbeat', self.name)
-        self._latest_heartbeat_time = time.monotonic()
+        now = time.monotonic()
+        lapse = now - self._latest_heartbeat_time
+        log.debug('Pipeline %s heartbeat. Lapse %f', self.name, lapse)
+        self._latest_heartbeat_time = now
 
     def start(self):
         """

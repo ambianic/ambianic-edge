@@ -19,12 +19,12 @@ class ThreadedJob(threading.Thread):
         # indicates whether the thread should be terminated.
         # self.shutdown_flag = threading.Event()
         # ... Other thread setup code here ...
-        self.stopping = False
+        self._stop_requested = threading.Event()
 
     def run(self):
         log.info('Thread #%s started with job: %s', self.ident, self.job.__class__.__name__)
-
-        self.job.start()
+        while not self._stop_requested.is_set():
+            self.job.start()
         # the following technique is helpful when the job is not stoppable
         # while not self.shutdown_flag.is_set():
         #    # ... Job code here ...
@@ -35,7 +35,14 @@ class ThreadedJob(threading.Thread):
 
     def stop(self):
         log.info('Thread #%s for job %s is signalled to stop', self.ident, self.job.__class__.__name__)
+        self._stop_requested.set()
         self.job.stop()
+
+    def heal(self):
+        log.info('Thread #%s for job %s is signalled to heal', self.ident, self.job.__class__.__name__)
+        # stop the job and start it again in the run() loop without exiting the thread
+        self.job.stop()
+        log.info('Thread #%s for job %s healed', self.ident, self.job.__class__.__name__)
 
 
 class ServiceExit(Exception):
@@ -47,4 +54,3 @@ class ServiceExit(Exception):
     https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
     """
     pass
-

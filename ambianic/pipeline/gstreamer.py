@@ -147,7 +147,7 @@ class InputStreamProcessor(PipeElement):
         # Auto detect apparently finds hardware acceleration drivers, but they error.
         # Need to find out if its a RPI4 problem or another issue with hardware acceleration drivers.
         PIPELINE = ' uridecodebin name=source latency=200 '
-        PIPELINE += """ 
+        PIPELINE += """
              ! {leaky_q} ! videoconvert ! {sink_caps} ! {sink_element}
              """
         # below is the gst pipeline version that saves videos to local files
@@ -238,5 +238,6 @@ class InputStreamProcessor(PipeElement):
         # Gst.debug_bin_to_dot_file(self.gst_pipeline, Gst.DebugGraphDetails.ALL, 'stream')
         if self.gst_pipeline:
             self.gst_pipeline.set_state(Gst.State.NULL)
-        self.mainloop.quit()
+        if self.mainloop:
+            self.mainloop.quit()
         super().stop()
