@@ -48,7 +48,7 @@ class PipelineServer:
             latest_heartbeat, status = p.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
-            if lapse > 100:
+            if lapse > 20:
                 # more than a reasonable amount of time has passed
                 # since the pipeline reported a heartbeat.
                 # Let's recycle it
