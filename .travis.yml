@@ -11,13 +11,13 @@ before_install:
   - pip install -U pip
   - pip install -U pytest # unit test tool
   - pip install codecov # code coverage tool
-# command to install dependencies
+  - pip install pytest-cov # coverage plugin for pytest
+ # command to install dependencies
 install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-#  - pytest
-  - coverage run pytest
+  - pytest --cov-report=xml --cov=myproj
 after_success:
   - codecov # submit code coverage
   
