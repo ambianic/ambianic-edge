@@ -19,7 +19,7 @@ install:
 # command to run tests
 script:
   - pytest --cov-report=xml --cov=ambianic
-  - pylint
+  - pylint ambianic
 after_success:
   - codecov # submit code coverage
   
