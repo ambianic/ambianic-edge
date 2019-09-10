@@ -28,10 +28,10 @@ class PipelineServer:
         self._config = config
         pipelines_config = config['pipelines']
         self._pipelines = get_pipelines(pipelines_config)
-        self._jobs = []
+        self._threaded_jobs = []
         for pp in self._pipelines:
             pj = ThreadedJob(pp)
-            self._jobs.append(pj)
+            self._threaded_jobs.append(pj)
 
     def healthcheck(self):
         """
@@ -43,35 +43,47 @@ class PipelineServer:
                 among managed pipelines
         """
         oldest_heartbeat = time.monotonic()
-        for p in self._pipelines:
-            latest_heartbeat, status = p.healthcheck()
-            now = time.monotonic()
-            if now - latest_heartbeat > 4:
-                # more than a reasonable amount of time has passed
-                # since the pipeline reported a heartbeat.
-                # Let's recycle it
-                p.stop()
-                p.start()
-            if oldest_heartbeat > latest_heartbeat:
-                oldest_heartbeat = latest_heartbeat
+        for j in self._threaded_jobs:
+            p = j.job # get the pipeline object out of the threaded job wrapper
+            if j.is_alive():
+                latest_heartbeat, status = p.healthcheck()
+                now = time.monotonic()
+                lapse = now - latest_heartbeat
+                if lapse > 20:
+                    # more than a reasonable amount of time has passed
+                    # since the pipeline reported a heartbeat.
+                    # Let's recycle it
+                    log.warning('Pipeline "%s" is not responsive. Latest heart beat was %f seconds ago. Will attempt to heal it.', p.name, lapse)
+                    self.heal_pipeline_job(j)
+                if oldest_heartbeat > latest_heartbeat:
+                    oldest_heartbeat = latest_heartbeat
+            else: # something went wrong with a threaded job
+                log.error('Pipeline "%s" thread ended unexpectedly. Please report a bug.', p.name)
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
+
+    def heal_pipeline_job(self, threaded_job=None):
+        assert threaded_job
+        pipeline = threaded_job.job
+        log.debug('pipline %s healing request...', pipeline.name)
+        threaded_job.heal()
+        log.debug('pipeline %s healing request completed.', pipeline.name)
 
     def start(self):
         # Start pipeline interpreter threads
         log.info('pipeline jobs starting...')
-        for j in self._jobs:
-            j.start()
+        for tj in self._threaded_jobs:
+            tj.start()
         log.info('pipeline jobs started')
 
     def stop(self):
         log.info('pipeline jobs stopping...')
         # Signal pipeline interpreter threads to close
-        for j in self._jobs:
-            j.stop()
+        for tj in self._threaded_jobs:
+            tj.stop()
         # Wait for the pipeline interpreter threads to close...
-        for j in self._jobs:
-            j.join()
+        for tj in self._threaded_jobs:
+            tj.join()
         log.info('pipeline jobs stopped.')
 
 
@@ -116,7 +128,10 @@ class Pipeline:
             Sets the heartbeat timestamp to time.monotonic()
         """
         log.debug('Pipeline %s heartbeat', self.name)
-        self._latest_heartbeat_time = time.monotonic()
+        now = time.monotonic()
+        lapse = now - self._latest_heartbeat_time
+        log.debug('Pipeline %s heartbeat. Lapse %f', self.name, lapse)
+        self._latest_heartbeat_time = now
 
     def start(self):
         """
@@ -129,12 +144,12 @@ class Pipeline:
         if not self.pipe_elements:
             return
 
+        self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self.pipe_elements)):
             e = self.pipe_elements[i-1]
             assert isinstance(e, PipeElement)
             e_next = self.pipe_elements[i]
-            assert isinstance(e_next, PipeElement)
             e.connect_to_next_element(e_next)
 
         last_element = self.pipe_elements[len(self.pipe_elements)-1]
@@ -153,7 +168,16 @@ class Pipeline:
         """
         return self._latest_heartbeat_time, self._latest_health_status
 
+    def heal(self):
+        log.info("Requesting pipeline elements to heal... %s", self.__class__.__name__)
+        self._heartbeat() # register a heartbeat to prevent looping back into heal while healing
+        self.pipe_elements[0].heal()
+        log.info("Completed request to pipeline elements to heal. %s", self.__class__.__name__)
+        return
+
+
     def stop(self):
-        log.info("Stopping %s", self.__class__.__name__)
+        log.info("Requesting pipeline elements to stop... %s", self.__class__.__name__)
         self.pipe_elements[0].stop()
+        log.info("Completed request to pipeline elements to stop. %s", self.__class__.__name__)
         return
