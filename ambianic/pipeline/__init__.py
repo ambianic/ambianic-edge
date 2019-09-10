@@ -19,6 +19,10 @@ class PipeElement:
     def start(self):
         self.state = PIPE_STATE_RUNNING
 
+    @abc.abstractmethod
+    def heal(self):
+        pass
+
     def stop(self):
         self.state = PIPE_STATE_STOPPED
 
@@ -52,4 +56,3 @@ class HealthChecker(PipeElement):
         log.debug('%s received sample from the connected preceding pipe element.', self.__class__.__name__)
         self._health_status_callback()
         pass
-

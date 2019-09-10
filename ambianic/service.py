@@ -41,7 +41,7 @@ class ThreadedJob(threading.Thread):
     def heal(self):
         log.info('Thread #%s for job %s is signalled to heal', self.ident, self.job.__class__.__name__)
         # stop the job and start it again in the run() loop without exiting the thread
-        self.job.stop()
+        self.job.heal()
         log.info('Thread #%s for job %s healed', self.ident, self.job.__class__.__name__)
 
 
