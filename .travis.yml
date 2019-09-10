@@ -16,7 +16,8 @@ install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - pytest
+#  - pytest
+  - coverage run pytest
 after_success:
   - codecov # submit code coverage
   
