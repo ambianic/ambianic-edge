@@ -1,17 +1,3 @@
-# Copyright 2019 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the 'License');
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import gi
 import logging
 import time
@@ -77,13 +63,18 @@ class InputStreamProcessor(PipeElement):
         # Gstreamer pipeline for a given input source (could be image, audio or video)
         self.gst_pipeline = None
         self.gst_video_source = None
+        self._gst_video_source_connect_id = None
         # shape of the input stream image or video
         self.source_shape = self.ImageShape()
+        self.gst_queue = None
+        self._gst_queue_connect_id = None
+        self.gst_vconvert = None
+        self.gst_vconvert_connect_id = None
         # gst_appsink handlies GStreamer callbacks for new media samples which it passes on to the next pipe element
         self.gst_appsink = None
-        # gst_overlay is where we draw labels and bounding boxes for users to see inference results
-        self.gst_overlay = None
+        self._gst_appsink_connect_id = None
         self._stop_requested = False  # indicates whether stop was requested via the API
+        self.gst_bus = None
 
     def on_autoplug_continue(self, src_bin, src_pad, src_caps):
         # print('on_autoplug_continue called for uridecodebin')
@@ -136,53 +127,42 @@ class InputStreamProcessor(PipeElement):
                 self.next_element.receive_next_sample(image=img)
             else:
                 log.info('Input stream has no next pipe element to send sample to.')
-            # generate_svg(svg_canvas, objs, labels, text_lines)
-            # self.gst_overlay.set_property('data', svg_canvas.tostring())
         buf.unmap(mapinfo)
         return Gst.FlowReturn.OK
 
-    def _build_gst_pipeline(self):
-        log.debug("Building new gstreamer pipeline")
-        # Note to self: The pipeline args below work but slow.
-        # Auto detect apparently finds hardware acceleration drivers, but they error.
-        # Need to find out if its a RPI4 problem or another issue with hardware acceleration drivers.
-        PIPELINE = ' uridecodebin name=source latency=200 '
-        PIPELINE += """ 
-             ! {leaky_q} ! videoconvert ! {sink_caps} ! {sink_element}
+    def _get_pipeline_args(self):
+        PIPELINE = ' uridecodebin name=source latency=300 '
+        PIPELINE += """
+             ! {leaky_q} ! videoconvert name=vconvert ! {sink_caps} ! {sink_element}
              """
-        # below is the gst pipeline version that saves videos to local files
-        # PIPELINE += """ ! tee name=t
-        #     t. ! {leaky_q} ! videoconvert ! videoscale ! {sink_caps} ! {sink_element}
-        #     t. ! {leaky_q} ! videoconvert
-        #       ! rsvgoverlay name=gst_overlay fit-to-frame=true ! videoconvert
-        #    """
-        # save video stream to files with 1 minute duration
-        # PIPELINE += " ! omxh264enc ! h264parse ! splitmuxsink muxer=matroskamux location=\"tmp/test1-%02d.mkv\" max-size-time=60000000000"
-
-        LEAKY_Q = 'queue max-size-buffers=10 leaky=downstream'
+        LEAKY_Q = 'queue max-size-buffers=10 leaky=downstream name=queue'
         # Ask gstreamer to format the images in a way that are close to the TF model tensor
         # Note: Having gstreamer resize doesn't appear to make a big performance difference.
         # Need to look closer at hardware acceleration options where available.
         # ,width={width},pixel-aspect-ratio=1/1'
         SINK_CAPS = 'video/x-raw,format=RGB'
         SINK_ELEMENT = 'appsink name=appsink sync=false emit-signals=true max-buffers=1 drop=true'
-
         pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q,
                                    sink_caps=SINK_CAPS,
                                    sink_element=SINK_ELEMENT)
-        log.debug('Gstreamer pipeline: %s', pipeline_args)
+        log.debug('Gstreamer pipeline args: %s', pipeline_args)
+        return pipeline_args
+
+    def _build_gst_pipeline(self):
+        log.debug("Building new gstreamer pipeline")
+        pipeline_args = self._get_pipeline_args()
         self.gst_pipeline = Gst.parse_launch(pipeline_args)
         self.gst_video_source = self.gst_pipeline.get_by_name('source')
         self.gst_video_source.props.uri = self.source.uri
-        self.gst_video_source.connect('autoplug-continue', self.on_autoplug_continue)
-        self.gst_overlay = self.gst_pipeline.get_by_name('overlay')
-        log.debug("overlay sink: %s",str(self.gst_overlay))
+        self.gst_video_source_connect_id = self.gst_video_source.connect('autoplug-continue', self.on_autoplug_continue)
+        assert self.gst_video_source_connect_id
+        self.gst_queue = self.gst_pipeline.get_by_name('queue')
+        self.gst_vconvert = self.gst_pipeline.get_by_name('vconvert')
         self.gst_appsink = self.gst_pipeline.get_by_name('appsink')
         log.debug("appsink: %s", str(self.gst_appsink))
         log.debug("appsink will emit signals: %s", self.gst_appsink.props.emit_signals)
-        log.debug("Connecting AI model and detection overlay to video stream")
         # register to receive new image sample events from gst
-        self.gst_appsink.connect('new-sample', self.on_new_sample)
+        self._gst_appsink_connect_id = self.gst_appsink.connect('new-sample', self.on_new_sample)
         self.mainloop = GObject.MainLoop()
 
         if log.getEffectiveLevel() <= logging.DEBUG:
@@ -191,9 +171,9 @@ class InputStreamProcessor(PipeElement):
             Gst.debug_set_default_threshold(3)
 
         # Set up a pipeline bus watch to catch errors.
-        bus = self.gst_pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect('message', self.on_bus_message, self.mainloop)
+        self.gst_bus = self.gst_pipeline.get_bus()
+        self.gst_bus.add_signal_watch()
+        self.gst_bus.connect('message', self.on_bus_message, self.mainloop)
 
     def _run_gst_loop(self):
         # build new gst pipeline
@@ -205,11 +185,30 @@ class InputStreamProcessor(PipeElement):
         log.debug("Exited main gstreamer loop")
 
     def _cleanup_gst_resources(self):
-        log.debug("Cleaning up GST resources")
+        log.debug("GST cleaning up resources...")
         if self.gst_pipeline:
             self.gst_pipeline.set_state(Gst.State.NULL)
+            self.gst_pipeline = None
+            self.gst_video_source.set_state(Gst.State.NULL)
+            # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
+            self.gst_video_source = None
+            self.gst_queue.set_state(Gst.State.NULL)
+            # self.gst_queue.disconnect()
+            self.gst_queue = None
+            self.gst_vconvert.set_state(Gst.State.NULL)
+            # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
+            self.gst_vconvert = None
+            self.gst_appsink.set_state(Gst.State.NULL)
+            # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
+            self.gst_appsink = None
+            self.gst_bus.remove_signal_watch()
+            self.gst_bus = None
         while GLib.MainContext.default().iteration(False):
             pass
+        if self.mainloop:
+            self.mainloop.quit()
+            self.mainloop = None
+        log.debug("GST cleaned up resources.")
 
     def start(self):
         """ Start the gstreamer pipeline """
@@ -225,18 +224,23 @@ class InputStreamProcessor(PipeElement):
                 log.warning("GST loop exited with error: {} ".format(str(e)))
                 if not self._stop_requested:
                     log.warning("Gst pipeline damaged. Will attempt to repair.")
-                    self._cleanup_gst_resources()
+                    self.heal()
                     time.sleep(1)  # pause for a moment to give associated resources a chance to heal
         # Clean up.
         self._cleanup_gst_resources()
         log.info("Stopped %s", self.__class__.__name__)
 
+    def heal(self):
+        """ Attempt to heal a damaged gstream pipeline """
+        log.debug("Entering healing method... %s", self.__class__.__name__)
+        self._cleanup_gst_resources()
+        super().heal()
+        log.debug("Exiting healing method. %s", self.__class__.__name__)
+
     def stop(self):
         """ Gracefully stop the gstream pipeline """
-        log.info("Stopping... %s", self.__class__.__name__)
+        log.info("Entering stop method ... %s", self.__class__.__name__)
         self._stop_requested = True
-        # Gst.debug_bin_to_dot_file(self.gst_pipeline, Gst.DebugGraphDetails.ALL, 'stream')
-        if self.gst_pipeline:
-            self.gst_pipeline.set_state(Gst.State.NULL)
-        self.mainloop.quit()
+        self._cleanup_gst_resources()
         super().stop()
+        log.info("Exiting stop method. %s", self.__class__.__name__)

@@ -98,13 +98,9 @@ def _healthcheck(servers):
     for s in servers:
         latest_heartbeat, status = s.healthcheck()
         now = time.monotonic()
-        if now - latest_heartbeat > 5:
-            # more than a reasonable amount of time has passed
-            # since the server had a good heartbeat.
-            # Let's recycle it
-            s.stop()
-            s.start()
-
+        lapse = now - latest_heartbeat
+        if lapse > 10:
+            log.warning('Server "%s" is not responsive. Latest heart beat was %f seconds ago.', s.__class__.__name__, lapse)
 
 def start(env_work_dir):
     """ Programmatic start of the main service """
@@ -181,4 +177,3 @@ def stop():
 
     global _service_exit_requested
     _service_exit_requested = True
-

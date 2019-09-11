@@ -8,7 +8,7 @@ data_dir: &data_dir ./data
 
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
-#  file: ./data/ambianic-log.txt
+  file: ./data/ambianic-log.txt
   level: DEBUG
 
 # path to saved object detections
