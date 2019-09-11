@@ -203,8 +203,8 @@ class InputStreamProcessor(PipeElement):
             self.gst_appsink = None
             self.gst_bus.remove_signal_watch()
             self.gst_bus = None
-        while GLib.MainContext.default().iteration(False):
-            pass
+        #while GLib.MainContext.default().iteration(False):
+        #    pass
         if self.mainloop:
             self.mainloop.quit()
             self.mainloop = None
