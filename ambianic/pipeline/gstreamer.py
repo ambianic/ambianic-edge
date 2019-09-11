@@ -221,11 +221,13 @@ class InputStreamProcessor(PipeElement):
             try:
                 self._run_gst_loop()
             except Exception as e:
-                log.warning("GST loop exited with error: {} ".format(str(e)))
+                log.warning("GST loop exited with error: {} . Will attempt to repair.".format(str(e)))
+            finally:
                 if not self._stop_requested:
-                    log.warning("Gst pipeline damaged. Will attempt to repair.")
+                    log.debug("Gst pipeline exited main loop unexpectedly. Invoking heal function.")
                     self.heal()
                     time.sleep(1)  # pause for a moment to give associated resources a chance to heal
+                    log.debug("Gst pipeline completed heal function. Will resume main loop.")
         # Clean up.
         self._cleanup_gst_resources()
         log.info("Stopped %s", self.__class__.__name__)
