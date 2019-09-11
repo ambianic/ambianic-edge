@@ -94,6 +94,3 @@ class SaveSamples(PipeElement):
                     self.next_element.receive_next_sample(image=image, inference_result=inference_result)
             except Exception as e:
                 log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
-
-
-
