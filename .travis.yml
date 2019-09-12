@@ -3,6 +3,7 @@ python:
   - "3.7"
 before_install:
   - bash install_requirements.sh
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
  # command to install dependencies
 install:
   - pip3 install -U pytest # unit test tool
