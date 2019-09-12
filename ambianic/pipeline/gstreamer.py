@@ -1,4 +1,3 @@
-from gi.repository import GObject, Gst, GLib
 from PIL import Image
 from . import PipeElement
 
@@ -9,6 +8,7 @@ import threading
 
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
+from gi.repository import GObject, Gst, GLib
 
 Gst.init(None)
 
@@ -65,7 +65,7 @@ class InputStreamProcessor(PipeElement):
         # such as supervised healing requests
         self._healing_in_progress = threading.RLock()
         # ensure healing requests are reasonably spaced out
-        self._latest_healing = time.monotoni()
+        self._latest_healing = time.monotonic()
 
     def on_autoplug_continue(self, src_bin, src_pad, src_caps):
         # print('on_autoplug_continue called for uridecodebin')
