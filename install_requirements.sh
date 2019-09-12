@@ -9,6 +9,7 @@ sudo apt-get update && apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-
 
 # make sure python sees the packages installed via apt-get
 export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
 if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
@@ -37,12 +38,14 @@ rm -f all_models.tar.gz
 
 # [frontend]
 
-# install npm if not present
+# install latest npm
+cd ambianic/webapp/client
 sudo apt-get install -y npm
-
-sudo npm install node
+# sudo npm install -g npm@latest
+# sudo npm install node
 sudo npm install -g @vue/cli
 sudo npm install -g parcel-bundler
+cd ../../../
 
 # install local npm dependencies from package.json
 # runtime dir is where the executable code resides

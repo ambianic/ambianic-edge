@@ -5,6 +5,7 @@ import logging
 import threading
 import signal
 import os
+import pathlib
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from .pipeline.interpreter import PipelineServer
@@ -36,6 +37,8 @@ def _configure_logging(config=None):
         datefmt_cfg = None
 
     log_filename = config.get('file', None)
+    log_directory = os.path.dirname(log_filename)
+    pathlib.Path(log_directory).mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(
         format=format_cfg,
@@ -52,10 +55,12 @@ def _configure_logging(config=None):
 def configure(env_work_dir):
     """ Load configuration settings
 
-        :returns config if configuration was loaded without issues. None or a specific exception otherwise.
+        :returns config if configuration was loaded without issues.
+            None or a specific exception otherwise.
     """
     assert env_work_dir, 'Working directory required.'
-    assert os.path.exists(env_work_dir), 'working directory invalid: {}'.format(env_work_dir)
+    assert os.path.exists(env_work_dir), \
+        'working directory invalid: {}'.format(env_work_dir)
     global WORK_DIR
     WORK_DIR = env_work_dir
     secrets_file = os.path.join(WORK_DIR, SECRETS_FILE)
@@ -126,7 +131,7 @@ def start(env_work_dir):
     # Start the job threads
     try:
         # start AI inference pipelines
-        pipeline_server = PipelineServer(config)
+#        pipeline_server = PipelineServer(config)
 # TODO: uncomment when done testing front end
 #        pipeline_server.start()
 #        servers.append(pipeline_server)

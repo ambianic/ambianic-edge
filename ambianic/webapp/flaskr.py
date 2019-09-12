@@ -5,7 +5,6 @@ import time
 from flask import Flask, jsonify
 from flask_cors import CORS
 import flask
-from flask_bower import Bower
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit, ThreadedJob
 
@@ -55,19 +54,6 @@ class FlaskServer:
     config : yaml
         reference to the yaml configuration file
 
-    Attributes
-    ----------
-    flask_job : type
-        Description of attribute `flask_job`.
-    config
-
-    """
-    """
-
-
-
-
-        :argument config section of the configuration file
     """
 
     def __init__(self, config):
@@ -103,10 +89,6 @@ def create_app():
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
     app = Flask(__name__, instance_relative_config=True)
-    # Turn on Bower version of js file names to avoid browser cache using outdated files
-    app.config['BOWER_QUERYSTRING_REVVING'] = True
-    # register Bower file handler with Flask
-    Bower(app)
 
     # ensure the instance folder exists
     try:
@@ -128,24 +110,26 @@ def create_app():
         return 'Ambianic! Halpful AI for home and business automation.'
 
     # healthcheck page available to docker-compose and other health monitoring tools
-    @app.route('/healthcheck')
+    @app.route('/ambianic/healthcheck')
     def health_check():
         return 'Ambianic is running in a cheerful healthy state!'
 
     # live view of ambianic pipelines
-    @app.route('/pipelines')
+    @app.route('/ambianic/pipelines')
     def view_pipelines():
         return flask.render_template('pipelines.html')
 
-    @app.route('/static/<path:path>')
+    @app.route('/ambianic/static/<path:path>')
     def static_file(path):
         return flask.send_from_directory('static', path)
 
-
-    @app.route('/data/<path:path>')
+    @app.route('/ambianic/data/<path:path>')
     def data_file(path):
         return flask.send_from_directory('../../data', path)
 
+    @app.route('/ambianic/client/<path:path>')
+    def client_file(path):
+        return flask.send_from_directory('client', path)
 
     log.debug('Flask url map: %s', str(app.url_map))
     log.debug('Flask config map: %s', str(app.config))
