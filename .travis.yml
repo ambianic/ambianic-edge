@@ -2,6 +2,7 @@ language: python
 python:
   - "3.7"
 before_install:
+  - ls -al
   - install_requirements.sh
  # command to install dependencies
 install:
