@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # install native package that Ambianic needs to run
 
 echo "Installing Ambianic dependencies"
@@ -39,12 +37,14 @@ rm -f all_models.tar.gz
 
 # [frontend]
 
-# install npm if not present
+# install latest npm
 sudo apt-get install -y npm
-
-sudo npm install node
+cd ambianic/webapp/client
+sudo npm install -g npm@latest
+# sudo npm install node
 sudo npm install -g @vue/cli
 sudo npm install -g parcel-bundler
+cd ../../../
 
 # install local npm dependencies from package.json
 # runtime dir is where the executable code resides
