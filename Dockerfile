@@ -19,8 +19,16 @@ RUN ./install_requirements.sh
 COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy source
-COPY . .
+# [production]
+
+# Copy source for prod docker image
+# COPY . .
+
+# [frontend setup]
+# RUN cd ambianic/webapp/client && \
+#  npm install --save vue \
+#  npm install --save-dev parcel-bundler \
+#  npm install --save axios
 
 # [frontend setup]
 # install npm packages
@@ -36,6 +44,11 @@ COPY . .
 
 # expose http port
 EXPOSE 8778
+
+# [development]
+
+# dev only
+EXPOSE 1234
 
 # CMD bash
 ENTRYPOINT ["bash"]

@@ -3,7 +3,7 @@
 echo "Installing Ambianic dependencies"
 
 # Install gstreamer
-sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
+sudo apt-get update && apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
 
 # [backend]
 
@@ -21,6 +21,10 @@ if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   sudo modprobe bcm2835-v4l2
 fi
 
+# install python dependencies
+pip3 install -U pip
+pip3 install -r requirements.txt
+
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
   # apt-get install gcc
@@ -35,3 +39,14 @@ rm -f all_models.tar.gz
 
 # install npm if not present
 sudo apt-get install -y npm
+
+sudo npm install node
+sudo npm install -g @vue/cli
+sudo npm install -g parcel-bundler
+
+# install local npm dependencies from package.json
+# runtime dir is where the executable code resides
+# workspace is where local customer configuration files and user data goes
+# cd $runtimedir
+# cd ambianic/webapp/client
+# npm install

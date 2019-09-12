@@ -2,6 +2,9 @@
 node_modules
 /dist
 
+#local cache
+.cache/
+
 /tests/e2e/reports/
 selenium-debug.log
 
