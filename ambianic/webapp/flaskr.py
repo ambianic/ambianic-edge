@@ -45,9 +45,27 @@ class FlaskJob:
 
 
 class FlaskServer:
+    """ Thin wrapper around Flask constructs.
+
+    Allows controlled start and stop of the web app server
+    in a separate process.
+
+    Parameters
+    ----------
+    config : yaml
+        reference to the yaml configuration file
+
+    Attributes
+    ----------
+    flask_job : type
+        Description of attribute `flask_job`.
+    config
+
     """
-        Thin wrapper around Flask constructs that allows
-        controlled start and stop of the web app server in a separate process.
+    """
+
+
+
 
         :argument config section of the configuration file
     """

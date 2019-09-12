@@ -7,11 +7,14 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
-    "test:unit": "vue-cli-service test:unit"
+    "test:unit": "vue-cli-service test:unit",
+    "dev": "parcel index.html"
   },
   "dependencies": {
     "axios": "^0.19.0",
-    "core-js": "^2.6.5"
+    "core-js": "^2.6.5",
+    "node": "^12.10.0",
+    "vue": "^2.6.10"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.11.0",
@@ -26,6 +29,7 @@
     "babel-jest": "^23.6.0",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "parcel-bundler": "^1.12.3",
     "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {

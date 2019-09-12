@@ -5,6 +5,8 @@ echo "Installing Ambianic dependencies"
 # Install gstreamer
 sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
 
+# [backend]
+
 # make sure python sees the packages installed via apt-get
 export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 
@@ -28,3 +30,8 @@ mkdir -p ai_models
 wget https://dl.google.com/coral/canned_models/all_models.tar.gz
 tar -C ai_models -xvzf all_models.tar.gz
 rm -f all_models.tar.gz
+
+# [frontend]
+
+# install npm if not present
+sudo apt-get install -y npm
