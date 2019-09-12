@@ -8,7 +8,7 @@ sudo apt-get update && apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-
 # [backend]
 
 # make sure python sees the packages installed via apt-get
-export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+# export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 
