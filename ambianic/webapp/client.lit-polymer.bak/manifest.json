@@ -1,0 +1,7 @@
+{
+  "name": "ambianic",
+  "short_name": "ambianic",
+  "description": "helpful AI for home and business automation",
+  "start_url": "/",
+  "display": "standalone"
+}

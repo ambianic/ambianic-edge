@@ -2,13 +2,17 @@ import os
 from multiprocessing import Process
 import logging
 import time
-from flask import Flask
+from flask import Flask, jsonify
+from flask_cors import CORS
 import flask
 from flask_bower import Bower
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit, ThreadedJob
 
 log = logging.getLogger(__name__)
+
+# configuration
+DEBUG = True
 
 
 class FlaskJob:
@@ -91,6 +95,14 @@ def create_app():
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # enable CORS for development
+    CORS(app, resources={r'/*': {'origins': '*'}})
+
+    # sanity check route
+    @app.route('/ping', methods=['GET'])
+    def ping_pong():
+        return jsonify('pong!')
 
     # a simple page that says hello
     @app.route('/')

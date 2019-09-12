@@ -127,8 +127,9 @@ def start(env_work_dir):
     try:
         # start AI inference pipelines
         pipeline_server = PipelineServer(config)
-        pipeline_server.start()
-        servers.append(pipeline_server)
+# TODO: uncomment when done testing front end
+#        pipeline_server.start()
+#        servers.append(pipeline_server)
 
         # start web app server
         flask_server = FlaskServer(config)
