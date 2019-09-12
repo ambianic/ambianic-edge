@@ -37,15 +37,16 @@ def _configure_logging(config=None):
         datefmt_cfg = None
 
     log_filename = config.get('file', None)
-    log_directory = os.path.dirname(log_filename)
-    pathlib.Path(log_directory).mkdir(parents=True, exist_ok=True)
-
+    if log_filename:
+        log_directory = os.path.dirname(log_filename)
+        with pathlib.Path(log_directory) as log_dir:
+            log_dir.mkdir(parents=True, exist_ok=True)
+        print("Log messages directed to {}".format(log_filename))
     logging.basicConfig(
         format=format_cfg,
         level=numeric_level,
         datefmt=datefmt_cfg,
         filename=log_filename)
-
     log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
     if numeric_level <= logging.DEBUG:
         log.debug('Configuration dump:')
@@ -62,6 +63,7 @@ def configure(env_work_dir):
     assert os.path.exists(env_work_dir), \
         'working directory invalid: {}'.format(env_work_dir)
     global WORK_DIR
+    print("Configuring server...")
     WORK_DIR = env_work_dir
     secrets_file = os.path.join(WORK_DIR, SECRETS_FILE)
     config_file = os.path.join(WORK_DIR, CONFIG_FILE)
@@ -76,11 +78,9 @@ def configure(env_work_dir):
             base_config = cf.read()
             all_config = secrets_config + "\n" + base_config
         config = yaml.safe_load(all_config)
-
         # configure logging
         logging_config = config.get('logging', None)
         _configure_logging(logging_config)
-
         return config
     except Exception as e:
         log.error("Failed to load configuration: %s", str(e))
@@ -109,14 +109,14 @@ def _healthcheck(servers):
 
 def start(env_work_dir):
     """ Programmatic start of the main service """
-
+    print("Starting server...")
     config = configure(env_work_dir)
 
     if not config:
         log.info('Cannot start. Valid configuration file required.')
         return False
 
-    log.info('Starting Ambianic runtime...')
+    log.info('Starting Ambianic server...')
     # Register the signal handlers
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
@@ -171,7 +171,7 @@ def start(env_work_dir):
         # j2.shutdown_flag.set()
         _stop_servers(servers)
 
-    log.info('Exiting main program...')
+    log.info('Exiting Ambianic server.')
     return True
 
 
@@ -180,6 +180,7 @@ _service_exit_requested = False
 
 def stop():
     """ Programmatic stop of the main service """
-
+    print("Stopping server...")
+    log.info("Stopping server...")
     global _service_exit_requested
     _service_exit_requested = True
