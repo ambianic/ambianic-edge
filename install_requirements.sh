@@ -39,12 +39,10 @@ rm -f all_models.tar.gz
 
 # install latest npm
 sudo apt-get install -y npm
-cd ambianic/webapp/client
-sudo npm install -g npm@latest
+# sudo npm install -g npm@latest
 # sudo npm install node
 sudo npm install -g @vue/cli
 sudo npm install -g parcel-bundler
-cd ../../../
 
 # install local npm dependencies from package.json
 # runtime dir is where the executable code resides
