@@ -127,10 +127,10 @@ class Pipeline:
         """
             Sets the heartbeat timestamp to time.monotonic()
         """
-        log.debug('Pipeline %s heartbeat', self.name)
+        log.debug('Pipeline %s heartbeat signal.', self.name)
         now = time.monotonic()
         lapse = now - self._latest_heartbeat_time
-        log.debug('Pipeline %s heartbeat. Lapse %f', self.name, lapse)
+        log.debug('Pipeline %s heartbeat lapse %f', self.name, lapse)
         self._latest_heartbeat_time = now
 
     def start(self):
