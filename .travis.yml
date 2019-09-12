@@ -4,6 +4,8 @@ python:
 before_install:
   - bash install_requirements.sh
   - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+  - echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
+  - source $HOME/.bashrc
  # command to install dependencies
 install:
   - pip3 install -U pytest # unit test tool
