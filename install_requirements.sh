@@ -43,8 +43,8 @@ rm -f all_models.tar.gz
 sudo apt-get install -y npm
 # sudo npm install -g npm@latest
 # sudo npm install node
-sudo npm install -g @vue/cli
-sudo npm install -g parcel-bundler
+npm install -g @vue/cli
+npm install -g parcel-bundler
 
 # install local npm dependencies from package.json
 # runtime dir is where the executable code resides
