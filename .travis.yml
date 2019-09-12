@@ -2,20 +2,13 @@ language: python
 python:
   - "3.7"
 before_install:
-  - sudo apt-get update
-  - sudo apt install libgirepository1.0-dev
-# install gstreamer libs  
-  - sudo apt-get install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-pulseaudio
-  - sudo apt-get install python-gst-1.0
-  - python --version
-  - pip install -U pip
-  - pip install -U pytest # unit test tool
-  - pip install codecov # code coverage tool
-  - pip install pytest-cov # coverage plugin for pytest
-  - pip install pylint # python linter
+  - install_requirements.sh
  # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - pip3 install -U pytest # unit test tool
+  - pip3 install codecov # code coverage tool
+  - pip3 install pytest-cov # coverage plugin for pytest
+  - pip3 install pylint # python linter
 # command to run tests
 script:
   - pytest --cov-report=xml --cov=ambianic
