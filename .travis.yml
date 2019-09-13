@@ -2,24 +2,23 @@ language: python
 python:
   - "3.7"
 before_install:
-  - bash install_requirements.sh
-env:
-  global:
-  - PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+  - sudo apt-get update
+  - sudo apt install libgirepository1.0-dev
+# install gstreamer libs  
+  - sudo apt-get install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-pulseaudio
+  - sudo apt-get install python-gst-1.0
+  - python --version
+  - pip install -U pip
+  - pip install -U pytest # unit test tool
+  - pip install codecov # code coverage tool
+  - pip install pytest-cov # coverage plugin for pytest
+  - pip install pylint # python linter
  # command to install dependencies
 install:
-#  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
-  - python --version
-  - pip3 install -U pytest # unit test tool
-  - pip3 install codecov # code coverage tool
-  - pip3 install pytest-cov # coverage plugin for pytest
-#  - pip3 install pylint # python linter
+  - pip install -r requirements.txt
 # command to run tests
 script:
-#  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - pytest --cov-report=xml --cov=ambianic
-#  - pylint --errors-only ambianic
+  - pylint --errors-only ambianic
 after_success:
-# - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - codecov # submit code coverage
-  
