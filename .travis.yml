@@ -1,7 +1,11 @@
 language: python
 python:
   - "3.7"
+env:
+  global:
+    - PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 before_install:
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - sudo apt-get update
   - sudo apt install libgirepository1.0-dev
 # install gstreamer libs  
