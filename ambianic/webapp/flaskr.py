@@ -132,7 +132,26 @@ def create_app():
             samples.add_sample(new_sample)
             response_object['message'] = 'Sample added!'
         else:
-            response_object['sample'] = samples.get_samples()
+            response_object['samples'] = samples.get_samples()
+        return jsonify(response_object)
+
+    @app.route('/samples/<sample_id>', methods=['PUT', 'DELETE'])
+    def update_sample(sample_id):
+        response_object = {'status': 'success'}
+        if request.method == 'PUT':
+            post_data = request.get_json()
+            sample = {
+                'id': sample_id,
+                'title': post_data.get('title'),
+                'author': post_data.get('author'),
+                'read': post_data.get('read')
+            }
+            log.debug('update_sample %s', sample)
+            samples.update_sample(sample)
+            response_object['message'] = 'Sample updated!'
+        if request.method == 'DELETE':
+            samples.delete_sample(sample_id)
+            response_object['message'] = 'Sample removed!'
         return jsonify(response_object)
 
     @app.route('/static/<path:path>')
