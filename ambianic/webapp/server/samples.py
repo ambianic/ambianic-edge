@@ -25,4 +25,7 @@ SAMPLES = [
 def get_samples():
     """Return a dictionary of pipeline samples."""
     log.debug('returning SAMPLES')
-    return SAMPLES
+    return {
+        'status': 'success',
+        'samples': SAMPLES
+    }

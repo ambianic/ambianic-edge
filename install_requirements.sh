@@ -23,8 +23,8 @@ if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 fi
 
 # install python dependencies
-pip3 install -U pip
-pip3 install -r requirements.txt
+sudo pip3 install -U pip
+sudo pip3 install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.

@@ -2,7 +2,7 @@ import os
 from multiprocessing import Process
 import logging
 import time
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import flask
 from werkzeug.serving import make_server
@@ -119,9 +119,21 @@ def create_app():
         return flask.render_template('pipelines.html')
 
     # sanity check route
-    @app.route('/samples', methods=['GET'])
+    @app.route('/samples', methods=['GET', 'POST'])
     def get_samples():
-        return jsonify(samples.get_samples())
+        response_object = {'status': 'success'}
+        if request.method == 'POST':
+            post_data = request.get_json()
+            new_sample = {
+                'title': post_data.get('title'),
+                'author': post_data.get('author'),
+                'read': post_data.get('read')
+            }
+            samples.add_sample(new_sample)
+            response_object['message'] = 'Sample added!'
+        else:
+            response_object['sample'] = samples.get_samples()
+        return jsonify(response_object)
 
     @app.route('/static/<path:path>')
     def static_file(path):

@@ -125,9 +125,10 @@ class InputStreamProcessor(PipeElement):
         PIPELINE = ' uridecodebin name=source latency=300 '
         PIPELINE += """
              ! {leaky_q} ! videoconvert name=vconvert ! {sink_caps}
-             ! {sink_element}
+             ! {leaky_q0} ! {sink_element}
              """
-        LEAKY_Q = 'queue max-size-buffers=10 leaky=downstream name=queue'
+        LEAKY_Q0 = 'queue max-size-buffers=10 leaky=downstream'
+        LEAKY_Q = LEAKY_Q0 + ' name=queue'
         # Ask gstreamer to format the images in a way that are close
         # to the TF model tensor.
         # Note: Having gstreamer resize doesn't appear to make
@@ -140,6 +141,7 @@ class InputStreamProcessor(PipeElement):
                 emit-signals=true max-buffers=1 drop=true
                 """
         pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q,
+                                        leaky_q0=LEAKY_Q0,
                                         sink_caps=SINK_CAPS,
                                         sink_element=SINK_ELEMENT)
         log.debug('Gstreamer pipeline args: %s', pipeline_args)
