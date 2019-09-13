@@ -8,18 +8,18 @@ env:
   - PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
  # command to install dependencies
 install:
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+#  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - python --version
   - pip3 install -U pytest # unit test tool
   - pip3 install codecov # code coverage tool
   - pip3 install pytest-cov # coverage plugin for pytest
-  - pip3 install pylint # python linter
+#  - pip3 install pylint # python linter
 # command to run tests
 script:
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+#  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - pytest --cov-report=xml --cov=ambianic
-  - pylint --errors-only ambianic
+#  - pylint --errors-only ambianic
 after_success:
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+# - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
   - codecov # submit code coverage
   
