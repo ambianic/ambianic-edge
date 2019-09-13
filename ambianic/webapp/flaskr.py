@@ -2,13 +2,16 @@ import os
 from multiprocessing import Process
 import logging
 import time
-from flask import Flask
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import flask
-from flask_bower import Bower
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit, ThreadedJob
-
+from .server import samples
 log = logging.getLogger(__name__)
+
+# configuration
+DEBUG = True
 
 
 class FlaskJob:
@@ -41,11 +44,16 @@ class FlaskJob:
 
 
 class FlaskServer:
-    """
-        Thin wrapper around Flask constructs that allows
-        controlled start and stop of the web app server in a separate process.
+    """ Thin wrapper around Flask constructs.
 
-        :argument config section of the configuration file
+    Allows controlled start and stop of the web app server
+    in a separate process.
+
+    Parameters
+    ----------
+    config : yaml
+        reference to the yaml configuration file
+
     """
 
     def __init__(self, config):
@@ -81,10 +89,6 @@ def create_app():
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
     app = Flask(__name__, instance_relative_config=True)
-    # Turn on Bower version of js file names to avoid browser cache using outdated files
-    app.config['BOWER_QUERYSTRING_REVVING'] = True
-    # register Bower file handler with Flask
-    Bower(app)
 
     # ensure the instance folder exists
     try:
@@ -92,12 +96,19 @@ def create_app():
     except OSError:
         pass
 
+    # enable CORS for development
+    CORS(app, resources={r'/*': {'origins': '*'}})
+
+    # [Sitemap]
+    # sitemap definitions follow
+
     # a simple page that says hello
     @app.route('/')
     def hello():
         return 'Ambianic! Halpful AI for home and business automation.'
 
-    # healthcheck page available to docker-compose and other health monitoring tools
+    # healthcheck page available to docker-compose
+    # and other health monitoring tools
     @app.route('/healthcheck')
     def health_check():
         return 'Ambianic is running in a cheerful healthy state!'
@@ -107,19 +118,58 @@ def create_app():
     def view_pipelines():
         return flask.render_template('pipelines.html')
 
+    # sanity check route
+    @app.route('/samples', methods=['GET', 'POST'])
+    def get_samples():
+        response_object = {'status': 'success'}
+        if request.method == 'POST':
+            post_data = request.get_json()
+            new_sample = {
+                'title': post_data.get('title'),
+                'author': post_data.get('author'),
+                'read': post_data.get('read')
+            }
+            samples.add_sample(new_sample)
+            response_object['message'] = 'Sample added!'
+        else:
+            response_object['samples'] = samples.get_samples()
+        return jsonify(response_object)
+
+    @app.route('/samples/<sample_id>', methods=['PUT', 'DELETE'])
+    def update_sample(sample_id):
+        response_object = {'status': 'success'}
+        if request.method == 'PUT':
+            post_data = request.get_json()
+            sample = {
+                'id': sample_id,
+                'title': post_data.get('title'),
+                'author': post_data.get('author'),
+                'read': post_data.get('read')
+            }
+            log.debug('update_sample %s', sample)
+            samples.update_sample(sample)
+            response_object['message'] = 'Sample updated!'
+        if request.method == 'DELETE':
+            samples.delete_sample(sample_id)
+            response_object['message'] = 'Sample removed!'
+        return jsonify(response_object)
+
     @app.route('/static/<path:path>')
     def static_file(path):
         return flask.send_from_directory('static', path)
-
 
     @app.route('/data/<path:path>')
     def data_file(path):
         return flask.send_from_directory('../../data', path)
 
+    @app.route('/client/<path:path>')
+    def client_file(path):
+        return flask.send_from_directory('client/dist', path)
 
     log.debug('Flask url map: %s', str(app.url_map))
     log.debug('Flask config map: %s', str(app.config))
-    log.debug('Flask running in %s mode', 'development' if app.config['DEBUG'] else 'production')
+    log.debug('Flask running in %s mode',
+              'development' if app.config['DEBUG'] else 'production')
 
     log.debug('Flask app created.')
     return app
