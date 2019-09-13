@@ -23,28 +23,28 @@ if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 fi
 
 # install python dependencies
-pip3 install -U pip
-pip3 install -r requirements.txt
+sudo pip3 install -U pip
+sudo pip3 install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
   # apt-get install gcc
 
 # install ai models
-mkdir -p ai_models
-wget https://dl.google.com/coral/canned_models/all_models.tar.gz
-tar -C ai_models -xvzf all_models.tar.gz
-rm -f all_models.tar.gz
+# mkdir -p ai_models
+# wget https://dl.google.com/coral/canned_models/all_models.tar.gz
+# tar -C ai_models -xvzf all_models.tar.gz
+# rm -f all_models.tar.gz
 
 # [frontend]
 
 # install latest npm
-cd ambianic/webapp/client
 sudo apt-get install -y npm
+cd ambianic/webapp/client
 # sudo npm install -g npm@latest
 # sudo npm install node
 sudo npm install -g @vue/cli
-sudo npm install -g parcel-bundler
+# sudo npm install -g parcel-bundler
 cd ../../../
 
 # install local npm dependencies from package.json
