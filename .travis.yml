@@ -3,6 +3,9 @@ python:
   - "3.7"
 before_install:
   - bash install_requirements.sh
+env:
+  global:
+  - PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
  # command to install dependencies
 install:
   - export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
