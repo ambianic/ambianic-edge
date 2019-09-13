@@ -3,12 +3,12 @@
 echo "Installing Ambianic dependencies"
 
 # Install gstreamer
-sudo apt-get update && apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
+sudo apt-get update && sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
 
 # [backend]
 
 # make sure python sees the packages installed via apt-get
-export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
+# export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
@@ -31,20 +31,20 @@ pip3 install -r requirements.txt
   # apt-get install gcc
 
 # install ai models
-mkdir -p ai_models
-wget https://dl.google.com/coral/canned_models/all_models.tar.gz
-tar -C ai_models -xvzf all_models.tar.gz
-rm -f all_models.tar.gz
+# mkdir -p ai_models
+# wget https://dl.google.com/coral/canned_models/all_models.tar.gz
+# tar -C ai_models -xvzf all_models.tar.gz
+# rm -f all_models.tar.gz
 
 # [frontend]
 
 # install latest npm
-cd ambianic/webapp/client
 sudo apt-get install -y npm
+cd ambianic/webapp/client
 # sudo npm install -g npm@latest
 # sudo npm install node
 sudo npm install -g @vue/cli
-sudo npm install -g parcel-bundler
+# sudo npm install -g parcel-bundler
 cd ../../../
 
 # install local npm dependencies from package.json

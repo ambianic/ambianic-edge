@@ -7,7 +7,7 @@ from flask_cors import CORS
 import flask
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit, ThreadedJob
-
+from .server import samples
 log = logging.getLogger(__name__)
 
 # configuration
@@ -99,41 +99,46 @@ def create_app():
     # enable CORS for development
     CORS(app, resources={r'/*': {'origins': '*'}})
 
-    # sanity check route
-    @app.route('/ping', methods=['GET'])
-    def ping_pong():
-        return jsonify('pong!')
+    # [Sitemap]
+    # sitemap definitions follow
 
     # a simple page that says hello
     @app.route('/')
     def hello():
         return 'Ambianic! Halpful AI for home and business automation.'
 
-    # healthcheck page available to docker-compose and other health monitoring tools
-    @app.route('/ambianic/healthcheck')
+    # healthcheck page available to docker-compose
+    # and other health monitoring tools
+    @app.route('/healthcheck')
     def health_check():
         return 'Ambianic is running in a cheerful healthy state!'
 
     # live view of ambianic pipelines
-    @app.route('/ambianic/pipelines')
+    @app.route('/pipelines')
     def view_pipelines():
         return flask.render_template('pipelines.html')
 
-    @app.route('/ambianic/static/<path:path>')
+    # sanity check route
+    @app.route('/samples', methods=['GET'])
+    def get_samples():
+        return jsonify(samples.get_samples())
+
+    @app.route('/static/<path:path>')
     def static_file(path):
         return flask.send_from_directory('static', path)
 
-    @app.route('/ambianic/data/<path:path>')
+    @app.route('/data/<path:path>')
     def data_file(path):
         return flask.send_from_directory('../../data', path)
 
-    @app.route('/ambianic/client/<path:path>')
+    @app.route('/client/<path:path>')
     def client_file(path):
-        return flask.send_from_directory('client', path)
+        return flask.send_from_directory('client/dist', path)
 
     log.debug('Flask url map: %s', str(app.url_map))
     log.debug('Flask config map: %s', str(app.config))
-    log.debug('Flask running in %s mode', 'development' if app.config['DEBUG'] else 'production')
+    log.debug('Flask running in %s mode',
+              'development' if app.config['DEBUG'] else 'production')
 
     log.debug('Flask app created.')
     return app

@@ -1,3 +1,4 @@
+import 'bootstrap/dist/css/bootstrap.css';
 import Vue from 'vue';
 import Router from 'vue-router';
 import Books from './components/Books.vue';
