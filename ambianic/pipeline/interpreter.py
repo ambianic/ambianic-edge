@@ -49,11 +49,18 @@ class PipelineServer:
                 latest_heartbeat, status = p.healthcheck()
                 now = time.monotonic()
                 lapse = now - latest_heartbeat
-                if lapse > 20:
+                if lapse > 50:
+                    log.error('Pipeline %s in terminal condition. '
+                              'Unable to recover.'
+                              'Latest heartbeat was %f seconds ago. ',
+                              p.name, lapse)
                     # more than a reasonable amount of time has passed
                     # since the pipeline reported a heartbeat.
                     # Let's recycle it
-                    log.warning('Pipeline "%s" is not responsive. Latest heart beat was %f seconds ago. Will attempt to heal it.', p.name, lapse)
+                elif lapse > 20:
+                    log.warning('Pipeline "%s" is not responsive. '
+                                'Latest heartbeat was %f seconds ago. '
+                                'Will attempt to heal it.', p.name, lapse)
                     self.heal_pipeline_job(j)
                 if oldest_heartbeat > latest_heartbeat:
                     oldest_heartbeat = latest_heartbeat
@@ -66,7 +73,19 @@ class PipelineServer:
         assert threaded_job
         pipeline = threaded_job.job
         log.debug('pipline %s healing request...', pipeline.name)
-        threaded_job.heal()
+        if self._healing_thread:
+            if self._healing_thread.isAlive():
+                log.debug('pipeline %s healing already in progress. '
+                          'Skipping new request.', pipeline.name)
+            else:
+                self._healing_thread = None
+                log.debug('pipeline %s healing thread ended. ')
+        # Healing thread is not running. We can launch a new one.
+        if not self._healing_thread:
+            log.debug('pipeline %s launching healing thread...', pipeline.name)
+            heal_target = threaded_job.heal
+            self._healing_thread = threading.Thread(target=heal_target)
+            # give the healing target a few seconds to finish
         log.debug('pipeline %s healing request completed.', pipeline.name)
 
     def start(self):
@@ -109,6 +128,7 @@ class Pipeline:
         self.state = False
         self._latest_heartbeat_time = time.monotonic()
         self._latest_health_status = True  # in the future status may represent a spectrum of health issues
+        self._healing_thread = None
         for element_def in self.config:
             log.info('Pipeline %s loading next element: %s', pname, element_def)
             element_name = [*element_def][0]
@@ -169,12 +189,25 @@ class Pipeline:
         return self._latest_heartbeat_time, self._latest_health_status
 
     def heal(self):
-        log.info("Requesting pipeline elements to heal... %s", self.__class__.__name__)
-        self._heartbeat() # register a heartbeat to prevent looping back into heal while healing
-        self.pipe_elements[0].heal()
-        log.info("Completed request to pipeline elements to heal. %s", self.__class__.__name__)
-        return
-
+        """Nonblocking asynchronous heal function.        """
+        if self._healing_thread:
+            if self._healing_thread.isAlive():
+                log.debug('pipeline %s healing already in progress. '
+                          'Skipping new request.', pipeline.name)
+                return
+            else:
+                self._healing_thread = None
+                log.debug('pipeline %s healing thread ended. '
+        # Healing thread is not running. We can launch a new one.
+        if not self._healing_thread:
+            log.debug('pipeline %s launching healing thread...', pipeline.name)
+            self._heartbeat() # register a heartbeat to prevent looping back into heal while healing
+            log.debug("Requesting pipeline elements to heal... %s", self.__class__.__name__)
+            heal_target = self.pipe_elements[0].heal()
+            self._healing_thread = threading.Thread(target=heal_target)
+            self._healing_thread.start()
+            log.debug("Completed request to pipeline elements to heal. %s", self.__class__.__name__)
+            # give the healing target a few seconds to finish
 
     def stop(self):
         log.info("Requesting pipeline elements to stop... %s", self.__class__.__name__)

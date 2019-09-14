@@ -5,7 +5,13 @@
         <h1>Samples</h1>
         <hr><br><br>
         <alert ref='alert' :message="message"></alert>
-        <button type="button" class="btn btn-success btn-sm" v-b-modal.sample-modal >Add Sample</button>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          v-b-modal.sample-modal
+        >
+          Add Sample
+        </button>
         <br><br>
         <table class="table table-hover">
           <thead>

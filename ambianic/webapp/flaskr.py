@@ -103,9 +103,9 @@ def create_app():
     # sitemap definitions follow
 
     # a simple page that says hello
-    @app.route('/')
-    def hello():
-        return 'Ambianic! Halpful AI for home and business automation.'
+    # @app.route('/')
+    # def hello():
+    #    return 'Ambianic! Halpful AI for home and business automation.'
 
     # healthcheck page available to docker-compose
     # and other health monitoring tools
@@ -161,6 +161,11 @@ def create_app():
     @app.route('/data/<path:path>')
     def data_file(path):
         return flask.send_from_directory('../../data', path)
+
+    @app.route('/', defaults={'path': 'index.html'})
+    @app.route('/<path:path>')
+    def client_all(path):
+        return flask.send_from_directory('client/dist', path)
 
     @app.route('/client/<path:path>')
     def client_file(path):

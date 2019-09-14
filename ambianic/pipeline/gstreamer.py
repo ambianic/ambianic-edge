@@ -188,40 +188,43 @@ class InputStreamProcessor(PipeElement):
 
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
-        if self.gst_pipeline:
-            log.debug("gst_pipeline.set_state(Gst.State.NULL)")
-            self.gst_pipeline.set_state(Gst.State.NULL)
-            self.gst_pipeline = None
-            log.debug("gst_video_source.set_state(Gst.State.NULL)")
-            self.gst_video_source.set_state(Gst.State.NULL)
-            # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
-            self.gst_video_source = None
-            log.debug("gst_queue.set_state(Gst.State.NULL)")
-            self.gst_queue.set_state(Gst.State.NULL)
-            # self.gst_queue.disconnect()
-            self.gst_queue = None
-            log.debug("gst_vconvert.set_state(Gst.State.NULL)")
-            self.gst_vconvert.set_state(Gst.State.NULL)
-            # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
-            self.gst_vconvert = None
-            log.debug("gst_appsink.set_state(Gst.State.NULL)")
-            self.gst_appsink.set_state(Gst.State.NULL)
-            # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
-            self.gst_appsink = None
-            log.debug("gst_bus.remove_signal_watch()")
-            self.gst_bus.remove_signal_watch()
-            self.gst_bus = None
-        else:
-            log.debug("self.gst_pipeline: None")
-        log.debug("while GLib.MainContext.default().iteration(False)")
-        while GLib.MainContext.default().iteration(False):
-            pass
-        if self.mainloop:
-            log.debug("gst mainloop.quit()")
-            self.mainloop.quit()
-            self.mainloop = None
-        else:
-            log.debug("mainloop: None")
+        try:
+            if self.gst_pipeline:
+                log.debug("gst_pipeline.set_state(Gst.State.NULL)")
+                self.gst_pipeline.set_state(Gst.State.NULL)
+                self.gst_pipeline = None
+                log.debug("gst_video_source.set_state(Gst.State.NULL)")
+                self.gst_video_source.set_state(Gst.State.NULL)
+                # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
+                self.gst_video_source = None
+                log.debug("gst_queue.set_state(Gst.State.NULL)")
+                self.gst_queue.set_state(Gst.State.NULL)
+                # self.gst_queue.disconnect()
+                self.gst_queue = None
+                log.debug("gst_vconvert.set_state(Gst.State.NULL)")
+                self.gst_vconvert.set_state(Gst.State.NULL)
+                # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
+                self.gst_vconvert = None
+                log.debug("gst_appsink.set_state(Gst.State.NULL)")
+                self.gst_appsink.set_state(Gst.State.NULL)
+                # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
+                self.gst_appsink = None
+                log.debug("gst_bus.remove_signal_watch()")
+                self.gst_bus.remove_signal_watch()
+                self.gst_bus = None
+            else:
+                log.debug("self.gst_pipeline: None")
+            log.debug("while GLib.MainContext.default().iteration(False)")
+            while GLib.MainContext.default().iteration(False):
+                pass
+            if self.mainloop:
+                log.debug("gst mainloop.quit()")
+                self.mainloop.quit()
+                self.mainloop = None
+            else:
+                log.debug("mainloop: None")
+        except Exception as e:
+            log.warning('Error while cleaning up gstreamer resources: %s', str(e))
         log.debug("GST cleaned up resources.")
 
     def start(self):
