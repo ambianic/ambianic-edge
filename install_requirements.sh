@@ -40,12 +40,12 @@ sudo pip3 install -r requirements.txt
 
 # install latest npm
 sudo apt-get install -y npm
-cd ambianic/webapp/client
+# cd ambianic/webapp/client
 # sudo npm install -g npm@latest
-# sudo npm install node
-sudo npm install -g @vue/cli
-# sudo npm install -g parcel-bundler
-cd ../../../
+# sudo npm install -g @vue/cli
+# npm run build
+# cd ../../../
+
 
 # install local npm dependencies from package.json
 # runtime dir is where the executable code resides

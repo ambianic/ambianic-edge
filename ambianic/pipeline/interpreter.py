@@ -77,19 +77,7 @@ class PipelineServer:
         assert threaded_job
         pipeline = threaded_job.job
         log.debug('pipline %s healing request...', pipeline.name)
-        if self._healing_thread:
-            if self._healing_thread.isAlive():
-                log.debug('pipeline %s healing already in progress. '
-                          'Skipping new request.', pipeline.name)
-            else:
-                self._healing_thread = None
-                log.debug('pipeline %s healing thread ended. ')
-        # Healing thread is not running. We can launch a new one.
-        if not self._healing_thread:
-            log.debug('pipeline %s launching healing thread...', pipeline.name)
-            heal_target = threaded_job.heal
-            self._healing_thread = threading.Thread(target=heal_target)
-            # give the healing target a few seconds to finish
+        threaded_job.heal()
         log.debug('pipeline %s healing request completed.', pipeline.name)
 
     def start(self):

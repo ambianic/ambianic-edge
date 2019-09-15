@@ -130,7 +130,7 @@
 import axios from 'axios';
 import Alert from './Alert.vue';
 
-const API_SAMPLES_PATH = `${API_ROOT}samples`;
+const API_SAMPLES_PATH = '/api/samples';
 
 export default {
   data() {
@@ -156,12 +156,12 @@ export default {
   },
   methods: {
     getSamples() {
-      const path = API_SAMPLES_PATH;
+      const path = API_SAMPLES_PATH
       axios.get(path)
         .then((res) => {
           this.samples = res.data.samples;
-          // console.debug('res.data:' + JSON.stringify(res.data));
-          // console.debug('samples:' + JSON.stringify(this.samples));
+          //console.debug('res.data:' + JSON.stringify(res.data));
+          //console.debug('samples:' + JSON.stringify(this.samples));
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -174,7 +174,7 @@ export default {
         .then(() => {
           this.getSamples();
           this.message = 'Sample added!';
-          this.$refs.alert.showAlert();
+          this.$refs.alert.showAlert()
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -183,13 +183,13 @@ export default {
         });
     },
     updateSample(payload, sampleID) {
-      // console.debug('updating sample id: ' + sampleID + ' paylod: ' + JSON.stringify(payload));
-      const path = `${API_SAMPLES_PATH}${sampleID}`;
+      //console.debug('updating sample id: ' + sampleID + ' paylod: ' + JSON.stringify(payload));
+      const path = API_SAMPLES_PATH + `/${sampleID}`;
       axios.put(path, payload)
         .then(() => {
           this.getSamples();
           this.message = 'Sample updated!';
-          this.$refs.alert.showAlert();
+          this.$refs.alert.showAlert()
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -247,12 +247,12 @@ export default {
       this.getSamples(); // update view
     },
     deleteSample(sampleID) {
-      const path = `${API_SAMPLES_PATH}${sampleID}`;
+      const path = API_SAMPLES_PATH + `/${sampleID}`;
       axios.delete(path)
         .then(() => {
           this.getSamples();
           this.message = 'Sample removed!';
-          this.$refs.alert.showAlert();
+          this.$refs.alert.showAlert()
         })
         .catch((error) => {
           // eslint-disable-next-line

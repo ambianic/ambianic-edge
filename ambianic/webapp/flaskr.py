@@ -162,13 +162,15 @@ def create_app():
     def data_file(path):
         return flask.send_from_directory('../../data', path)
 
+    @app.route('/client', defaults={'path': 'index.html'})
+    @app.route('/client/', defaults={'path': 'index.html'})
+    @app.route('/client/<path:path>')
+    def client_file(path):
+        return flask.send_from_directory('client/dist', path)
+
     @app.route('/', defaults={'path': 'index.html'})
     @app.route('/<path:path>')
     def client_all(path):
-        return flask.send_from_directory('client/dist', path)
-
-    @app.route('/client/<path:path>')
-    def client_file(path):
         return flask.send_from_directory('client/dist', path)
 
     log.debug('Flask url map: %s', str(app.url_map))
