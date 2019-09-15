@@ -130,7 +130,7 @@ class InputStreamProcessor(PipeElement):
         return Gst.FlowReturn.OK
 
     def _get_pipeline_args(self):
-        PIPELINE = ' uridecodebin name=source latency=300 '
+        PIPELINE = ' uridecodebin name=source latency=0 '
         PIPELINE += """
              ! {leaky_q} ! videoconvert name=vconvert ! {sink_caps}
              ! {leaky_q0} ! {sink_element}
