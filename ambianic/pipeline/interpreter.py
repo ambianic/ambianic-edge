@@ -205,27 +205,30 @@ class Pipeline:
     def heal(self):
         """Nonblocking asynchronous heal function.        """
         if self._healing_thread:
-            if self._healing_thread.isAlive():
-                log.debug('pipeline %s healing already in progress. '
+            log.debug('pipeline %s healing thread already exists for . '
+                      'Thread id: %d. Checking if its alive. ',
+                      self.name, self._healing_thread.ident)
+            if self._healing_thread.is_alive():
+                log.debug('pipeline %s healing thread in progress. '
                           'Skipping new request.', self.name)
                 return
             else:
                 self._healing_thread = None
-                log.debug('pipeline %s healing thread ended. ')
+                log.debug('pipeline %s healing thread id: %d ended. ',
+                          self.name,
+                          self._healing_thread.ident)
         # Healing thread is not running. We can launch a new one.
         if not self._healing_thread:
             log.debug('pipeline %s launching healing thread...', self.name)
             # register a heartbeat to prevent looping back
             # into heal while healing
             self._heartbeat()
-            log.debug("Requesting pipeline elements to heal... %s",
-                      self.__class__.__name__)
             heal_target = self.pipe_elements[0].heal()
             self._healing_thread = threading.Thread(target=heal_target)
             self._healing_thread.start()
-            log.debug("Completed request to pipeline elements to heal. %s",
-                      self.__class__.__name__)
-            # give the healing target a few seconds to finish
+            log.debug('pipeline %s launched healing thread id: %d...',
+                      self.name,
+                      self._healing_thread.ident)
 
     def stop(self):
         log.info("Requesting pipeline elements to stop... %s",

@@ -15,16 +15,16 @@
 </template>
 
 <script>
-  export default {
-    data() {
-        return {
-          dismissSecs: 3,
-          dismissCountDown: 0,
-          showDismissibleAlert: false
-        }
-      },
-    props: ['message'],
-/*
+export default {
+  data() {
+    return {
+      dismissSecs: 3,
+      dismissCountDown: 0,
+      showDismissibleAlert: false,
+    };
+  },
+  props: ['message'],
+  /*
     watch: {
           	message: function(newVal, oldVal) { // watch for message changes
               console.log('Prop changed: ', newVal, ' | was: ', oldVal)
@@ -32,11 +32,11 @@
             }
           },
 */
-    methods: {
-      showAlert() {
-        this.dismissCountDown = this.dismissSecs
-        console.debug('showing message alert')
-      }
-    }
-  }
+  methods: {
+    showAlert() {
+      this.dismissCountDown = this.dismissSecs;
+      console.debug('showing message alert');
+    },
+  },
+};
 </script>

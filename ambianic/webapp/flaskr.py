@@ -119,7 +119,7 @@ def create_app():
         return flask.render_template('pipelines.html')
 
     # sanity check route
-    @app.route('/samples', methods=['GET', 'POST'])
+    @app.route('/api/samples', methods=['GET', 'POST'])
     def get_samples():
         response_object = {'status': 'success'}
         if request.method == 'POST':
@@ -135,7 +135,7 @@ def create_app():
             response_object['samples'] = samples.get_samples()
         return jsonify(response_object)
 
-    @app.route('/samples/<sample_id>', methods=['PUT', 'DELETE'])
+    @app.route('/api/samples/<sample_id>', methods=['PUT', 'DELETE'])
     def update_sample(sample_id):
         response_object = {'status': 'success'}
         if request.method == 'PUT':
