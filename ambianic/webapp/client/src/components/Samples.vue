@@ -129,8 +129,10 @@
 <script>
 import axios from 'axios';
 import Alert from './Alert.vue';
+import ambianic_conf from '../config.js'
 
-const API_SAMPLES_PATH = '/api/samples';
+const API_SAMPLES_PATH = ambianic_conf['AMBIANIC_API_URI'] + 'samples';
+console.debug("API_SAMPLES_PATH: "+API_SAMPLES_PATH)
 
 export default {
   data() {

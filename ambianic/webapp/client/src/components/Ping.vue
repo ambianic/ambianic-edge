@@ -6,6 +6,9 @@
 
 <script>
 import axios from 'axios';
+import ambianic_conf from '../config.js'
+
+const API_PING_PATH = ambianic_conf['AMBIANIC_API_URI'] + 'ping';
 
 export default {
   name: 'Ping',
@@ -16,7 +19,7 @@ export default {
   },
   methods: {
     getMessage() {
-      const path = 'http://localhost:8778/ping';
+      const path = API_PING_PATH;
       axios.get(path)
         .then((res) => {
           this.msg = res.data;

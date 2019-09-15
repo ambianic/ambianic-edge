@@ -3,6 +3,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Samples from './components/Samples.vue';
 import Ping from './components/Ping.vue';
+import HackerNews from './components/HackerNews.vue';
 
 Vue.use(Router);
 
@@ -11,17 +12,17 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/client',
+      path: '/samples',
       name: 'Samples',
       component: Samples,
     },
     {
-      path: '/client/ping',
+      path: '/ping',
       name: 'Ping',
       component: Ping,
     },
     {
-      path: '/client/hacker-news',
+      path: '/hacker-news',
       name: 'HackerNews',
       component: HackerNews,
     },

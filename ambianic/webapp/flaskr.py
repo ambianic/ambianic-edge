@@ -5,6 +5,7 @@ import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import flask
+from requests import get
 from werkzeug.serving import make_server
 from ambianic.service import ServiceExit, ThreadedJob
 from .server import samples
@@ -118,7 +119,6 @@ def create_app():
     def view_pipelines():
         return flask.render_template('pipelines.html')
 
-    # sanity check route
     @app.route('/api/samples', methods=['GET', 'POST'])
     def get_samples():
         response_object = {'status': 'success'}
@@ -154,6 +154,12 @@ def create_app():
             response_object['message'] = 'Sample removed!'
         return jsonify(response_object)
 
+    # sanity check route
+    @app.route('/api/ping', methods=['GET'])
+    def ping():
+        response_object = 'pong'
+        return jsonify(response_object)
+
     @app.route('/static/<path:path>')
     def static_file(path):
         return flask.send_from_directory('static', path)
@@ -166,7 +172,16 @@ def create_app():
     @app.route('/client/', defaults={'path': 'index.html'})
     @app.route('/client/<path:path>')
     def client_file(path):
-        return flask.send_from_directory('client/dist', path)
+        if log.level <= logging.DEBUG:  # development mode
+            hostname = flask.request.host.split(':')[0]
+            base_uri = 'http://{host}:1234/'.format(host=hostname)
+            return get(f'{base_uri}{path}').content
+        else:  # production mode
+            return flask.send_from_directory('client/dist', path)
+
+#    @app.errorhandler(404)
+#    def page_not_found(e):
+#        return flask.send_from_directory('client/dist', 'index.html')
 
 #    @app.route('/', defaults={'path': 'index.html'})
 #    @app.route('/<path:path>')
