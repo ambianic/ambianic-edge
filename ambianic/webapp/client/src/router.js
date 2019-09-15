@@ -11,14 +11,19 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/client/',
+      path: '/client',
       name: 'Samples',
       component: Samples,
     },
     {
-      path: '/ping',
+      path: '/client/ping',
       name: 'Ping',
       component: Ping,
+    },
+    {
+      path: '/client/hacker-news',
+      name: 'HackerNews',
+      component: HackerNews,
     },
   ],
 });

@@ -211,7 +211,7 @@ class Pipeline:
             # register a heartbeat to prevent looping back
             # into heal while healing
             self._heartbeat()
-            heal_target = self.pipe_elements[0].heal()
+            heal_target = self.pipe_elements[0].heal
             self._healing_thread = threading.Thread(target=heal_target)
             self._healing_thread.start()
             log.debug('pipeline %s launched healing thread id: %d...',
