@@ -1,6 +1,7 @@
 import logging
 from .gstreamer import InputStreamProcessor
 import time
+import threading
 
 from ambianic.pipeline.ai.object_detect import ObjectDetect
 from ambianic.pipeline.ai.face_detect import FaceDetect
@@ -39,12 +40,13 @@ class PipelineServer:
             Return the oldest heartbeat among all managed pipeline heartbeats.
             Try to heal pipelines that haven't reported a heartbeat and awhile.
 
-            :returns: (timestamp, status) tuple with most outdated heartbeat and worst known status
-                among managed pipelines
+            :returns: (timestamp, status) tuple with most outdated heartbeat
+                and worst known status among managed pipelines
         """
         oldest_heartbeat = time.monotonic()
         for j in self._threaded_jobs:
-            p = j.job # get the pipeline object out of the threaded job wrapper
+            # get the pipeline object out of the threaded job wrapper
+            p = j.job
             if j.is_alive():
                 latest_heartbeat, status = p.healthcheck()
                 now = time.monotonic()
@@ -64,8 +66,10 @@ class PipelineServer:
                     self.heal_pipeline_job(j)
                 if oldest_heartbeat > latest_heartbeat:
                     oldest_heartbeat = latest_heartbeat
-            else: # something went wrong with a threaded job
-                log.error('Pipeline "%s" thread ended unexpectedly. Please report a bug.', p.name)
+            # something went wrong with a threaded job
+            else:
+                log.error('Pipeline "%s" thread ended unexpectedly. '
+                          'Please report a bug.', p.name)
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
 
@@ -107,7 +111,10 @@ class PipelineServer:
 
 
 class Pipeline:
-    """ The main Ambianic processing structure. Data flow is arranged in independent pipelines. """
+    """ The main Ambianic processing structure.
+
+    Data flow is arranged in independent pipelines.
+    """
 
     # valid pipeline operators
     PIPELINE_OPS = {
@@ -123,24 +130,30 @@ class Pipeline:
         self.name = pname
         assert pconfig, "Pipeline config required"
         self.config = pconfig
-        assert self.config[0]["source"], "Pipeline config must begin with a source element"
+        assert self.config[0]["source"], \
+            "Pipeline config must begin with a source element"
         self.pipe_elements = []
         self.state = False
         self._latest_heartbeat_time = time.monotonic()
-        self._latest_health_status = True  # in the future status may represent a spectrum of health issues
+        # in the future status may represent a spectrum of health issues
+        self._latest_health_status = True
         self._healing_thread = None
         for element_def in self.config:
-            log.info('Pipeline %s loading next element: %s', pname, element_def)
+            log.info('Pipeline %s loading next element: %s',
+                     pname, element_def)
             element_name = [*element_def][0]
             element_config = element_def[element_name]
             element_class = self.PIPELINE_OPS.get(element_name, None)
             if element_class:
-                log.info('Pipeline %s adding element %s with config %s', pname, element_name, element_config)
+                log.info('Pipeline %s adding element %s with config %s',
+                         pname, element_name, element_config)
                 element = element_class(element_config)
                 self.pipe_elements.append(element)
             else:
-                log.warning('Pipeline definition has unknown pipeline element: %s .'
-                            ' Ignoring element and moving forward.', element_name)
+                log.warning('Pipeline definition has unknown '
+                            'pipeline element: %s .'
+                            ' Ignoring element and moving forward.',
+                            element_name)
         return
 
     def _heartbeat(self):
@@ -156,7 +169,8 @@ class Pipeline:
     def start(self):
         """
             Starts a thread that iteratively and in order of definitions feeds
-            each element the output of the previous one. Stops the pipeline when a stop signal is received.
+            each element the output of the previous one.
+            Stops the pipeline when a stop signal is received.
         """
 
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
@@ -183,8 +197,8 @@ class Pipeline:
     def healthcheck(self):
         """
         :return: (timestamp, status) - a tuple of
-            monotonically increasing timestamp of the last known healthy heartbeat
-            and a status with additional health information
+            monotonically increasing timestamp of the last known healthy
+            heartbeat and a status with additional health information
         """
         return self._latest_heartbeat_time, self._latest_health_status
 
@@ -193,24 +207,30 @@ class Pipeline:
         if self._healing_thread:
             if self._healing_thread.isAlive():
                 log.debug('pipeline %s healing already in progress. '
-                          'Skipping new request.', pipeline.name)
+                          'Skipping new request.', self.name)
                 return
             else:
                 self._healing_thread = None
-                log.debug('pipeline %s healing thread ended. '
+                log.debug('pipeline %s healing thread ended. ')
         # Healing thread is not running. We can launch a new one.
         if not self._healing_thread:
-            log.debug('pipeline %s launching healing thread...', pipeline.name)
-            self._heartbeat() # register a heartbeat to prevent looping back into heal while healing
-            log.debug("Requesting pipeline elements to heal... %s", self.__class__.__name__)
+            log.debug('pipeline %s launching healing thread...', self.name)
+            # register a heartbeat to prevent looping back
+            # into heal while healing
+            self._heartbeat()
+            log.debug("Requesting pipeline elements to heal... %s",
+                      self.__class__.__name__)
             heal_target = self.pipe_elements[0].heal()
             self._healing_thread = threading.Thread(target=heal_target)
             self._healing_thread.start()
-            log.debug("Completed request to pipeline elements to heal. %s", self.__class__.__name__)
+            log.debug("Completed request to pipeline elements to heal. %s",
+                      self.__class__.__name__)
             # give the healing target a few seconds to finish
 
     def stop(self):
-        log.info("Requesting pipeline elements to stop... %s", self.__class__.__name__)
+        log.info("Requesting pipeline elements to stop... %s",
+                 self.__class__.__name__)
         self.pipe_elements[0].stop()
-        log.info("Completed request to pipeline elements to stop. %s", self.__class__.__name__)
+        log.info("Completed request to pipeline elements to stop. %s",
+                 self.__class__.__name__)
         return

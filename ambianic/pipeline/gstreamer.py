@@ -30,7 +30,8 @@ class InputStreamProcessor(PipeElement):
     class PipelineSource:
         def __init__(self, source_conf=None):
             assert source_conf, "pipeline source configuration required."
-            assert source_conf['uri'], "pipeline source config missing uri element"
+            assert source_conf['uri'], \
+                "pipeline source config missing uri element"
             # rtsp://..., rtmp://..., http://..., file:///...
             self.uri = source_conf['uri']
             # video, image, audio, auto
@@ -77,13 +78,15 @@ class InputStreamProcessor(PipeElement):
         self.source_shape.width = struct["width"]
         self.source_shape.height = struct["height"]
         if self.source_shape.width:
-            log.info("Input source width: %d, height: %d", self.source_shape.width, self.source_shape.height)
+            log.info("Input source width: %d, height: %d",
+                     self.source_shape.width, self.source_shape.height)
         return True
 
     def on_bus_message(self, bus, message, loop):
         t = message.type
         if t == Gst.MessageType.EOS:
-            log.info('End of stream. Exiting gstreamer loop for this video stream.')
+            log.info('End of stream. Exiting gstreamer loop '
+                     'for this video stream.')
             loop.quit()
         elif t == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
@@ -98,7 +101,8 @@ class InputStreamProcessor(PipeElement):
         log.info('Input stream received new image sample.')
         if not (self.source_shape.width or self.source_shape.height):
             # source stream shape still unknown
-            log.warning('New image sample received but source shape still unknown?!')
+            log.warning('New image sample received '
+                        'but source shape still unknown?!')
             return Gst.FlowReturn.OK
         sample = sink.emit('pull-sample')
         buf = sample.get_buffer()
@@ -107,17 +111,21 @@ class InputStreamProcessor(PipeElement):
         # print("gst_appsink caps struct: {}".format(struct))
         app_width = struct["width"]
         app_height = struct["height"]
-        # print("gst_appsink(inference image) width: {}, height: {}".format(app_width, app_height))
+        # print("gst_appsink(inference image) width: {}, height: {}".
+        #   format(app_width, app_height))
         result, mapinfo = buf.map(Gst.MapFlags.READ)
         if result:
-            img = Image.frombytes('RGB', (app_width, app_height), mapinfo.data, 'raw')
-            # svg_canvas = svgwrite.Drawing('', size=(self.source_shape.width, self.source_shape.height))
+            img = Image.frombytes('RGB', (app_width, app_height), mapinfo.data,
+                                  'raw')
+            # svg_canvas = svgwrite.Drawing('', size=(self.source_shape.width,
+            #    self.source_shape.height))
             # pass image sample to next pipe element, e.g. ai inference
             if self.next_element:
                 log.info('Input stream sending sample to next element.')
                 self.next_element.receive_next_sample(image=img)
             else:
-                log.info('Input stream has no next pipe element to send sample to.')
+                log.info('Input stream has no next pipe element '
+                         'to send sample to.')
         buf.unmap(mapinfo)
         return Gst.FlowReturn.OK
 
@@ -241,19 +249,22 @@ class InputStreamProcessor(PipeElement):
             try:
                 self._gst_loop()
             except Exception as e:
-                log.warning("GST loop exited with error: {} . Will attempt to repair.".format(str(e)))
+                log.warning('GST loop exited with error: {}. '
+                            'Will attempt to repair.'.format(str(e)))
             finally:
                 if not self._stop_requested:
-                    log.debug("Gst pipeline exited main loop unexpectedly. Repairing...")
+                    log.debug('Gst pipeline exited main loop unexpectedly.'
+                              ' Repairing...')
                     self.heal()
-                    # time.sleep(1)  # pause for a moment to give associated resources a chance to cleanup
+                    # time.sleep(1)  # pause for a moment to give
+                    # associated resources a chance to cleanup
                     log.debug("Gst pipeline repaired. Will resume main loop.")
         # Clean up.
         self._gst_cleanup()
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
-        """ Attempt to heal a damaged gstream pipeline """
+        """Attempt to heal a damaged gstream pipeline."""
         log.debug("Entering healing method... %s", self.__class__.__name__)
         logging.debug('Healing waiting for lock.')
         self._healing_in_progress.acquire()
