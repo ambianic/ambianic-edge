@@ -64,7 +64,8 @@ def get_samples(before_datetime=None, max_count=10):
     files = list(p.glob("*-json.txt"))
     log.debug('Fetched %d file names.', len(files))
     files = sorted(files, key=os.path.getmtime, reverse=True)
-    log.debug('File names follow:\n %s', "\n".join(files))
+    lines = map(str, files)
+    log.debug('File names follow:\n %s', "\n".join(lines))
     return SAMPLES
 
 
