@@ -98,6 +98,21 @@ class PipelineServer:
         log.info('pipeline jobs stopped.')
 
 
+class HealingThread(threading.Thread):
+    """ A thread focused on healing a broken pipeline. """
+
+    def __init__(self, target=None, on_finished=None):
+        assert target, 'Healing target required'
+        assert on_finished, 'on_finished callback required'
+        threading.Thread.__init__(self, daemon=True)
+        self._target = target
+        self._on_finished = on_finished
+
+    def run(self):
+        self._target()
+        self._on_finished()
+
+
 class Pipeline:
     """ The main Ambianic processing structure.
 
@@ -193,27 +208,25 @@ class Pipeline:
     def heal(self):
         """Nonblocking asynchronous heal function.        """
         if self._healing_thread:
-            log.debug('pipeline %s healing thread already exists for . '
+            log.debug('pipeline %s healing thread in progress.'
+                      ' Skipping request. '
                       'Thread id: %d. Checking if its alive. ',
                       self.name, self._healing_thread.ident)
-            if self._healing_thread.is_alive():
-                log.debug('pipeline %s healing thread in progress. '
-                          'Skipping new request.', self.name)
-                return
-            else:
-                self._healing_thread = None
-                log.debug('pipeline %s healing thread id: %d ended. ',
-                          self.name,
-                          self._healing_thread.ident)
-        # Healing thread is not running. We can launch a new one.
-        if not self._healing_thread:
+        else:
             log.debug('pipeline %s launching healing thread...', self.name)
             # register a heartbeat to prevent looping back
             # into heal while healing
             self._heartbeat()
             heal_target = self.pipe_elements[0].heal
-            self._healing_thread = threading.Thread(target=heal_target,
-                                                    daemon=True)
+
+            def healing_finished():
+                log.debug('pipeline %s healing thread id: %d ended. ',
+                          self.name,
+                          self._healing_thread.ident)
+                self._healing_thread = None
+            # launch healing function in a non-blocking way
+            self._healing_thread = HealingThread(target=heal_target,
+                                                 on_finished=healing_finished)
             self._healing_thread.start()
             log.debug('pipeline %s launched healing thread id: %d...',
                       self.name,

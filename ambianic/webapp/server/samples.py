@@ -1,6 +1,9 @@
 """Restful services related to pipeline samples."""
 import logging
 import uuid
+import datetime
+from pathlib import Path
+import os
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +29,42 @@ SAMPLES = [
 ]
 
 
-def get_samples():
-    """Return a dictionary of pipeline samples."""
-    log.debug('returning SAMPLES')
+def get_samples(before_datetime=None, max_count=10):
+    """Get stored pipeline samples.
+
+    Parameters
+    ----------
+    before_datetime : date time in ISO 8601 compatible format,
+        YYYY-MM-DDTHH:MM:SS. For example '2002-12-25 00:00:00-06:39'.
+        It uses python's standard function datetime.fromisoformat().
+        If not provided, the function will start with the most recent available
+        sample.
+    max_count : positive integer
+        Maximum number of samples returned. Defaults to 10.
+
+    Returns
+    -------
+    dictionary
+        Returns a dictionary of previously saved pipeline samples.
+
+    """
+    parsed_datetime = None
+    if before_datetime:
+        try:
+            parsed_datetime = datetime.fromisoformat(before_datetime)
+            log.debug('Fetching %d samples before %s', max_count,
+                      parsed_datetime)
+        except ValueError as e:
+            log.warning('Unable to parse before_datetime parameter: %s. '
+                        ' Error: %s', before_datetime, str(e))
+    if not parsed_datetime:
+        log.debug('Fetching %d most recent samples.', max_count)
+    p = Path('./data/faces/')
+    log.debug('Samples path: %s', p.resolve())
+    files = list(p.glob("*-json.txt"))
+    log.debug('Fetched %d file names.', len(files))
+    files = sorted(files, key=os.path.getmtime, reverse=True)
+    log.debug('File names follow:\n %s', "\n".join(files))
     return SAMPLES
 
 
