@@ -197,7 +197,8 @@ class InputStreamProcessor(PipeElement):
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
         try:
-            if self.gst_pipeline:
+            if self.gst_pipeline \
+              and self.gst_pipeline.getstate() != Gst.State.NULL:
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 self.gst_bus.remove_signal_watch()
@@ -214,19 +215,18 @@ class InputStreamProcessor(PipeElement):
                 self.gst_queue.set_state(Gst.State.NULL)
                 # self.gst_queue.disconnect()
                 self.gst_queue = None
+                log.debug("gst_video_source.set_state(Gst.State.NULL)")
                 self.gst_video_source.set_state(Gst.State.NULL)
                 # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
                 self.gst_video_source = None
-
                 log.debug("gst_pipeline.set_state(Gst.State.NULL)")
                 self.gst_pipeline.set_state(Gst.State.NULL)
                 self.gst_pipeline = None
-                log.debug("gst_video_source.set_state(Gst.State.NULL)")
+                log.debug("while GLib.MainContext.default().iteration(False)")
+                while GLib.MainContext.default().iteration(False):
+                    pass
             else:
                 log.debug("self.gst_pipeline: None")
-            log.debug("while GLib.MainContext.default().iteration(False)")
-            while GLib.MainContext.default().iteration(False):
-                pass
             if self.mainloop:
                 log.debug("gst mainloop.quit()")
                 self.mainloop.quit()

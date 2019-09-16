@@ -210,7 +210,7 @@ class Pipeline:
         if self._healing_thread:
             log.debug('pipeline %s healing thread in progress.'
                       ' Skipping request. '
-                      'Thread id: %d. Checking if its alive. ',
+                      'Thread id: %d. ',
                       self.name, self._healing_thread.ident)
         else:
             log.debug('pipeline %s launching healing thread...', self.name)
