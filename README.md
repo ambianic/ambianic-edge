@@ -8,7 +8,9 @@ Helpful AI for Home and Business Automation
 Local data, custom AI models, federated learning
 
 # Project Status
-At this time, Ambianic is in active early stages of development. It is only available in development mode for code contributors who are willing to take the risk and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code. 
+At this time, Ambianic is in active early formation stages. Lots of design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible. 
+
+If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise click on the Watch button above (Releases Only option) to be notified when we release a stable end user version.
 
 # How to run in development mode
 If you are interested to try the development version, follow these steps:
