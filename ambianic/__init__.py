@@ -10,6 +10,15 @@ import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from .pipeline.interpreter import PipelineServer
 from .service import ServiceExit, ThreadedJob
+import os
+
+def main():
+    env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
+    start(env_work_dir)
+
+
+if __name__ == '__main__':
+    main()
 
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"

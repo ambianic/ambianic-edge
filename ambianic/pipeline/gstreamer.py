@@ -12,7 +12,8 @@ gi.require_version('GstBase', '1.0')
 from gi.repository import GObject, Gst, GLib
 
 Gst.init(None)
-GObject.threads_init()
+# No need to call GObject.threads_init() since version 3.11
+# GObject.threads_init()
 
 log = logging.getLogger(__name__)
 
