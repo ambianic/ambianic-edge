@@ -11,6 +11,7 @@ gi.require_version('GstBase', '1.0')
 from gi.repository import GObject, Gst, GLib
 
 Gst.init(None)
+GObject.threads_init()
 
 log = logging.getLogger(__name__)
 
@@ -87,14 +88,16 @@ class InputStreamProcessor(PipeElement):
         if t == Gst.MessageType.EOS:
             log.info('End of stream. Exiting gstreamer loop '
                      'for this video stream.')
-            loop.quit()
+            self._gst_cleanup()
+            # loop.quit()
         elif t == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
             log.warning('Warning: %s: %s', err, debug)
         elif t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
             log.warning('Error: %s: %s', err, debug)
-            loop.quit()
+            self._gst_cleanup()
+            # loop.quit()
         return True
 
     def on_new_sample(self, sink):
@@ -132,11 +135,12 @@ class InputStreamProcessor(PipeElement):
     def _get_pipeline_args(self):
         PIPELINE = ' uridecodebin name=source latency=0 '
         PIPELINE += """
-             ! {leaky_q} ! videoconvert name=vconvert ! {sink_caps}
-             ! {leaky_q0} ! {sink_element}
+             ! {leaky_q0} ! videoconvert name=vconvert ! {sink_caps}
+             ! {leaky_q1} ! {sink_element}
              """
-        LEAKY_Q0 = 'queue max-size-buffers=10 leaky=downstream'
-        LEAKY_Q = LEAKY_Q0 + ' name=queue'
+        LEAKY_Q_ = 'queue max-size-buffers=10 leaky=downstream'
+        LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
+        LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
         # Ask gstreamer to format the images in a way that are close
         # to the TF model tensor.
         # Note: Having gstreamer resize doesn't appear to make
@@ -148,8 +152,8 @@ class InputStreamProcessor(PipeElement):
                 appsink name=appsink sync=false
                 emit-signals=true max-buffers=1 drop=true
                 """
-        pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q,
-                                        leaky_q0=LEAKY_Q0,
+        pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q0,
+                                        leaky_q0=LEAKY_Q1,
                                         sink_caps=SINK_CAPS,
                                         sink_element=SINK_ELEMENT)
         log.debug('Gstreamer pipeline args: %s', pipeline_args)
@@ -164,8 +168,9 @@ class InputStreamProcessor(PipeElement):
         self.gst_video_source_connect_id = self.gst_video_source.connect(
             'autoplug-continue', self.on_autoplug_continue)
         assert self.gst_video_source_connect_id
-        self.gst_queue = self.gst_pipeline.get_by_name('queue')
+        self.gst_queue0 = self.gst_pipeline.get_by_name('queue0')
         self.gst_vconvert = self.gst_pipeline.get_by_name('vconvert')
+        self.gst_queue1 = self.gst_pipeline.get_by_name('queue1')
         self.gst_appsink = self.gst_pipeline.get_by_name('appsink')
         log.debug("appsink: %s", str(self.gst_appsink))
         log.debug("appsink will emit signals: %s",
@@ -197,8 +202,10 @@ class InputStreamProcessor(PipeElement):
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
         try:
-            if self.gst_pipeline \
-              and self.gst_pipeline.get_state()[1] != Gst.State.NULL:
+            if not self.mainloop.is_running():
+                return
+            if self.gst_pipeline and \
+              self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 self.gst_bus.remove_signal_watch()
@@ -207,14 +214,18 @@ class InputStreamProcessor(PipeElement):
                 self.gst_appsink.set_state(Gst.State.NULL)
                 # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
                 self.gst_appsink = None
+                log.debug("gst_queue0.set_state(Gst.State.NULL)")
+                self.gst_queue0.set_state(Gst.State.NULL)
+                # self.gst_queue.disconnect()
+                self.gst_queue0 = None
                 log.debug("gst_vconvert.set_state(Gst.State.NULL)")
                 self.gst_vconvert.set_state(Gst.State.NULL)
                 # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
                 self.gst_vconvert = None
-                log.debug("gst_queue.set_state(Gst.State.NULL)")
-                self.gst_queue.set_state(Gst.State.NULL)
+                log.debug("gst_queue1.set_state(Gst.State.NULL)")
+                self.gst_queue0.set_state(Gst.State.NULL)
                 # self.gst_queue.disconnect()
-                self.gst_queue = None
+                self.gst_queue0 = None
                 log.debug("gst_video_source.set_state(Gst.State.NULL)")
                 self.gst_video_source.set_state(Gst.State.NULL)
                 # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
@@ -259,8 +270,8 @@ class InputStreamProcessor(PipeElement):
                     # time.sleep(1)  # pause for a moment to give
                     # associated resources a chance to cleanup
                     log.debug("Gst pipeline repaired. Will resume main loop.")
-        # Clean up.
-        self._gst_cleanup()
+        # Clean up handled by heal in the finally block above
+        # self._gst_cleanup()
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
@@ -277,21 +288,7 @@ class InputStreamProcessor(PipeElement):
             if self._latest_healing < now - 5:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
-                _cleanup_done = threading.Event()
-
-                def async_cleanup(done_flag=None):
-                    assert done_flag
-                    self._gst_cleanup()
-                    done_flag.set()
-                    # remove callback from GLib idle list
-                    return False
-                # Use GLib callback thread to cleanup.
-                # Avoid deadlock with main gst loop.
-                GLib.idle_add(async_cleanup, done_flag=_cleanup_done)
-                while not _cleanup_done.is_set():
-                    _cleanup_done.wait(timeout=3)
-                    if not _cleanup_done.is_set():
-                        log.debug("Gst cleanup taking awhile... ")
+                self._gst_cleanup()
                 # lets give external resources a chance to recover
                 # for example wifi connection is down temporarily
                 time.sleep(1)

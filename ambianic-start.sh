@@ -8,4 +8,4 @@ docker run -it --rm \
   --mount type=bind,source="$(pwd)",target=/workspace \
   --publish 1234:1234 \
   --publish 8778:8778 \
-  ambianic/ambianic
+  ambianic/ambianic:dev
