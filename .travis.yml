@@ -16,6 +16,7 @@ install:
 # command to run tests
 script:
   - docker images
+  - ./ambianic-test.sh
 #  - pytest --cov-report=xml --cov=ambianic
 #  - pylint --errors-only ambianic
 #after_success:
