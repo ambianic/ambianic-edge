@@ -9,7 +9,7 @@ set -e
 set -x
 
 # quietly update apt-get, install sudo and python3 which is not available by default on slim buster
-RUN apt-get update -y && apt-get install -y sudo && apt-get install -y python3 && apt-get install -y python3-pip
+apt-get update -y && apt-get install -y sudo && apt-get install -y python3 && apt-get install -y python3-pip
 
 # Install gstreamer
 sudo apt-get update && sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
