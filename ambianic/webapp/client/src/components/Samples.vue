@@ -29,7 +29,7 @@
               <td>{{ sample.file }}</td>
               <td>{{ sample.id }}</td>
               <td>{{ sample.datetime }}</td>
-              <td>{{ sample.image }}</td>
+              <td><img :src='imagePath(sample.image)'></img></td>
               <td>
                 <ul v-for="inf in sample.inference_result" :key="index">
                   <li>
@@ -146,7 +146,8 @@ import axios from 'axios';
 import Alert from './Alert.vue';
 import ambianic_conf from '../config.js'
 
-const API_SAMPLES_PATH = ambianic_conf['AMBIANIC_API_URI'] + 'samples';
+const API_ROOT = ambianic_conf['AMBIANIC_API_URI']
+const API_SAMPLES_PATH = API_ROOT + 'samples';
 console.debug("API_SAMPLES_PATH: "+API_SAMPLES_PATH)
 
 export default {
@@ -172,6 +173,11 @@ export default {
     alert: Alert,
   },
   methods: {
+    imagePath(image_name) {
+      let p = API_ROOT + 'data/faces/' + image_name;
+      console.debug('imagePath: ' + p)
+      return p;
+    },
     getSamples() {
       const path = API_SAMPLES_PATH
       axios.get(path)
