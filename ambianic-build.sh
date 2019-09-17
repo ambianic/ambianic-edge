@@ -8,4 +8,4 @@ TAG="ambianic/ambianic-dev"
 
 docker build --tag $TAG ./
 docker run --rm --entrypoint echo "$TAG" "Hello $hello"
-docker push $TAG
+# docker push $TAG
