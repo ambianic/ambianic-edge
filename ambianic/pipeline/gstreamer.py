@@ -198,7 +198,7 @@ class InputStreamProcessor(PipeElement):
         log.debug("GST cleaning up resources...")
         try:
             if self.gst_pipeline \
-              and self.gst_pipeline.getstate() != Gst.State.NULL:
+              and self.gst_pipeline.get_state()[1] != Gst.State.NULL:
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 self.gst_bus.remove_signal_watch()
@@ -277,7 +277,24 @@ class InputStreamProcessor(PipeElement):
             if self._latest_healing < now - 5:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
-                self._gst_cleanup()
+                _cleanup_done = threading.Event()
+
+                def async_cleanup(done_flag=None):
+                    assert done_flag
+                    self._gst_cleanup()
+                    done_flag.set()
+                    # remove callback from GLib idle list
+                    return False
+                # Use GLib callback thread to cleanup.
+                # Avoid deadlock with main gst loop.
+                GLib.idle_add(async_cleanup, done_flag=_cleanup_done)
+                while not _cleanup_done.is_set():
+                    _cleanup_done.wait(timeout=3)
+                    if not _cleanup_done.is_set():
+                        log.debug("Gst cleanup taking awhile... ")
+                # lets give external resources a chance to recover
+                # for example wifi connection is down temporarily
+                time.sleep(1)
             else:
                 log.debug("Healing request ignored. "
                           "Too soon after previous healing request.")
