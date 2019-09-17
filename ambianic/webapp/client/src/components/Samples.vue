@@ -16,20 +16,35 @@
         <table class="table table-hover">
           <thead>
             <tr>
-              <th scope="col">Title</th>
-              <th scope="col">Author</th>
-              <th scope="col">Read?</th>
+              <th scope="col">File</th>
+              <th scope="col">ID</th>
+              <th scope="col">Datetime</th>
+              <th scope="col">Image</th>
+              <th scope="col">Inference Results</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(sample, index) in samples" :key="index">
-              <td>{{ sample.title }}</td>
-              <td>{{ sample.author }}</td>
+              <td>{{ sample.file }}</td>
+              <td>{{ sample.id }}</td>
+              <td>{{ sample.datetime }}</td>
+              <td>{{ sample.image }}</td>
+              <td>
+                <ul v-for="inf in sample.inference_result" :key="index">
+                  <li>
+                    <p>Category: {{inf.category}}</p>
+                    <p>Confidence: {{inf.confidence}}</p>
+                    <p>Box: {{inf.box}}</p>
+                  </li>
+                </ul>
+              </td>
+<!--
               <td>
                 <span v-if="sample.read">Yes</span>
                 <span v-else>No</span>
               </td>
+-->
               <td>
                 <div class="btn-group" role="group">
                   <button

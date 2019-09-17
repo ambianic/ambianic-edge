@@ -4,6 +4,7 @@ import logging
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask.logging import default_handler
 import flask
 from requests import get
 from werkzeug.serving import make_server
@@ -90,6 +91,7 @@ def create_app():
     # create and configure the web app
     # set the project root directory as the static folder, you can set others.
     app = Flask(__name__, instance_relative_config=True)
+    app.logger.removeHandler(default_handler)
 
     # ensure the instance folder exists
     try:
