@@ -5,6 +5,7 @@ import gi
 import logging
 import time
 import threading
+import traceback
 
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
@@ -133,6 +134,7 @@ class InputStreamProcessor(PipeElement):
         return Gst.FlowReturn.OK
 
     def _get_pipeline_args(self):
+        log.debug('Preparing Gstreamer pipeline args')
         PIPELINE = ' uridecodebin name=source latency=0 '
         PIPELINE += """
              ! {leaky_q0} ! videoconvert name=vconvert ! {sink_caps}
@@ -162,6 +164,7 @@ class InputStreamProcessor(PipeElement):
     def _build_gst_pipeline(self):
         log.debug("Building new gstreamer pipeline")
         pipeline_args = self._get_pipeline_args()
+        log.debug("Initializing gstreamer pipeline")
         self.gst_pipeline = Gst.parse_launch(pipeline_args)
         self.gst_video_source = self.gst_pipeline.get_by_name('source')
         self.gst_video_source.props.uri = self.source.uri
@@ -202,9 +205,9 @@ class InputStreamProcessor(PipeElement):
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
         try:
-            if not self.mainloop.is_running():
-                return
-            if self.gst_pipeline and \
+            if self.mainloop and \
+              self.mainloop.is_running() and \
+              self.gst_pipeline and \
               self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
@@ -247,6 +250,8 @@ class InputStreamProcessor(PipeElement):
         except Exception as e:
             log.warning('Error while cleaning up gstreamer resources: %s',
                         str(e))
+            formatted_lines = traceback.format_exc().splitlines()
+            log.warning('Exception stack trace: %s', formatted_lines)
         log.debug("GST cleaned up resources.")
 
     def start(self):
@@ -292,6 +297,7 @@ class InputStreamProcessor(PipeElement):
                 # lets give external resources a chance to recover
                 # for example wifi connection is down temporarily
                 time.sleep(1)
+                log.debug("GST healing completed.")
             else:
                 log.debug("Healing request ignored. "
                           "Too soon after previous healing request.")
