@@ -152,8 +152,8 @@ class InputStreamProcessor(PipeElement):
                 appsink name=appsink sync=false
                 emit-signals=true max-buffers=1 drop=true
                 """
-        pipeline_args = PIPELINE.format(leaky_q=LEAKY_Q0,
-                                        leaky_q0=LEAKY_Q1,
+        pipeline_args = PIPELINE.format(leaky_q0=LEAKY_Q0,
+                                        leaky_q1=LEAKY_Q1,
                                         sink_caps=SINK_CAPS,
                                         sink_element=SINK_ELEMENT)
         log.debug('Gstreamer pipeline args: %s', pipeline_args)
@@ -215,9 +215,9 @@ class InputStreamProcessor(PipeElement):
                 # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
                 self.gst_appsink = None
                 log.debug("gst_queue0.set_state(Gst.State.NULL)")
-                self.gst_queue0.set_state(Gst.State.NULL)
+                self.gst_queue1.set_state(Gst.State.NULL)
                 # self.gst_queue.disconnect()
-                self.gst_queue0 = None
+                self.gst_queue1 = None
                 log.debug("gst_vconvert.set_state(Gst.State.NULL)")
                 self.gst_vconvert.set_state(Gst.State.NULL)
                 # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
