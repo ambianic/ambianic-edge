@@ -3,6 +3,7 @@ import datetime
 import os
 import pathlib
 import json
+import uuid
 
 from . import PipeElement
 
@@ -54,6 +55,7 @@ class SaveSamples(PipeElement):
             inf_json.append(one_inf)
 
         ai_json = {
+            'id': uuid.uuid4().hex,
             'datetime': now.isoformat(),
             'image': image_file,
             'inference_result': inf_json,

@@ -2,6 +2,15 @@
 
 echo "Installing Ambianic dependencies"
 
+# exit bash script on error
+set -e
+
+# verbose mode
+set -x
+
+# quietly update apt-get, install sudo and python3 which is not available by default on slim buster
+RUN apt-get update -y && apt-get install -y sudo && apt-get install -y python3 && apt-get install -y python3-pip
+
 # Install gstreamer
 sudo apt-get update && sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
 
@@ -9,7 +18,7 @@ sudo apt-get update && sudo apt-get install -y gstreamer1.0-plugins-bad gstreame
 
 # make sure python sees the packages installed via apt-get
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
-echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
+# echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
 if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then

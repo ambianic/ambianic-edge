@@ -131,9 +131,12 @@ def create_app():
             }
             samples.add_sample(new_sample)
             response_object['message'] = 'Sample added!'
+            log.debug('Sample added: %s ', new_sample)
         else:
             response_object['samples'] = samples.get_samples()
-        return jsonify(response_object)
+        log.debug('Returning samples: %s ', response_object)
+        resp = jsonify(response_object)
+        return resp
 
     @app.route('/api/samples/<sample_id>', methods=['PUT', 'DELETE'])
     def update_sample(sample_id):
