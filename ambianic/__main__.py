@@ -12,14 +12,6 @@ from .pipeline.interpreter import PipelineServer
 from .service import ServiceExit, ThreadedJob
 import os
 
-def main():
-    env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
-    start(env_work_dir)
-
-
-if __name__ == '__main__':
-    main()
-
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
 CONFIG_FILE = "config.yaml"
@@ -193,3 +185,12 @@ def stop():
     log.info("Stopping server...")
     global _service_exit_requested
     _service_exit_requested = True
+
+
+def main():
+    env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
+    start(env_work_dir)
+
+
+if __name__ == '__main__':
+    main()

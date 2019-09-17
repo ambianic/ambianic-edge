@@ -55,7 +55,7 @@ SAMPLES = [
 ]
 
 
-def get_samples(before_datetime=None, max_count=10):
+def get_samples(before_datetime=None, page=1):
     """Get stored pipeline samples.
 
     Parameters
@@ -65,8 +65,8 @@ def get_samples(before_datetime=None, max_count=10):
         It uses python's standard function datetime.fromisoformat().
         If not provided, the function will start with the most recent available
         sample.
-    max_count : positive integer
-        Maximum number of samples returned. Defaults to 10.
+    page : positive integer
+        Paginates samples in batches of 5. Defaults to page=1.
 
     Returns
     -------
@@ -75,23 +75,31 @@ def get_samples(before_datetime=None, max_count=10):
 
     """
     parsed_datetime = None
+    assert isinstance(page, int)
+    assert page > 0
+    page_size = 5
     if before_datetime:
         try:
             parsed_datetime = datetime.fromisoformat(before_datetime)
-            log.debug('Fetching %d samples before %s', max_count,
+            log.debug('Fetching samples saved before %s',
                       parsed_datetime)
         except ValueError as e:
             log.warning('Unable to parse before_datetime parameter: %s. '
                         ' Error: %s', before_datetime, str(e))
+    page_start_position = (page-1)*page_size
+    page_end_position = page_start_position + page_size
     if not parsed_datetime:
-        log.debug('Fetching %d most recent samples.', max_count)
+        log.debug('Fetching most recent saved samples')
+    log.debug('Fetching samples page %d. Page size %d. '
+              'Sample index range [%d:%d]. ',
+              page, page_size, page_start_position, page_end_position)
     p = Path('./data/faces/')
     log.debug('Samples path: %s', p.resolve())
     files = list(p.glob("*-json.txt"))
     log.debug('Fetched %d file names.', len(files))
     files = sorted(files, key=os.path.getmtime, reverse=True)
     samples = []
-    for json_file in files:
+    for json_file in files[page_start_position:page_end_position]:
         with open(json_file) as f:
             sample = json.load(f)
             sample['id'] = uuid.uuid4().hex

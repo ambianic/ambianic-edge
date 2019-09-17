@@ -14,55 +14,69 @@
         </button>
         <br><br>
         <table class="table table-hover">
+<!--
           <thead>
             <tr>
               <th scope="col">File</th>
               <th scope="col">ID</th>
               <th scope="col">Datetime</th>
-              <th scope="col">Image</th>
               <th scope="col">Inference Results</th>
               <th></th>
             </tr>
           </thead>
+-->
           <tbody>
             <tr v-for="(sample, index) in samples" :key="index">
-              <td>{{ sample.file }}</td>
-              <td>{{ sample.id }}</td>
-              <td>{{ sample.datetime }}</td>
-              <td><img :src='imagePath(sample.image)'></img></td>
-              <td>
-                <ul v-for="inf in sample.inference_result" :key="index">
-                  <li>
-                    <p>Category: {{inf.category}}</p>
-                    <p>Confidence: {{inf.confidence}}</p>
-                    <p>Box: {{inf.box}}</p>
-                  </li>
-                </ul>
-              </td>
-<!--
-              <td>
-                <span v-if="sample.read">Yes</span>
-                <span v-else>No</span>
-              </td>
--->
-              <td>
-                <div class="btn-group" role="group">
-                  <button
-                          type="button"
-                          class="btn btn-warning btn-sm"
-                          v-b-modal.sample-update-modal
-                          @click="editSample(sample)">
-                      Update
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-danger btn-sm"
-                    @click="onDeleteSample(sample)"
-                  >
-                  Delete
-                  </button>
-                </div>
-              </td>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td><img :src='imagePath(sample.image)'></img></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span>{{ sample.file }}</span>
+                        <span>{{ sample.id }}</span>
+                        <span>{{ sample.datetime }}</span>
+                        <span>
+                          <ul v-for="inf in sample.inference_result"
+                          :key="index"
+                          :data-num="index + 1"
+                          >
+                            <li>
+                              <p>Category: {{inf.category}}</p>
+                              <p>Confidence: {{inf.confidence}}</p>
+                              <p>Box: {{inf.box}}</p>
+                            </li>
+                          </ul>
+                        </span>
+          <!--
+                        <td>
+                          <span v-if="sample.read">Yes</span>
+                          <span v-else>No</span>
+                        </td>
+          -->
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <button
+                                  type="button"
+                                  class="btn btn-warning btn-sm"
+                                  v-b-modal.sample-update-modal
+                                  @click="editSample(sample)">
+                              Update
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger btn-sm"
+                            @click="onDeleteSample(sample)"
+                          >
+                          Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
             </tr>
           </tbody>
         </table>
@@ -138,6 +152,7 @@
         </b-button-group>
       </b-form>
     </b-modal>
+    <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler"></infinite-loading>
   </div>
 </template>
 
@@ -154,6 +169,9 @@ export default {
   data() {
     return {
       samples: [],
+      // infinite loading attributes
+      page: 1,
+      infiniteId: +new Date(),
       addSampleForm: {
         title: '',
         author: '',
@@ -173,6 +191,25 @@ export default {
     alert: Alert,
   },
   methods: {
+    infiniteHandler($state) {
+      const api = API_SAMPLES_PATH
+      axios.get(api, {
+        params: {
+          page: this.page,
+        },
+      }).then(({ data }) => {
+        if (data.samples.length) {
+          console.debug('this.page: '+ this.page);
+          this.page += 1;
+          this.samples.push(...data.samples);
+          console.debug('data.samples.length: '+ data.samples.length);
+          console.debug('this.samples.length: '+ this.samples.length);
+          $state.loaded();
+        } else {
+          $state.complete();
+        }
+      });
+    },
     imagePath(image_name) {
       let p = API_ROOT + 'data/faces/' + image_name;
       console.debug('imagePath: ' + p)
@@ -288,7 +325,7 @@ export default {
     },
   },
   created() {
-    this.getSamples();
+    // this.getSamples();
   },
 };
 </script>

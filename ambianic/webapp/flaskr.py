@@ -135,8 +135,11 @@ def create_app():
             response_object['message'] = 'Sample added!'
             log.debug('Sample added: %s ', new_sample)
         else:
-            response_object['samples'] = samples.get_samples()
-        log.debug('Returning samples: %s ', response_object)
+            req_page = request.args.get('page', default=1, type=int)
+            resp = samples.get_samples(page=req_page)
+            response_object['samples'] = resp
+            log.debug('Returning %d samples', len(resp))
+        # log.debug('Returning samples: %s ', response_object)
         resp = jsonify(response_object)
         return resp
 

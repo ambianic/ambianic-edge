@@ -67,7 +67,7 @@ export default {
         if (data.hits.length) {
           this.page += 1;
           this.list.push(...data.hits);
-          console.debug('this.list hacker news hits: '+ JSON.stringify(this.list));
+          console.debug('this.list hacker news hits count: '+ JSON.stringify(this.list.length));
           $state.loaded();
         } else {
           $state.complete();

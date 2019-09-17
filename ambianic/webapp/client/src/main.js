@@ -5,7 +5,13 @@ import App from './App.vue';
 import InfiniteLoading from 'vue-infinite-loading';
 import router from './router';
 
-Vue.use(InfiniteLoading, { /* options */ });
+Vue.use(InfiniteLoading, { /* options */
+  slots: {
+    // keep default styles
+    noResults: 'No data available on your timeline yet.',
+    noMore: 'End of your timeline archive.',
+  },
+});
 
 Vue.use(BootstrapVue);
 
