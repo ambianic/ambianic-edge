@@ -1,13 +1,13 @@
 
 import traceback
 import logging
-from gi.repository import GObject, Gst, GLib
 import signal
 import threading
 from ambianic.service import ServiceExit
 import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
+from gi.repository import GObject, Gst, GLib
 
 Gst.init(None)
 # No need to call GObject.threads_init() since version 3.11
@@ -285,7 +285,6 @@ class GstService:
     def run(self):
         """ Run the gstreamer pipeline service """
         log.info("Starting %s", self.__class__.__name__)
-        super().start()
         # Register the signal handlers
         signal.signal(signal.SIGTERM, self.service_shutdown)
         signal.signal(signal.SIGINT, self.service_shutdown)
