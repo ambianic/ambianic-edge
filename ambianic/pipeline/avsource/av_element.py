@@ -6,6 +6,7 @@ import time
 import threading
 import traceback
 import multiprocessing
+import queue
 from PIL import Image
 
 
@@ -34,7 +35,7 @@ class InputStreamProcessor(PipeElement):
         # ensure healing requests are reasonably spaced out
         self._latest_healing = time.monotonic()
 
-    def on_new_sample(self, sample):
+    def on_new_sample(self, sample=None):
         log.info('Input stream received new gst sample.')
         assert sample
         type = sample['type']
@@ -57,6 +58,7 @@ class InputStreamProcessor(PipeElement):
                      'to send sample to.')
 
     def _run_gst_service(self):
+        log.debug("Starting Gst service process...")
         self._gst_out_queue = multiprocessing.Queue(10)
         self._gst_process_stop_signal = multiprocessing.Event()
         self._gst_process = multiprocessing.Process(
@@ -71,9 +73,15 @@ class InputStreamProcessor(PipeElement):
         self._gst_process.daemon = True
         self._gst_process.start()
         while not self._stop_requested and self._gst_process.is_alive():
-            self._gst_process.join(1)
+            # do not use process.join() to avoid deadlock due to shared queue
+            try:
+                next_sample = self._gst_out_queue.get(timeout=1)
+            except queue.Empty:
+                log.debug('no new sample available yet in gst out queue')
+            self.on_new_sample(sample=next_sample)
 
-    def _reset_gst_service(self):
+    def _stop_gst_service(self):
+        log.debug("Stopping Gst service process.")
         if self._gst_process and self._gst_process.is_alive():
             # tell the OS we won't use this queue any more
             self._gst_out_queue.close()
@@ -118,7 +126,9 @@ class InputStreamProcessor(PipeElement):
                 formatted_lines = traceback.format_exc().splitlines()
                 log.warning('Exception stack trace: %s', formatted_lines)
             finally:
-                if not self._stop_requested:
+                if self._stop_requested:
+                    self._stop_gst_service()
+                else:
                     log.debug('Gst pipeline exited main loop unexpectedly.'
                               ' Repairing...')
                     self.heal()
@@ -126,7 +136,6 @@ class InputStreamProcessor(PipeElement):
                     # associated resources a chance to cleanup
                     log.debug("Gst pipeline repaired. Will resume main loop.")
         # Clean up handled by heal in the finally block above
-        # self._gst_cleanup()
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
@@ -143,7 +152,7 @@ class InputStreamProcessor(PipeElement):
             if self._latest_healing < now - 5:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
-                self._reset_gst_service()
+                self._stop_gst_service()
                 # lets give external resources a chance to recover
                 # for example wifi connection is down temporarily
                 time.sleep(1)

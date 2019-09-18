@@ -291,7 +291,7 @@ class GstService:
         self._register_stop_handler()
         try:
             self._gst_loop()
-        except ServiceExit as e:
+        except ServiceExit:
             log.info('GST Service exit requested. Exiting...')
         except Exception as e:
             log.warning('GST loop exited with error: %s. ',
