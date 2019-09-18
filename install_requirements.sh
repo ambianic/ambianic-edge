@@ -62,3 +62,12 @@ sudo apt-get install -y npm
 # cd $runtimedir
 # cd ambianic/webapp/client
 # npm install
+
+# Cleanup
+sudo apt-get -y autoremove
+
+# remove apt-get cache
+sudo  rm -rf /var/lib/apt/lists/*
+
+# This is run automatically on Debian and Ubuntu, but just in case
+sudo apt-get clean
