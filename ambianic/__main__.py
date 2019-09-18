@@ -89,7 +89,7 @@ def configure(env_work_dir):
 
 
 def service_shutdown(signum, frame):
-    log.info('Caught signal %d', signum)
+    log.info('Caught system shutdown signal %d', signum)
     raise ServiceExit
 
 

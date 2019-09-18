@@ -1,15 +1,13 @@
-from PIL import Image
-from . import PipeElement
 
-import gi
-import logging
-import time
-import threading
 import traceback
-
+import logging
+from gi.repository import GObject, Gst, GLib
+import signal
+import threading
+from ambianic.service import ServiceExit
+import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
-from gi.repository import GObject, Gst, GLib
 
 Gst.init(None)
 # No need to call GObject.threads_init() since version 3.11
@@ -18,12 +16,25 @@ Gst.init(None)
 log = logging.getLogger(__name__)
 
 
-class InputStreamProcessor(PipeElement):
-    """
-    Pipe element that handles a wide range of media input sources.
+class GstService:
+    """Streams audio/video samples from various network and local A/V sources.
 
-    Detects media input source, processes and passes on normalized raw
-    samples to the next pipe element.
+    Runs in a separate OS process. Reads from vadious sources and
+     formatts. Serves audio/video samples in a normalized format to its master
+     AVElement, which then passes on to the next element in the Ambianic
+     pipeline.
+
+    Parameters
+    ----------
+    source_conf : URI
+        Source configuration. At this time URI schemes are supported such as
+        rtsp://host:ip/path_to_stream.
+
+    out_queue : multiprocessing.Queue
+        The queue where this service adds samples in a normalized format
+        for its master AVElement to receive and pass on to the next Ambianic
+        pipeline element.
+
     """
 
     class ImageShape:
@@ -41,9 +52,14 @@ class InputStreamProcessor(PipeElement):
             self.type = source_conf.get('type', 'auto')
         pass
 
-    def __init__(self, source_conf=None):
-        super()
+    def __init__(self, source_conf=None, out_queue=None, stop_signal=None):
+        assert source_conf
+        assert out_queue
+        assert stop_signal
         # pipeline source info
+        log.debug('Initializing GstService with source: %s ', source_conf)
+        self._out_queue = out_queue
+        self._stop_signal = stop_signal
         self.source = self.PipelineSource(source_conf=source_conf)
         # Reference to Gstreamer main loop structure
         self.mainloop = None
@@ -54,10 +70,10 @@ class InputStreamProcessor(PipeElement):
         self._gst_video_source_connect_id = None
         # shape of the input stream image or video
         self.source_shape = self.ImageShape()
-        self.gst_queue = None
-        self._gst_queue_connect_id = None
+        self.gst_queue0 = None
         self.gst_vconvert = None
         self.gst_vconvert_connect_id = None
+        self.gst_queue1 = None
         # gst_appsink handlies GStreamer callbacks
         # for new media samples which it passes on to the next pipe element
         self.gst_appsink = None
@@ -65,11 +81,6 @@ class InputStreamProcessor(PipeElement):
         # indicates whether stop was requested via the API
         self._stop_requested = False
         self.gst_bus = None
-        # protects access to gstreamer resources in rare cases
-        # such as supervised healing requests
-        self._healing_in_progress = threading.RLock()
-        # ensure healing requests are reasonably spaced out
-        self._latest_healing = time.monotonic()
 
     def on_autoplug_continue(self, src_bin, src_pad, src_caps):
         # print('on_autoplug_continue called for uridecodebin')
@@ -104,6 +115,9 @@ class InputStreamProcessor(PipeElement):
 
     def on_new_sample(self, sink):
         log.info('Input stream received new image sample.')
+        if self._out_queue.full():
+            log.info('Out queue full, skipping sample.')
+            return Gst.FlowReturn.OK
         if not (self.source_shape.width or self.source_shape.height):
             # source stream shape still unknown
             log.warning('New image sample received '
@@ -120,17 +134,15 @@ class InputStreamProcessor(PipeElement):
         #   format(app_width, app_height))
         result, mapinfo = buf.map(Gst.MapFlags.READ)
         if result:
-            img = Image.frombytes('RGB', (app_width, app_height), mapinfo.data,
-                                  'raw')
-            # svg_canvas = svgwrite.Drawing('', size=(self.source_shape.width,
-            #    self.source_shape.height))
-            # pass image sample to next pipe element, e.g. ai inference
-            if self.next_element:
-                log.info('Input stream sending sample to next element.')
-                self.next_element.receive_next_sample(image=img)
-            else:
-                log.info('Input stream has no next pipe element '
-                         'to send sample to.')
+            sample = {
+                'type': 'image',
+                'format': 'RGB',
+                'width': app_width,
+                'height': app_height,
+                'bytes': mapinfo.data,
+            }
+            log.info('GstService adding sample to out_queue.')
+            self._out_queue.put(sample)
         buf.unmap(mapinfo)
         return Gst.FlowReturn.OK
 
@@ -253,64 +265,50 @@ class InputStreamProcessor(PipeElement):
                         str(e))
             formatted_lines = traceback.format_exc().splitlines()
             log.warning('Exception stack trace: %s', formatted_lines)
-        log.debug("GST cleaned up resources.")
+        log.debug("GST clean up exiting.")
 
-    def start(self):
-        """ Start the gstreamer pipeline """
-        super().start()
+    def service_shutdown(self, signum, frame):
+        log.info('Caught system shutdown signal %d', signum)
+        raise ServiceExit
+
+    def _stop_handler(self):
+        self._stop_handler.wait()
+        self._gst_cleanup()
+
+    def _register_stop_handler(self):
+        stop_watch_thread = threading.Thread(
+            name='GST stop watch thread',
+            daemon=True,
+            target=self._stop_handler)
+        stop_watch_thread.start()
+
+    def run(self):
+        """ Run the gstreamer pipeline service """
         log.info("Starting %s", self.__class__.__name__)
-
-        self._stop_requested = False
-
-        while not self._stop_requested:
-            try:
-                self._gst_loop()
-            except Exception as e:
-                log.warning('GST loop exited with error: {}. '
-                            'Will attempt to repair.'.format(str(e)))
-            finally:
-                if not self._stop_requested:
-                    log.debug('Gst pipeline exited main loop unexpectedly.'
-                              ' Repairing...')
-                    self.heal()
-                    # time.sleep(1)  # pause for a moment to give
-                    # associated resources a chance to cleanup
-                    log.debug("Gst pipeline repaired. Will resume main loop.")
-        # Clean up handled by heal in the finally block above
-        # self._gst_cleanup()
+        super().start()
+        # Register the signal handlers
+        signal.signal(signal.SIGTERM, self.service_shutdown)
+        signal.signal(signal.SIGINT, self.service_shutdown)
+        self._register_stop_handler()
+        try:
+            self._gst_loop()
+        except ServiceExit as e:
+            log.info('GST Service exit requested. Exiting...')
+        except Exception as e:
+            log.warning('GST loop exited with error: %s. ',
+                        str(e))
+            formatted_lines = traceback.format_exc().splitlines()
+            log.warning('Exception stack trace: %s', formatted_lines)
+        finally:
+            log.debug('Gst service cleaning up before exit...')
+            self._gst_cleanup()
+            self._out_queue.close()
+            log.debug("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
 
-    def heal(self):
-        """Attempt to heal a damaged gstream pipeline."""
-        log.debug("Entering healing method... %s", self.__class__.__name__)
-        logging.debug('Healing waiting for lock.')
-        self._healing_in_progress.acquire()
-        try:
-            logging.debug('Healing lock acquired.')
-            now = time.monotonic()
-            # Space out healing attempts.
-            # No point in back to back healing runs when there are
-            # blocking dependencies on external resources.
-            if self._latest_healing < now - 5:
-                # cause gst loop to exit and repair
-                self._latest_healing = now
-                self._gst_cleanup()
-                # lets give external resources a chance to recover
-                # for example wifi connection is down temporarily
-                time.sleep(1)
-                log.debug("GST healing completed.")
-            else:
-                log.debug("Healing request ignored. "
-                          "Too soon after previous healing request.")
-        finally:
-            logging.debug('Healing lock released.')
-            self._healing_in_progress.release()
-        log.debug("Exiting healing method. %s", self.__class__.__name__)
 
-    def stop(self):
-        """ Gracefully stop the gstream pipeline """
-        log.info("Entering stop method ... %s", self.__class__.__name__)
-        self._stop_requested = True
-        self._gst_cleanup()
-        super().stop()
-        log.info("Exiting stop method. %s", self.__class__.__name__)
+def start_gst_service(source_conf=None, out_queue=None, stop_signal=None):
+    svc = GstService(source_conf=source_conf,
+                     out_queue=out_queue,
+                     stop_signal=stop_signal)
+    svc.run()
