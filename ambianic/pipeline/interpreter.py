@@ -224,6 +224,9 @@ class Pipeline:
                           self.name,
                           self._healing_thread.ident)
                 self._healing_thread = None
+                # let's notify healthchecker that progress is being made
+                self._heartbeat()
+
             # launch healing function in a non-blocking way
             self._healing_thread = HealingThread(target=heal_target,
                                                  on_finished=healing_finished)
