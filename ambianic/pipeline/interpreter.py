@@ -1,5 +1,5 @@
 import logging
-from .gstreamer import InputStreamProcessor
+from .avsource import InputStreamProcessor
 import time
 import threading
 
