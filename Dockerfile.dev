@@ -1,6 +1,6 @@
 # Development version of Ambianic docker image
-# FROM debian:buster-slim
-FROM alpine:latest
+FROM debian:buster-slim
+# FROM alpine:latest
 
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
