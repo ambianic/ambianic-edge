@@ -1,5 +1,5 @@
-from . import PipeElement
-import gst_process
+from .. import PipeElement
+from . import gst_process
 
 import logging
 import time

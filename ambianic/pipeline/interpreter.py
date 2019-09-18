@@ -1,5 +1,5 @@
 import logging
-from .avsource import InputStreamProcessor
+from .avsource.av_element import InputStreamProcessor
 import time
 import threading
 
