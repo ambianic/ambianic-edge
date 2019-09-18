@@ -76,9 +76,9 @@ class InputStreamProcessor(PipeElement):
             # do not use process.join() to avoid deadlock due to shared queue
             try:
                 next_sample = self._gst_out_queue.get(timeout=1)
+                self.on_new_sample(sample=next_sample)
             except queue.Empty:
                 log.debug('no new sample available yet in gst out queue')
-            self.on_new_sample(sample=next_sample)
 
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
@@ -112,6 +112,14 @@ class InputStreamProcessor(PipeElement):
                     log.debug('Gst proess did not terminate.'
                               ' Resorting to force kill.')
                     self._gst_process.kill()
+                    while self._gst_process.is_alive():
+                        time.sleep(1)
+                    log.debug('Gst process stopped after kill signal.')
+                else:
+                    log.debug('Gst process stopped after terminate signal.')
+            else:
+                log.debug('Gst process stopped after stop signal.')
+
 
     def start(self):
         """ Start the gstreamer pipeline """
@@ -127,7 +135,8 @@ class InputStreamProcessor(PipeElement):
                 log.warning('AVElement loop exited with error: %s. '
                             'Will attempt to repair.', str(e))
                 formatted_lines = traceback.format_exc().splitlines()
-                log.warning('Exception stack trace: %s', formatted_lines)
+                log.warning('Exception stack trace: %s',
+                            "\n".join(formatted_lines))
             finally:
                 if self._stop_requested:
                     self._stop_gst_service()
