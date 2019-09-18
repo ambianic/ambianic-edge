@@ -232,22 +232,26 @@ class GstService:
                     self.gst_appsink.set_state(Gst.State.NULL)
                     # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
                     self.gst_appsink = None
-                log.debug("gst_queue0.set_state(Gst.State.NULL)")
-                self.gst_queue1.set_state(Gst.State.NULL)
-                # self.gst_queue.disconnect()
-                self.gst_queue1 = None
-                log.debug("gst_vconvert.set_state(Gst.State.NULL)")
-                self.gst_vconvert.set_state(Gst.State.NULL)
-                # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
-                self.gst_vconvert = None
                 log.debug("gst_queue1.set_state(Gst.State.NULL)")
-                self.gst_queue0.set_state(Gst.State.NULL)
-                # self.gst_queue.disconnect()
-                self.gst_queue0 = None
+                if self.gst_queue1:
+                    self.gst_queue1.set_state(Gst.State.NULL)
+                    # self.gst_queue.disconnect()
+                    self.gst_queue1 = None
+                log.debug("gst_vconvert.set_state(Gst.State.NULL)")
+                if self.gst_vconvert:
+                    self.gst_vconvert.set_state(Gst.State.NULL)
+                    # self.gst_vconvert.disconnect(self.gst_vconvert_connect_id)
+                    self.gst_vconvert = None
+                log.debug("gst_queue0.set_state(Gst.State.NULL)")
+                if self.gst_queue0:
+                    self.gst_queue0.set_state(Gst.State.NULL)
+                    # self.gst_queue.disconnect()
+                    self.gst_queue0 = None
                 log.debug("gst_video_source.set_state(Gst.State.NULL)")
-                self.gst_video_source.set_state(Gst.State.NULL)
-                # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
-                self.gst_video_source = None
+                if self.gst_video_source:
+                    self.gst_video_source.set_state(Gst.State.NULL)
+                    # self.gst_video_source.disconnect(self._gst_video_source_connect_id)
+                    self.gst_video_source = None
                 log.debug("gst_pipeline.set_state(Gst.State.NULL)")
                 self.gst_pipeline.set_state(Gst.State.NULL)
                 self.gst_pipeline = None
@@ -272,7 +276,8 @@ class GstService:
 
     def _service_shutdown(self, signum, frame):
         log.info('GST service caught system shutdown signal %d', signum)
-        self._gst_cleanup()
+        if not self._stop_signal.is_set():
+            self._stop_signal.set()
 
     def _stop_handler(self):
         self._stop_signal.wait()
