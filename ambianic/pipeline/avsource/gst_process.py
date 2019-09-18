@@ -224,8 +224,9 @@ class GstService:
               self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
-                self.gst_bus.remove_signal_watch()
-                self.gst_bus = None
+                if self.gst_bus:
+                    self.gst_bus.remove_signal_watch()
+                    self.gst_bus = None
                 log.debug("gst_appsink.set_state(Gst.State.NULL)")
                 self.gst_appsink.set_state(Gst.State.NULL)
                 # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
@@ -264,7 +265,7 @@ class GstService:
             log.warning('Error while cleaning up gstreamer resources: %s',
                         str(e))
             formatted_lines = traceback.format_exc().splitlines()
-            log.warning('Exception stack trace: %s', formatted_lines)
+            log.warning('Exception stack trace: %s', "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
 
     def service_shutdown(self, signum, frame):
@@ -301,7 +302,7 @@ class GstService:
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()
-            self._out_queue.close()
+            # self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
 

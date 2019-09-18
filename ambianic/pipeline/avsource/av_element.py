@@ -84,10 +84,13 @@ class InputStreamProcessor(PipeElement):
         log.debug("Stopping Gst service process.")
         if self._gst_process and self._gst_process.is_alive():
             # tell the OS we won't use this queue any more
-            self._gst_out_queue.close()
+            log.debug('GST process still alive. Shutting it down.')
+            # log.debug('Closing out queue shared with GST proces.')
+            # self._gst_out_queue.close()
             # send a polite request to the process to stop
+            log.debug('Sending stop signal to GST process.')
             self._gst_process_stop_signal.set()
-            log.debug('Signaling gst process to stop')
+            log.debug('Signalled gst process to stop')
             # give it a few seconds to stop cleanly
             for i in range(3):
                 time.sleep(1)
@@ -135,7 +138,6 @@ class InputStreamProcessor(PipeElement):
                     # time.sleep(1)  # pause for a moment to give
                     # associated resources a chance to cleanup
                     log.debug("Gst pipeline repaired. Will resume main loop.")
-        # Clean up handled by heal in the finally block above
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
