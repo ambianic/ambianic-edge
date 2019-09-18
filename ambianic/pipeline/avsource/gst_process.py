@@ -272,7 +272,7 @@ class GstService:
         raise ServiceExit
 
     def _stop_handler(self):
-        self._stop_handler.wait()
+        self._stop_signal.wait()
         self._gst_cleanup()
 
     def _register_stop_handler(self):

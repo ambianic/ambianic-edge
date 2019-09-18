@@ -142,7 +142,7 @@ class InputStreamProcessor(PipeElement):
             if self._latest_healing < now - 5:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
-                self._gst_service_reset()
+                self._reset_gst_service()
                 # lets give external resources a chance to recover
                 # for example wifi connection is down temporarily
                 time.sleep(1)
