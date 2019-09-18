@@ -269,9 +269,9 @@ class GstService:
                         "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
 
-    def service_shutdown(self, signum, frame):
+    def _service_shutdown(self, signum, frame):
         log.info('GST service caught system shutdown signal %d', signum)
-        raise ServiceExit
+        self._gst_cleanup()
 
     def _stop_handler(self):
         self._stop_signal.wait()
@@ -289,13 +289,11 @@ class GstService:
         """ Run the gstreamer pipeline service """
         log.info("Starting %s", self.__class__.__name__)
         # Register the signal handlers
-        signal.signal(signal.SIGTERM, self.service_shutdown)
-        signal.signal(signal.SIGINT, self.service_shutdown)
+        signal.signal(signal.SIGTERM, self._service_shutdown)
+        signal.signal(signal.SIGINT, self._service_shutdown)
         self._register_stop_handler()
         try:
             self._gst_loop()
-        except ServiceExit:
-            log.info('GST Service exit requested. Exiting...')
         except Exception as e:
             log.warning('GST loop exited with error: %s. ',
                         str(e))

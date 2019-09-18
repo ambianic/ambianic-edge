@@ -51,7 +51,7 @@ class PipelineServer:
                 latest_heartbeat, status = p.healthcheck()
                 now = time.monotonic()
                 lapse = now - latest_heartbeat
-                if lapse > 50:
+                if lapse > 60:
                     log.error('Pipeline %s in terminal condition. '
                               'Unable to recover.'
                               'Latest heartbeat was %f seconds ago. ',
@@ -59,7 +59,7 @@ class PipelineServer:
                     # more than a reasonable amount of time has passed
                     # since the pipeline reported a heartbeat.
                     # Let's recycle it
-                elif lapse > 20:
+                elif lapse > 10:
                     log.warning('Pipeline "%s" is not responsive. '
                                 'Latest heartbeat was %f seconds ago. '
                                 'Will attempt to heal it.', p.name, lapse)
