@@ -265,15 +265,17 @@ class GstService:
             log.warning('Error while cleaning up gstreamer resources: %s',
                         str(e))
             formatted_lines = traceback.format_exc().splitlines()
-            log.warning('Exception stack trace: %s', "\n".join(formatted_lines))
+            log.warning('Exception stack trace: %s',
+                        "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
 
     def service_shutdown(self, signum, frame):
-        log.info('Caught system shutdown signal %d', signum)
+        log.info('GST service caught system shutdown signal %d', signum)
         raise ServiceExit
 
     def _stop_handler(self):
         self._stop_signal.wait()
+        log.info('GST service received stop signal signal')
         self._gst_cleanup()
 
     def _register_stop_handler(self):
@@ -302,7 +304,7 @@ class GstService:
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()
-            # self._out_queue.close()
+            self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
 
