@@ -72,7 +72,8 @@ class InputStreamProcessor(PipeElement):
             )
         self._gst_process.daemon = True
         self._gst_process.start()
-        while not self._stop_requested and self._gst_process.is_alive():
+        gst_proc = self._gst_process
+        while not self._stop_requested and gst_proc.is_alive():
             # do not use process.join() to avoid deadlock due to shared queue
             try:
                 next_sample = self._gst_out_queue.get(timeout=1)
@@ -97,14 +98,16 @@ class InputStreamProcessor(PipeElement):
 
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
-        if self._gst_process and self._gst_process.is_alive():
+        gst_proc = self._gst_process
+        stop_signal = self._gst_process_stop_signal
+        if gst_proc and gst_proc.is_alive():
             # tell the OS we won't use this queue any more
             log.debug('GST process still alive. Shutting it down.')
             # log.debug('Closing out queue shared with GST proces.')
             # self._gst_out_queue.close()
             # send a polite request to the process to stop
             log.debug('Sending stop signal to GST process.')
-            self._gst_process_stop_signal.set()
+            stop_signal.set()
             log.debug('Signalled gst process to stop')
             # make sure a non-empty queue doesn't block
             # the gst process from stopping
@@ -112,25 +115,25 @@ class InputStreamProcessor(PipeElement):
             # give it a few seconds to stop cleanly
             for i in range(3):
                 time.sleep(1)
-                if not self._gst_process.is_alive():
+                if not gst_proc.is_alive():
                     break
             # process did not stop, we need to be a bit more assertive
-            if self._gst_process.is_alive():
+            if gst_proc.is_alive():
                 log.debug('Gst proess did not stop. Terminating.')
-                self._gst_process.terminate()
+                gst_proc.terminate()
                 # do not call join() because it may cause a deadlock
                 # due to the shared queue
                 # give it a few seconds to terminate cleanly
                 for i in range(3):
                     time.sleep(1)
-                    if not self._gst_process.is_alive():
+                    if not gst_proc.is_alive():
                         break
                 # last resort, force kill the process
-                if self._gst_process.is_alive():
+                if gst_proc.is_alive():
                     log.debug('Gst proess did not terminate.'
                               ' Resorting to force kill.')
-                    self._gst_process.kill()
-                    while self._gst_process.is_alive():
+                    gst_proc.kill()
+                    while gst_proc.is_alive():
                         time.sleep(1)
                     log.debug('Gst process stopped after kill signal.')
                 else:

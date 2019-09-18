@@ -207,6 +207,9 @@ class Pipeline:
 
     def heal(self):
         """Nonblocking asynchronous heal function.        """
+        # register a heartbeat to prevent looping back
+        # into heal while healing
+        self._heartbeat()
         if self._healing_thread:
             log.debug('pipeline %s healing thread in progress.'
                       ' Skipping request. '
@@ -214,9 +217,6 @@ class Pipeline:
                       self.name, self._healing_thread.ident)
         else:
             log.debug('pipeline %s launching healing thread...', self.name)
-            # register a heartbeat to prevent looping back
-            # into heal while healing
-            self._heartbeat()
             heal_target = self.pipe_elements[0].heal
 
             def healing_finished():
