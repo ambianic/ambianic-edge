@@ -90,8 +90,8 @@ class InputStreamProcessor(PipeElement):
         log.debug("Clearing _gst_out_queue.")
         try:
             while not self._gst_out_queue.empty():
-                q.get_nowait()
-        except Empty:
+                self._gst_out_queue.get_nowait()
+        except queue.Empty:
             pass
         log.debug("Cleared _gst_out_queue.")
 
@@ -108,7 +108,7 @@ class InputStreamProcessor(PipeElement):
             log.debug('Signalled gst process to stop')
             # make sure a non-empty queue doesn't block
             # the gst process from stopping
-            def _clear_gst_out_queue()
+            self._clear_gst_out_queue()
             # give it a few seconds to stop cleanly
             for i in range(3):
                 time.sleep(1)
