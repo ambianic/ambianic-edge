@@ -62,6 +62,7 @@ class InputStreamProcessor(PipeElement):
         self._gst_process = multiprocessing.Process(
             target=gst_process.start_gst_service,
             name='Gstreamer Service Process',
+            daemon=True,
             kwargs={'source_conf': self._source_conf,
                     'out_queue': self._gst_out_queue,
                     'stop_signal': self._gst_process_stop_signal,
