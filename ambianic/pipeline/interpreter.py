@@ -228,9 +228,8 @@ class Pipeline:
             self._healing_thread = HealingThread(target=heal_target,
                                                  on_finished=healing_finished)
             self._healing_thread.start()
-            log.debug('pipeline %s launched healing thread id: %d...',
-                      self.name,
-                      self._healing_thread.ident)
+            log.debug('pipeline %s launched healing thread.',
+                      self.name)
 
     def stop(self):
         log.info("Requesting pipeline elements to stop... %s",

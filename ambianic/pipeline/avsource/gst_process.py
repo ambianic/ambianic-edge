@@ -228,9 +228,10 @@ class GstService:
                     self.gst_bus.remove_signal_watch()
                     self.gst_bus = None
                 log.debug("gst_appsink.set_state(Gst.State.NULL)")
-                self.gst_appsink.set_state(Gst.State.NULL)
-                # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
-                self.gst_appsink = None
+                if self.gst_appsink:
+                    self.gst_appsink.set_state(Gst.State.NULL)
+                    # self.gst_appsink.disconnect(self._gst_appsink_connect_id)
+                    self.gst_appsink = None
                 log.debug("gst_queue0.set_state(Gst.State.NULL)")
                 self.gst_queue1.set_state(Gst.State.NULL)
                 # self.gst_queue.disconnect()
@@ -275,7 +276,7 @@ class GstService:
 
     def _stop_handler(self):
         self._stop_signal.wait()
-        log.info('GST service received stop signal signal')
+        log.info('GST service received stop signal')
         self._gst_cleanup()
 
     def _register_stop_handler(self):

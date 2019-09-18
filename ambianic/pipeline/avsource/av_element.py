@@ -79,6 +79,13 @@ class InputStreamProcessor(PipeElement):
                 self.on_new_sample(sample=next_sample)
             except queue.Empty:
                 log.debug('no new sample available yet in gst out queue')
+            except Exception as e:
+                log.warning('AVElement loop caught an error: %s. ',
+                            str(e))
+                formatted_lines = traceback.format_exc().splitlines()
+                log.warning('Exception stack trace: %s',
+                            "\n".join(formatted_lines))
+
 
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
@@ -120,33 +127,14 @@ class InputStreamProcessor(PipeElement):
             else:
                 log.debug('Gst process stopped after stop signal.')
 
-
     def start(self):
         """ Start the gstreamer pipeline """
         super().start()
         log.info("Starting %s", self.__class__.__name__)
-
         self._stop_requested = False
-
         while not self._stop_requested:
-            try:
-                self._run_gst_service()
-            except Exception as e:
-                log.warning('AVElement loop exited with error: %s. '
-                            'Will attempt to repair.', str(e))
-                formatted_lines = traceback.format_exc().splitlines()
-                log.warning('Exception stack trace: %s',
-                            "\n".join(formatted_lines))
-            finally:
-                if self._stop_requested:
-                    self._stop_gst_service()
-                else:
-                    log.debug('Gst pipeline exited main loop unexpectedly.'
-                              ' Repairing...')
-                    self.heal()
-                    # time.sleep(1)  # pause for a moment to give
-                    # associated resources a chance to cleanup
-                    log.debug("Gst pipeline repaired. Will resume main loop.")
+            self._run_gst_service()
+        self._stop_gst_service()
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
