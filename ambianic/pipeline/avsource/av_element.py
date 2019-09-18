@@ -86,6 +86,14 @@ class InputStreamProcessor(PipeElement):
                 log.warning('Exception stack trace: %s',
                             "\n".join(formatted_lines))
 
+    def _clear_gst_out_queue(self):
+        log.debug("Clearing _gst_out_queue.")
+        try:
+            while not self._gst_out_queue.empty():
+                q.get_nowait()
+        except Empty:
+            pass
+        log.debug("Cleared _gst_out_queue.")
 
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
@@ -98,6 +106,9 @@ class InputStreamProcessor(PipeElement):
             log.debug('Sending stop signal to GST process.')
             self._gst_process_stop_signal.set()
             log.debug('Signalled gst process to stop')
+            # make sure a non-empty queue doesn't block
+            # the gst process from stopping
+            def _clear_gst_out_queue()
             # give it a few seconds to stop cleanly
             for i in range(3):
                 time.sleep(1)
