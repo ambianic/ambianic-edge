@@ -9,5 +9,6 @@ echo PWD=$PWD
 pip3 install mkdocs
 pip3  install pydoc-markdown
 cp src/ambianic/webapp/client/public/favicon.ico $MY_DIR/docs/
+cd src
 pydocmd simple ambianic++ ambianic.pipeline++ ambianic.webapp++ > "$MY_DIR/docs/ambianic-python-api.md"
 mkdocs build -f "$MY_DIR/mkdocs.yml"
