@@ -4,6 +4,7 @@ set -ex
 
 pip3 install -U pytest # unit test tool
 BASEDIR=$(dirname $0)
+pip3 install -e $BASEDIR/../src
 echo "Script location: ${BASEDIR}"
 # install ambianic package in edit mode
 # cd $TESTS_DIR
