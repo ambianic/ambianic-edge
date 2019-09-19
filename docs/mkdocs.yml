@@ -1,0 +1,6 @@
+site_name: Ambianic Developer API Documentation
+nav:
+    - Home: index.md
+    - Python API: ambianic-python-api.md
+    - Contributing: CONTRIBUTING.md
+theme: mkdocs

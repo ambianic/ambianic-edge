@@ -1,3 +1,4 @@
+language: python
 sudo: required
 services:
   - docker
@@ -17,7 +18,16 @@ install:
 script:
   - docker images
   - ./ambianic-test.sh
+  - ./ambianic-docs.sh
 #  - pytest --cov-report=xml --cov=ambianic
 #  - pylint --errors-only ambianic
 #after_success:
 #  - codecov # submit code coverage
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep_history: true
+  local_dir: docs/site
+  on:
+    branch: master
