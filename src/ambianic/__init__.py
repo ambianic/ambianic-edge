@@ -73,7 +73,8 @@ def configure(env_work_dir):
                 secrets_config = sf.read()
         else:
             secrets_config = ""
-            log.warning("Secrets file not found. Proceeding without it: %s", secrets_file)
+            log.warning("Secrets file not found. Proceeding without it: %s",
+                        secrets_file)
         with open(config_file) as cf:
             base_config = cf.read()
             all_config = secrets_config + "\n" + base_config
@@ -87,7 +88,7 @@ def configure(env_work_dir):
         return None
 
 
-def service_shutdown(signum, frame):
+def _service_shutdown(signum, frame):
     log.info('Caught system shutdown signal %d', signum)
     raise ServiceExit
 
@@ -119,8 +120,8 @@ def start(env_work_dir=None):
 
     log.info('Starting Ambianic server...')
     # Register the signal handlers
-    signal.signal(signal.SIGTERM, service_shutdown)
-    signal.signal(signal.SIGINT, service_shutdown)
+    signal.signal(signal.SIGTERM, _service_shutdown)
+    signal.signal(signal.SIGINT, _service_shutdown)
 
     # AI inferencing server
     pipeline_server = None
