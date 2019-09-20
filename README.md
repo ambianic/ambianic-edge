@@ -1,4 +1,4 @@
-![Build Status](https://travis-ci.org/ambianic/ambianic.svg?branch=master) ![Docker Automated](https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg) ![Docker Build](https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg)
+![Build Status](https://travis-ci.org/ambianic/ambianic-core.svg?branch=master) ![Docker Automated](https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg) ![Docker Build](https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg)
 
 ![Ambianic logo][logo]
 
