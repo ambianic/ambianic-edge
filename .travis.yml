@@ -22,7 +22,7 @@ script:
 #  - pytest --cov-report=xml --cov=ambianic
 #  - pylint --errors-only ambianic
 #after_success:
-#  - codecov # submit code coverage
+  - codecov # submit code coverage
 deploy:
   provider: pages
   skip_cleanup: true
