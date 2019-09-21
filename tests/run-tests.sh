@@ -12,6 +12,6 @@ echo "Script location: ${BASEDIR}"
 TESTS_DIR="${BASEDIR}/../tests"
 python3 -m pytest $TESTS_DIR
 pytest --cov-report=xml --cov=ambianic tests
-pylint --errors-only src/ambianic
+# codecov
+# pylint --errors-only src/ambianic
 # submit code coverage report to codecov.io
-codecov --commit=$CODECOV_TOKEN
