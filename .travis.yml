@@ -13,7 +13,7 @@ script:
   - docker images
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
-  - pip3 install -U  --user codecov
+  - pip3 install -U codecov
 after_success:
   - codecov # submit code coverage
 deploy:
