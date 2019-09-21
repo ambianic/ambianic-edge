@@ -3,26 +3,19 @@ sudo: required
 services:
   - docker
 before_install:
-#  - ./ambianic-build.sh
-#  - python --version
-#  - pip install -U pip
-#  - pip install -U pytest # unit test tool
-#  - pip install codecov # code coverage tool
-#  - pip install pytest-cov # coverage plugin for pytest
-#  - pip install pylint # python linter
+  - python --version
  # command to install dependencies
 install:
   - ./ambianic-build.sh
-#  - pip install -r requirements.txt
+  - pip3 install codecov
 # command to run tests
 script:
   - docker images
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
-#  - pytest --cov-report=xml --cov=ambianic
-#  - pylint --errors-only ambianic
-#after_success:
-#  - codecov # submit code coverage
+  - pip3 install -U  --user codecov
+after_success:
+  - codecov # submit code coverage
 deploy:
   provider: pages
   skip_cleanup: true
