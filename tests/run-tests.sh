@@ -11,4 +11,4 @@ pip3 install -e $BASEDIR/../src
 echo "Script location: ${BASEDIR}"
 TESTS_DIR="${BASEDIR}/../tests"
 python3 -m pytest $TESTS_DIR
-codecov # submit code coverage
+# codecov # submit code coverage
