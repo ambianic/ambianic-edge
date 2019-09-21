@@ -1,16 +1,6 @@
 import pytest
 from ambianic import pipeline
 
-class TestPipeElement(pipeline.PipeElement):
-
-    def heal(self):
-        """ Placeholder implementation of abstractmethod"""
-        pass
-
-    def receive_next_sample(self, **sample):
-        """ Placeholder implementation of abstractmethod"""
-        pass
-
 
 def test_init():
     pe = pipeline.PipeElement()

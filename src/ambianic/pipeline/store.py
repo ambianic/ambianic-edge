@@ -16,7 +16,6 @@ class SaveSamples(PipeElement):
     def __init__(self, element_config=None):
         super()
         log.info('Loading pipe element: %s with config %s', self.__class__.__name__, element_config)
-        PipeElement.__init__(self)
         self.config = element_config
         self.output_directory = self.config.get('output_directory', None)
         assert self.output_directory, 'Pipe element %s: requires argument output_directory:' % self.__class__.__name__

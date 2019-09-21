@@ -13,12 +13,14 @@ log = logging.getLogger(__name__)
 
 
 def get_pipelines(pipelines_config):
-    assert pipelines_config
     pipelines = []
-    for pname, pdef in pipelines_config.items():
-        log.info("loading %s pipeline configuration", pname)
-        p = Pipeline(pname=pname, pconfig=pdef)
-        pipelines.append(p)
+    if pipelines_config:
+        for pname, pdef in pipelines_config.items():
+            log.info("loading %s pipeline configuration", pname)
+            p = Pipeline(pname=pname, pconfig=pdef)
+            pipelines.append(p)
+    else:
+        log.warning('No pipelines configured.')
     return pipelines
 
 
