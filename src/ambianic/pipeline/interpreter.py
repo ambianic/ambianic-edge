@@ -61,7 +61,7 @@ class PipelineServer:
                     # more than a reasonable amount of time has passed
                     # since the pipeline reported a heartbeat.
                     # Let's recycle it
-                elif lapse > 10:
+                elif lapse > 20:
                     log.warning('Pipeline "%s" is not responsive. '
                                 'Latest heartbeat was %f seconds ago. '
                                 'Will attempt to heal it.', p.name, lapse)

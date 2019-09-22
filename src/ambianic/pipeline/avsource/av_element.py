@@ -113,7 +113,7 @@ class InputStreamProcessor(PipeElement):
             # the gst process from stopping
             self._clear_gst_out_queue()
             # give it a few seconds to stop cleanly
-            for i in range(3):
+            for i in range(10):
                 time.sleep(1)
                 if not gst_proc.is_alive():
                     break
@@ -124,7 +124,7 @@ class InputStreamProcessor(PipeElement):
                 # do not call join() because it may cause a deadlock
                 # due to the shared queue
                 # give it a few seconds to terminate cleanly
-                for i in range(3):
+                for i in range(10):
                     time.sleep(1)
                     if not gst_proc.is_alive():
                         break
