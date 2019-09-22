@@ -276,8 +276,7 @@ class GstService:
 
     def _service_shutdown(self, signum, frame):
         log.info('GST service caught system shutdown signal %d', signum)
-        if not self._stop_signal.is_set():
-            self._stop_signal.set()
+        self._gst_cleanup()
 
     def _stop_handler(self):
         self._stop_signal.wait()

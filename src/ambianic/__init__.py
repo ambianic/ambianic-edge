@@ -168,7 +168,8 @@ def start(env_work_dir=None):
         log.info('Service exit requested.')
         log.debug('Cleaning up before exit...')
         # Terminate the running threads.
-        # Set the shutdown flag on each thread to trigger a clean shutdown of each thread.
+        # Set the shutdown flag on each thread to trigger
+        # a clean shutdown of each thread.
         # j1.shutdown_flag.set()
         # j2.shutdown_flag.set()
         _stop_servers(servers)
