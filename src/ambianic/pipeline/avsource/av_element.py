@@ -133,9 +133,9 @@ class InputStreamProcessor(PipeElement):
                     log.debug('Gst proess did not terminate.'
                               ' Resorting to force kill.')
                     gst_proc.kill()
-                    while gst_proc.is_alive():
-                        time.sleep(1)
-                    log.debug('Gst process stopped after kill signal.')
+                    # while gst_proc.is_alive():
+                    #     time.sleep(1)
+                    log.debug('Gst process killed.')
                 else:
                     log.debug('Gst process stopped after terminate signal.')
             else:
