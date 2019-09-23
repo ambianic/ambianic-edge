@@ -13,18 +13,22 @@ class PipeElement:
     """ The basic building block of an Ambianic pipeline """
 
     def __init__(self):
-        self.state = PIPE_STATE_STOPPED
+        self._state = PIPE_STATE_STOPPED
         self.next_element = None
 
+    @property
+    def state(self):
+        return self._state
+
     def start(self):
-        self.state = PIPE_STATE_RUNNING
+        self._state = PIPE_STATE_RUNNING
 
     @abc.abstractmethod
     def heal(self):
         pass
 
     def stop(self):
-        self.state = PIPE_STATE_STOPPED
+        self._state = PIPE_STATE_STOPPED
 
     def connect_to_next_element(self, next_element=None):
         """ Connect this element to the next element in the pipe """

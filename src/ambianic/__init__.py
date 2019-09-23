@@ -1,62 +1,71 @@
+"""Ambianic main service control functions."""
 
 import time
 import logging
-import threading
 import signal
 import os
 import pathlib
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from .pipeline.interpreter import PipelineServer
-from .service import ServiceExit, ThreadedJob
-import os
+from .service import ServiceExit
 
 WORK_DIR = None
 AI_MODELS_DIR = "ai_models"
 CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
+DEFAULT_LOG_LEVEL = logging.INFO
 
 log = logging.getLogger(__name__)
 
 
 def _configure_logging(config=None):
-    default_log_level = "WARNING"
+    default_log_level = DEFAULT_LOG_LEVEL
     if not config:
         logging.basicConfig()
-    log_level = config.get("level", default_log_level)
-    numeric_level = getattr(logging, log_level.upper(), None)
-    if not isinstance(numeric_level, int):
-        log.warning('Invalid log level: %s', log_level)
-        log.warning('Defaulting log level to %s', default_log_level)
-        numeric_level = getattr(logging, default_log_level)
+    log_level = config.get("level", None)
+    numeric_level = default_log_level
+    if log_level:
+        try:
+            numeric_level = getattr(logging, log_level.upper(), DEFAULT_LOG_LEVEL)
+        except AttributeError as e:
+            log.warning("Invalid log level: %s . Error: %s", log_level, e)
+            log.warning('Defaulting log level to %s', default_log_level)
     if numeric_level <= logging.INFO:
-        format_cfg = '%(asctime)s %(levelname)-4s %(pathname)s.%(funcName)s(%(lineno)d): %(message)s'
+        format_cfg = '%(asctime)s %(levelname)-4s ' \
+            '%(pathname)s.%(funcName)s(%(lineno)d): %(message)s'
         datefmt_cfg = '%Y-%m-%d %H:%M:%S'
     else:
         format_cfg = None
         datefmt_cfg = None
-
     log_filename = config.get('file', None)
     if log_filename:
         log_directory = os.path.dirname(log_filename)
         with pathlib.Path(log_directory) as log_dir:
             log_dir.mkdir(parents=True, exist_ok=True)
         print("Log messages directed to {}".format(log_filename))
+    root_logger = logging.getLogger()
+    # remove any outside handlers
+    while root_logger.hasHandlers():
+        root_logger.removeHandler(root_logger.handlers[0])
     logging.basicConfig(
         format=format_cfg,
         level=numeric_level,
         datefmt=datefmt_cfg,
         filename=log_filename)
-    log.info('Logging configured with level %s', logging.getLevelName(numeric_level))
+    log.info('Logging configured with level %s',
+             logging.getLevelName(numeric_level))
+    effective_level = log.getEffectiveLevel()
+    lname = logging.getLevelName(effective_level)
     if numeric_level <= logging.DEBUG:
         log.debug('Configuration dump:')
         log.debug(yaml.dump(config))
 
 
 def configure(env_work_dir):
-    """ Load configuration settings
+    """Load configuration settings.
 
-        :returns config if configuration was loaded without issues.
+    :returns config dict if configuration was loaded without issues.
             None or a specific exception otherwise.
     """
     assert env_work_dir, 'Working directory required.'
@@ -100,16 +109,19 @@ def _stop_servers(servers):
 
 
 def _healthcheck(servers):
-    """ Check the health of managed servers """
+    """Check the health of managed servers."""
     for s in servers:
         latest_heartbeat, status = s.healthcheck()
         now = time.monotonic()
         lapse = now - latest_heartbeat
         if lapse > 10:
-            log.warning('Server "%s" is not responsive. Latest heart beat was %f seconds ago.', s.__class__.__name__, lapse)
+            log.warning('Server "%s" is not responsive. '
+                        'Latest heart beat was %f seconds ago.',
+                        s.__class__.__name__, lapse)
+
 
 def start(env_work_dir=None):
-    """ Programmatic start of the main service """
+    """Programmatic start of the main service."""
     print("Starting server...")
     assert env_work_dir
     config = configure(env_work_dir)
@@ -133,10 +145,9 @@ def start(env_work_dir=None):
     # Start the job threads
     try:
         # start AI inference pipelines
-#        pipeline_server = PipelineServer(config)
-# TODO: uncomment when done testing front end
-#        pipeline_server.start()
-#        servers.append(pipeline_server)
+        pipeline_server = PipelineServer(config)
+        pipeline_server.start()
+        servers.append(pipeline_server)
 
         # start web app server
         flask_server = FlaskServer(config)
@@ -146,13 +157,13 @@ def start(env_work_dir=None):
         last_time = time.monotonic()
 
         def _heartbeat():
-            """ Notify external monitoring services that we are in good health """
             nonlocal last_time
             new_time = time.monotonic()
             # print a heartbeat message every so many seconds
             if new_time - last_time > 5:
                 log.info("Main thread alive.")
-                # this is where hooks to external monitoring services will come in
+                # this is where hooks to external
+                # monitoring services will come in
                 last_time = new_time
             global _service_exit_requested
             if _service_exit_requested:
@@ -164,7 +175,7 @@ def start(env_work_dir=None):
             _healthcheck(servers)
             _heartbeat()
 
-    except ServiceExit as e:
+    except ServiceExit:
         log.info('Service exit requested.')
         log.debug('Cleaning up before exit...')
         # Terminate the running threads.
@@ -182,7 +193,7 @@ _service_exit_requested = False
 
 
 def stop():
-    """ Programmatic stop of the main service """
+    """Programmatic stop of the main service."""
     print("Stopping server...")
     log.info("Stopping server...")
     global _service_exit_requested

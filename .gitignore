@@ -9,4 +9,5 @@ venv
 secrets.yaml
 data/**
 ambianic/webapp/bower_components/paper/
-
+.coverage
+coverage.xml

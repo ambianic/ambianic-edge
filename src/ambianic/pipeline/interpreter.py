@@ -138,7 +138,6 @@ class Pipeline:
         assert self.config[0]["source"], \
             "Pipeline config must begin with a source element"
         self.pipe_elements = []
-        self.state = False
         self._latest_heartbeat_time = time.monotonic()
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
