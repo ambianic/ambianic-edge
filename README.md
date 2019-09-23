@@ -12,6 +12,15 @@ At this time, Ambianic is in active early formation stages. Lots of design and i
 
 If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise click on the Watch button above (Releases Only option) to be notified when we release a stable end user version.
 
+# Product design guidelines
+
+When the product is officially released, it must show tangible value to first time users with:
+- Less than 15 minutes setup time 
+- Less than $50 in hardware costs
+- No coding skills requires 
+
+Relaxing these constraints could unlock deeper value out of the platform. APIs and scalability have their benefits. However we strive to provide a simple and beautiful out of the box experience.
+
 # How to run in development mode
 If you are interested to try the development version, follow these steps:
 1. Clone this git repository.
