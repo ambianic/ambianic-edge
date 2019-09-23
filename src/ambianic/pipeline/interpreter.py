@@ -27,14 +27,16 @@ def get_pipelines(pipelines_config):
 class PipelineServer:
 
     def __init__(self, config=None):
-        assert config
         self._config = config
-        pipelines_config = config['pipelines']
-        self._pipelines = get_pipelines(pipelines_config)
         self._threaded_jobs = []
-        for pp in self._pipelines:
-            pj = ThreadedJob(pp)
-            self._threaded_jobs.append(pj)
+        self._pipelines = []
+        if config:
+            pipelines_config = config.get('pipelines', None)
+            if pipelines_config:
+                self._pipelines = get_pipelines(pipelines_config)
+                for pp in self._pipelines:
+                    pj = ThreadedJob(pp)
+                    self._threaded_jobs.append(pj)
 
     def healthcheck(self):
         """
