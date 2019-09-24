@@ -9,10 +9,13 @@ pip3 install -U pylint # python linter
 BASEDIR=$(dirname $0)
 pip3 install -e $BASEDIR/../src
 echo "Script location: ${BASEDIR}"
+# change work dir location to a predictable place
+# where codecov can find the generated reports
+cd $BASEDIR/../
+echo PWD=$PWD
 TESTS_DIR="${BASEDIR}/../tests"
 python3 -m pytest $TESTS_DIR --cov-report=xml --cov=ambianic
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
 # pylint --errors-only src/ambianic
 # submit code coverage report to codecov.io
-  
