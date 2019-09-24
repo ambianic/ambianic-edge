@@ -127,10 +127,8 @@ def test_main_heartbeat_log():
     ambianic.server.ROOT_SERVERS.clear()
     # set heartbeat log interval to a small enough
     # interval so the test passes faster
-    ambianic.server.MAIN_HEARTBEAT_LOG_INTERVAL = 1
+    ambianic.server.MAIN_HEARTBEAT_LOG_INTERVAL = 0.1
     srv, t = _start_mock_server(work_dir=dir)
     t.join(timeout=2)
     assert srv._main_heartbeat_logged
     _stop_mock_server(server=srv, thread=t)
-
-            
