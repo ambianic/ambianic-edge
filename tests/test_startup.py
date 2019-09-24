@@ -65,19 +65,3 @@ def test_main():
     __main__.stop()
     t.join(timeout=3)
     assert not t.is_alive()
-
-
-def test_one_pipeline():
-    pass
-
-
-def test_two_pipelines():
-    pass
-
-
-def test_flask_config_good():
-    pass
-
-
-def test_flask_config_bad():
-    pass

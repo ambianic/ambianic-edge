@@ -24,7 +24,7 @@ class PipeElement:
         self._state = PIPE_STATE_RUNNING
 
     @abc.abstractmethod
-    def heal(self):
+    def heal(self):  # pragma: no cover
         pass
 
     def stop(self):
@@ -36,7 +36,7 @@ class PipeElement:
         assert isinstance(next_element, PipeElement)
         self.next_element = next_element
 
-    @abc.abstractmethod
+    @abc.abstractmethod  # pragma: no cover
     def receive_next_sample(self, **sample):
         """ Receive next sample from a connected previous element
             :argument **kwargs a variable list of (key, value) pairs that represent the sample
