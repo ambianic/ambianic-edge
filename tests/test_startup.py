@@ -1,6 +1,7 @@
 
 import pytest
 import ambianic
+from ambianic import __main__
 from ambianic.server import AmbianicServer
 import os
 import threading
@@ -49,6 +50,19 @@ def test_no_pipelines():
     assert isinstance(pps, ambianic.pipeline.interpreter.PipelineServer)
     assert not pps._pipelines
     srv.stop()
+    t.join(timeout=3)
+    assert not t.is_alive()
+
+
+def test_main():
+    ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
+    dir = os.path.dirname(os.path.abspath(__file__))
+    os.environ['AMBIANIC_DIR'] = dir
+    t = threading.Thread(
+        target=__main__.main,
+        daemon=True)
+    t.start()
+    __main__.stop()
     t.join(timeout=3)
     assert not t.is_alive()
 
