@@ -34,9 +34,20 @@ def test_log_config_without_file():
         assert not isinstance(h, logging.FileHandler)
 
 
-def test_log_config_with_level():
+def test_log_config_with_debug_level():
     log_config = {
         'level': 'DEBUG'
+    }
+    server._configure_logging(config=log_config)
+    root_logger = logging.getLogger()
+    effective_level = root_logger.getEffectiveLevel()
+    lname = logging.getLevelName(effective_level)
+    assert lname == log_config['level']
+
+
+def test_log_config_with_warning_level():
+    log_config = {
+        'level': 'WARNING'
     }
     server._configure_logging(config=log_config)
     root_logger = logging.getLogger()

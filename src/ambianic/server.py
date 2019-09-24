@@ -1,12 +1,13 @@
+"""Main Ambianic server module."""
 import time
 import logging
-import signal
+import traceback
 import os
 import pathlib
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from .pipeline.interpreter import PipelineServer
-from .service import ServiceExit
+from .service import ServiceExit, stacktrace
 
 log = logging.getLogger(__name__)
 
@@ -15,12 +16,18 @@ AI_MODELS_DIR = "ai_models"
 CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
 DEFAULT_LOG_LEVEL = logging.INFO
+MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 10
+MAIN_HEARTBEAT_LOG_INTERVAL = 5
+ROOT_SERVERS = {
+    'pipelines': PipelineServer,
+    'web': FlaskServer,
+}
 
 
 def _configure_logging(config=None):
     default_log_level = DEFAULT_LOG_LEVEL
-    if not config:
-        logging.basicConfig()
+    if config is None:
+        config = {}
     log_level = config.get("level", None)
     numeric_level = default_log_level
     if log_level:
@@ -87,11 +94,14 @@ def _configure(env_work_dir=None):
             all_config = secrets_config + "\n" + base_config
         config = yaml.safe_load(all_config)
         # configure logging
-        logging_config = config.get('logging', None)
+        logging_config = None
+        if config:
+            logging_config = config.get('logging', None)
         _configure_logging(logging_config)
         return config
     except Exception as e:
         log.error("Failed to load configuration: %s", str(e))
+        stacktrace()
         return None
 
 
@@ -110,44 +120,42 @@ class AmbianicServer:
         assert work_dir
         self._env_work_dir = work_dir
         # array of managed specialized servers
-        self._servers = []
+        self._servers = {}
         self._service_exit_requested = False
         self._latest_heartbeat = time.monotonic()
 
-    def _service_shutdown(self, signum, frame):
-        log.info('Caught system shutdown signal %d', signum)
-        raise ServiceExit
-
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
-        for s in servers:
+        for s in servers.values():
             s.stop()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
-        for s in servers:
+        for s in servers.values():
             latest_heartbeat, status = s.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
-            if lapse > 10:
+            log.info('lapse for %s is %f', s.__class__.__name__, lapse)
+            if lapse > MANAGED_SERVICE_HEARTBEAT_THRESHOLD:
                 log.warning('Server "%s" is not responsive. '
-                            'Latest heart beat was %f seconds ago.',
+                            'Latest heart beat was %f seconds ago. '
+                            'Will send heal signal.',
                             s.__class__.__name__, lapse)
+                s.heal()
+
+    def _log_heartbeat(self):
+        log.info("Main thread alive.")
 
     def _heartbeat(self):
         new_time = time.monotonic()
         # print a heartbeat message every so many seconds
-        if new_time - self._latest_heartbeat > 5:
-            log.info("Main thread alive.")
+        if new_time - self._latest_heartbeat > MAIN_HEARTBEAT_LOG_INTERVAL:
+            self._log_heartbeat()
             # this is where hooks to external
             # monitoring services will come in
-            self._latest_heartbeat = new_time
+        self._latest_heartbeat = new_time
         if self._service_exit_requested:
             raise ServiceExit
-
-    def _register_sys_handlers(self):
-        signal.signal(signal.SIGTERM, self._service_shutdown)
-        signal.signal(signal.SIGINT, self._service_shutdown)
 
     def start(self):
         """Programmatic start of the main service."""
@@ -158,41 +166,26 @@ class AmbianicServer:
                      'Proceeding with defaults.')
         log.info('Starting Ambianic server...')
         # Register the signal handlers
-        self._register_sys_handlers()
-        # AI inferencing server
-        pipeline_server = None
-        # web server
-        flask_server = None
-        servers = []
+        servers = {}
         # Start the job threads
         try:
-            # start AI inference pipelines
-            pipeline_server = PipelineServer(config)
-            pipeline_server.start()
-            servers.append(pipeline_server)
-
-            # start web app server
-            flask_server = FlaskServer(config)
-            flask_server.start()
-            servers.append(flask_server)
+            for s_name, s_class in ROOT_SERVERS.items():
+                srv = s_class(config=config)
+                srv.start()
+                servers[s_name] = srv
 
             self._latest_heartbeat = time.monotonic()
 
             self._servers = servers
             # Keep the main thread running, otherwise signals are ignored.
             while True:
-                time.sleep(1)
+                time.sleep(0.5)
                 self._healthcheck(servers)
                 self._heartbeat()
 
         except ServiceExit:
             log.info('Service exit requested.')
             log.debug('Cleaning up before exit...')
-            # Terminate the running threads.
-            # Set the shutdown flag on each thread to trigger
-            # a clean shutdown of each thread.
-            # j1.shutdown_flag.set()
-            # j2.shutdown_flag.set()
             self._stop_servers(servers)
 
         log.info('Exiting Ambianic server.')

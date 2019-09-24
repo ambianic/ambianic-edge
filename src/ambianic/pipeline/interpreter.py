@@ -1,3 +1,4 @@
+"""Ambianic pipeline interpreter module."""
 import logging
 from .avsource.av_element import InputStreamProcessor
 import time
@@ -7,7 +8,7 @@ from ambianic.pipeline.ai.object_detect import ObjectDetect
 from ambianic.pipeline.ai.face_detect import FaceDetect
 from .store import SaveSamples
 from . import PipeElement, HealthChecker
-from ambianic.service import ThreadedJob
+from ambianic.service import ThreadedJob, ManagedService
 
 log = logging.getLogger(__name__)
 
@@ -24,9 +25,23 @@ def get_pipelines(pipelines_config):
     return pipelines
 
 
-class PipelineServer:
+class PipelineServer(ManagedService):
+    """Main pipeline interpreter class.
+
+    Responsible for loading, running and overseeing the health
+    of all Ambianic pipelines.
+
+    """
 
     def __init__(self, config=None):
+        """Initialize and configure.
+
+        Parameters
+        ----------
+        config : dict
+            Python representation of the yaml configuration file.
+
+        """
         self._config = config
         self._threaded_jobs = []
         self._pipelines = []
@@ -77,6 +92,14 @@ class PipelineServer:
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
 
+    def heal():
+        """Heal the PipelineServer.
+
+        PipelineServer manages its own health as best possible.
+        Not much to do here at this time.
+        """
+        pass
+
     def heal_pipeline_job(self, threaded_job=None):
         assert threaded_job
         pipeline = threaded_job.job
@@ -117,7 +140,7 @@ class HealingThread(threading.Thread):
         self._on_finished()
 
 
-class Pipeline:
+class Pipeline(ManagedService):
     """ The main Ambianic processing structure.
 
     Data flow is arranged in independent pipelines.
@@ -132,7 +155,7 @@ class Pipeline:
     }
 
     def __init__(self, pname=None, pconfig=None):
-        """ Load pipeline config """
+        """Init and load pipeline config."""
         assert pname, "Pipeline name required"
         self.name = pname
         assert pconfig, "Pipeline config required"
@@ -163,9 +186,7 @@ class Pipeline:
         return
 
     def _heartbeat(self):
-        """
-            Sets the heartbeat timestamp to time.monotonic()
-        """
+        """Set the heartbeat timestamp to time.monotonic()."""
         log.debug('Pipeline %s heartbeat signal.', self.name)
         now = time.monotonic()
         lapse = now - self._latest_heartbeat_time
@@ -173,17 +194,14 @@ class Pipeline:
         self._latest_heartbeat_time = now
 
     def start(self):
-        """
-            Starts a thread that iteratively and in order of definitions feeds
-            each element the output of the previous one.
-            Stops the pipeline when a stop signal is received.
-        """
+        """Start the pipeline loop.
 
+        Run until the pipeline has input from its configured source
+        or until a stop() signal is received.
+        """
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
-
         if not self.pipe_elements:
             return
-
         self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self.pipe_elements)):
@@ -191,25 +209,28 @@ class Pipeline:
             assert isinstance(e, PipeElement)
             e_next = self.pipe_elements[i]
             e.connect_to_next_element(e_next)
-
         last_element = self.pipe_elements[len(self.pipe_elements)-1]
         hc = HealthChecker(health_status_callback=self._heartbeat)
         last_element.connect_to_next_element(hc)
         self.pipe_elements[0].start()
-
         log.info("Stopped %s", self.__class__.__name__)
         return
 
     def healthcheck(self):
-        """
-        :return: (timestamp, status) - a tuple of
-            monotonically increasing timestamp of the last known healthy
-            heartbeat and a status with additional health information
+        """Return health vitals status report.
+
+        :Returns:
+        -------
+        (timestamp, status)
+            a tuple of
+                monotonically increasing timestamp of the last known healthy
+                heartbeat and a status with additional health information.
+
         """
         return self._latest_heartbeat_time, self._latest_health_status
 
     def heal(self):
-        """Nonblocking asynchronous heal function.        """
+        """Nonblocking asynchronous heal function."""
         # register a heartbeat to prevent looping back
         # into heal while healing
         self._heartbeat()
@@ -238,6 +259,10 @@ class Pipeline:
                       self.name)
 
     def stop(self):
+        """Stop pipeline processing.
+
+        Disconnect from the source and all other external resources.
+        """
         log.info("Requesting pipeline elements to stop... %s",
                  self.__class__.__name__)
         self.pipe_elements[0].stop()

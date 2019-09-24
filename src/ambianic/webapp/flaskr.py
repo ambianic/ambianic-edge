@@ -8,7 +8,7 @@ from flask.logging import default_handler
 import flask
 from requests import get
 from werkzeug.serving import make_server
-from ambianic.service import ServiceExit, ThreadedJob
+from ambianic.service import ServiceExit, ThreadedJob, ManagedService
 from .server import samples
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 DEBUG = True
 
 
-class FlaskJob:
+class FlaskJob(ManagedService):
 
     def __init__(self, config):
         self.config = config
@@ -45,7 +45,7 @@ class FlaskJob:
             log.debug('Flask main loop ended')
 
 
-class FlaskServer:
+class FlaskServer(ManagedService):
     """ Thin wrapper around Flask constructs.
 
     Allows controlled start and stop of the web app server
@@ -73,6 +73,14 @@ class FlaskServer:
         # TODO: Implement actual health check for Flask
         # See if the /healthcheck URL returns a 200 quickly
         return time.monotonic(), True
+
+    def heal():
+        """Heal the server.
+
+        TODO: Keep an eye for potential scenarios that cause this server to
+         become unresponsive.
+        """
+        pass
 
     def stop(self):
         if self.flask_job:
