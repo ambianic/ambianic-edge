@@ -35,6 +35,7 @@ class MockAmbianicServer(AmbianicServer):
             self._heartbeat_flag.set()
 
     def _log_heartbeat(self):
+        super()._log_heartbeat()
         self._main_heartbeat_logged = True
 
 
@@ -132,3 +133,5 @@ def test_main_heartbeat_log():
     t.join(timeout=2)
     assert srv._main_heartbeat_logged
     _stop_mock_server(server=srv, thread=t)
+
+    
