@@ -62,7 +62,7 @@ class ThreadedJob(threading.Thread, ManagedService):
     # Consider moving access to coral in a separate process that can serve
     # an inference task queue from multiple pipelines.
 
-    def __init__(self, job):
+    def __init__(self, job=None):
         """Inititalize with a ManagedService.
 
         Parameters
@@ -119,7 +119,7 @@ class ThreadedJob(threading.Thread, ManagedService):
                   'Passing request to job.',
                   self.ident,
                   self.job.__class__.__name__)
-        health_status = self.job.healthheck()
+        health_status = self.job.healthcheck()
         return health_status
 
 

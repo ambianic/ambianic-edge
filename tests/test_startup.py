@@ -95,6 +95,7 @@ class _BadPipelineServer(ManagedService):
         self._heal_called = False
 
     def healthcheck(self):
+        super().healthcheck()
         # return an old enough heartbeat time to trigger a health concern
         latest_heartbeat = time.monotonic() - \
             ambianic.server.MANAGED_SERVICE_HEARTBEAT_THRESHOLD - 10
@@ -103,6 +104,7 @@ class _BadPipelineServer(ManagedService):
         return latest_heartbeat, "BAD"
 
     def heal(self):
+        super().heal()
         self._heal_called = True
 
 
@@ -133,5 +135,3 @@ def test_main_heartbeat_log():
     t.join(timeout=2)
     assert srv._main_heartbeat_logged
     _stop_mock_server(server=srv, thread=t)
-
-    
