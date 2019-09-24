@@ -7,13 +7,15 @@ before_install:
  # command to install dependencies
 install:
   - ./ambianic-build.sh
-  - pip3 install codecov
+  - pip3 install -U codecov
 # command to run tests
 script:
   - docker images
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
-  - pip3 install -U codecov
+  - echo $PWD
+  - ls -al
+  - ls -al tests/
 after_success:
   - codecov # submit code coverage
 deploy:

@@ -1,17 +1,54 @@
-
+"""Service classes for OS interaction and multithreading."""
 import threading
 import logging
+from abc import abstractmethod
 
 log = logging.getLogger(__name__)
 
 
-class ThreadedJob(threading.Thread):
-    """ A job that runs in its own python thread. """
+class ManagedJob:
+    """A managed job is able to start(), stop() and heal()."""
 
-    # Reminder: even though multiple processes can work well for pipelines, since they are mostly independent,
+    @abstractmethod
+    def start(self):
+        """Start and run until asked to stop() or job completion."""
+        pass
+
+    @abstractmethod
+    def stop(self):
+        """Exit start() method."""
+        pass
+
+    @abstractmethod
+    def heal(self):
+        pass
+
+
+class ThreadedJob(threading.Thread):
+    """A job that runs in its own python thread.
+
+    Jobs managed by Threaded Job must have a start(), stop() method.
+    """
+    # Reminder: even though multiple processes can work well for pipelines,
+    # since they are mostly independent,
     # Google Coral does not allow access to it from different processes yet.
+    # Consider moving access to coral in a separate process that can serve
+    # an inference task queue from multiple pipelines.
 
     def __init__(self, job):
+        """Inititalize with job .
+
+        Parameters
+        ----------
+        job : type
+            Description of parameter `job`.
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         threading.Thread.__init__(self, daemon=True)
 
         self.job = job
