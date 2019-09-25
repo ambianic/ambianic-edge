@@ -1,12 +1,12 @@
 import logging
 
-from .inference import TfInference
+from .inference import TfImageDetection
 
 log = logging.getLogger(__name__)
 
 
-class ObjectDetect(TfInference):
-    """ ObjectDetect is a pipeline element responsible for detecting objects in an image """
+class ObjectDetect(TfImageDetection):
+    """Detects objects in an image."""
 
     def __init__(self, element_config=None):
         super().__init__(element_config=element_config)
@@ -23,7 +23,11 @@ class ObjectDetect(TfInference):
                 inference_result = super().detect(image=image)
                 # pass on the results to the next connected pipe element
                 if self.next_element:
-                    self.next_element.receive_next_sample(image=image, inference_result=inference_result)
+                    self.next_element.receive_next_sample(
+                        image=image,
+                        inference_result=inference_result)
             except Exception as e:
-                log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
-
+                log.warning('Error "%s" while processing sample. '
+                            'Dropping sample: %s',
+                            str(e),
+                            str(sample))
