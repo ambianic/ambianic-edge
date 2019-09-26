@@ -5,6 +5,7 @@ import numpy as np
 # from importlib import import_module
 from tflite_runtime.interpreter import Interpreter
 from tflite_runtime.interpreter import load_delegate
+from ambianic.service import stacktrace
 
 log = logging.getLogger(__name__)
 
@@ -78,15 +79,24 @@ class TFInferenceEngine:
 #        module_object = import_module('edgetpu.detection.engine',
 #                                      packaage=edgetpu_class)
 #        target_class = getattr(module_object, edgetpu_class)
+        self._tf_interpreter = None
         if (model_edgetpu):
-            self._tf_interpreter = Interpreter(
-                model_path=model_edgetpu,
-                experimental_delegates=[load_delegate('libedgetpu.so.1.0')])
+            try:
+                edgetpu_delegate = load_delegate('libedgetpu.so.1.0')
+                assert edgetpu_delegate
+                self._tf_interpreter = Interpreter(
+                    model_path=model_edgetpu,
+                    experimental_delegates=[edgetpu_delegate]
+                    )
+            except Exception as e:
+                log.info('EdgeTPU error: %r', e)
+                stacktrace(logging.DEBUG)
         if self._tf_interpreter:
-            log.debug('EdgeTPU installed. Will use EdgeTPU model.')
+            log.debug('EdgeTPU available. Will use EdgeTPU model.')
         else:
-            log.debug('EdgeTPU not installed. Will use TFLite model.')
+            log.debug('EdgeTPU not available. Will use TFLite CPU model.')
             self._tf_interpreter = Interpreter(model_path=model_tflite)
+        assert self._tf_interpreter
         self._tf_interpreter.allocate_tensors()
 
         self._tf_input_details = self._tf_interpreter.get_input_details()
@@ -96,82 +106,56 @@ class TFInferenceEngine:
         self._tf_is_quantized_model = \
             self._tf_input_details[0]['dtype'] != np.float32
 
-        @property
-        def input_details(self):
-            return self._tf_input_details
+    @property
+    def input_details(self):
+        return self._tf_input_details
 
-        @property
-        def output_details(self):
-            return self._tf_output_details
+    @property
+    def output_details(self):
+        return self._tf_output_details
 
-        @property
-        def is_quantized():
-            return self._tf_is_quantized_model
+    @property
+    def is_quantized(self):
+        return self._tf_is_quantized_model
 
-        @property
-        def model_tflite_path(self):
-            """
-            Location of frozen TFLite graph file (AI model).
+    @property
+    def labels_path(self):
+        """
+        Location of labels file.
 
-            :Returns:
-            -------
-            string
-                Path to a TFLite ready inference graph.
+        :Returns:
+        -------
+        string
+            Path to AI model labels.
 
-            """
-            return self._model_tflite_path
+        """
+        return self._model_labels_path
 
-        @property
-        def model_edgetpu_path(self):
-            """
-            Location of frozen TF EdgeTPU graph file (AI model).
+    @property
+    def confidence_threshold(self):
+        """
+        Inference confidence threshold.
 
-            :Returns:
-            -------
-            string
-                Path to a Google Coral EdgeTPU ready inference graph.
+        :Returns:
+        -------
+        float
+            Confidence threshold for inference results.
+            Only results at or above
+            this threshold should be returned by each engine inference.
 
-            """
-            return self._model_edgetpu_path
+        """
+        return self._confidence_threshold
 
-        @property
-        def labels_path(self):
-            """
-            Location of labels file.
+    @property
+    def top_k(self):
+        """
+        Inference top-k threshold.
 
-            :Returns:
-            -------
-            string
-                Path to AI model labels.
+        :Returns:
+        -------
+        int
+            Max number of results to be returned by each inference.
+            Ordered by confidence score.
 
-            """
-            return self._model_labels_path
-
-        @property
-        def confidence_threshold(self):
-            """
-            Inference confidence threshold.
-
-            :Returns:
-            -------
-            float
-                Confidence threshold for inference results.
-                Only results at or above
-                this threshold should be returned by each engine inference.
-
-            """
-            return self._confidence_threshold
-
-        @property
-        def top_k(self):
-            """
-            Inference top-k threshold.
-
-            :Returns:
-            -------
-            int
-                Max number of results to be returned by each inference.
-                Ordered by confidence score.
-
-            """
-            return self._top_k
+        """
+        return self._top_k

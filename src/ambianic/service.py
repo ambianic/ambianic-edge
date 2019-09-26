@@ -137,7 +137,7 @@ class ServiceExit(Exception):
     pass
 
 
-def stacktrace():
+def stacktrace(log_level=logging.WARNING):
     formatted_lines = traceback.format_exc().splitlines()
-    log.error('Exception stack trace:\n %s',
-              "\n".join(formatted_lines))
+    log.log(log_level, 'Runtime exception stack trace:\n %s',
+            "\n".join(formatted_lines))

@@ -1,4 +1,6 @@
 import pytest
+import os
+
 from ambianic.pipeline.ai.inference import TFInferenceEngine
 
 
@@ -8,19 +10,89 @@ def test_inference_init_no_params():
 
 
 def test_inference_init_no_model_yes_labels():
-    pass
+    with pytest.raises(AssertionError):
+        TFInferenceEngine(model=None, labels='no_data/no_labels.txt')
 
 
 def test_inference_init_no_tflite_model_yes_edgemodel():
-    with pytest.raises(AssertionError):
-        TFInferenceEngine()
+    model = {
+        'edgetpu':
+            'some_edgetpu.tflite'
+    }
+    with pytest.raises(KeyError):
+        TFInferenceEngine(model=model, labels='no_data/no_labels.txt')
+
+
+def _good_labels():
+    dir = os.path.dirname(os.path.abspath(__file__))
+    lpath = os.path.join(dir, 'coco_labels.txt')
+    return lpath
+
+
+def _good_tflite_model():
+    dir = os.path.dirname(os.path.abspath(__file__))
+    lpath = os.path.join(
+        dir,
+        'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
+        )
+    return lpath
+
+
+def _good_edgetpu_model():
+    dir = os.path.dirname(os.path.abspath(__file__))
+    lpath = os.path.join(
+        dir,
+        'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
+        )
+    return lpath
 
 
 def test_inference_init_yes_tflite_model_no_edgemodel():
-    with pytest.raises(AssertionError):
-        TFInferenceEngine()
+    model = {
+        'tflite':
+            _good_tflite_model(),
+    }
+    tf_engine = TFInferenceEngine(
+        model=model,
+        labels=_good_labels())
+    assert tf_engine
+    assert tf_engine._tf_interpreter
 
 
-def test_inference_init_yes_model_yes_labels():
-    with pytest.raises(AssertionError):
-        TFInferenceEngine()
+def test_inference_init_yes_models_yes_labels():
+    model = {
+        'tflite':
+            _good_tflite_model(),
+        'edgetpu':
+            _good_edgetpu_model(),
+    }
+    tf_engine = TFInferenceEngine(model=model, labels=_good_labels())
+    assert tf_engine
+    assert tf_engine._model_tflite_path == \
+        _good_tflite_model()
+    assert tf_engine._model_edgetpu_path == \
+        _good_edgetpu_model()
+
+
+def test_inference_init_other_params():
+    model = {
+        'tflite':
+            _good_tflite_model(),
+        'edgetpu':
+            _good_edgetpu_model(),
+    }
+    tf_engine = TFInferenceEngine(
+        model=model,
+        labels=_good_labels(),
+        confidence_threshold=0.876,
+        top_k=678,
+        )
+    assert tf_engine
+    assert tf_engine._model_tflite_path == \
+        _good_tflite_model()
+    assert tf_engine._model_edgetpu_path == \
+        _good_edgetpu_model()
+    assert tf_engine.confidence_threshold == 0.876
+    assert tf_engine.top_k == 678
+    assert tf_engine.is_quantized
+    assert tf_engine._labels_path == _good_labels()
