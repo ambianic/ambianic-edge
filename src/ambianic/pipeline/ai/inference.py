@@ -1,14 +1,10 @@
 """Tensorflow inference engine wrapper."""
 import logging
-import time
-import re
 import os
-import abc
 import numpy as np
 # from importlib import import_module
 from tflite_runtime.interpreter import Interpreter
 from tflite_runtime.interpreter import load_delegate
-from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +17,7 @@ class TFInferenceEngine:
     """
 
     def __init__(self,
-                 model_tflite=None,
-                 model_edgetpu=None,
+                 model=None,
                  labels=None,
                  confidence_threshold=0.8,
                  top_k=10
@@ -31,23 +26,29 @@ class TFInferenceEngine:
 
         :Parameters:
         ----------
-        model_tflite : string
-            Location of frozen TFLite graph file.
-        model_edgetpu : string
-            Location of frozen TF EdgeTPU graph file.
+        model: dict
+            {
+                'tflite': path,
+                'edgetpu': path,
+            }
+            Where path is of type string and points to the
+            location of frozen graph file (AI model).
         labels : string
-            Location of labels file.
+            Location of file with model labels.
         confidence_threshold : float
             Inference confidence threshold.
         top_k : type
             Inference top-k threshold.
 
         """
-        assert model_tflite, 'TFLite AI model path required.'
+        assert model
+        assert model['tflite'], 'TFLite AI model path required.'
+        model_tflite = model['tflite']
         assert os.path.isfile(model_tflite), \
             'TFLite AI model file does not exist: {}' \
             .format(model_tflite)
         self._model_tflite_path = model_tflite
+        model_edgetpu = model.get('edgetpu', None)
         if model_edgetpu:
             assert os.path.isfile(model_edgetpu), \
                 'EdgeTPU AI model file does not exist: {}' \

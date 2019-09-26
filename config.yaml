@@ -1,7 +1,7 @@
 ######################################
 #  Ambianic main configuration file  #
 ######################################
-version: '0.1.1'
+version: '0.1.2'
 
 # path to the data directory
 data_dir: &data_dir ./data
@@ -28,10 +28,14 @@ ai_models:
 #    tf_graph:
 #    labels:
   image_detection: &tfm_image_detection
-    model: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
+    model:
+      tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
+      edgetpu: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
   face_detection: &tfm_face_detection
-    model: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
+    model:
+      tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
+      edgetpu: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
     top-k: 2
 

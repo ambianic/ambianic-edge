@@ -1,11 +1,11 @@
 import logging
 
-from .inference import TfImageDetection
+from .image_detection import TFImageDetection
 
 log = logging.getLogger(__name__)
 
 
-class ObjectDetect(TfImageDetection):
+class ObjectDetect(TFImageDetection):
     """Detects objects in an image."""
 
     def __init__(self, element_config=None):
