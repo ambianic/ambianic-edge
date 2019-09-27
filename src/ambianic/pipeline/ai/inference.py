@@ -11,9 +11,12 @@ log = logging.getLogger(__name__)
 
 
 class TFInferenceEngine:
-    """Wraps a TF engine.
+    """Thin wrapper around TFLite Interpreter.
 
-    Dynamically detects if EdgeTPU is available and uses it.
+    The official TFLite API is moving fast and still changes frequently.
+    This class intends to abstract out underlying TF changes to some extend.
+
+    It dynamically detects if EdgeTPU is available and uses it.
     Otherwise falls back to TFLite Runtime.
     """
 
@@ -59,7 +62,7 @@ class TFInferenceEngine:
         assert os.path.isfile(labels), \
             'AI model labels file does not exist: {}' \
             .format(labels)
-        self._labels_path = labels
+        self._model_labels_path = labels
         self._confidence_threshold = confidence_threshold
         self._top_k = top_k
         log.debug('Loading AI model:\n'
@@ -159,3 +162,7 @@ class TFInferenceEngine:
 
         """
         return self._top_k
+
+    @property
+    def infer(self):
+        return self._tf_interpreter.invoke()

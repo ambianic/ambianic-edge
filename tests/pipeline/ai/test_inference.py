@@ -25,26 +25,26 @@ def test_inference_init_no_tflite_model_yes_edgemodel():
 
 def _good_labels():
     dir = os.path.dirname(os.path.abspath(__file__))
-    lpath = os.path.join(dir, 'coco_labels.txt')
-    return lpath
+    path = os.path.join(dir, 'coco_labels.txt')
+    return path
 
 
 def _good_tflite_model():
     dir = os.path.dirname(os.path.abspath(__file__))
-    lpath = os.path.join(
+    path = os.path.join(
         dir,
         'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
         )
-    return lpath
+    return path
 
 
 def _good_edgetpu_model():
     dir = os.path.dirname(os.path.abspath(__file__))
-    lpath = os.path.join(
+    path = os.path.join(
         dir,
         'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
         )
-    return lpath
+    return path
 
 
 def test_inference_init_yes_tflite_model_no_edgemodel():
@@ -95,4 +95,4 @@ def test_inference_init_other_params():
     assert tf_engine.confidence_threshold == 0.876
     assert tf_engine.top_k == 678
     assert tf_engine.is_quantized
-    assert tf_engine._labels_path == _good_labels()
+    assert tf_engine._model_labels_path == _good_labels()

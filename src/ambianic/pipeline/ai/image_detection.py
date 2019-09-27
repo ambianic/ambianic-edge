@@ -25,12 +25,13 @@ class TFImageDetection(PipeElement):
                 model: ai_models/mobilenet_ssd_v2_face.tflite
                 labels: ai_models/coco_labels.txt
                 confidence_threshold: 0.6
-                top-k: 3
+                top_k: 3
 
         """
         super()
-        self._tfengine = TFInferenceEngine(*element_config)
-        self._labels = self.load_labels(self.labels_path())
+        assert isinstance(element_config, dict)
+        self._tfengine = TFInferenceEngine(**element_config)
+        self._labels = self.load_labels(self._tfengine.labels_path)
         self.last_time = time.monotonic()
 
     def load_labels(self, label_path=None):
@@ -111,7 +112,7 @@ class TFImageDetection(PipeElement):
         :Returns:
         -------
         list of tuples
-            List of top-k detections above confidence_threshold.
+            List of top_k detections above confidence_threshold.
             Each detection is a tuple of:
             (category, confidence, (x0, y0, x1, y1))
 
@@ -120,45 +121,48 @@ class TFImageDetection(PipeElement):
         start_time = time.monotonic()
         log.debug("Calling TF engine for inference")
 
+        tfe = self._tfengine
+
         # NxHxWxC, H:1, W:2
-        height = self.input_details[0]['shape'][1]
-        width = self.input_details[0]['shape'][2]
+        height = tfe.input_details[0]['shape'][1]
+        width = tfe.input_details[0]['shape'][2]
 
         new_im = self.resize_to_fit(image=image, desired_size=(width, height))
 
         # add N dim
         input_data = np.expand_dims(new_im, axis=0)
 
-        if not self.is_quantized():
+        if not tfe.is_quantized():
             # normalize floating point values
             input_mean = 127.5
             input_std = 127.5
             input_data = \
                 (np.float32(input_data) - input_mean) / input_std
 
-        self._tfengine.set_tensor(self.input_details[0]['index'], input_data)
+        tfe.set_tensor(self.input_details[0]['index'], input_data)
 
-        self._tfengine.invoke()
+        # invoke inference on the new input data
+        # with the configured model
+        tfe.infer()
 
         self._log_stats(start_time=start_time)
 
         # get output tensor
-        boxes = self._tfengine.get_tensor(self.output_details[0]['index'])
-        label_codes = self._tfengine.get_tensor(
-            self.output_details[1]['index'])
-        scores = self._tfengine.get_tensor(self.output_details[2]['index'])
+        boxes = tfe.get_tensor(tfe.output_details[0]['index'])
+        label_codes = tfe.get_tensor(
+            tfe.output_details[1]['index'])
+        scores = tfe.get_tensor(tfe.output_details[2]['index'])
         # num = self._tfengine.get_tensor(self.output_details[3]['index'])
         # detections_count = min(num, boxes.shape[1])
 
         inference_result = []
-
         # get a list of indices for the top_k results
         # ordered from highest to lowest confidence
-        top_k_indices = np.argsort(scores[0])[-1*self.top_k:][::-1]
+        top_k_indices = np.argsort(scores[0])[-1*tfe.top_k:][::-1]
         # from the top_k results, only take the ones that score
         # above the confidence threshold criteria.
         for i in top_k_indices:
-            if scores[0, i] >= self.confidence_threshold:
+            if scores[0, i] >= tfe.confidence_threshold:
                 confidence = scores[0, i]
                 category = self._labels[int(label_codes[0, i])]
                 box = boxes[0, i, :]
