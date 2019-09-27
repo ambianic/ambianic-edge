@@ -67,14 +67,14 @@ LIBEDGETPU_DST="/usr/lib/${HOST_GNU_TYPE}/libedgetpu.so.1.0"
 info "Installing library dependencies..."
 sudo apt-get install -y \
   libusb-1.0-0 \
-  python3-pip \
-  python3-pil \
-  python3-numpy \
   libc++1 \
   libc++abi1 \
   libunwind8 \
   libgcc1
 info "Done."
+# python3-pip \
+# python3-pil \
+# python3-numpy \
 
 # Device rule file.
 UDEV_RULE_PATH="/lib/udev/rules.d/99-edgetpu-accelerator.rules"
