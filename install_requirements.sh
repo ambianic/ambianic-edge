@@ -55,13 +55,12 @@ sudo pip3 install -r requirements.txt
   # apt-get install gcc
 
 # [AI]
-# Install Tensorflow Lite and EdgeTPU libraries
-# TODO: Add multi-architecture build instructions: [ARM, x86] x [32,64]
-if [ $architecture == "x86" ]
+# Install Tensorflow Lite and EdgeTPU libraries for the underlying architecture
+if $(arch | grep -q 86)
 then
   echo "Installing tflite for X86"
   sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
-elif [ $architecture == "arm" ]
+elif $(arch | grep -q arm)
 then
   sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
 fi
