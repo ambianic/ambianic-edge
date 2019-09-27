@@ -41,12 +41,12 @@ function error {
 }
 
 
-if [ $architecture == "x86" ]
+if $(arch | grep -q 86)
 then
   info "Recognized as Linux on x86_64."
   LIBEDGETPU_SUFFIX=x86_64
   HOST_GNU_TYPE=x86_64-linux-gnu
-elif [ $architecture == "arm" ]
+elif $(arch | grep -q arm)
 then
   info "Recognized as Raspberry Pi"
   LIBEDGETPU_SUFFIX=arm32
