@@ -80,7 +80,7 @@ export architecture
 ls -al
 ls -al build/
 cp build/install-edgetpu.sh /tmp/edgetpu_api/install.sh
-/tmp/edgetpu_api/install.sh
+sudo /tmp/edgetpu_api/install.sh
 
 # install ai models
 # mkdir -p ai_models
@@ -107,10 +107,10 @@ sudo apt-get install -y npm
 # npm install
 
 # [Cleanup]
-sudo apt-get -y autoremove
+# sudo apt-get -y autoremove
 
 # remove apt-get cache
-sudo  rm -rf /var/lib/apt/lists/*
+# sudo  rm -rf /var/lib/apt/lists/*
 
 # This is run automatically on Debian and Ubuntu, but just in case
-sudo apt-get clean
+# sudo apt-get clean

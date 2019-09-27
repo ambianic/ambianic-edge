@@ -14,6 +14,7 @@ echo "Script location: ${BASEDIR}"
 cd $BASEDIR/../
 echo PWD=$PWD
 pip3 show tflite-runtime
+ls -al /usr/local/lib/python3.7/dist-packages
 python3 -m pytest tests/ --cov=ambianic --cov-report=xml
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
