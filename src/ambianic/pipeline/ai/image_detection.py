@@ -131,8 +131,8 @@ class TFImageDetection(PipeElement):
 
         # add N dim
         input_data = np.expand_dims(new_im, axis=0)
-        log.warning('input_data.shape: %r', input_data.shape)
-        log.warning('input_data.dtype: %r', input_data.dtype)
+        # log.warning('input_data.shape: %r', input_data.shape)
+        # log.warning('input_data.dtype: %r', input_data.dtype)
         # input_data = input_data.astype(np.uint8)
         # log.warning('input_data.dtype: %r', input_data.dtype)
         # input_data = np.asarray(input_data).flatten()
@@ -152,18 +152,21 @@ class TFImageDetection(PipeElement):
 
         self._log_stats(start_time=start_time)
 
-        log.warning('output_details: %r', tfe.output_details)
-        log.warning('output_data[0]: %r',
-                    tfe.get_tensor(tfe.output_details[0]['index']))
+        # log.debug('output_details: %r', tfe.output_details)
+        # od = tfe.output_details[0]['index']
+        # log.debug('output_data[0]: %r',
+        #             tfe.get_tensor(od))
+        # log.debug('output_data[0]: %r',
+        #             tfe._tf_interpreter.get_tensor(od))
 
         # get output tensor
         boxes = tfe.get_tensor(tfe.output_details[0]['index'])
         label_codes = tfe.get_tensor(
             tfe.output_details[1]['index'])
         scores = tfe.get_tensor(tfe.output_details[2]['index'])
-        num = tfe.get_tensor(tfe.output_details[3]['index'])
-        log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
-                    num, label_codes, scores)
+        # num = tfe.get_tensor(tfe.output_details[3]['index'])
+        # log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
+        #             num, label_codes, scores)
         # detections_count = min(num, boxes.shape[1])
 
         inference_result = []

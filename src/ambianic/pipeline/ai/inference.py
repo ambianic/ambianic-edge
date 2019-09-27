@@ -101,18 +101,19 @@ class TFInferenceEngine:
             self._tf_interpreter = Interpreter(model_path=model_tflite)
         assert self._tf_interpreter
         self._tf_interpreter.allocate_tensors()
-
         # check the type of the input tensor
+        self._tf_input_details = self._tf_interpreter.get_input_details()
+        self._tf_output_details = self._tf_interpreter.get_output_details()
         self._tf_is_quantized_model = \
             self.input_details[0]['dtype'] != np.float32
 
     @property
     def input_details(self):
-        return self._tf_interpreter.get_input_details()
+        return self._tf_input_details
 
     @property
     def output_details(self):
-        return self._tf_interpreter.get_output_details()
+        return self._tf_output_details
 
     @property
     def is_quantized(self):
@@ -164,12 +165,12 @@ class TFInferenceEngine:
         """Invoke model inference on current input tensor."""
         return self._tf_interpreter.invoke()
 
-    def set_tensor(self, tensor_ref=None, tensor_data=None):
-        """Set tensor data."""
-        assert tensor_ref
-        self._tf_interpreter.set_tensor(tensor_ref, tensor_data)
+    def set_tensor(self, index=None, tensor_data=None):
+        """Set tensor data at given reference index."""
+        assert isinstance(index, int)
+        self._tf_interpreter.set_tensor(index, tensor_data)
 
-    def get_tensor(self, tensor_ref=None):
-        """Get tensor data."""
-        assert tensor_ref
-        self._tf_interpreter.get_tensor(tensor_ref)
+    def get_tensor(self, index=None):
+        """Return tensor data at given reference index."""
+        assert isinstance(index, int)
+        return self._tf_interpreter.get_tensor(index)

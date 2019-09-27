@@ -48,7 +48,41 @@ class OutPipeElement(PipeElement):
         pass
 
 
-def test_backgground_image():
+
+def test_model_inputs():
+    """Verify against known model inputs."""
+    config = _object_detect_config()
+    object_detector = ObjectDetector(config)
+    tfe = object_detector._tfengine
+    samples = tfe.input_details[0]['shape'][0]
+    assert samples == 1
+    height = tfe.input_details[0]['shape'][1]
+    assert height == 300
+    width = tfe.input_details[0]['shape'][2]
+    assert width == 300
+    colors = tfe.input_details[0]['shape'][3]
+    assert colors == 3
+
+
+def test_model_outputs():
+    """Verify against known model outputs."""
+    config = _object_detect_config()
+    object_detector = ObjectDetector(config)
+    tfe = object_detector._tfengine
+    assert tfe.output_details[0]['shape'][0] == 1
+    scores = tfe.output_details[0]['shape'][1]
+    assert scores == 20
+    assert tfe.output_details[1]['shape'][0] == 1
+    boxes = tfe.output_details[1]['shape'][1]
+    assert boxes == 20
+    assert tfe.output_details[2]['shape'][0] == 1
+    labels = tfe.output_details[2]['shape'][1]
+    assert labels == 20
+    num = tfe.output_details[3]['shape'][0]
+    assert num == 1
+
+
+def test_background_image():
     """Expect to not detect anything interesting in a background image."""
     config = _object_detect_config()
     result = None
@@ -64,7 +98,7 @@ def test_backgground_image():
     assert not result
 
 
-def no_test_one_person():
+def test_one_person():
     """Expect to detect one person."""
     config = _object_detect_config()
     result = None
