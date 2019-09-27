@@ -1,6 +1,7 @@
 """Test image detection pipe element."""
 import pytest
 import os
+from PIL import Image
 
 from ambianic.pipeline.ai.image_detection import TFImageDetection
 
@@ -90,3 +91,36 @@ def test_model_outputs():
     assert labels == 20
     num = tfe.output_details[3]['shape'][0]
     assert num == 1
+
+
+def test_resize():
+    config = _good_config()
+    img_detect = TFImageDetection(config)
+    dir = os.path.dirname(os.path.abspath(__file__))
+    img_path = os.path.join(dir, 'background.jpg')
+    image = Image.open(img_path)
+    orig_width = image.size[0]
+    assert orig_width == 1280
+    orig_height = image.size[1]
+    assert orig_height == 720
+    new_size = (300, 300)
+    new_image = img_detect.resize(image=image, desired_size=new_size)
+    new_width = new_image.size[0]
+    assert new_width == new_size[0]
+    new_height = new_image.size[1]
+    assert new_height == new_size[1]
+
+
+def test_receive_next_sample():
+    config = _good_config()
+    img_detect = TFImageDetection(config)
+    # no action expected from the abstract method
+    img_detect.receive_next_sample(image=None)
+
+
+def test_load_labels():
+    config = _good_config()
+    img_detect = TFImageDetection(config)
+    labels = img_detect._labels
+    assert labels[0] == 'person'
+    assert labels[15] == 'bird'

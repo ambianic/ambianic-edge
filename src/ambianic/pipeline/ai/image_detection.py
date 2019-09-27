@@ -54,8 +54,14 @@ class TFImageDetection(PipeElement):
             lines = (p.match(line).groups() for line in f.readlines())
             return {int(num): text.strip() for num, text in lines}
 
-    def resize_to_fit(self, image=None, desired_size=None):
+    def resize(self, image=None, desired_size=None):
         """Resizes original image to size expected by input tensor.
+
+        Preserves aspect ratio to avoid confusing the AI model with
+        unnatural distortions. Pads the resulting image
+        with solid black color pixels to fill the desired size.
+
+        Does not modify the original image.
 
         :Parameters:
         ----------
@@ -65,19 +71,13 @@ class TFImageDetection(PipeElement):
         desired_size : (width, height)
             Size expected by the AI model.
 
-        Preserves aspect ratio to avoid confusing the AI model with
-        an unnatural distortion. Pads resulting image
-        with solid black color pixels as necessary.
-
-        Does not modify the original image.
-
         :Returns:
         -------
         PIL.Image
             Resized image fitting for the AI model input tensor.
 
         """
-        assert isinstance(image, Image)
+        assert image
         assert desired_size
         log.debug('current image size = %r', image.size)
         thumb = image.copy()

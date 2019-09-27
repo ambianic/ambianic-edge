@@ -6,7 +6,7 @@ from ambianic.service import stacktrace
 log = logging.getLogger(__name__)
 
 
-class FaceDetect(TFImageDetection):
+class FaceDetector(TFImageDetection):
     """Detecting faces in an image."""
 
     def __init__(self, element_config=None):

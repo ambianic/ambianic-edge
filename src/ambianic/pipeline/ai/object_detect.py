@@ -5,7 +5,7 @@ from .image_detection import TFImageDetection
 log = logging.getLogger(__name__)
 
 
-class ObjectDetect(TFImageDetection):
+class ObjectDetector(TFImageDetection):
     """Detects objects in an image."""
 
     def __init__(self, element_config=None):
