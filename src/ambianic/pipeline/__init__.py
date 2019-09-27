@@ -1,3 +1,4 @@
+"""Main module for Ambianic AI pipelines."""
 import logging
 import abc
 
@@ -38,16 +39,25 @@ class PipeElement:
 
     @abc.abstractmethod  # pragma: no cover
     def receive_next_sample(self, **sample):
-        """ Receive next sample from a connected previous element
-            :argument **kwargs a variable list of (key, value) pairs that represent the sample
+        """Receive next sample from a connected previous element.
+
+        :Parameters:
+        ----------
+        **sample : type
+            A variable list of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
         """
         pass
 
 
 class HealthChecker(PipeElement):
-    """
-        Attaches at the end of a pipe to monitor its health status
-        based on received output samples and their frequency.
+    """Monitor pipe health status.
+
+    Attaches at the end of a pipe to monitor its health status
+    based on received output samples and their frequency.
     """
 
     def __init__(self, health_status_callback=None):

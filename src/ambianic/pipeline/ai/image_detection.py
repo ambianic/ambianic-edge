@@ -7,7 +7,7 @@ import numpy as np
 # from importlib import import_module
 from ambianic.pipeline import PipeElement
 from .inference import TFInferenceEngine
-from PIL import Image, ImageOps
+from PIL import ImageOps
 
 log = logging.getLogger(__name__)
 
@@ -127,19 +127,24 @@ class TFImageDetection(PipeElement):
         height = tfe.input_details[0]['shape'][1]
         width = tfe.input_details[0]['shape'][2]
 
-        new_im = self.resize_to_fit(image=image, desired_size=(width, height))
+        new_im = self.resize(image=image, desired_size=(width, height))
 
         # add N dim
         input_data = np.expand_dims(new_im, axis=0)
+        log.warning('input_data.shape: %r', input_data.shape)
+        log.warning('input_data.dtype: %r', input_data.dtype)
+        # input_data = input_data.astype(np.uint8)
+        # log.warning('input_data.dtype: %r', input_data.dtype)
+        # input_data = np.asarray(input_data).flatten()
 
-        if not tfe.is_quantized():
+        if not tfe.is_quantized:
             # normalize floating point values
             input_mean = 127.5
             input_std = 127.5
             input_data = \
                 (np.float32(input_data) - input_mean) / input_std
 
-        tfe.set_tensor(self.input_details[0]['index'], input_data)
+        tfe.set_tensor(tfe.input_details[0]['index'], input_data)
 
         # invoke inference on the new input data
         # with the configured model
@@ -147,12 +152,18 @@ class TFImageDetection(PipeElement):
 
         self._log_stats(start_time=start_time)
 
+        log.warning('output_details: %r', tfe.output_details)
+        log.warning('output_data[0]: %r',
+                    tfe.get_tensor(tfe.output_details[0]['index']))
+
         # get output tensor
         boxes = tfe.get_tensor(tfe.output_details[0]['index'])
         label_codes = tfe.get_tensor(
             tfe.output_details[1]['index'])
         scores = tfe.get_tensor(tfe.output_details[2]['index'])
-        # num = self._tfengine.get_tensor(self.output_details[3]['index'])
+        num = tfe.get_tensor(tfe.output_details[3]['index'])
+        log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
+                    num, label_codes, scores)
         # detections_count = min(num, boxes.shape[1])
 
         inference_result = []
