@@ -65,6 +65,8 @@ then
   sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
 fi
 
+pip3 show tflite-runtime
+
 # install wget
 apt-get install -y curl
 

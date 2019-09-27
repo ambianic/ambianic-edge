@@ -13,6 +13,7 @@ echo "Script location: ${BASEDIR}"
 # where codecov can find the generated reports
 cd $BASEDIR/../
 echo PWD=$PWD
+pip3 show tflite-runtime
 python3 -m pytest tests/ --cov=ambianic --cov-report=xml
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
