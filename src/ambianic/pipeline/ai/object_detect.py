@@ -1,3 +1,4 @@
+"""Object detection pipe element."""
 import logging
 
 from .image_detection import TFImageDetection

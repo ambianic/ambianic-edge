@@ -1,3 +1,4 @@
+"""Face detection pipe element."""
 import logging
 
 from .image_detection import TFImageDetection
@@ -31,11 +32,6 @@ class FaceDetector(TFImageDetection):
         im1 = image.crop((left, top, right, bottom))
         return im1
 
-    def detect(self, image=None):
-        assert image
-        result = super().detect(image=image)
-        return result
-
     def receive_next_sample(self, **sample):
         log.debug("Pipe element %s received new sample with keys %s.",
                   self.__class__.__name__,
@@ -55,7 +51,7 @@ class FaceDetector(TFImageDetection):
                 face_regions = []
                 for category, confidence, box in inference_result:
                     if category == 'person' and \
-                      confidence >= self.confidence_threshold:
+                      confidence >= self._tfengine.confidence_threshold:
                         face_regions.append(box)
                 # get only topk person detecions
                 face_regions = face_regions[:self.topk]

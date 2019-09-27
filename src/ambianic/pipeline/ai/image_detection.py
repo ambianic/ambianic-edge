@@ -164,30 +164,43 @@ class TFImageDetection(PipeElement):
         label_codes = tfe.get_tensor(
             tfe.output_details[1]['index'])
         scores = tfe.get_tensor(tfe.output_details[2]['index'])
-        # num = tfe.get_tensor(tfe.output_details[3]['index'])
-        # log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
-        #             num, label_codes, scores)
-        # detections_count = min(num, boxes.shape[1])
+        num = tfe.get_tensor(tfe.output_details[3]['index'])
+        log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
+                    num, label_codes, scores)
+        log.warning('Required confidence: %r',
+                    tfe.confidence_threshold)
+        detections_count = int(num[0])
 
         inference_result = []
         # get a list of indices for the top_k results
-        # ordered from highest to lowest confidence
-        top_k_indices = np.argsort(scores[0])[-1*tfe.top_k:][::-1]
+        # ordered from highest to lowest confidence.
+        # We are only interested in scores within detections_count range
+        indices_of_sorted_scores = np.argsort(scores[0, :detections_count])
+        log.warning('Indices of sorted scores: %r:',
+                    indices_of_sorted_scores)
+        top_k_indices = indices_of_sorted_scores[-1*tfe.top_k:][::-1]
+        log.warning('Indices of top_k scores: %r:', top_k_indices)
         # from the top_k results, only take the ones that score
         # above the confidence threshold criteria.
         for i in top_k_indices:
-            if scores[0, i] >= tfe.confidence_threshold:
-                confidence = scores[0, i]
-                category = self._labels[int(label_codes[0, i])]
-                box = boxes[0, i, :]
-                x0 = box[1]
-                y0 = box[0]
-                x1 = box[3]
-                y1 = box[2]
-                inference_result.append((
-                    category,
-                    confidence,
-                    (x0, y0, x1, y1)))
+            confidence = scores[0, i]
+            if confidence >= tfe.confidence_threshold:
+                log.warning('Sample confidence: %r, required confidence %r',
+                            confidence, tfe.confidence_threshold)
+                li = int(label_codes[0, i])
+                # protect against models that return arbitrary labels
+                # when the confidence is low
+                if (li < len(self._labels)):
+                    category = self._labels[li]
+                    box = boxes[0, i, :]
+                    x0 = box[1]
+                    y0 = box[0]
+                    x1 = box[3]
+                    y1 = box[2]
+                    inference_result.append((
+                        category,
+                        confidence,
+                        (x0, y0, x1, y1)))
         return inference_result
 #        objs = self.engine.DetectWithImage(
 #            image,

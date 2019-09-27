@@ -1,9 +1,9 @@
 """Test object detection pipe element."""
-import pytest
 import os
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline import PipeElement
 from PIL import Image
+
 
 def _object_detect_config():
     dir = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +111,29 @@ def test_one_person():
     output = OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 1
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+
+
+def test_one_person_no_face():
+    """Expect to detect one person."""
+    config = _object_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(element_config=config)
+    output = OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-no-face.jpg')
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
