@@ -11,6 +11,7 @@ WORKDIR /opt/ambianic
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["install_requirements.sh", "requirements.txt", "./"]
+COPY ["./build/*", "./build"]
 RUN ./install_requirements.sh
 
 # CMD bash
