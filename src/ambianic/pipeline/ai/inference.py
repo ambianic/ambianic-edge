@@ -83,7 +83,9 @@ class TFInferenceEngine:
 #                                      packaage=edgetpu_class)
 #        target_class = getattr(module_object, edgetpu_class)
         self._tf_interpreter = None
-        if (model_edgetpu):
+        if (model_edgetpu):  # pragme: no cover
+            # Note: Looking for ideas how to test Coral dependent code
+            # in a cloud CI environment
             try:
                 edgetpu_delegate = load_delegate('libedgetpu.so.1.0')
                 assert edgetpu_delegate
@@ -91,13 +93,12 @@ class TFInferenceEngine:
                     model_path=model_edgetpu,
                     experimental_delegates=[edgetpu_delegate]
                     )
+                log.debug('EdgeTPU available. Will use EdgeTPU model.')
             except Exception as e:
                 log.info('EdgeTPU error: %r', e)
                 stacktrace(logging.DEBUG)
-        if self._tf_interpreter:
-            log.debug('EdgeTPU available. Will use EdgeTPU model.')
-        else:
-            log.debug('EdgeTPU not available. Will use TFLite CPU model.')
+        if not self._tf_interpreter:
+            log.debug('EdgeTPU not available. Will use TFLite CPU runtime.')
             self._tf_interpreter = Interpreter(model_path=model_tflite)
         assert self._tf_interpreter
         self._tf_interpreter.allocate_tensors()

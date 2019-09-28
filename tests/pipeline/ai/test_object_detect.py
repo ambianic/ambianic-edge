@@ -121,6 +121,31 @@ def test_one_person():
     assert y0 > 0 and y0 < y1
 
 
+def test_bad_sample_good_sample():
+    """One bad sample should not prevent good samples from being processed."""
+    config = _object_detect_config()
+    result = 'Something'
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal result
+        result = inference_result
+    object_detector = ObjectDetector(element_config=config)
+    output = OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    # bad sample
+    object_detector.receive_next_sample(image=None)
+    # good sample
+    img = _get_image(file_name='person.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 1
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+
+
 def test_one_person_no_face():
     """Expect to detect one person."""
     config = _object_detect_config()

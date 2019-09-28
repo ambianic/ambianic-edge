@@ -35,4 +35,3 @@ class ObjectDetector(TFImageDetection):
                           str(sample)
                           )
                 stacktrace(logging.WARNING)
-                raise e
