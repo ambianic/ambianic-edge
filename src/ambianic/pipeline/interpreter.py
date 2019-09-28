@@ -4,8 +4,8 @@ from .avsource.av_element import InputStreamProcessor
 import time
 import threading
 
-from ambianic.pipeline.ai.object_detect import ObjectDetect
-from ambianic.pipeline.ai.face_detect import FaceDetect
+from ambianic.pipeline.ai.object_detect import ObjectDetector
+from ambianic.pipeline.ai.face_detect import FaceDetector
 from .store import SaveSamples
 from . import PipeElement, HealthChecker
 from ambianic.service import ThreadedJob, ManagedService
@@ -149,9 +149,9 @@ class Pipeline(ManagedService):
     # valid pipeline operators
     PIPELINE_OPS = {
         'source': InputStreamProcessor,
-        'detect_objects': ObjectDetect,
+        'detect_objects': ObjectDetector,
         'save_samples': SaveSamples,
-        'detect_faces': FaceDetect,
+        'detect_faces': FaceDetector,
     }
 
     def __init__(self, pname=None, pconfig=None):

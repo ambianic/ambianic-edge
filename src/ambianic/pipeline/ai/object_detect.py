@@ -1,12 +1,14 @@
+"""Object detection pipe element."""
 import logging
 
-from .inference import TfInference
+from .image_detection import TFImageDetection
+from ambianic.service import stacktrace
 
 log = logging.getLogger(__name__)
 
 
-class ObjectDetect(TfInference):
-    """ ObjectDetect is a pipeline element responsible for detecting objects in an image """
+class ObjectDetector(TFImageDetection):
+    """Detects objects in an image."""
 
     def __init__(self, element_config=None):
         super().__init__(element_config=element_config)
@@ -20,10 +22,17 @@ class ObjectDetect(TfInference):
         else:
             try:
                 image = sample['image']
-                inference_result = super().detect(image=image)
+                inference_result = self.detect(image=image)
                 # pass on the results to the next connected pipe element
                 if self.next_element:
-                    self.next_element.receive_next_sample(image=image, inference_result=inference_result)
+                    self.next_element.receive_next_sample(
+                        image=image,
+                        inference_result=inference_result)
             except Exception as e:
-                log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
-
+                log.error('Error "%s" while processing sample. '
+                          'Dropping sample: %s',
+                          str(e),
+                          str(sample)
+                          )
+                stacktrace(logging.WARNING)
+                raise e

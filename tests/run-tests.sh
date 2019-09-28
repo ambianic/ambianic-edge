@@ -1,6 +1,6 @@
 
 # verbose mode, exit on error
-set -ex
+set -x
 
 pip3 install -U pytest # unit test tool
 pip3 install -U codecov # code coverage tool

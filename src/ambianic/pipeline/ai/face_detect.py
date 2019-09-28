@@ -1,16 +1,19 @@
+"""Face detection pipe element."""
 import logging
 
-from .inference import TfInference
+from .image_detection import TFImageDetection
+from ambianic.service import stacktrace
 
 log = logging.getLogger(__name__)
 
 
-class FaceDetect(TfInference):
-    """ FaceDetect is a pipeline element responsible for detecting objects in an image """
+class FaceDetector(TFImageDetection):
+    """Detecting faces in an image."""
 
     def __init__(self, element_config=None):
         super().__init__(element_config=element_config)
-        self.topk = element_config.get('top-k', 3)  # default to top 3 person detections
+        # default to top 3 face detections
+        self.topk = element_config.get('top-k', 3)
 
     @staticmethod
     def crop_image(image, box):
@@ -30,7 +33,9 @@ class FaceDetect(TfInference):
         return im1
 
     def receive_next_sample(self, **sample):
-        log.debug("Pipe element %s received new sample with keys %s.", self.__class__.__name__, str([*sample]))
+        log.debug("Pipe element %s received new sample with keys %s.",
+                  self.__class__.__name__,
+                  str([*sample]))
         if not sample:
             # pass through empty samples to next element
             if self.next_element:
@@ -45,22 +50,28 @@ class FaceDetect(TfInference):
                 # - pass face detections on to next pipe element
                 face_regions = []
                 for category, confidence, box in inference_result:
-                    if category == 'person' and confidence >= self.confidence_threshold:
+                    if category == 'person' and \
+                      confidence >= self._tfengine.confidence_threshold:
                         face_regions.append(box)
-                face_regions = face_regions[:self.topk]  # get only topk person detecions
+                # get only topk person detecions
+                face_regions = face_regions[:self.topk]
                 log.debug('Detected %d faces', len(face_regions))
                 if not face_regions:
-                    # if no faces were detected, let the next pipe element know that we have nothing to share
+                    # if no faces were detected, let the next pipe element
+                    # know that we have nothing to share
                     if self.next_element:
                         self.next_element.receive_next_sample()
                 else:
                     for box in face_regions:
                         person_image = self.crop_image(image, box)
-                        inference_result = super().detect(image=person_image)
+                        inference_result = self.detect(image=person_image)
                         if self.next_element:
-                            self.next_element.receive_next_sample(image=person_image, inference_result=inference_result)
+                            self.next_element.receive_next_sample(
+                                image=person_image,
+                                inference_result=inference_result)
             except Exception as e:
-                log.warning('Error "%s" while processing sample. Dropping sample: %s', str(e), str(sample))
-
-
-
+                log.warning('Error "%s" while processing sample. '
+                            'Dropping sample: %s',
+                            str(e),
+                            str(sample))
+                stacktrace()

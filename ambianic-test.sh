@@ -9,4 +9,4 @@ docker run -it --rm \
   --publish 8778:8778 \
   --entrypoint 'bash' \
   -e CODECOV_TOKEN \
-  ambianic/ambianic:dev /workspace/tests/run-tests.sh
+  ambianic/ambianic-dev:latest /workspace/tests/run-tests.sh

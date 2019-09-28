@@ -8,8 +8,23 @@ set -e
 # verbose mode
 set -x
 
-# quietly update apt-get, install sudo and python3 which is not available by default on slim buster
-apt-get update -y && apt-get install -y sudo && apt-get install -y python3 && apt-get install -y python3-pip
+
+# detect effective CPU architecture
+if $(arch | grep -q 86)
+then
+  export architecture="x86"
+elif $(arch | grep -q arm)
+then
+  export architecture="arm"
+fi
+echo $(arch)
+echo "Effective CPU architecture: $architecture"
+
+# update apt-get and install sudo
+apt-get update -y && apt-get install -y sudo
+
+# install python3 which is not available by default on slim buster
+apt-get install -y python3 && apt-get install -y python3-pip
 
 # Install gstreamer
 sudo apt-get update && sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-good python3-gst-1.0 python3-gi
@@ -39,6 +54,34 @@ sudo pip3 install -r requirements.txt
   # like pycairo don't ship as PIP packages and require build from source.
   # apt-get install gcc
 
+# [AI]
+# Install Tensorflow Lite and EdgeTPU libraries for the underlying architecture
+if $(arch | grep -q 86)
+then
+  echo "Installing tflite for X86"
+  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
+elif $(arch | grep -q arm)
+then
+  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
+fi
+
+pip3 show tflite-runtime
+
+# install wget
+apt-get install -y curl
+
+# wget https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz -O edgetpu_api.tar.gz --trust-server-names
+curl -k -L -o /tmp/edgetpu_api.tar.gz https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz
+
+tar xzf /tmp/edgetpu_api.tar.gz -C /tmp
+
+echo "Effective CPU architecture: $architecture"
+export architecture
+ls -al
+ls -al build/
+cp build/install-edgetpu.sh /tmp/edgetpu_api/install.sh
+/tmp/edgetpu_api/install.sh
+
 # install ai models
 # mkdir -p ai_models
 # wget https://dl.google.com/coral/canned_models/all_models.tar.gz
@@ -63,7 +106,7 @@ sudo apt-get install -y npm
 # cd ambianic/webapp/client
 # npm install
 
-# Cleanup
+# [Cleanup]
 sudo apt-get -y autoremove
 
 # remove apt-get cache
