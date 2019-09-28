@@ -84,6 +84,7 @@
         <li class="main active"><a href="#ambianic">ambianic</a></li>
         <li class="main "><a href="#ambianicpipeline">ambianic.pipeline</a></li>
             <li><a href="#pipeelement">PipeElement</a></li>
+            <li><a href="#parameters">:Parameters:</a></li>
             <li><a href="#healthchecker">HealthChecker</a></li>
         <li class="main "><a href="#ambianicwebapp">ambianic.webapp</a></li>
     </ul>
@@ -92,6 +93,7 @@
 
 <h1 id="ambianic">ambianic</h1>
 <h1 id="ambianicpipeline">ambianic.pipeline</h1>
+<p>Main module for Ambianic AI pipelines.</p>
 <h2 id="pipeelement">PipeElement</h2>
 <pre><code class="python">PipeElement(self)
 </code></pre>
@@ -106,12 +108,18 @@
 <pre><code class="python">PipeElement.receive_next_sample(self, **sample)
 </code></pre>
 
-<p>Receive next sample from a connected previous element
-:argument **kwargs a variable list of (key, value) pairs that represent the sample</p>
+<p>Receive next sample from a connected previous element.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>**sample : type
+    A variable list of (key, value) pairs that represent the sample.
+    It is left to specialized implementations of PipeElement to specify
+    their in/out sample formats and enforce compatibility with
+    adjacent connected pipe elements.</p>
 <h2 id="healthchecker">HealthChecker</h2>
 <pre><code class="python">HealthChecker(self, health_status_callback=None)
 </code></pre>
 
+<p>Monitor pipe health status.</p>
 <p>Attaches at the end of a pipe to monitor its health status
 based on received output samples and their frequency.</p>
 <h3 id="receive_next_sample_1">receive_next_sample</h3>
