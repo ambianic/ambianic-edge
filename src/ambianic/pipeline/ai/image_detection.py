@@ -137,7 +137,11 @@ class TFImageDetection(PipeElement):
         # log.warning('input_data.dtype: %r', input_data.dtype)
         # input_data = np.asarray(input_data).flatten()
 
-        if not tfe.is_quantized:
+        # Note: Floating models are not tested thoroughly yet.
+        # Its not clear yet whether floating models will be a good fit
+        # for Ambianic use cases. Optimized quantized models seem to do
+        # a good job in terms of accuracy and speed.
+        if not tfe.is_quantized:  # pragma: no cover
             # normalize floating point values
             input_mean = 127.5
             input_std = 127.5

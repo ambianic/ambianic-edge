@@ -108,16 +108,47 @@ def test_model_outputs():
 def test_no_sample():
     """Expect element to pass empty sample to next element."""
     config = _object_detect_config()
-    passed_sample = None
+    result = 'Something'
 
     def sample_callback(image=None, inference_result=None):
-        nonlocal passed_sample
-        passed_sample = image
+        nonlocal result
+        result = image is None and inference_result is None
     face_detector = FaceDetector(element_config=config)
     output = OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
-    face_detector.receive_next_sample(image=None)
-    assert passed_sample is None
+    face_detector.receive_next_sample()
+    assert result is True
+
+
+def test_bad_sample_good_sample():
+    """One bad sample should not prevent good samples from being processed."""
+    config = _face_detect_config()
+    result = 'Something'
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal result
+        result = inference_result
+    face_detector = FaceDetector(element_config=config)
+    output = OutPipeElement(sample_callback=sample_callback)
+    face_detector.connect_to_next_element(output)
+    # bad sample
+    face_detector.receive_next_sample(
+        image=None,
+        inference_result=[('person', 1, [-1, -2, -3, -4]), ]
+        )
+    # good sample
+    img = _get_image(file_name='person-face.jpg')
+    face_detector.receive_next_sample(
+        image=img,
+        inference_result=[('person', 1, [0, 0, 1, 1]), ]
+        )
+    assert result
+    assert len(result) == 1
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.8
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
 
 
 def test_background_image_no_person():
