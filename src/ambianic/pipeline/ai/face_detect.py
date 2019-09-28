@@ -43,7 +43,7 @@ class FaceDetector(TFImageDetection):
         else:
             try:
                 image = sample['image']
-                inference_result = sample.get('inference_result', None)
+                inference_result = sample.get('inference_result', [])
                 log.debug("sample: %s", str(inference_result))
                 # - crop out top-k person detections
                 # - apply face detection to cropped person areas
@@ -56,6 +56,7 @@ class FaceDetector(TFImageDetection):
                 # get only topk person detecions
                 face_regions = face_regions[:self.topk]
                 log.debug('Detected %d faces', len(face_regions))
+                log.warning('Detected %d faces', len(face_regions))
                 if not face_regions:
                     # if no faces were detected, let the next pipe element
                     # know that we have nothing to share
@@ -70,8 +71,8 @@ class FaceDetector(TFImageDetection):
                                 image=person_image,
                                 inference_result=inference_result)
             except Exception as e:
-                log.warning('Error "%s" while processing sample. '
-                            'Dropping sample: %s',
-                            str(e),
-                            str(sample))
-                stacktrace()
+                log.warning('Error %r while processing sample. '
+                            'Dropping sample: %r',
+                            e,
+                            sample)
+                stacktrace(logging.WARNING)

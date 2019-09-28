@@ -105,20 +105,35 @@ def test_model_outputs():
     assert num == 1
 
 
-def test_background_image():
-    """Expect to not detect anything interesting in a background image."""
+def test_no_sample():
+    """Expect element to pass empty sample to next element."""
     config = _object_detect_config()
+    passed_sample = None
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal passed_sample
+        passed_sample = image
+    face_detector = FaceDetector(element_config=config)
+    output = OutPipeElement(sample_callback=sample_callback)
+    face_detector.connect_to_next_element(output)
+    face_detector.receive_next_sample(image=None)
+    assert passed_sample is None
+
+
+def test_background_image_no_person():
+    """Expect to not detect anything interesting in a background image."""
+    config = _face_detect_config()
     result = None
 
     def sample_callback(image=None, inference_result=None):
         nonlocal result
-        result = inference_result
+        result = image is None and inference_result is None
     face_detector = FaceDetector(element_config=config)
     output = OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
     face_detector.receive_next_sample(image=img)
-    assert not result
+    assert result is True
 
 
 def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
@@ -129,7 +144,6 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
 
     def sample_callback(image=None, inference_result=None):
         nonlocal result
-
         result = inference_result
     # test stage one, obect detection -> out
     object_detector = ObjectDetector(element_config=object_config)
