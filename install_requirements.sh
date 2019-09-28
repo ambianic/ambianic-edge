@@ -82,7 +82,6 @@ ls -al build/
 cp build/install-edgetpu.sh /tmp/edgetpu_api/install.sh
 /tmp/edgetpu_api/install.sh
 
-pip3 show tflite-runtime
 # install ai models
 # mkdir -p ai_models
 # wget https://dl.google.com/coral/canned_models/all_models.tar.gz
@@ -115,5 +114,3 @@ sudo  rm -rf /var/lib/apt/lists/*
 
 # This is run automatically on Debian and Ubuntu, but just in case
 sudo apt-get clean
-
-pip3 show tflite-runtime

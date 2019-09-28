@@ -2,8 +2,6 @@
 # verbose mode, exit on error
 set -x
 
-pip3 show tflite-runtime
-
 pip3 install -U pytest # unit test tool
 pip3 install -U codecov # code coverage tool
 pip3 install -U pytest-cov # coverage plugin for pytest
@@ -15,8 +13,6 @@ echo "Script location: ${BASEDIR}"
 # where codecov can find the generated reports
 cd $BASEDIR/../
 echo PWD=$PWD
-pip3 show tflite-runtime
-ls -al /usr/local/lib/python3.7/dist-packages
 python3 -m pytest tests/ --cov=ambianic --cov-report=xml
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
