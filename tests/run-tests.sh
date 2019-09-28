@@ -2,6 +2,8 @@
 # verbose mode, exit on error
 set -x
 
+pip3 show tflite-runtime
+
 pip3 install -U pytest # unit test tool
 pip3 install -U codecov # code coverage tool
 pip3 install -U pytest-cov # coverage plugin for pytest
