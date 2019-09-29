@@ -16,8 +16,10 @@ If you are willing to take the risk that comes with early stage code and are abl
 
 When the product is officially released, it must show tangible value to first time users with:
 - Less than 15 minutes setup time 
-- Less than $50 in hardware costs
-- No coding skills requires 
+- Less than $75 in hardware costs
+  + Primary target platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
+- No coding required to get started
+- Decomposable and Hackable
 
 Relaxing these constraints could unlock deeper value out of the platform. APIs and scalability have their benefits. However we strive to provide a simple and beautiful out of the box experience.
 
