@@ -13,7 +13,10 @@ from PIL import Image
 log = logging.getLogger(__name__)
 
 
-class InputStreamProcessor(PipeElement):
+MIN_HEALING_INTERVAL = 5
+
+
+class AVSourceElement(PipeElement):
     """
     Pipe element that handles a wide range of media input sources.
 
@@ -21,8 +24,16 @@ class InputStreamProcessor(PipeElement):
     samples to the next pipe element.
     """
 
-    def __init__(self, source_conf=None):
-        super()
+    def __init__(self, **source_conf):
+        """Create an av source element with given configuration.
+
+        :Parameters:
+        ----------
+        source_conf : dict
+            uri: string (example rtsp://somehost/ipcam/channel0)
+            type: string (video, audio or image)
+        """
+        super().__init__()
         assert source_conf
         # pipeline source info
         self._source_conf = source_conf
@@ -35,7 +46,7 @@ class InputStreamProcessor(PipeElement):
         # ensure healing requests are reasonably spaced out
         self._latest_healing = time.monotonic()
 
-    def on_new_sample(self, sample=None):
+    def _on_new_sample(self, sample=None):
         log.info('Input stream received new gst sample.')
         assert sample
         type = sample['type']
@@ -50,12 +61,8 @@ class InputStreamProcessor(PipeElement):
         img = Image.frombytes(format, (width, height),
                               bytes, 'raw')
         # pass image sample to next pipe element, e.g. ai inference
-        if self.next_element:
-            log.info('Input stream sending sample to next element.')
-            self.next_element.receive_next_sample(image=img)
-        else:
-            log.info('Input stream has no next pipe element '
-                     'to send sample to.')
+        log.info('Input stream sending sample to next element.')
+        self.receive_next_sample(image=img)
 
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
@@ -77,7 +84,7 @@ class InputStreamProcessor(PipeElement):
             # do not use process.join() to avoid deadlock due to shared queue
             try:
                 next_sample = self._gst_out_queue.get(timeout=1)
-                self.on_new_sample(sample=next_sample)
+                self._on_new_sample(sample=next_sample)
             except queue.Empty:
                 log.debug('no new sample available yet in gst out queue')
             except Exception as e:
@@ -142,7 +149,7 @@ class InputStreamProcessor(PipeElement):
                 log.debug('Gst process stopped after stop signal.')
 
     def start(self):
-        """ Start the gstreamer pipeline """
+        """Start processing input from the configured audio or video source."""
         super().start()
         log.info("Starting %s", self.__class__.__name__)
         self._stop_requested = False
@@ -152,9 +159,9 @@ class InputStreamProcessor(PipeElement):
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):
-        """Attempt to heal a damaged gstream service."""
+        """Attempt to heal a damaged AV source processing service."""
         log.debug("Entering healing method... %s", self.__class__.__name__)
-        logging.debug('Healing waiting for lock.')
+        log.debug('Healing waiting for lock.')
         self._healing_in_progress.acquire()
         try:
             logging.debug('Healing lock acquired.')
@@ -162,7 +169,10 @@ class InputStreamProcessor(PipeElement):
             # Space out healing attempts.
             # No point in back to back healing runs when there are
             # blocking dependencies on external resources.
-            if self._latest_healing < now - 5:
+            log.warning('latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r',
+                        self._latest_healing,
+                        now - MIN_HEALING_INTERVAL)
+            if self._latest_healing < now - MIN_HEALING_INTERVAL:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
                 self._stop_gst_service()
@@ -179,7 +189,7 @@ class InputStreamProcessor(PipeElement):
         log.debug("Exiting healing method. %s", self.__class__.__name__)
 
     def stop(self):
-        """ Gracefully stop the AVElelment loop  """
+        """Stop the AV source processing loop."""
         log.info("Entering stop method ... %s", self.__class__.__name__)
         self._stop_requested = True
         super().stop()

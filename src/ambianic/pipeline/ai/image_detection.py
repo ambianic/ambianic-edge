@@ -28,7 +28,8 @@ class TFImageDetection(PipeElement):
                 top_k: 3
 
         """
-        super()
+        # log.warning('TFImageDetection __init__ invoked')
+        super().__init__()
         assert isinstance(element_config, dict)
         self._tfengine = TFInferenceEngine(**element_config)
         self._labels = self.load_labels(self._tfengine.labels_path)
@@ -219,15 +220,3 @@ class TFImageDetection(PipeElement):
 #            category = self.labels[obj.label_id]
 #            inference_result.append((category, confidence, (x0, y0, x1, y1)))
 #        return inference_result
-
-    @abc.abstractmethod
-    def receive_next_sample(self, image):
-        """Handle the next sample presented from the previous pipe element.
-
-        :Parameters:
-        ----------
-        image : PIL.Image
-            Image produced by the previous pipe element.
-
-        """
-        pass

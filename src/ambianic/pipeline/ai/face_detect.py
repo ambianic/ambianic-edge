@@ -11,7 +11,9 @@ class FaceDetector(TFImageDetection):
     """Detecting faces in an image."""
 
     def __init__(self, element_config=None):
+        # log.warning('FaceDetector __init__ invoked')
         super().__init__(element_config=element_config)
+        # log.warning('FaceDetector __init__ after super()')
         # default to top 3 face detections
         self.topk = element_config.get('top-k', 3)
 
@@ -32,44 +34,44 @@ class FaceDetector(TFImageDetection):
         im1 = image.crop((left, top, right, bottom))
         return im1
 
-    def receive_next_sample(self, **sample):
+    def process_sample(self, **sample):
         log.debug("Pipe element %s received new sample with keys %s.",
                   self.__class__.__name__,
                   str([*sample]))
         if not sample:
             # pass through empty samples to next element
-            if self.next_element:
-                self.next_element.receive_next_sample()
+            yield None
         else:
             try:
                 image = sample['image']
-                inference_result = sample.get('inference_result', [])
-                log.debug("sample: %s", str(inference_result))
-                # - crop out top-k person detections
-                # - apply face detection to cropped person areas
-                # - pass face detections on to next pipe element
-                face_regions = []
-                for category, confidence, box in inference_result:
-                    if category == 'person' and \
-                      confidence >= self._tfengine.confidence_threshold:
-                        face_regions.append(box)
-                # get only topk person detecions
-                face_regions = face_regions[:self.topk]
-                log.debug('Detected %d faces', len(face_regions))
-                log.warning('Detected %d faces', len(face_regions))
-                if not face_regions:
-                    # if no faces were detected, let the next pipe element
-                    # know that we have nothing to share
-                    if self.next_element:
-                        self.next_element.receive_next_sample()
+                prev_inference_result = sample.get('inference_result', None)
+                log.debug("Received sample with inference_result: %s",
+                          str(prev_inference_result))
+                person_regions = []
+                if not prev_inference_result:
+                    yield None
                 else:
-                    for box in face_regions:
+                    # - crop out top-k person detections
+                    # - apply face detection to cropped person areas
+                    # - pass face detections on to next pipe element
+                    for category, confidence, box in prev_inference_result:
+                        if category == 'person' and \
+                          confidence >= self._tfengine.confidence_threshold:
+                            person_regions.append(box)
+                    # get only topk person detecions
+                    person_regions = person_regions[:self.topk]
+                    log.debug('Received %d person boxes for face detection',
+                              len(person_regions))
+                    for box in person_regions:
                         person_image = self.crop_image(image, box)
                         inference_result = self.detect(image=person_image)
-                        if self.next_element:
-                            self.next_element.receive_next_sample(
-                                image=person_image,
-                                inference_result=inference_result)
+                        log.warning('Face detection inference_result: %r',
+                                    inference_result)
+                        processed_sample = {
+                            'image': person_image,
+                            'inference_result': inference_result
+                            }
+                        yield processed_sample
             except Exception as e:
                 log.warning('Error %r while processing sample. '
                             'Dropping sample: %r',

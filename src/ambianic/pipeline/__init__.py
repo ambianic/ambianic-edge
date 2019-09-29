@@ -1,6 +1,8 @@
 """Main module for Ambianic AI pipelines."""
 import logging
 import abc
+import time
+from ambianic.service import ManagedService
 
 log = logging.getLogger(__name__)
 
@@ -10,12 +12,15 @@ PIPE_STATE_RUNNING = 10
 PIPE_STATES = [PIPE_STATE_RUNNING, PIPE_STATE_STOPPED]
 
 
-class PipeElement:
-    """ The basic building block of an Ambianic pipeline """
+class PipeElement(ManagedService):
+    """The basic building block of an Ambianic pipeline."""
 
     def __init__(self):
+        # log.warning('PipeElement __init__ invoked')
+        super().__init__()
         self._state = PIPE_STATE_STOPPED
-        self.next_element = None
+        self._next_element = None
+        self._latest_heartbeat = time.monotonic()
 
     @property
     def state(self):
@@ -28,45 +33,112 @@ class PipeElement:
     def heal(self):  # pragma: no cover
         pass
 
+    def healthcheck(self):
+        """Check the health of this element.
+
+        :returns: (timestamp, status) tuple with most recent heartbeat
+        timestamp and health status code ('OK' normally).
+        """
+        oldest_heartbeat = self._latest_heartbeat
+        status = 'OK'  # At some point status may carry richer information
+        return oldest_heartbeat, status
+
+    def heartbeat(self):
+        """Set the heartbeat timestamp to time.monotonic()."""
+        log.debug('Pipeline element %s heartbeat signal.',
+                  self.__class__.__name__)
+        now = time.monotonic()
+        lapse = now - self._latest_heartbeat
+        log.debug('Pipeline element %s heartbeat lapse %f',
+                  self.__class__.__name__, lapse)
+        self._latest_heartbeat = now
+
     def stop(self):
+        """Receive stop signal and act accordingly.
+
+        Subclasses should override this method by
+        first invoking their super class implementation and then running
+        through steps specific to stopping their ongoing sample processing.
+
+        """
         self._state = PIPE_STATE_STOPPED
 
     def connect_to_next_element(self, next_element=None):
-        """ Connect this element to the next element in the pipe """
+        """Connect this element to the next element in the pipe.
+
+        Subclasses should not have to override this method.
+
+        """
         assert next_element
         assert isinstance(next_element, PipeElement)
-        self.next_element = next_element
+        self._next_element = next_element
 
-    @abc.abstractmethod  # pragma: no cover
     def receive_next_sample(self, **sample):
         """Receive next sample from a connected previous element.
 
+        Subclasses should not have to override this method.
+
         :Parameters:
         ----------
-        **sample : type
-            A variable list of (key, value) pairs that represent the sample.
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
             It is left to specialized implementations of PipeElement to specify
             their in/out sample formats and enforce compatibility with
             adjacent connected pipe elements.
 
         """
-        pass
+        self.heartbeat()
+        if self._next_element:
+            for processed_sample in self.process_sample(**sample):
+                if (processed_sample):
+                    self._next_element.receive_next_sample(**processed_sample)
+                else:
+                    self._next_element.receive_next_sample()
+                self.heartbeat()
+
+    @abc.abstractmethod  # pragma: no cover
+    def process_sample(self, **sample):
+        """Implement processing in subclass as a generator function.
+
+        Invoked by receive_next_sample() when the previous element
+        (or pipeline source) feeds another data input sample.
+
+        Implementing subclasses should process input samples and yield
+        output samples for the next element in the pipeline.
+
+        :Parameters:
+        ----------
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
+        :Returns:
+        processed_sample: dict
+            Processed sample that will be passed to the next pipeline element.
+
+        """
+        yield sample
 
 
 class HealthChecker(PipeElement):
-    """Monitor pipe health status.
+    """Monitor overall pipeline throughput health.
 
-    Attaches at the end of a pipe to monitor its health status
+    Attaches at the end of a pipeline to monitor its health status
     based on received output samples and their frequency.
     """
 
     def __init__(self, health_status_callback=None):
-        super()
+        super().__init__()
         assert health_status_callback
         self._health_status_callback = health_status_callback
 
     def receive_next_sample(self, **sample):
-        """ update pipeline heartbeat status """
-        log.debug('%s received sample from the connected preceding pipe element.', self.__class__.__name__)
+        """Update pipeline heartbeat status."""
+        log.debug('%s received sample from the connected '
+                  'preceding pipe element.',
+                  self.__class__.__name__
+                  )
         self._health_status_callback()
         pass

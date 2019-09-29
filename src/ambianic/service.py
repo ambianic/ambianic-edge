@@ -27,7 +27,7 @@ class ManagedService:
     def healthcheck(self):
         """Report vital health information.
 
-        Returns
+        :Returns:
         -------
         touple (time, string)
             (latest_heartbeat_timestamp, status_code)

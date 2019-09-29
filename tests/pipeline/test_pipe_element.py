@@ -23,7 +23,7 @@ def test_connect_to_next_element():
     pe = pipeline.PipeElement()
     pe_next = pipeline.PipeElement()
     pe.connect_to_next_element(next_element=pe_next)
-    assert pe.next_element == pe_next
+    assert pe._next_element == pe_next
 
 
 def test_connect_to_bad_next_element():

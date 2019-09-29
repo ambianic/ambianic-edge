@@ -36,17 +36,16 @@ def _get_image(file_name=None):
     return img
 
 
-class OutPipeElement(PipeElement):
+class _OutPipeElement(PipeElement):
 
     def __init__(self, sample_callback=None):
-        super()
+        super().__init__()
         assert sample_callback
         self._sample_callback = sample_callback
 
     def receive_next_sample(self, **sample):
         self._sample_callback(**sample)
         pass
-
 
 
 def test_model_inputs():
@@ -91,7 +90,7 @@ def test_background_image():
         nonlocal result
         result = inference_result
     object_detector = ObjectDetector(element_config=config)
-    output = OutPipeElement(sample_callback=sample_callback)
+    output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
     object_detector.receive_next_sample(image=img)
@@ -108,7 +107,7 @@ def test_one_person():
 
         result = inference_result
     object_detector = ObjectDetector(element_config=config)
-    output = OutPipeElement(sample_callback=sample_callback)
+    output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person.jpg')
     object_detector.receive_next_sample(image=img)
@@ -130,11 +129,10 @@ def test_no_sample():
         nonlocal result
         result = image is None and inference_result is None
     object_detector = ObjectDetector(element_config=config)
-    output = OutPipeElement(sample_callback=sample_callback)
+    output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     object_detector.receive_next_sample()
     assert result is True
-
 
 
 def test_bad_sample_good_sample():
@@ -146,7 +144,7 @@ def test_bad_sample_good_sample():
         nonlocal result
         result = inference_result
     object_detector = ObjectDetector(element_config=config)
-    output = OutPipeElement(sample_callback=sample_callback)
+    output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     # bad sample
     object_detector.receive_next_sample(image=None)
@@ -173,7 +171,7 @@ def test_one_person_no_face():
 
         result = inference_result
     object_detector = ObjectDetector(element_config=config)
-    output = OutPipeElement(sample_callback=sample_callback)
+    output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-no-face.jpg')
     object_detector.receive_next_sample(image=img)

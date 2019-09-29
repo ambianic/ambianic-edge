@@ -1,6 +1,6 @@
 """Ambianic pipeline interpreter module."""
 import logging
-from .avsource.av_element import InputStreamProcessor
+from .avsource.av_element import AVSourceElement
 import time
 import threading
 
@@ -148,7 +148,7 @@ class Pipeline(ManagedService):
 
     # valid pipeline operators
     PIPELINE_OPS = {
-        'source': InputStreamProcessor,
+        'source': AVSourceElement,
         'detect_objects': ObjectDetector,
         'save_samples': SaveSamples,
         'detect_faces': FaceDetector,
