@@ -2,12 +2,30 @@
 import logging
 import os
 import numpy as np
-# from importlib import import_module
 from tflite_runtime.interpreter import Interpreter
 from tflite_runtime.interpreter import load_delegate
 from ambianic.service import stacktrace
 
 log = logging.getLogger(__name__)
+
+
+def _get_edgetpu_interpreter(model=None):  # pragma: no cover
+    # Note: Looking for ideas how to test Coral EdgeTPU dependent code
+    # in a cloud CI environment such as Travis CI and Github
+    tf_interpreter = None
+    if model:
+        try:
+            edgetpu_delegate = load_delegate('libedgetpu.so.1.0')
+            assert edgetpu_delegate
+            tf_interpreter = Interpreter(
+                model_path=model,
+                experimental_delegates=[edgetpu_delegate]
+                )
+            log.debug('EdgeTPU available. Will use EdgeTPU model.')
+        except Exception as e:
+            log.debug('EdgeTPU error: %r', e)
+            stacktrace(logging.DEBUG)
+    return tf_interpreter
 
 
 class TFInferenceEngine:
@@ -82,21 +100,7 @@ class TFInferenceEngine:
 #        module_object = import_module('edgetpu.detection.engine',
 #                                      packaage=edgetpu_class)
 #        target_class = getattr(module_object, edgetpu_class)
-        self._tf_interpreter = None
-        if (model_edgetpu):  # pragme: no cover
-            # Note: Looking for ideas how to test Coral dependent code
-            # in a cloud CI environment
-            try:
-                edgetpu_delegate = load_delegate('libedgetpu.so.1.0')
-                assert edgetpu_delegate
-                self._tf_interpreter = Interpreter(
-                    model_path=model_edgetpu,
-                    experimental_delegates=[edgetpu_delegate]
-                    )
-                log.debug('EdgeTPU available. Will use EdgeTPU model.')
-            except Exception as e:
-                log.info('EdgeTPU error: %r', e)
-                stacktrace(logging.DEBUG)
+        self._tf_interpreter = _get_edgetpu_interpreter(model=model_edgetpu)
         if not self._tf_interpreter:
             log.debug('EdgeTPU not available. Will use TFLite CPU runtime.')
             self._tf_interpreter = Interpreter(model_path=model_tflite)

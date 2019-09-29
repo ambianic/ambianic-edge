@@ -121,10 +121,26 @@ def test_one_person():
     assert y0 > 0 and y0 < y1
 
 
+def test_no_sample():
+    """Expect element to pass empty sample to next element."""
+    config = _object_detect_config()
+    result = 'Something'
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal result
+        result = image is None and inference_result is None
+    object_detector = ObjectDetector(element_config=config)
+    output = OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    object_detector.receive_next_sample()
+    assert result is True
+
+
+
 def test_bad_sample_good_sample():
     """One bad sample should not prevent good samples from being processed."""
     config = _object_detect_config()
-    result = 'Something'
+    result = 'nothing passed to me'
 
     def sample_callback(image=None, inference_result=None):
         nonlocal result
@@ -134,6 +150,7 @@ def test_bad_sample_good_sample():
     object_detector.connect_to_next_element(output)
     # bad sample
     object_detector.receive_next_sample(image=None)
+    assert result == 'nothing passed to me'
     # good sample
     img = _get_image(file_name='person.jpg')
     object_detector.receive_next_sample(image=img)
