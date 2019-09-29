@@ -19,7 +19,7 @@ When the product is officially released, it must show tangible value to first ti
 - Less than $75 in hardware costs
   + Primary target platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
 - No coding required to get started
-- Decomposable and Hackable
+- Decomposable and hackable
 
 Relaxing these constraints could unlock deeper value out of the platform. APIs and scalability have their benefits. However we strive to provide a simple and beautiful out of the box experience.
 
