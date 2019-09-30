@@ -209,7 +209,7 @@ def test_stop_on_video_EOS():
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
     assert t.is_alive()
-    avsource._gst_process_eos_reached.wait(timeout=60)
+    avsource._gst_process_eos_reached.wait(timeout=30)
     assert avsource._gst_process_eos_reached.is_set()
     t.join(timeout=10)
     assert not t.is_alive()
