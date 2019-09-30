@@ -103,6 +103,8 @@ class GstService:
 
     def on_bus_message(self, bus, message, loop):
         t = message.type
+        # print('GST: On bus message: type: %r, details: %r'
+        #       % (message.type.get_name(message.type), message))
         if t == Gst.MessageType.EOS:
             log.info('End of stream. Exiting gstreamer loop '
                      'for this video stream.')
@@ -116,6 +118,9 @@ class GstService:
             err, debug = message.parse_error()
             log.warning('Error: %s: %s', err, debug)
             self._gst_cleanup()
+        else:
+            log.debug('GST: On bus message: type: %r, details: %r',
+                      message.type.get_name(message.type), message)
         return True
 
     def on_new_sample(self, sink):
