@@ -4,7 +4,7 @@ import os
 import numpy as np
 from tflite_runtime.interpreter import Interpreter
 from tflite_runtime.interpreter import load_delegate
-from ambianic.service import stacktrace
+from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
 

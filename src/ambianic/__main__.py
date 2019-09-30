@@ -29,7 +29,7 @@ def _service_shutdown(signum=None, frame=None):
     """
     print('Caught system shutdown signal (Ctrl+C or similar). '
           'Signal code: %d', signum)
-    raise ambianic.service.ServiceExit
+    raise ambianic.util.ServiceExit
 
 
 def _register_sys_handlers(self):  # pragma: no cover

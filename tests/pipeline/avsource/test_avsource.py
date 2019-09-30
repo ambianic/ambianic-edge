@@ -7,6 +7,7 @@ import os
 import pathlib
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.ai.object_detect import ObjectDetector
+from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
 log = logging.getLogger()
@@ -152,7 +153,7 @@ def test_start_stop_file_source_person_detect():
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
-                # with high lelvel of confidence
+                # with high level of confidence
                 detection_received.set()
     object_detector = ObjectDetector(element_config=object_config)
     avsource.connect_to_next_element(object_detector)
@@ -229,7 +230,7 @@ def test_still_image_input_detect_person_exit_eos():
         )
     abs_path = os.path.abspath(video_file)
     video_uri = pathlib.Path(abs_path).as_uri()
-    avsource = AVSourceElement(uri=video_uri, type='video')
+    avsource = AVSourceElement(uri=video_uri, type='image')
     object_config = _object_detect_config()
     detection_received = threading.Event()
     sample_image = None
@@ -247,7 +248,7 @@ def test_still_image_input_detect_person_exit_eos():
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
-                # with high lelvel of confidence
+                # with high level of confidence
                 detection_received.set()
     object_detector = ObjectDetector(element_config=object_config)
     avsource.connect_to_next_element(object_detector)
@@ -283,7 +284,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
         )
     abs_path = os.path.abspath(video_file)
     video_uri = pathlib.Path(abs_path).as_uri()
-    avsource = AVSourceElement(uri=video_uri, type='video')
+    avsource = AVSourceElement(uri=video_uri, type='image')
     object_config = _object_detect_config()
     detection_received = threading.Event()
     sample_image = None
@@ -301,7 +302,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
-                # with high lelvel of confidence
+                # with high level of confidence
                 detection_received.set()
     object_detector = ObjectDetector(element_config=object_config)
     avsource.connect_to_next_element(object_detector)
@@ -329,7 +330,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
 
 
 def test_heal():
-    avsource = _TestAVSourceElement(uri='rstp://blah', type='video')
+    avsource = _TestAVSourceElement(uri='rstp://blah', type='image')
     t = threading.Thread(
         name="Test AVSourceElement",
         target=avsource.start, daemon=True
@@ -362,3 +363,118 @@ def test_heal():
     t.join(timeout=1)
     assert avsource._stop_gst_service_called
     assert not t.is_alive()
+
+
+class _TestAVSourceElement2(AVSourceElement):
+
+    def __init__(self, **source_conf):
+        super().__init__(**source_conf)
+        self._bad_sample_processed_re = False
+        self._bad_sample_processed_ae = False
+
+    def _get_sample_queue(self):
+        q = super()._get_sample_queue()
+        # put a fake bad sample on the queue to test exception handling
+        q.put('A bad sample to test RuntimeError.')
+        q.put('Another bad sample to test AssertionError.')
+        return q
+
+    def _on_new_sample(self, sample=None):
+        if not self._bad_sample_processed_re:
+            # through a RuntimeError once then proceed as normal
+            # the pipe element should log the exception but keep running
+            print('RuntimeError during processing.')
+            self._bad_sample_processed_re = True
+            raise RuntimeError('Something went wrong during processing.')
+        elif not self._bad_sample_processed_ae:
+            # through an AssertionError once then proceed as normal
+            # the pipe element should log the exception but keep running
+            print('AssertionError during processing.')
+            self._bad_sample_processed_ae = True
+            raise AssertionError('Something went wrong during processing.')
+        else:
+            super()._on_new_sample(sample)
+
+
+def test_exception_on_new_sample():
+    """Exception from _on_new_sample() should not break the pipe loop."""
+    dir = os.path.dirname(os.path.abspath(__file__))
+    video_file = os.path.join(
+        dir,
+        '../ai/person.jpg'
+        )
+    abs_path = os.path.abspath(video_file)
+    video_uri = pathlib.Path(abs_path).as_uri()
+    avsource = _TestAVSourceElement2(uri=video_uri, type='image')
+    object_config = _object_detect_config()
+    detection_received = threading.Event()
+    sample_image = None
+    detections = None
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal sample_image
+        nonlocal detection_received
+        sample_image = image
+        nonlocal detections
+        detections = inference_result
+        print('detections: {det}'.format(det=detections))
+        print('len(detections): {len}'.format(len=len(detections)))
+        if detections and len(detections) > 0:
+            category, confidence, _ = detections[0]
+            if category == 'person' and confidence > 0.9:
+                # skip video image samples until we reach a person detection
+                # with high level of confidence
+                detection_received.set()
+    object_detector = ObjectDetector(element_config=object_config)
+    avsource.connect_to_next_element(object_detector)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+        )
+    t.start()
+    detection_received.wait(timeout=5)
+    assert sample_image
+    assert sample_image.size[0] == 1280
+    assert sample_image.size[1] == 720
+    assert detections
+    assert len(detections) == 1
+    category, confidence, (x0, y0, x1, y1) = detections[0]
+    assert category == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    avsource._gst_process_eos_reached.wait(timeout=5)
+    assert avsource._gst_process_eos_reached.is_set()
+    t.join(timeout=3)
+    assert not t.is_alive()
+
+
+def _test_start_gst_service(source_conf=None,
+                            out_queue=None,
+                            stop_signal=None,
+                            eos_reached=None):
+    svc = _TestGstService(source_conf=source_conf,
+                          out_queue=out_queue,
+                          stop_signal=stop_signal,
+                          eos_reached=eos_reached)
+    svc.run()
+    print('Exiting GST process')
+
+
+class _TestGstService(GstService):
+    pass
+
+
+class _TestAVSourceElement3(AVSourceElement):
+
+    def __init__(self, **source_conf):
+        super().__init__(**source_conf)
+
+    def _get_gst_service_starter(self):
+        return _test_start_gst_service
+
+
+def test_gst_process_shutdown():
+    pass

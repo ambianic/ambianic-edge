@@ -1,5 +1,5 @@
 import pytest
-from ambianic.service import ServiceExit, ManagedService, ThreadedJob
+from ambianic.util import ServiceExit, ManagedService, ThreadedJob
 
 
 class MockManagedService(ManagedService):

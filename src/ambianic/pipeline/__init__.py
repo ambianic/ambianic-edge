@@ -2,7 +2,7 @@
 import logging
 import abc
 import time
-from ambianic.service import ManagedService
+from ambianic.util import ManagedService
 
 log = logging.getLogger(__name__)
 

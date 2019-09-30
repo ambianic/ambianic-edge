@@ -2,7 +2,7 @@
 import logging
 
 from .image_detection import TFImageDetection
-from ambianic.service import stacktrace
+from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
 

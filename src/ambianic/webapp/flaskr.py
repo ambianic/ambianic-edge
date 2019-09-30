@@ -8,7 +8,7 @@ from flask.logging import default_handler
 import flask
 from requests import get
 from werkzeug.serving import make_server
-from ambianic.service import ServiceExit, ThreadedJob, ManagedService
+from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from .server import samples
 log = logging.getLogger(__name__)
 

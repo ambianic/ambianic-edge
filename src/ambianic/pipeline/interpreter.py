@@ -8,7 +8,7 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from .store import SaveSamples
 from . import PipeElement, HealthChecker
-from ambianic.service import ThreadedJob, ManagedService
+from ambianic.util import ThreadedJob, ManagedService
 
 log = logging.getLogger(__name__)
 

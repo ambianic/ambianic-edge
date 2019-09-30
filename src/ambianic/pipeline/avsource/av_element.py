@@ -8,7 +8,7 @@ import traceback
 import multiprocessing
 import queue
 from PIL import Image
-
+from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
 
@@ -65,13 +65,21 @@ class AVSourceElement(PipeElement):
         log.debug('Input stream sending sample to next element.')
         self.receive_next_sample(image=img)
 
+    def _get_gst_service_starter(self):
+        return gst_process.start_gst_service
+
+    def _get_sample_queue(self):
+        q = multiprocessing.Queue(10)
+        return q
+
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
-        self._gst_out_queue = multiprocessing.Queue(10)
+        self._gst_out_queue = self._get_sample_queue()
         self._gst_process_stop_signal = multiprocessing.Event()
         self._gst_process_eos_reached = multiprocessing.Event()
+        gst_service = self._get_gst_service_starter()
         self._gst_process = multiprocessing.Process(
-            target=gst_process.start_gst_service,
+            target=gst_service,
             name='Gstreamer Service Process',
             daemon=True,
             kwargs={'source_conf': self._source_conf,
@@ -87,24 +95,22 @@ class AVSourceElement(PipeElement):
             # do not use process.join() to avoid deadlock due to shared queue
             try:
                 next_sample = self._gst_out_queue.get(timeout=1)
+                # print('next sample received from gst queue, _on_new_sample')
                 self._on_new_sample(sample=next_sample)
             except queue.Empty:
                 log.debug('no new sample available yet in gst out queue')
             except Exception as e:
                 log.warning('AVElement loop caught an error: %s. ',
                             str(e))
-                formatted_lines = traceback.format_exc().splitlines()
-                log.warning('Exception stack trace: %s',
-                            "\n".join(formatted_lines))
+                stacktrace(logging.WARNING)
+                # print('Exception caught from _on_new_sample %r' % e)
+        # print('end of _run_gst_service.')
         log.debug('exiting _run_gst_service')
 
     def _clear_gst_out_queue(self):
         log.debug("Clearing _gst_out_queue.")
-        try:
-            while not self._gst_out_queue.empty():
-                self._gst_out_queue.get_nowait()
-        except queue.Empty:
-            pass
+        while not self._gst_out_queue.empty():
+            self._gst_out_queue.get_nowait()
         log.debug("Cleared _gst_out_queue.")
 
     def _stop_gst_service(self):
@@ -125,18 +131,21 @@ class AVSourceElement(PipeElement):
                 # make sure a non-empty queue doesn't block
                 # the gst process from stopping
                 self._clear_gst_out_queue()
-                gst_proc.join(timeout=1)
+                # do not use process.join() to avoid deadlock
+                # due to shared queue.  Use sleep instead.
+                time.sleep(timeout=1)
                 if not gst_proc.is_alive():
                     break
             # process did not stop, we need to be a bit more assertive
             if gst_proc.is_alive():
                 log.debug('Gst proess did not stop. Terminating.')
                 gst_proc.terminate()
-                # do not call join() because it may cause a deadlock
-                # due to the shared queue
                 # give it a few seconds to terminate cleanly
                 for i in range(10):
-                    gst_proc.join(timeout=1)
+                    self._clear_gst_out_queue()
+                    # do not use process.join() to avoid deadlock
+                    # due to shared queue. Use sleep instead.
+                    time.sleep(timeout=1)
                     if not gst_proc.is_alive():
                         break
                 # last resort, force kill the process

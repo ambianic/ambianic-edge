@@ -3,7 +3,7 @@ import pytest
 import ambianic
 from ambianic import __main__
 from ambianic.server import AmbianicServer
-from ambianic.service import ServiceExit, ManagedService
+from ambianic.util import ServiceExit, ManagedService
 from ambianic.pipeline.interpreter import PipelineServer
 import os
 import threading
