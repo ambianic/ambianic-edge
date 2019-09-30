@@ -163,11 +163,11 @@ processed_sample: dict
 <p>Monitor overall pipeline throughput health.</p>
 <p>Attaches at the end of a pipeline to monitor its health status
 based on received output samples and their frequency.</p>
-<h3 id="receive_next_sample_1">receive_next_sample</h3>
-<pre><code class="python">HealthChecker.receive_next_sample(self, **sample)
+<h3 id="process_sample_1">process_sample</h3>
+<pre><code class="python">HealthChecker.process_sample(self, **sample)
 </code></pre>
 
-<p>Update pipeline heartbeat status.</p>
+<p>Call health callback and pass on sample as is.</p>
 <h1 id="ambianicwebapp">ambianic.webapp</h1></div>
         </div>
 
