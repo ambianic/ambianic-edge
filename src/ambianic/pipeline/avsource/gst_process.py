@@ -101,6 +101,11 @@ class GstService:
                      self.source_shape.width, self.source_shape.height)
         return True
 
+    def _handle_eos_reached(self):
+        # print('GstService._handle_eos_reached')
+        self._eos_reached.set()
+        self._gst_cleanup()
+
     def on_bus_message(self, bus, message, loop):
         t = message.type
         # print('GST: On bus message: type: %r, details: %r'
@@ -108,9 +113,7 @@ class GstService:
         if t == Gst.MessageType.EOS:
             log.info('End of stream. Exiting gstreamer loop '
                      'for this video stream.')
-            self._eos_reached.set()
-            print('GST: On bus message: GST EOS reached')
-            self._gst_cleanup()
+            self._handle_eos_reached()
         elif t == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
             log.warning('Warning: %s: %s', err, debug)
@@ -286,9 +289,9 @@ class GstService:
         log.debug("GST clean up exiting.")
         # print("GST clean up exiting.")
 
-    def _service_shutdown(self, signum, frame):
-        log.info('GST service caught system shutdown signal %d', signum)
-        # print('GST service caught system shutdown signal %d' % signum)
+    def _service_terminate(self, signum, frame):
+        log.info('GST service caught system terminate signal %d', signum)
+        # print('GST service caught system terminate signal %d' % signum)
         if not self._stop_signal.is_set():
             self._stop_signal.set()
 
@@ -309,8 +312,8 @@ class GstService:
         """Run the gstreamer pipeline service."""
         log.info("Starting %s", self.__class__.__name__)
         # Register the signal handlers
-        signal.signal(signal.SIGTERM, self._service_shutdown)
-        signal.signal(signal.SIGINT, self._service_shutdown)
+        signal.signal(signal.SIGTERM, self._service_terminate)
+        signal.signal(signal.SIGINT, self._service_terminate)
         self._register_stop_handler()
         try:
             self._gst_loop()

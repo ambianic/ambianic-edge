@@ -1,10 +1,11 @@
+"""Audio Video sourcing to an Ambianic pipeline."""
+
 from .. import PipeElement
 from . import gst_process
 
 import logging
 import time
 import threading
-import traceback
 import multiprocessing
 import queue
 from PIL import Image
@@ -113,6 +114,29 @@ class AVSourceElement(PipeElement):
             self._gst_out_queue.get_nowait()
         log.debug("Cleared _gst_out_queue.")
 
+    def _process_good_kill(self, proc=None):
+        # print('AVElement: Killing Gst process PID %r' % proc.pid)
+        proc.kill()
+        time.sleep(3)
+        if proc.exitcode is None:
+            # process is still alive
+            log.warning('GST process kill was not clean. Process still alive. '
+                        'PID %r',
+                        proc.pid)
+            # print('GST process kill was not clean. Process still alive. '
+            #      'PID %r' %
+            #      proc.pid)
+            return False
+        else:
+            log.warning('GST process killed. '
+                        'PID %r , exit code: %r',
+                        proc.pid,
+                        proc.exitcode)
+            # print('GST process killed. '
+            #      'PID %r , exit code: %r' %
+            #      (proc.pid, proc.exitcode))
+            return True
+
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
         gst_proc = self._gst_process
@@ -133,7 +157,7 @@ class AVSourceElement(PipeElement):
                 self._clear_gst_out_queue()
                 # do not use process.join() to avoid deadlock
                 # due to shared queue.  Use sleep instead.
-                time.sleep(timeout=1)
+                time.sleep(1)
                 if not gst_proc.is_alive():
                     break
             # process did not stop, we need to be a bit more assertive
@@ -145,17 +169,19 @@ class AVSourceElement(PipeElement):
                     self._clear_gst_out_queue()
                     # do not use process.join() to avoid deadlock
                     # due to shared queue. Use sleep instead.
-                    time.sleep(timeout=1)
+                    time.sleep(1)
                     if not gst_proc.is_alive():
                         break
                 # last resort, force kill the process
                 if gst_proc.is_alive():
                     log.debug('Gst proess did not terminate.'
                               ' Resorting to force kill.')
-                    gst_proc.kill()
-                    # while gst_proc.is_alive():
-                    #     time.sleep(1)
-                    log.debug('Gst process killed.')
+                    clean_kill = self._process_good_kill(gst_proc)
+                    if clean_kill:
+                        log.debug('Gst process killed cleanly.')
+                    else:
+                        log.warning('Gst process kill was not clean.'
+                                    'Contaier, VM or OS restart maybe needed.')
                 else:
                     log.debug('Gst process stopped after terminate signal.')
             else:

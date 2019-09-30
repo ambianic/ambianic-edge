@@ -5,6 +5,7 @@ from ambianic.pipeline.avsource.av_element \
 import threading
 import os
 import pathlib
+import time
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.avsource.gst_process import GstService
@@ -451,30 +452,213 @@ def test_exception_on_new_sample():
     assert not t.is_alive()
 
 
-def _test_start_gst_service(source_conf=None,
-                            out_queue=None,
-                            stop_signal=None,
-                            eos_reached=None):
-    svc = _TestGstService(source_conf=source_conf,
-                          out_queue=out_queue,
-                          stop_signal=stop_signal,
-                          eos_reached=eos_reached)
+def _test_start_gst_service3(source_conf=None,
+                             out_queue=None,
+                             stop_signal=None,
+                             eos_reached=None):
+    print('_test_start_gst_service3 returning _TestGstService3')
+    svc = _TestGstService3(source_conf=source_conf,
+                           out_queue=out_queue,
+                           stop_signal=stop_signal,
+                           eos_reached=eos_reached)
     svc.run()
     print('Exiting GST process')
 
 
-class _TestGstService(GstService):
-    pass
+class _TestGstService3(GstService):
+
+    def _stop_handler(self):
+        self._stop_signal.wait()
+        print('_TestGstService3 service received stop signal')
+        # Don't stop gracefully to force kill test
+        # self._gst_cleanup()
+
+    # simulate endless stream processing to force
+    # process kill test
+    def _handle_eos_reached(self):
+        print('_TestGstService3._handle_eos_reached ignoring EOS signal.')
+        return
 
 
 class _TestAVSourceElement3(AVSourceElement):
 
     def __init__(self, **source_conf):
         super().__init__(**source_conf)
+        self._clean_kill = False
 
     def _get_gst_service_starter(self):
-        return _test_start_gst_service
+        print('_TestAVSourceElement3._get_gst_service_starter returning '
+              ' _test_start_gst_service')
+        return _test_start_gst_service3
+
+    def _process_good_kill(self, proc=None):
+        print('_TestAVSourceElement3: Killing Gst process PID %r' % proc.pid)
+        self._clean_kill = super()._process_good_kill(proc)
+        print('_TestAVSourceElement3: Gst process killed cleanly: %r'
+              % self._clean_kill)
+        return self._clean_kill
 
 
-def test_gst_process_shutdown():
-    pass
+def test_gst_process_kill():
+    """Gst process kill when it doesn't respond to stop and terminate."""
+    dir = os.path.dirname(os.path.abspath(__file__))
+    video_file = os.path.join(
+        dir,
+        '../ai/person.jpg'
+        )
+    abs_path = os.path.abspath(video_file)
+    video_uri = pathlib.Path(abs_path).as_uri()
+    avsource = _TestAVSourceElement3(uri=video_uri, type='image')
+    object_config = _object_detect_config()
+    detection_received = threading.Event()
+    sample_image = None
+    detections = None
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal sample_image
+        nonlocal detection_received
+        sample_image = image
+        nonlocal detections
+        detections = inference_result
+        print('detections: {det}'.format(det=detections))
+        print('len(detections): {len}'.format(len=len(detections)))
+        if detections and len(detections) > 0:
+            category, confidence, _ = detections[0]
+            if category == 'person' and confidence > 0.9:
+                # skip video image samples until we reach a person detection
+                # with high level of confidence
+                detection_received.set()
+    object_detector = ObjectDetector(element_config=object_config)
+    avsource.connect_to_next_element(object_detector)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+        )
+    t.start()
+    detection_received.wait(timeout=5)
+    assert sample_image
+    assert sample_image.size[0] == 1280
+    assert sample_image.size[1] == 720
+    assert detections
+    assert len(detections) == 1
+    category, confidence, (x0, y0, x1, y1) = detections[0]
+    assert category == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    avsource.stop()
+    t.join(timeout=30)
+    assert not t.is_alive()
+    assert avsource._clean_kill
+
+
+class _TestGstService4(GstService):
+
+    _terminate_called = False
+
+    def _service_terminate(self, signum, frame):
+        print('_TestGstService4 service caught system terminate signal %d'
+              % signum)
+        super()._service_terminate(signum, frame)
+        _TestGstService4._terminate_called = True
+
+    def _stop_handler(self):
+        print('_TestGstService4 service received stop signal')
+        while not _TestGstService4._terminate_called:
+            time.sleep(0.5)
+        # ignore stop signals to force process.terminate() call
+        super()._stop_handler()
+
+    # simulate endless stream processing to force
+    # process terminate test
+    def _handle_eos_reached(self):
+        print('_TestGstService4._handle_eos_reached ignoring EOS signal.')
+        return
+
+def _test_start_gst_service4(source_conf=None,
+                             out_queue=None,
+                             stop_signal=None,
+                             eos_reached=None):
+    print('_test_start_gst_service returning _TestGstService')
+    svc = _TestGstService4(source_conf=source_conf,
+                           out_queue=out_queue,
+                           stop_signal=stop_signal,
+                           eos_reached=eos_reached)
+    svc.run()
+    print('_test_start_gst_service4: Exiting GST process')
+
+
+class _TestAVSourceElement4(AVSourceElement):
+
+    def __init__(self, **source_conf):
+        super().__init__(**source_conf)
+        self._clean_kill = False
+
+    def _get_gst_service_starter(self):
+        print('_TestAVSourceElement4._get_gst_service_starter '
+              'returning _test_start_gst_service4')
+        return _test_start_gst_service4
+
+    def _process_good_kill(self, proc=None):
+        print('_TestAVSourceElement4: Killing Gst process PID %r' % proc.pid)
+        self._clean_kill = super()._process_good_kill(proc)
+        print('_TestAVSourceElement4: Gst process killed cleanly: %r'
+              % self._clean_kill)
+        return self._clean_kill
+
+
+def test_gst_process_terminate():
+    """Gst process terminate when it doesn't respond to stop signal."""
+    dir = os.path.dirname(os.path.abspath(__file__))
+    video_file = os.path.join(
+        dir,
+        '../ai/person.jpg'
+        )
+    abs_path = os.path.abspath(video_file)
+    video_uri = pathlib.Path(abs_path).as_uri()
+    avsource = _TestAVSourceElement3(uri=video_uri, type='image')
+    object_config = _object_detect_config()
+    detection_received = threading.Event()
+    sample_image = None
+    detections = None
+
+    def sample_callback(image=None, inference_result=None):
+        nonlocal sample_image
+        nonlocal detection_received
+        sample_image = image
+        nonlocal detections
+        detections = inference_result
+        print('detections: {det}'.format(det=detections))
+        print('len(detections): {len}'.format(len=len(detections)))
+        if detections and len(detections) > 0:
+            category, confidence, _ = detections[0]
+            if category == 'person' and confidence > 0.9:
+                # skip video image samples until we reach a person detection
+                # with high level of confidence
+                detection_received.set()
+    object_detector = ObjectDetector(element_config=object_config)
+    avsource.connect_to_next_element(object_detector)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+        )
+    t.start()
+    detection_received.wait(timeout=5)
+    assert sample_image
+    assert sample_image.size[0] == 1280
+    assert sample_image.size[1] == 720
+    assert detections
+    assert len(detections) == 1
+    category, confidence, (x0, y0, x1, y1) = detections[0]
+    assert category == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    avsource.stop()
+    t.join(timeout=30)
+    assert not t.is_alive()
+    assert avsource._clean_kill
