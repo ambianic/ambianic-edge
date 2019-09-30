@@ -40,6 +40,7 @@ class AVSourceElement(PipeElement):
         self._gst_process = None
         self._gst_out_queue = None
         self._gst_process_stop_signal = None
+        self._gst_process_eos_reached = None
         # protects access to gstreamer resources in rare cases
         # such as supervised healing requests
         self._healing_in_progress = threading.RLock()
@@ -47,7 +48,7 @@ class AVSourceElement(PipeElement):
         self._latest_healing = time.monotonic()
 
     def _on_new_sample(self, sample=None):
-        log.info('Input stream received new gst sample.')
+        log.debug('Input stream received new gst sample.')
         assert sample
         type = sample['type']
         # only image type supported at this time
@@ -61,13 +62,14 @@ class AVSourceElement(PipeElement):
         img = Image.frombytes(format, (width, height),
                               bytes, 'raw')
         # pass image sample to next pipe element, e.g. ai inference
-        log.info('Input stream sending sample to next element.')
+        log.debug('Input stream sending sample to next element.')
         self.receive_next_sample(image=img)
 
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
         self._gst_out_queue = multiprocessing.Queue(10)
         self._gst_process_stop_signal = multiprocessing.Event()
+        self._gst_process_eos_reached = multiprocessing.Event()
         self._gst_process = multiprocessing.Process(
             target=gst_process.start_gst_service,
             name='Gstreamer Service Process',
@@ -75,6 +77,7 @@ class AVSourceElement(PipeElement):
             kwargs={'source_conf': self._source_conf,
                     'out_queue': self._gst_out_queue,
                     'stop_signal': self._gst_process_stop_signal,
+                    'eos_reached': self._gst_process_eos_reached,
                     }
             )
         self._gst_process.daemon = True
@@ -93,6 +96,7 @@ class AVSourceElement(PipeElement):
                 formatted_lines = traceback.format_exc().splitlines()
                 log.warning('Exception stack trace: %s',
                             "\n".join(formatted_lines))
+        log.debug('exiting _run_gst_service')
 
     def _clear_gst_out_queue(self):
         log.debug("Clearing _gst_out_queue.")
@@ -116,12 +120,12 @@ class AVSourceElement(PipeElement):
             log.debug('Sending stop signal to GST process.')
             stop_signal.set()
             log.debug('Signalled gst process to stop')
-            # make sure a non-empty queue doesn't block
-            # the gst process from stopping
-            self._clear_gst_out_queue()
             # give it a few seconds to stop cleanly
             for i in range(10):
-                time.sleep(1)
+                # make sure a non-empty queue doesn't block
+                # the gst process from stopping
+                self._clear_gst_out_queue()
+                gst_proc.join(timeout=1)
                 if not gst_proc.is_alive():
                     break
             # process did not stop, we need to be a bit more assertive
@@ -132,7 +136,7 @@ class AVSourceElement(PipeElement):
                 # due to the shared queue
                 # give it a few seconds to terminate cleanly
                 for i in range(10):
-                    time.sleep(1)
+                    gst_proc.join(timeout=1)
                     if not gst_proc.is_alive():
                         break
                 # last resort, force kill the process
@@ -155,6 +159,11 @@ class AVSourceElement(PipeElement):
         self._stop_requested = False
         while not self._stop_requested:
             self._run_gst_service()
+            if (self._gst_process_eos_reached):
+                # gst process reached end of its input stream
+                # exit the qavsource element loop
+                log.debug('GST EOS reached')
+                break
         self._stop_gst_service()
         log.info("Stopped %s", self.__class__.__name__)
 

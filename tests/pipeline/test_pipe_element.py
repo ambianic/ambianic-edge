@@ -32,3 +32,10 @@ def test_connect_to_bad_next_element():
     pe_next = []
     with pytest.raises(AssertionError):
         pe.connect_to_next_element(next_element=pe_next)
+
+
+def test_healthcheck():
+    pe = pipeline.PipeElement()
+    hb = pe._latest_heartbeat
+    hb1, status = pe.healthcheck()
+    assert hb == hb1

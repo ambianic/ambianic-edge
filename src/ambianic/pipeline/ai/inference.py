@@ -84,10 +84,10 @@ class TFInferenceEngine:
         self._confidence_threshold = confidence_threshold
         self._top_k = top_k
         log.debug('Loading AI model:\n'
-                  'TFLite graph: %s\n'
-                  'EdgeTPU graph: %s\n'
-                  'Labels %s.',
-                  'Condidence threshod: %.0f%%',
+                  'TFLite graph: %r\n'
+                  'EdgeTPU graph: %r\n'
+                  'Labels %r.'
+                  'Condidence threshod: %.0f%%'
                   'top-k: %d',
                   model_tflite,
                   model_edgetpu,

@@ -3,7 +3,6 @@ import traceback
 import logging
 import signal
 import threading
-from ambianic.service import ServiceExit
 import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
@@ -52,14 +51,20 @@ class GstService:
             self.type = source_conf.get('type', 'auto')
         pass
 
-    def __init__(self, source_conf=None, out_queue=None, stop_signal=None):
+    def __init__(self,
+                 source_conf=None,
+                 out_queue=None,
+                 stop_signal=None,
+                 eos_reached=None):
         assert source_conf
         assert out_queue
         assert stop_signal
+        assert eos_reached
         # pipeline source info
         log.debug('Initializing GstService with source: %s ', source_conf)
         self._out_queue = out_queue
         self._stop_signal = stop_signal
+        self._eos_reached = eos_reached
         self.source = self.PipelineSource(source_conf=source_conf)
         # Reference to Gstreamer main loop structure
         self.mainloop = None
@@ -101,8 +106,9 @@ class GstService:
         if t == Gst.MessageType.EOS:
             log.info('End of stream. Exiting gstreamer loop '
                      'for this video stream.')
+            self._eos_reached.set()
+            print('GST: On bus message: GST EOS reached')
             self._gst_cleanup()
-            # loop.quit()
         elif t == Gst.MessageType.WARNING:
             err, debug = message.parse_warning()
             log.warning('Warning: %s: %s', err, debug)
@@ -110,7 +116,6 @@ class GstService:
             err, debug = message.parse_error()
             log.warning('Error: %s: %s', err, debug)
             self._gst_cleanup()
-            # loop.quit()
         return True
 
     def on_new_sample(self, sink):
@@ -269,19 +274,23 @@ class GstService:
         except Exception as e:
             log.warning('Error while cleaning up gstreamer resources: %s',
                         str(e))
+            # print('Error while cleaning up gstreamer resources: %s' % str(e))
             formatted_lines = traceback.format_exc().splitlines()
             log.warning('Exception stack trace: %s',
                         "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
+        # print("GST clean up exiting.")
 
     def _service_shutdown(self, signum, frame):
         log.info('GST service caught system shutdown signal %d', signum)
+        # print('GST service caught system shutdown signal %d' % signum)
         if not self._stop_signal.is_set():
             self._stop_signal.set()
 
     def _stop_handler(self):
         self._stop_signal.wait()
         log.info('GST service received stop signal')
+        # print('GST service received stop signal')
         self._gst_cleanup()
 
     def _register_stop_handler(self):
@@ -292,7 +301,7 @@ class GstService:
         stop_watch_thread.start()
 
     def run(self):
-        """ Run the gstreamer pipeline service """
+        """Run the gstreamer pipeline service."""
         log.info("Starting %s", self.__class__.__name__)
         # Register the signal handlers
         signal.signal(signal.SIGTERM, self._service_shutdown)
@@ -303,6 +312,7 @@ class GstService:
         except Exception as e:
             log.warning('GST loop exited with error: %s. ',
                         str(e))
+            # print('GST loop exited with error: %s. ' % str(e))
             formatted_lines = traceback.format_exc().splitlines()
             log.warning('Exception stack trace: %s', formatted_lines)
         finally:
@@ -310,11 +320,18 @@ class GstService:
             self._gst_cleanup()
             self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
+            # print("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
+        # print("Stopped %s" % self.__class__.__name__)
 
 
-def start_gst_service(source_conf=None, out_queue=None, stop_signal=None):
+def start_gst_service(source_conf=None,
+                      out_queue=None,
+                      stop_signal=None,
+                      eos_reached=None):
     svc = GstService(source_conf=source_conf,
                      out_queue=out_queue,
-                     stop_signal=stop_signal)
+                     stop_signal=stop_signal,
+                     eos_reached=eos_reached)
     svc.run()
+    print('Exiting GST process')

@@ -88,8 +88,18 @@ class PipeElement(ManagedService):
 
         """
         self.heartbeat()
-        if self._next_element:
-            for processed_sample in self.process_sample(**sample):
+        # NOTE: A future implementation could maximize hardware
+        # resources by launching each sample processing into
+        # a separate thread. For example if an AI element
+        # returns 10 person boxes which then need to be
+        # scanned by the next element for faces, and the
+        # underlying architecture provides 16 available CPU cores
+        # or 10 EdgeTPUs, then each face detection in a person box
+        # can be launched independently from the others as soon as
+        # the person boxes come in from the object detection
+        # process_sample generator.
+        for processed_sample in self.process_sample(**sample):
+            if self._next_element:
                 if (processed_sample):
                     self._next_element.receive_next_sample(**processed_sample)
                 else:
@@ -130,15 +140,26 @@ class HealthChecker(PipeElement):
     """
 
     def __init__(self, health_status_callback=None):
+        """Create instance given health status callback.
+
+        The health status call back will be invoked each time
+        the sample_process method is invoked.
+
+        :Parameters:
+        ----------
+        health_status_callback : function
+            Method that is expected to measure the overall pipeline throughput
+            health.
+        """
         super().__init__()
         assert health_status_callback
         self._health_status_callback = health_status_callback
 
-    def receive_next_sample(self, **sample):
-        """Update pipeline heartbeat status."""
+    def process_sample(self, **sample):
+        """Call health callback and pass on sample as is."""
         log.debug('%s received sample from the connected '
                   'preceding pipe element.',
                   self.__class__.__name__
                   )
         self._health_status_callback()
-        pass
+        yield sample
