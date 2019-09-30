@@ -561,12 +561,12 @@ class _TestGstService4(GstService):
     def _service_terminate(self, signum, frame):
         print('_TestGstService4 service caught system terminate signal %d'
               % signum)
+        self._terminate_called = True
         super()._service_terminate(signum, frame)
-        _TestGstService4._terminate_called = True
 
     def _stop_handler(self):
         print('_TestGstService4 service received stop signal')
-        while not _TestGstService4._terminate_called:
+        while not self._terminate_called:
             time.sleep(0.5)
         # ignore stop signals to force process.terminate() call
         super()._stop_handler()
@@ -576,6 +576,7 @@ class _TestGstService4(GstService):
     def _handle_eos_reached(self):
         print('_TestGstService4._handle_eos_reached ignoring EOS signal.')
         return
+
 
 def _test_start_gst_service4(source_conf=None,
                              out_queue=None,
@@ -594,19 +595,25 @@ class _TestAVSourceElement4(AVSourceElement):
 
     def __init__(self, **source_conf):
         super().__init__(**source_conf)
-        self._clean_kill = False
+        self._terminate_requested = False
+        self._clean_terminate = True
 
     def _get_gst_service_starter(self):
         print('_TestAVSourceElement4._get_gst_service_starter '
               'returning _test_start_gst_service4')
         return _test_start_gst_service4
 
+    def _process_terminate(self, proc=None):
+        self._terminate_requested = True
+        super()._process_terminate(proc)
+
     def _process_good_kill(self, proc=None):
-        print('_TestAVSourceElement4: Killing Gst process PID %r' % proc.pid)
-        self._clean_kill = super()._process_good_kill(proc)
-        print('_TestAVSourceElement4: Gst process killed cleanly: %r'
-              % self._clean_kill)
-        return self._clean_kill
+        # kill step should not be reached if terminate worked
+        self._clean_terminate = False
+        print('_TestAVSourceElement4: Kill terminate should not be reached '
+              'when terminate worked.')
+        clean_kill = super()._process_good_kill(proc)
+        return clean_kill
 
 
 def test_gst_process_terminate():
@@ -618,7 +625,7 @@ def test_gst_process_terminate():
         )
     abs_path = os.path.abspath(video_file)
     video_uri = pathlib.Path(abs_path).as_uri()
-    avsource = _TestAVSourceElement3(uri=video_uri, type='image')
+    avsource = _TestAVSourceElement4(uri=video_uri, type='image')
     object_config = _object_detect_config()
     detection_received = threading.Event()
     sample_image = None
@@ -661,4 +668,5 @@ def test_gst_process_terminate():
     avsource.stop()
     t.join(timeout=30)
     assert not t.is_alive()
-    assert avsource._clean_kill
+    assert avsource._terminate_requested
+    assert avsource._clean_terminate

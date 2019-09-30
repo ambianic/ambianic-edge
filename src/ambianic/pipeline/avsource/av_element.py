@@ -114,28 +114,40 @@ class AVSourceElement(PipeElement):
             self._gst_out_queue.get_nowait()
         log.debug("Cleared _gst_out_queue.")
 
+    def _process_terminate(self, proc=None):
+        proc.terminate()
+        # give it a few seconds to terminate cleanly
+        for i in range(10):
+            self._clear_gst_out_queue()
+            # do not use process.join() to avoid deadlock
+            # due to shared queue. Use sleep instead.
+            time.sleep(1)
+            if not proc.is_alive():
+                break
+
     def _process_good_kill(self, proc=None):
         # print('AVElement: Killing Gst process PID %r' % proc.pid)
         proc.kill()
-        time.sleep(3)
-        if proc.exitcode is None:
-            # process is still alive
-            log.warning('GST process kill was not clean. Process still alive. '
-                        'PID %r',
-                        proc.pid)
-            # print('GST process kill was not clean. Process still alive. '
-            #      'PID %r' %
-            #      proc.pid)
-            return False
-        else:
-            log.warning('GST process killed. '
-                        'PID %r , exit code: %r',
-                        proc.pid,
-                        proc.exitcode)
-            # print('GST process killed. '
-            #      'PID %r , exit code: %r' %
-            #      (proc.pid, proc.exitcode))
-            return True
+        return True
+        # time.sleep(3)
+        # if proc.exitcode is None:
+        #    # process is still alive
+        #    log.warning('GST process kill was not clean. Process still alive.'
+        #                'PID %r',
+        #                proc.pid)
+        #    # print('GST process kill was not clean. Process still alive. '
+        #    #      'PID %r' %
+        #    #      proc.pid)
+        #    return False
+        # else:
+        #    log.warning('GST process killed. '
+        #                'PID %r , exit code: %r',
+        #                proc.pid,
+        #                proc.exitcode)
+        #    # print('GST process killed. '
+        #    #      'PID %r , exit code: %r' %
+        #    #      (proc.pid, proc.exitcode))
+        #    return True
 
     def _stop_gst_service(self):
         log.debug("Stopping Gst service process.")
@@ -163,25 +175,13 @@ class AVSourceElement(PipeElement):
             # process did not stop, we need to be a bit more assertive
             if gst_proc.is_alive():
                 log.debug('Gst proess did not stop. Terminating.')
-                gst_proc.terminate()
-                # give it a few seconds to terminate cleanly
-                for i in range(10):
-                    self._clear_gst_out_queue()
-                    # do not use process.join() to avoid deadlock
-                    # due to shared queue. Use sleep instead.
-                    time.sleep(1)
-                    if not gst_proc.is_alive():
-                        break
-                # last resort, force kill the process
+                self._process_terminate(gst_proc)
                 if gst_proc.is_alive():
+                    # last resort, force kill the process
                     log.debug('Gst proess did not terminate.'
                               ' Resorting to force kill.')
                     clean_kill = self._process_good_kill(gst_proc)
-                    if clean_kill:
-                        log.debug('Gst process killed cleanly.')
-                    else:
-                        log.warning('Gst process kill was not clean.'
-                                    'Contaier, VM or OS restart maybe needed.')
+                    log.debug('Gst process killed. Clean: %r.', clean_kill)
                 else:
                     log.debug('Gst process stopped after terminate signal.')
             else:

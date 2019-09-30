@@ -23,8 +23,8 @@ def _get_edgetpu_interpreter(model=None):  # pragma: no cover
                 )
             log.debug('EdgeTPU available. Will use EdgeTPU model.')
         except Exception as e:
-            log.debug('EdgeTPU error: %r', e)
-            stacktrace(logging.DEBUG)
+            log.debug('EdgeTPU init error: %r', e)
+            # stacktrace(logging.DEBUG)
     return tf_interpreter
 
 

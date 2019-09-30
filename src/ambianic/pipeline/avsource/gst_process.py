@@ -314,6 +314,8 @@ class GstService:
         # Register the signal handlers
         signal.signal(signal.SIGTERM, self._service_terminate)
         signal.signal(signal.SIGINT, self._service_terminate)
+        # print("Terminate handler: %r "
+        #       % self._service_terminate)
         self._register_stop_handler()
         try:
             self._gst_loop()
