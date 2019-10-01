@@ -38,6 +38,3 @@ If you are interested in becoming a contributor to the project, please read the 
 At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest dev docs are available here: 
 [Developer Documentation](https://ambianic.github.io/ambianic-core/ambianic-python-api/)
 
-
-## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_large)
