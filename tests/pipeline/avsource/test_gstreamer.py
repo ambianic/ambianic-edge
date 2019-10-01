@@ -311,7 +311,6 @@ class _TestGstService7(GstService):
 
     def __init__(self):
         self._gst_cleanup_called = False
-        pass
 
     def _gst_loop(self):
         raise RuntimeError()
@@ -409,7 +408,6 @@ class _TestGstService10(GstService):
     def __init__(self):
         self._gst_cleanup_called = False
         self.mainloop = 'fake mainloop that causes error'
-        pass
 
     def _gst_cleanup(self):
         self._gst_cleanup_called = True
