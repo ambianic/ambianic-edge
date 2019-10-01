@@ -49,7 +49,6 @@ class _TestGstService2(GstService):
         print('skipping sys handler registration')
         # system handlers can be only registered in
         # the main process thread
-        pass
 
 
 def _test_start_gst_service2(source_conf=None,
@@ -72,9 +71,9 @@ def _test_start_gst_service2(source_conf=None,
 
 def test_image_source_one_sample():
     """An jpg image source should produce one sample."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    dir_name = os.path.dirname(os.path.abspath(__file__))
     source_file = os.path.join(
-        dir,
+        dir_name,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(source_file)
@@ -98,19 +97,19 @@ def test_image_source_one_sample():
     sample_img = _gst_out_queue.get(timeout=5)
     print('sample: %r' % (sample_img.keys()))
     assert sample_img
-    type = sample_img['type']
+    sample_type = sample_img['type']
     # only image type supported at this time
-    assert type == 'image'
+    assert sample_type == 'image'
     # make sure the sample is in RGB format
-    format = sample_img['format']
-    assert format == 'RGB'
+    sample_format = sample_img['format']
+    assert sample_format == 'RGB'
     width = sample_img['width']
     assert width == 1280
     height = sample_img['height']
     assert height == 720
-    bytes = sample_img['bytes']
-    img = Image.frombytes(format, (width, height),
-                          bytes, 'raw')
+    sample_bytes = sample_img['bytes']
+    img = Image.frombytes(sample_format, (width, height),
+                          sample_bytes, 'raw')
     assert img
     _gst_stop_signal.set()
     _gst_thread.join(timeout=30)
@@ -125,7 +124,6 @@ class _TestGstService3(GstService):
         self._on_bus_message_warning_called = False
         self._on_bus_message_error_called = False
         self._gst_cleanup_called = False
-        pass
 
     def _on_bus_message_eos(self, message):
         self._on_bus_message_eos_called = True
@@ -192,9 +190,9 @@ def test_on_bus_message_other():
 
 def test_still_image_source_one_sample_main_thread():
     """An jpg image source should produce one sample and exit gst loop."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    dir_name = os.path.dirname(os.path.abspath(__file__))
     source_file = os.path.join(
-        dir,
+        dir_name,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(source_file)
@@ -212,19 +210,19 @@ def test_still_image_source_one_sample_main_thread():
     sample_img = _gst_out_queue.get(timeout=5)
     print('sample: %r' % (sample_img.keys()))
     assert sample_img
-    type = sample_img['type']
+    sample_type = sample_img['type']
     # only image type supported at this time
-    assert type == 'image'
+    assert sample_type == 'image'
     # make sure the sample is in RGB format
-    format = sample_img['format']
-    assert format == 'RGB'
+    sample_format = sample_img['format']
+    assert sample_format == 'RGB'
     width = sample_img['width']
     assert width == 1280
     height = sample_img['height']
     assert height == 720
-    bytes = sample_img['bytes']
-    img = Image.frombytes(format, (width, height),
-                          bytes, 'raw')
+    sample_bytes = sample_img['bytes']
+    img = Image.frombytes(sample_format, (width, height),
+                          sample_bytes, 'raw')
     assert img
 
 
@@ -244,9 +242,9 @@ class _TestGstService4(GstService):
 
 def test_sample_out_queue_full_on_sample():
     """When out queue is full samples should be ignored without blocking."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    dir_name = os.path.dirname(os.path.abspath(__file__))
     source_file = os.path.join(
-        dir,
+        dir_name,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(source_file)
@@ -325,7 +323,6 @@ def test_service_terminate_no_stop_signal():
 class _TestGstService9(GstService):
     def __init__(self):
         self._out_queue = Queue(1)
-        pass
 
 
 class _TestMapInfo:

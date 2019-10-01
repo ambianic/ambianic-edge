@@ -17,7 +17,7 @@ elif $(arch | grep -q arm)
 then
   export architecture="arm"
 fi
-echo $(arch)
+$(arch)
 echo "Effective CPU architecture: $architecture"
 
 # update apt-get and install sudo

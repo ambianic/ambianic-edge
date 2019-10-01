@@ -39,7 +39,6 @@ class GstService:
 
     class ImageShape:
         width = height = None
-        pass
 
     class PipelineSource:
         def __init__(self, source_conf=None):
@@ -50,7 +49,6 @@ class GstService:
             self.uri = source_conf['uri']
             # video, image, audio, auto
             self.type = source_conf.get('type', 'auto')
-        pass
 
     def __init__(self,
                  source_conf=None,
