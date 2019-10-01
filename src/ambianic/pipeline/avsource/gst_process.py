@@ -102,26 +102,32 @@ class GstService:
                      self._source_shape.width, self._source_shape.height)
         return True
 
-    def _handle_eos_reached(self):
+    def _on_bus_message_eos(self, message):
         # print('GstService._handle_eos_reached')
+        log.debug('End of stream. Exiting gstreamer loop '
+                  'for this video stream.')
         self._eos_reached.set()
         self._gst_cleanup()
 
-    def on_bus_message(self, bus, message, loop):
+    def _on_bus_message_warning(self, message):
+        err, debug = message.parse_warning()
+        log.warning('Warning: %s: %s', err, debug)
+
+    def _on_bus_message_error(self, message):
+        err, debug = message.parse_error()
+        log.warning('Error: %s: %s', err, debug)
+        self._gst_cleanup()
+
+    def _on_bus_message(self, bus, message, loop):
         t = message.type
         # print('GST: On bus message: type: %r, details: %r'
         #       % (message.type.get_name(message.type), message))
         if t == Gst.MessageType.EOS:
-            log.info('End of stream. Exiting gstreamer loop '
-                     'for this video stream.')
-            self._handle_eos_reached()
+            self._on_bus_message_eos(message)
         elif t == Gst.MessageType.WARNING:
-            err, debug = message.parse_warning()
-            log.warning('Warning: %s: %s', err, debug)
+            self._on_bus_message_warning(message)
         elif t == Gst.MessageType.ERROR:
-            err, debug = message.parse_error()
-            log.warning('Error: %s: %s', err, debug)
-            self._gst_cleanup()
+            self._on_bus_message_error(message)
         else:
             pass
             # log.debug('GST: On bus message: type: %r, details: %r',
@@ -219,7 +225,7 @@ class GstService:
         # Set up a pipeline bus watch to catch errors.
         self.gst_bus = self.gst_pipeline.get_bus()
         self.gst_bus.add_signal_watch()
-        self.gst_bus.connect('message', self.on_bus_message, self.mainloop)
+        self.gst_bus.connect('message', self._on_bus_message, self.mainloop)
 
     def _gst_loop(self):
         # build new gst pipeline
@@ -271,8 +277,8 @@ class GstService:
                 self.gst_pipeline.set_state(Gst.State.NULL)
                 self.gst_pipeline = None
                 log.debug("while GLib.MainContext.default().iteration(False)")
-                while GLib.MainContext.default().iteration(False):
-                    pass
+                # while GLib.MainContext.default().iteration(False):
+                #     pass
             else:
                 log.debug("self.gst_pipeline: None")
             if self.mainloop:
@@ -332,7 +338,7 @@ class GstService:
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()
-            self._out_queue.close()
+            # self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
             # print("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)

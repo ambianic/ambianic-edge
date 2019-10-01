@@ -475,8 +475,8 @@ class _TestGstService3(GstService):
 
     # simulate endless stream processing to force
     # process kill test
-    def _handle_eos_reached(self):
-        print('_TestGstService3._handle_eos_reached ignoring EOS signal.')
+    def _on_bus_message_eos(self, message):
+        print('_TestGstService3._on_bus_message_eos ignoring EOS signal.')
         return
 
 
@@ -573,8 +573,8 @@ class _TestGstService4(GstService):
 
     # simulate endless stream processing to force
     # process terminate test
-    def _handle_eos_reached(self):
-        print('_TestGstService4._handle_eos_reached ignoring EOS signal.')
+    def _on_bus_message_eos(self, message):
+        print('_TestGstService4._on_bus_message_eos ignoring EOS signal.')
         return
 
 

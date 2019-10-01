@@ -4,9 +4,15 @@ import threading
 import os
 import time
 import pathlib
-from queue import Queue
+from multiprocessing import Queue
 import logging
 from PIL import Image
+import gi
+gi.require_version('Gst', '1.0')
+gi.require_version('GstBase', '1.0')
+from gi.repository import Gst
+
+Gst.init(None)
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -108,3 +114,96 @@ def test_image_source_one_sample():
     _gst_stop_signal.set()
     _gst_thread.join(timeout=30)
     assert not _gst_thread.is_alive()
+
+
+class _TestGstService3(GstService):
+
+    def __init__(self):
+        self._on_bus_message_eos_called = False
+        self._on_bus_message_warning_called = False
+        self._on_bus_message_error_called = False
+        pass
+
+    def _on_bus_message_eos(self, message):
+        self._on_bus_message_eos_called = True
+
+    def _on_bus_message_warning(self, message):
+        self._on_bus_message_warning_called = True
+
+    def _on_bus_message_error(self, message):
+        self._on_bus_message_error_called = True
+
+
+class _TestBusMessage3:
+
+    def __init__(self):
+        self.type = None
+
+
+def test_on_bus_message_warning():
+    gst = _TestGstService3()
+    message = _TestBusMessage3
+    message.type = Gst.MessageType.WARNING
+    assert gst._on_bus_message(bus=None, message=message, loop=None)
+    assert gst._on_bus_message_warning_called
+
+
+def test_on_bus_message_error():
+    gst = _TestGstService3()
+    message = _TestBusMessage3
+    message.type = Gst.MessageType.ERROR
+    assert gst._on_bus_message(bus=None, message=message, loop=None)
+    assert gst._on_bus_message_error_called
+
+
+def test_on_bus_message_eos():
+    gst = _TestGstService3()
+    message = _TestBusMessage3
+    message.type = Gst.MessageType.EOS
+    assert gst._on_bus_message(bus=None, message=message, loop=None)
+    assert gst._on_bus_message_eos_called
+
+
+def test_on_bus_message_other():
+    gst = _TestGstService3()
+    message = _TestBusMessage3
+    message.type = Gst.MessageType.ANY
+    assert gst._on_bus_message(bus=None, message=message, loop=None)
+
+
+def test_still_image_source_one_sample_main_thread():
+    """An jpg image source should produce one sample and exit gst loop."""
+    dir = os.path.dirname(os.path.abspath(__file__))
+    source_file = os.path.join(
+        dir,
+        '../ai/person.jpg'
+        )
+    abs_path = os.path.abspath(source_file)
+    source_uri = pathlib.Path(abs_path).as_uri()
+    _gst_out_queue = Queue(10)
+    _gst_stop_signal = threading.Event()
+    _gst_eos_reached = threading.Event()
+    _test_start_gst_service2(
+        source_conf={'uri': source_uri, 'type': 'image'},
+        out_queue=_gst_out_queue,
+        stop_signal=_gst_stop_signal,
+        eos_reached=_gst_eos_reached
+        )
+    print('Gst service started. Waiting for a sample.')
+    sample_img = _gst_out_queue.get(timeout=5)
+    print('sample: %r' % (sample_img.keys()))
+    assert sample_img
+    type = sample_img['type']
+    # only image type supported at this time
+    assert type == 'image'
+    # make sure the sample is in RGB format
+    format = sample_img['format']
+    assert format == 'RGB'
+    width = sample_img['width']
+    assert width == 1280
+    height = sample_img['height']
+    assert height == 720
+    bytes = sample_img['bytes']
+    img = Image.frombytes(format, (width, height),
+                          bytes, 'raw')
+    assert img
