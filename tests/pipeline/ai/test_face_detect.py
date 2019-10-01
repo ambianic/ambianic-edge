@@ -7,16 +7,16 @@ from PIL import Image
 
 
 def _object_detect_config():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
         )
     _good_edgetpu_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
         )
-    _good_labels = os.path.join(dir, 'coco_labels.txt')
+    _good_labels = os.path.join(_dir, 'coco_labels.txt')
     config = {
         'model': {
             'tflite': _good_tflite_model,
@@ -30,16 +30,16 @@ def _object_detect_config():
 
 
 def _face_detect_config():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_face_quant_postprocess.tflite'
         )
     _good_edgetpu_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite'
         )
-    _good_labels = os.path.join(dir, 'coco_labels.txt')
+    _good_labels = os.path.join(_dir, 'coco_labels.txt')
     config = {
         'model': {
             'tflite': _good_tflite_model,
@@ -54,8 +54,8 @@ def _face_detect_config():
 
 def _get_image(file_name=None):
     assert file_name
-    dir = os.path.dirname(os.path.abspath(__file__))
-    image_file = os.path.join(dir, file_name)
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    image_file = os.path.join(_dir, file_name)
     img = Image.open(image_file)
     return img
 
@@ -69,7 +69,6 @@ class _OutPipeElement(PipeElement):
 
     def receive_next_sample(self, **sample):
         self._sample_callback(**sample)
-        pass
 
 
 def test_model_inputs():
@@ -365,4 +364,4 @@ def test_one_person_no_face_two_stage():
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-no-face.jpg')
     object_detector.receive_next_sample(image=img)
-    assert len(result) == 0
+    assert not result

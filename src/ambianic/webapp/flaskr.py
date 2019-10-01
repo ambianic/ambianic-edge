@@ -70,7 +70,7 @@ class FlaskServer(ManagedService):
         log.info('Flask server job started')
 
     def healthcheck(self):
-        # TODO: Implement actual health check for Flask
+        # Note: Implement actual health check for Flask
         # See if the /healthcheck URL returns a 200 quickly
         return time.monotonic(), True
 
@@ -80,7 +80,6 @@ class FlaskServer(ManagedService):
         TODO: Keep an eye for potential scenarios that cause this server to
          become unresponsive.
         """
-        pass
 
     def stop(self):
         if self.flask_job:
@@ -88,6 +87,7 @@ class FlaskServer(ManagedService):
             self.flask_job.stop()
             self.flask_job.join()
             log.info('Flask server job stopped.')
+
 
 def create_app():
     log.debug('Creating Flask app...')
@@ -192,8 +192,8 @@ def create_app():
             hostname = flask.request.host.split(':')[0]
             base_uri = 'http://{host}:1234/'.format(host=hostname)
             return get(f'{base_uri}{path}').content
-        else:  # production mode
-            return flask.send_from_directory('client/dist', path)
+        # production mode
+        return flask.send_from_directory('client/dist', path)
 
 #    @app.errorhandler(404)
 #    def page_not_found(e):

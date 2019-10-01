@@ -98,7 +98,6 @@ class PipelineServer(ManagedService):
         PipelineServer manages its own health as best possible.
         Not much to do here at this time.
         """
-        pass
 
     def heal_pipeline_job(self, threaded_job=None):
         assert threaded_job
@@ -268,4 +267,3 @@ class Pipeline(ManagedService):
         self.pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
-        return

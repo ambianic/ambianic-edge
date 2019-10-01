@@ -29,11 +29,9 @@ class _TestAVSourceElement(AVSourceElement):
 
     def _run_gst_service(self):
         self._run_gst_service_called = True
-        pass
 
     def _stop_gst_service(self):
         self._stop_gst_service_called = True
-        pass
 
 
 class _OutPipeElement(PipeElement):
@@ -45,7 +43,6 @@ class _OutPipeElement(PipeElement):
 
     def receive_next_sample(self, **sample):
         self._sample_callback(**sample)
-        pass
 
 
 def test_no_config():
@@ -71,9 +68,9 @@ def test_start_stop_dummy_source():
 
 def test_start_stop_file_source_image_size():
     """Expect to receive an image with dimentions of the input video frame."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         'test2-cam-person1.mkv'
         )
     abs_path = os.path.abspath(video_file)
@@ -105,16 +102,16 @@ def test_start_stop_file_source_image_size():
 
 
 def _object_detect_config():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
-        dir,
+        _dir,
         '../ai/mobilenet_ssd_v2_coco_quant_postprocess.tflite'
         )
     _good_edgetpu_model = os.path.join(
-        dir,
+        _dir,
         '../ai/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
         )
-    _good_labels = os.path.join(dir, '../ai/coco_labels.txt')
+    _good_labels = os.path.join(_dir, '../ai/coco_labels.txt')
     config = {
         'model': {
             'tflite': _good_tflite_model,
@@ -129,9 +126,9 @@ def _object_detect_config():
 
 def test_start_stop_file_source_person_detect():
     """Expect to detect a person in the video sample."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         'test2-cam-person1.mkv'
         )
     abs_path = os.path.abspath(video_file)
@@ -150,7 +147,7 @@ def test_start_stop_file_source_person_detect():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
@@ -183,9 +180,9 @@ def test_start_stop_file_source_person_detect():
 
 def test_stop_on_video_EOS():
     """Processing should stop when AVSource reaches end of input stream."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         'test2-cam-person1.mkv'
         )
     abs_path = os.path.abspath(video_file)
@@ -224,9 +221,9 @@ def test_stop_on_video_EOS():
 
 def test_still_image_input_detect_person_exit_eos():
     """Process a single jpg image. Detect a person. Exit via EOS."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(video_file)
@@ -245,7 +242,7 @@ def test_still_image_input_detect_person_exit_eos():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
@@ -278,9 +275,9 @@ def test_still_image_input_detect_person_exit_eos():
 
 def test_still_image_input_detect_person_exit_stop_signal():
     """Proces a single jpg image. Detect a person. Exit via stop signal."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(video_file)
@@ -299,7 +296,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
@@ -387,21 +384,20 @@ class _TestAVSourceElement2(AVSourceElement):
             print('RuntimeError during processing.')
             self._bad_sample_processed_re = True
             raise RuntimeError('Something went wrong during processing.')
-        elif not self._bad_sample_processed_ae:
+        if not self._bad_sample_processed_ae:
             # through an AssertionError once then proceed as normal
             # the pipe element should log the exception but keep running
             print('AssertionError during processing.')
             self._bad_sample_processed_ae = True
             raise AssertionError('Something went wrong during processing.')
-        else:
-            super()._on_new_sample(sample)
+        super()._on_new_sample(sample)
 
 
 def test_exception_on_new_sample():
     """Exception from _on_new_sample() should not break the pipe loop."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(video_file)
@@ -420,7 +416,7 @@ def test_exception_on_new_sample():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
@@ -477,7 +473,6 @@ class _TestGstService3(GstService):
     # process kill test
     def _on_bus_message_eos(self, message):
         print('_TestGstService3._on_bus_message_eos ignoring EOS signal.')
-        return
 
 
 class _TestAVSourceElement3(AVSourceElement):
@@ -501,9 +496,9 @@ class _TestAVSourceElement3(AVSourceElement):
 
 def test_gst_process_kill():
     """Gst process kill when it doesn't respond to stop and terminate."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(video_file)
@@ -522,7 +517,7 @@ def test_gst_process_kill():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
@@ -575,7 +570,6 @@ class _TestGstService4(GstService):
     # process terminate test
     def _on_bus_message_eos(self, message):
         print('_TestGstService4._on_bus_message_eos ignoring EOS signal.')
-        return
 
 
 def _test_start_gst_service4(source_conf=None,
@@ -618,9 +612,9 @@ class _TestAVSourceElement4(AVSourceElement):
 
 def test_gst_process_terminate():
     """Gst process terminate when it doesn't respond to stop signal."""
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     video_file = os.path.join(
-        dir,
+        _dir,
         '../ai/person.jpg'
         )
     abs_path = os.path.abspath(video_file)
@@ -639,7 +633,7 @@ def test_gst_process_terminate():
         detections = inference_result
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
-        if detections and len(detections) > 0:
+        if detections:
             category, confidence, _ = detections[0]
             if category == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
