@@ -19,7 +19,7 @@
     "bootstrap-vue": "^2.0.0-rc.19",
     "core-js": "^2.6.5",
     "jquery": "^3.4.1",
-    "node": "^12.10.0",
+    "node": "^12.11.0",
     "popper.js": "^1.15.0",
     "vue": "^2.6.10",
     "vue-infinite-loading": "^2.4.4",
