@@ -3,13 +3,12 @@ import os
 import ambianic
 import signal
 
-global _svr
 _svr = None
 
 
 def main():
     """Start the main app executable in the hosting OS environment."""
-    global _svr
+    nonlocal _svr
     env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
     _svr = ambianic.server.AmbianicServer(work_dir=env_work_dir)
     _svr.start()
@@ -17,7 +16,7 @@ def main():
 
 def stop():
     """Stop a running app executable in the hosting OS environment."""
-    global _svr
+    nonlocal _svr
     _svr.stop()
 
 

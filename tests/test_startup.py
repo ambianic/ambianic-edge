@@ -58,9 +58,9 @@ def _stop_mock_server(server=None, thread=None):
 
 def test_no_pipelines():
     ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     hb_flag = threading.Event()
-    srv, t = _start_mock_server(work_dir=dir, heartbeat_flag=hb_flag)
+    srv, t = _start_mock_server(work_dir=_dir, heartbeat_flag=hb_flag)
     hb_flag.wait(timeout=3)
     assert hb_flag.is_set()
     pps = srv._servers['pipelines']
@@ -71,8 +71,8 @@ def test_no_pipelines():
 
 def test_main():
     ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
-    os.environ['AMBIANIC_DIR'] = dir
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    os.environ['AMBIANIC_DIR'] = _dir
     t = threading.Thread(
         target=__main__.main,
         daemon=True)
@@ -110,12 +110,12 @@ class _BadPipelineServer(ManagedService):
 
 def test_heartbeat_threshold():
     ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     # replace default with test pipeline server
     # remove all root servers which we won't test here
     ambianic.server.ROOT_SERVERS.clear()
     ambianic.server.ROOT_SERVERS['pipelines'] = _BadPipelineServer
-    srv, t = _start_mock_server(work_dir=dir)
+    srv, t = _start_mock_server(work_dir=_dir)
     t.join(timeout=2)
     pps = srv._servers['pipelines']
     assert isinstance(pps, _BadPipelineServer)
@@ -125,13 +125,13 @@ def test_heartbeat_threshold():
 
 def test_main_heartbeat_log():
     ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     # remove all root servers which we will not test here
     ambianic.server.ROOT_SERVERS.clear()
     # set heartbeat log interval to a small enough
     # interval so the test passes faster
     ambianic.server.MAIN_HEARTBEAT_LOG_INTERVAL = 0.1
-    srv, t = _start_mock_server(work_dir=dir)
+    srv, t = _start_mock_server(work_dir=_dir)
     t.join(timeout=2)
     assert srv._main_heartbeat_logged
     _stop_mock_server(server=srv, thread=t)
