@@ -50,14 +50,14 @@ pipelines:
     - detect_objects: # run ai inference on the input data
         <<: *tfm_image_detection
         confidence_threshold: 0.8
-    - save_samples: # save samples from the inference results
+    - save_detections: # save samples from the inference results
         output_directory: *object_detect_dir
         positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
-        idle_interval: 6000 # how often (in seconds) to save samples with ALL results under the confidence threshold
+        idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
     - detect_faces: # run ai inference on the samples from the previous element output
         <<: *tfm_face_detection
         confidence_threshold: 0.8
-    - save_samples: # save samples from the inference results
+    - save_detections: # save samples from the inference results
         output_directory: *face_detect_dir
         positive_interval: 2
         idle_interval: 600
