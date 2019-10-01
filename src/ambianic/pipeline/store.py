@@ -87,6 +87,7 @@ class SaveDetectionSamples(PipeElement):
         # save samples to local disk
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(ai_json, f, ensure_ascii=False, indent=4)
+        return image_path, json_path
 
     def process_sample(self, image=None, inference_result=None, **sample):
         log.debug("Pipe element %s received new sample with keys %s.",
