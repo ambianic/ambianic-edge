@@ -195,6 +195,12 @@ class GstService:
         log.debug('Gstreamer pipeline args: %s', pipeline_args)
         return pipeline_args
 
+    def _set_gst_debug_level(self):
+        if log.getEffectiveLevel() <= logging.DEBUG:
+            # set Gst debug log level
+            Gst.debug_set_active(True)
+            Gst.debug_set_default_threshold(3)
+
     def _build_gst_pipeline(self):
         log.debug("Building new gstreamer pipeline")
         pipeline_args = self._get_pipeline_args()
@@ -217,10 +223,7 @@ class GstService:
             'new-sample', self._on_new_sample)
         self.mainloop = GLib.MainLoop()
 
-        if log.getEffectiveLevel() <= logging.DEBUG:
-            # set Gst debug log level
-            Gst.debug_set_active(True)
-            Gst.debug_set_default_threshold(3)
+        self._set_gst_debug_level()
 
         # Set up a pipeline bus watch to catch errors.
         self.gst_bus = self.gst_pipeline.get_bus()

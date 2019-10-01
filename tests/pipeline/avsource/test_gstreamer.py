@@ -2,6 +2,7 @@
 from ambianic.pipeline.avsource.gst_process import GstService
 import threading
 import os
+import signal
 import time
 import pathlib
 from multiprocessing import Queue
@@ -241,24 +242,6 @@ class _TestGstService4(GstService):
         return result
 
 
-def _test_start_gst_service4(source_conf=None,
-                             out_queue=None,
-                             stop_signal=None,
-                             eos_reached=None):
-    print('_test_start_gst_service4 starting _TestGstService2')
-    try:
-        svc = _TestGstService4(source_conf=source_conf,
-                               out_queue=out_queue,
-                               stop_signal=stop_signal,
-                               eos_reached=eos_reached)
-    except Exception as e:
-        print('Exception caught while starting _TestGstService4: %r'
-              % e)
-    else:
-        svc.run()
-    print('_test_start_gst_service4: Exiting GST thread')
-
-
 def test_sample_out_queue_full_on_sample():
     """When out queue is full samples should be ignored without blocking."""
     dir = os.path.dirname(os.path.abspath(__file__))
@@ -274,15 +257,131 @@ def test_sample_out_queue_full_on_sample():
     assert _gst_out_queue.full()
     _gst_stop_signal = threading.Event()
     _gst_eos_reached = threading.Event()
-    _test_start_gst_service4(
+    svc = _TestGstService4(
         source_conf={'uri': source_uri, 'type': 'image'},
         out_queue=_gst_out_queue,
         stop_signal=_gst_stop_signal,
         eos_reached=_gst_eos_reached
         )
+    svc.run()
     print('Gst service started. Waiting for a sample.')
     _gst_eos_reached.wait(timeout=2)
     assert _gst_eos_reached.is_set()
     assert _gst_out_queue.full()
     first_out = _gst_out_queue.get(timeout=1)
     assert first_out == last_in
+
+
+class _TestGstService5(GstService):
+    def __init__(self):
+        pass
+
+
+def test_gst_debug_level():
+    gst = _TestGstService5()
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    gst._set_gst_debug_level()
+    assert Gst.debug_is_active()
+    assert Gst.debug_get_default_threshold() == 3
+
+
+class _TestGstService6(GstService):
+
+    def __init__(self):
+        pass
+
+
+class _TestSink6:
+
+    _last_command = None
+
+    def emit(self, command):
+        assert command == 'pull-sample'
+        self._last_command = command
+
+
+def test2_on_new_sample_out_queue_full():
+    gst = _TestGstService6()
+    sink = _TestSink6()
+    result = gst._on_new_sample_out_queue_full(sink)
+    assert sink._last_command == 'pull-sample'
+    assert result == Gst.FlowReturn.OK
+
+
+class _TestGstService8(GstService):
+
+    def __init__(self):
+        self._stop_signal = threading.Event()
+
+
+def test_service_terminate_no_stop_signal():
+    """Terminate signal should result in setting the stop signal if not set."""
+    gst = _TestGstService8()
+    gst._service_terminate(signal.SIGTERM, None)
+    assert gst._stop_signal.is_set()
+
+
+class _TestGstService9(GstService):
+    def __init__(self):
+        self._out_queue = Queue(1)
+        pass
+
+
+class _TestMapInfo:
+    data = 'good image'
+
+
+class _TestBuf:
+    def map(self, flag):
+        assert flag == Gst.MapFlags.READ
+        return True, _TestMapInfo()
+
+    def unmap(self, mapinfo):
+        assert mapinfo.data == 'good image'
+
+
+class _TestCaps:
+
+    def get_structure(self, index):
+        assert index == 0
+        return {'width': 321, 'height': 98}
+
+
+class _TestGstSample:
+
+    def get_caps(self):
+        return _TestCaps()
+
+    def get_buffer(self):
+        return _TestBuf()
+
+    def get_structure(self, index):
+        return _TestCaps()
+
+
+class _TestSink9:
+
+    _last_command = None
+
+    def emit(self, command):
+        assert command == 'pull-sample'
+        self._last_command = command
+        return _TestGstSample()
+
+
+def test_on_new_sample():
+    """Verify steps on new sample."""
+    gst = _TestGstService9()
+    sink = _TestSink9()
+    gst._on_new_sample(sink)
+    result = gst._on_new_sample(sink)
+    assert sink._last_command == 'pull-sample'
+    assert result == Gst.FlowReturn.OK
+    out_sample = gst._out_queue.get()
+    assert out_sample
+    assert out_sample['type'] == 'image'
+    assert out_sample['format'] == 'RGB'
+    assert out_sample['width'] == 321
+    assert out_sample['height'] == 98
+    assert out_sample['bytes'] == 'good image'
