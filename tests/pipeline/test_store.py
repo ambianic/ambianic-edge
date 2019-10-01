@@ -48,7 +48,7 @@ def test_store_negative_detection():
     assert img_out == img
     inf = processed_samples[0]['inference_result']
     print(inf)
-    assert len(inf) == 0
+    assert not inf
 
 
 class _TestSaveDetectionSamples(SaveDetectionSamples):
