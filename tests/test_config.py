@@ -14,8 +14,10 @@ def test_no_config():
 
 
 def test_log_config_with_file():
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(_dir, '.__test-log.txt')
     log_config = {
-        'file': '.__test-log.txt'
+        'file': log_path,
     }
     server._configure_logging(config=log_config)
     handlers = logging.getLogger().handlers
