@@ -134,16 +134,16 @@ class GstService:
             #          message.type.get_name(message.type), message)
         return True
 
-    def on_new_sample(self, sink):
+    def _on_new_sample_out_queue_full(self, sink):
+        log.info('Out queue full, skipping sample.')
+        # free appsink buffer so its not blocked waiting on app pull
+        sink.emit('pull-sample')
+        return Gst.FlowReturn.OK
+
+    def _on_new_sample(self, sink):
         log.info('Input stream received new image sample.')
         if self._out_queue.full():
-            log.info('Out queue full, skipping sample.')
-            return Gst.FlowReturn.OK
-        # if not (self._source_shape.width or self._source_shape.height):
-        #    # source stream shape still unknown
-        #    log.warning('New image sample received '
-        #                'but source shape still unknown?!')
-        #    return Gst.FlowReturn.OK
+            return self._on_new_sample_out_queue_full(sink)
         sample = sink.emit('pull-sample')
         buf = sample.get_buffer()
         caps = sample.get_caps()
@@ -214,7 +214,7 @@ class GstService:
                   self.gst_appsink.props.emit_signals)
         # register to receive new image sample events from gst
         self._gst_appsink_connect_id = self.gst_appsink.connect(
-            'new-sample', self.on_new_sample)
+            'new-sample', self._on_new_sample)
         self.mainloop = GLib.MainLoop()
 
         if log.getEffectiveLevel() <= logging.DEBUG:
