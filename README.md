@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/ambianic/ambianic-core.svg?branch=master)](https://travis-ci.org/ambianic/ambianic-core) [![Docker Automated](https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) [![Docker Build](https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) [![codecov](https://codecov.io/gh/ambianic/ambianic-core/branch/master/graph/badge.svg)](https://codecov.io/gh/ambianic/ambianic-core)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-core/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-core)
 
 ![Ambianic logo][logo]
 
