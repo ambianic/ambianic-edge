@@ -25,16 +25,16 @@ def test_inference_init_bad_config():
 
 
 def _good_config():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
         )
     _good_edgetpu_model = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
         )
-    _good_labels = os.path.join(dir, 'coco_labels.txt')
+    _good_labels = os.path.join(_dir, 'coco_labels.txt')
     config = {
         'model': {
             'tflite': _good_tflite_model,
@@ -96,8 +96,8 @@ def test_model_outputs():
 def test_resize():
     config = _good_config()
     img_detect = TFImageDetection(config)
-    dir = os.path.dirname(os.path.abspath(__file__))
-    img_path = os.path.join(dir, 'background.jpg')
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    img_path = os.path.join(_dir, 'background.jpg')
     image = Image.open(img_path)
     orig_width = image.size[0]
     assert orig_width == 1280

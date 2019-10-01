@@ -14,8 +14,10 @@ def test_no_config():
 
 
 def test_log_config_with_file():
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(_dir, '.__test-log.txt')
     log_config = {
-        'file': '/tmp/test-log.txt'
+        'file': log_path,
     }
     server._configure_logging(config=log_config)
     handlers = logging.getLogger().handlers
@@ -87,8 +89,8 @@ def test_log_config_bad_level2():
 def test_config_with_secrets():
     server.SECRETS_FILE = 'test-config-secrets.yaml'
     server.CONFIG_FILE = 'test-config.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
-    conf = server._configure(dir)
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    conf = server._configure(_dir)
     assert conf
     assert conf['logging']['level'] == 'DEBUG'
     assert conf['sources']['front_door_camera']['uri'] == 'secret_uri'
@@ -97,16 +99,16 @@ def test_config_with_secrets():
 def test_config_without_secrets_failed_ref():
     server.SECRETS_FILE = '__no__secrets__.lmay__'
     server.CONFIG_FILE = 'test-config.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
-    conf = server._configure(dir)
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    conf = server._configure(_dir)
     assert not conf
 
 
 def test_config_without_secrets_no_ref():
     server.SECRETS_FILE = '__no__secrets__.lmay__'
     server.CONFIG_FILE = 'test-config2.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
-    conf = server._configure(dir)
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    conf = server._configure(_dir)
     assert conf
     assert conf['logging']['level'] == 'DEBUG'
     assert conf['sources']['front_door_camera']['uri'] == 'no_secret_uri'
@@ -114,6 +116,6 @@ def test_config_without_secrets_no_ref():
 
 def test_no_pipelines():
     server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
-    dir = os.path.dirname(os.path.abspath(__file__))
-    conf = server._configure(dir)
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    conf = server._configure(_dir)
     assert not conf

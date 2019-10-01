@@ -130,6 +130,7 @@ def update_sample(edited_sample=None):
 
 
 def delete_sample(sample_id):
+    sample = None
     for sample in SAMPLES:
         if sample['id'] == sample_id:
             SAMPLES.remove(sample)

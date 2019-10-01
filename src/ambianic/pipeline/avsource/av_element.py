@@ -51,17 +51,17 @@ class AVSourceElement(PipeElement):
     def _on_new_sample(self, sample=None):
         log.debug('Input stream received new gst sample.')
         assert sample
-        type = sample['type']
+        sample_type = sample['type']
         # only image type supported at this time
-        assert type == 'image'
+        assert sample_type == 'image'
         # make sure the sample is in RGB format
-        format = sample['format']
-        assert format == 'RGB'
+        sample_format = sample['format']
+        assert sample_format == 'RGB'
         width = sample['width']
         height = sample['height']
-        bytes = sample['bytes']
-        img = Image.frombytes(format, (width, height),
-                              bytes, 'raw')
+        sample_bytes = sample['bytes']
+        img = Image.frombytes(sample_format, (width, height),
+                              sample_bytes, 'raw')
         # pass image sample to next pipe element, e.g. ai inference
         log.debug('Input stream sending sample to next element.')
         self.receive_next_sample(image=img)
