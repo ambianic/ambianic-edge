@@ -3,6 +3,7 @@ import traceback
 import logging
 import signal
 import threading
+from ambianic.util import stacktrace
 import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
@@ -23,7 +24,7 @@ class GstService:
      AVElement, which then passes on to the next element in the Ambianic
      pipeline.
 
-    Parameters
+    :Parameters:
     ----------
     source_conf : URI
         Source configuration. At this time URI schemes are supported such as
@@ -74,7 +75,7 @@ class GstService:
         self.gst_video_source = None
         self._gst_video_source_connect_id = None
         # shape of the input stream image or video
-        self.source_shape = self.ImageShape()
+        self._source_shape = self.ImageShape()
         self.gst_queue0 = None
         self.gst_vconvert = None
         self.gst_vconvert_connect_id = None
@@ -94,11 +95,11 @@ class GstService:
         # print('src_caps: {}'.format(str(src_caps)))
         struct = src_caps.get_structure(0)
         # print("src caps struct: {}".format(struct))
-        self.source_shape.width = struct["width"]
-        self.source_shape.height = struct["height"]
-        if self.source_shape.width:
+        self._source_shape.width = struct["width"]
+        self._source_shape.height = struct["height"]
+        if self._source_shape.width:
             log.info("Input source width: %d, height: %d",
-                     self.source_shape.width, self.source_shape.height)
+                     self._source_shape.width, self._source_shape.height)
         return True
 
     def _handle_eos_reached(self):
@@ -122,8 +123,9 @@ class GstService:
             log.warning('Error: %s: %s', err, debug)
             self._gst_cleanup()
         else:
-            log.debug('GST: On bus message: type: %r, details: %r',
-                      message.type.get_name(message.type), message)
+            pass
+            # log.debug('GST: On bus message: type: %r, details: %r',
+            #          message.type.get_name(message.type), message)
         return True
 
     def on_new_sample(self, sink):
@@ -131,11 +133,11 @@ class GstService:
         if self._out_queue.full():
             log.info('Out queue full, skipping sample.')
             return Gst.FlowReturn.OK
-        if not (self.source_shape.width or self.source_shape.height):
-            # source stream shape still unknown
-            log.warning('New image sample received '
-                        'but source shape still unknown?!')
-            return Gst.FlowReturn.OK
+        # if not (self._source_shape.width or self._source_shape.height):
+        #    # source stream shape still unknown
+        #    log.warning('New image sample received '
+        #                'but source shape still unknown?!')
+        #    return Gst.FlowReturn.OK
         sample = sink.emit('pull-sample')
         buf = sample.get_buffer()
         caps = sample.get_caps()
@@ -207,7 +209,7 @@ class GstService:
         # register to receive new image sample events from gst
         self._gst_appsink_connect_id = self.gst_appsink.connect(
             'new-sample', self.on_new_sample)
-        self.mainloop = GObject.MainLoop()
+        self.mainloop = GLib.MainLoop()
 
         if log.getEffectiveLevel() <= logging.DEBUG:
             # set Gst debug log level
@@ -308,12 +310,15 @@ class GstService:
             target=self._stop_handler)
         stop_watch_thread.start()
 
-    def run(self):
-        """Run the gstreamer pipeline service."""
-        log.info("Starting %s", self.__class__.__name__)
+    def _register_sys_signal_handler(self):
         # Register the signal handlers
         signal.signal(signal.SIGTERM, self._service_terminate)
         signal.signal(signal.SIGINT, self._service_terminate)
+
+    def run(self):
+        """Run the gstreamer pipeline service."""
+        log.info("Starting %s", self.__class__.__name__)
+        self._register_sys_signal_handler()
         # print("Terminate handler: %r "
         #       % self._service_terminate)
         self._register_stop_handler()
@@ -323,8 +328,7 @@ class GstService:
             log.warning('GST loop exited with error: %s. ',
                         str(e))
             # print('GST loop exited with error: %s. ' % str(e))
-            formatted_lines = traceback.format_exc().splitlines()
-            log.warning('Exception stack trace: %s', formatted_lines)
+            stacktrace(logging.DEBUG)
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()

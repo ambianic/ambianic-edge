@@ -5,7 +5,7 @@ import pathlib
 import json
 import uuid
 
-from . import PipeElement
+from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
