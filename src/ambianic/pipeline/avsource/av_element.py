@@ -103,7 +103,7 @@ class AVSourceElement(PipeElement):
             except Exception as e:
                 log.warning('AVElement loop caught an error: %s. ',
                             str(e))
-                stacktrace(logging.WARNING)
+                log.warning(stacktrace())
                 # print('Exception caught from _on_new_sample %r' % e)
         # print('end of _run_gst_service.')
         log.debug('exiting _run_gst_service')

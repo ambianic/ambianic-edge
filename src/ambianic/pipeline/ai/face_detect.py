@@ -77,4 +77,4 @@ class FaceDetector(TFImageDetection):
                             'Dropping sample: %r',
                             e,
                             sample)
-                stacktrace(logging.WARNING)
+                log.warning(stacktrace())

@@ -55,8 +55,8 @@ def test_get_pipelines_one():
     print('p[0]: {p0}'.format(p0=p[0]))
     assert isinstance(p[0], interpreter.Pipeline)
     assert p[0].name == 'pipeline_one'
-    assert isinstance(p[0].pipe_elements[0], _TestSourceElement)
-    assert p[0].pipe_elements[0].config == 'some_source'
+    assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
+    assert p[0]._pipe_elements[0].config == 'some_source'
 
 
 def test_get_pipelines_two():
@@ -74,34 +74,34 @@ def test_get_pipelines_two():
             )
     assert isinstance(p[0], interpreter.Pipeline)
     assert p[0].name == 'pipeline_one'
-    assert isinstance(p[0].pipe_elements[0], _TestSourceElement)
+    assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
     assert isinstance(p[1], interpreter.Pipeline)
-    assert p[0].pipe_elements[0].config == 'some_source'
+    assert p[0]._pipe_elements[0].config == 'some_source'
     assert p[1].name == 'pipeline_two'
-    assert isinstance(p[1].pipe_elements[0], _TestSourceElement)
-    assert p[1].pipe_elements[0].config == 'another_source'
+    assert isinstance(p[1]._pipe_elements[0], _TestSourceElement)
+    assert p[1]._pipe_elements[0].config == 'another_source'
 
 
 def test_pipeline_start():
     p = _one_pipeline_setup()
-    assert p[0].pipe_elements[0].state == pipeline.PIPE_STATE_STOPPED
-    pe = p[0].pipe_elements[0]
+    assert p[0]._pipe_elements[0].state == pipeline.PIPE_STATE_STOPPED
+    pe = p[0]._pipe_elements[0]
     assert isinstance(pe, _TestSourceElement)
     assert not pe.start_called
     p[0].start()
-    assert p[0].pipe_elements[0].state == pipeline.PIPE_STATE_RUNNING
+    assert p[0]._pipe_elements[0].state == pipeline.PIPE_STATE_RUNNING
     assert pe.start_called
 
 
 def test_pipeline_stop():
     p = _one_pipeline_setup()
     p[0].start()
-    pe = p[0].pipe_elements[0]
+    pe = p[0]._pipe_elements[0]
     assert pe.state == pipeline.PIPE_STATE_RUNNING
     assert pe.start_called
     assert not pe.stop_called
     p[0].stop()
     # make sure the correct element is still in the correct pipe position
-    pe = p[0].pipe_elements[0]
+    pe = p[0]._pipe_elements[0]
     assert isinstance(pe, _TestSourceElement)
     assert pe.state == pipeline.PIPE_STATE_STOPPED
