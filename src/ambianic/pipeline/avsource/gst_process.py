@@ -335,7 +335,7 @@ class GstService:
             log.warning('GST loop exited with error: %s. ',
                         str(e))
             # print('GST loop exited with error: %s. ' % str(e))
-            stacktrace(logging.DEBUG)
+            log.warning(stacktrace())
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()

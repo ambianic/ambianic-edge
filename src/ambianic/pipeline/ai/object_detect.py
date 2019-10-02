@@ -34,4 +34,4 @@ class ObjectDetector(TFImageDetection):
                           str(e),
                           str(sample)
                           )
-                stacktrace(logging.WARNING)
+                log.warning(stacktrace())

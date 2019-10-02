@@ -133,7 +133,15 @@ class ServiceExit(Exception):
     pass
 
 
-def stacktrace(log_level=logging.WARNING):
+def stacktrace():
+    """Get stack trace as a multi line string.
+
+    :Returns:
+    -------
+    string
+        Milti-line string of current stack trace.
+
+    """
     formatted_lines = traceback.format_exc().splitlines()
-    log.log(log_level, 'Runtime exception stack trace:\n %s',
-            "\n".join(formatted_lines))
+    str = 'Runtime stack trace:\n %s' + '\n'.join(formatted_lines)
+    return str

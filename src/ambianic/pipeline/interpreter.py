@@ -8,12 +8,30 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
-from ambianic.util import ThreadedJob, ManagedService
+from ambianic.util import ThreadedJob, ManagedService, stacktrace
 
 log = logging.getLogger(__name__)
 
 
 def get_pipelines(pipelines_config):
+    """Initialize and return pipelines given config parameters.
+
+    :Parameters:
+    ----------
+    pipelines_config : dict
+        Example:
+        daytime_front_door_watch:
+        - source: *src_front_door_cam
+          ...
+        - detect_objects: # run ai inference on the input data
+          ...
+
+    :Returns:
+    -------
+    list
+        List of configured pipelines.
+
+    """
     pipelines = []
     if pipelines_config:
         for pname, pdef in pipelines_config.items():
@@ -33,34 +51,54 @@ class PipelineServer(ManagedService):
 
     """
 
-    def __init__(self, config=None):
-        """Initialize and configure.
+    MAX_HEARTBEAT_INTERVAL = 20
+    TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL*3
 
-        Parameters
+    def __init__(self, config=None):
+        """Initialize and configure a PipelineServer.
+
+        :Parameters:
         ----------
         config : dict
-            Python representation of the yaml configuration file.
+            Python representation of the yaml configuration file. Example:
+            pipelines:
+              # sequence of piped operations for use on front door cam
+              daytime_front_door_watch:
+                - source: *src_front_door_cam
+                  ...
+                - detect_objects: # run ai inference on the input data
+                  ...
+                - save_detections: # save samples from the inference results
+                  ...
 
         """
         self._config = config
         self._threaded_jobs = []
         self._pipelines = []
         if config:
+            print('config: %r' % config)
             pipelines_config = config.get('pipelines', None)
+            print('pipelines config: %r' % pipelines_config)
             if pipelines_config:
                 self._pipelines = get_pipelines(pipelines_config)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
                     self._threaded_jobs.append(pj)
 
-    def healthcheck(self):
-        """
-            Check the health of all managed pipelines.
-            Return the oldest heartbeat among all managed pipeline heartbeats.
-            Try to heal pipelines that haven't reported a heartbeat and awhile.
+    def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
+        log.error('Pipeline %s in terminal condition. '
+                  'Unable to recover.'
+                  'Latest heartbeat was %f seconds ago. ',
+                  pipeline.name, lapse)
 
-            :returns: (timestamp, status) tuple with most outdated heartbeat
-                and worst known status among managed pipelines
+    def healthcheck(self):
+        """Check the health of all managed pipelines.
+
+        Return the oldest heartbeat among all managed pipeline heartbeats.
+        Try to heal pipelines that haven't reported a heartbeat and awhile.
+
+        :returns: (timestamp, status) tuple with most outdated heartbeat
+            and worst known status among managed pipelines
         """
         oldest_heartbeat = time.monotonic()
         for j in self._threaded_jobs:
@@ -70,15 +108,12 @@ class PipelineServer(ManagedService):
                 latest_heartbeat, status = p.healthcheck()
                 now = time.monotonic()
                 lapse = now - latest_heartbeat
-                if lapse > 60:
-                    log.error('Pipeline %s in terminal condition. '
-                              'Unable to recover.'
-                              'Latest heartbeat was %f seconds ago. ',
-                              p.name, lapse)
+                if lapse > self.TERMINAL_HEALTH_INTERVAL:
+                    self._on_terminal_pipeline_health(p, lapse)
                     # more than a reasonable amount of time has passed
                     # since the pipeline reported a heartbeat.
                     # Let's recycle it
-                elif lapse > 20:
+                elif lapse > self.MAX_HEARTBEAT_INTERVAL:
                     log.warning('Pipeline "%s" is not responsive. '
                                 'Latest heartbeat was %f seconds ago. '
                                 'Will attempt to heal it.', p.name, lapse)
@@ -92,7 +127,7 @@ class PipelineServer(ManagedService):
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
 
-    def heal():
+    def heal(self):
         """Heal the PipelineServer.
 
         PipelineServer manages its own health as best possible.
@@ -135,8 +170,20 @@ class HealingThread(threading.Thread):
         self._on_finished = on_finished
 
     def run(self):
-        self._target()
-        self._on_finished()
+        log.debug('invoking healing target method %r', self._target)
+        try:
+            self._target()
+        except Exception as e:
+            log.warning('Error %r while running healing method %r.',
+                        e, self._target)
+            log.warning(stacktrace())
+        log.debug('invoking healing on_finished method %r', self._on_finished)
+        try:
+            self._on_finished()
+        except Exception as e:
+            log.warning('Error %r while calling on_finished method %r.',
+                        e, self._on_finished)
+            log.warning(stacktrace())
 
 
 class Pipeline(ManagedService):
@@ -161,7 +208,7 @@ class Pipeline(ManagedService):
         self.config = pconfig
         assert self.config[0]["source"], \
             "Pipeline config must begin with a source element"
-        self.pipe_elements = []
+        self._pipe_elements = []
         self._latest_heartbeat_time = time.monotonic()
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
@@ -176,7 +223,7 @@ class Pipeline(ManagedService):
                 log.info('Pipeline %s adding element %s with config %s',
                          pname, element_name, element_config)
                 element = element_class(element_config)
-                self.pipe_elements.append(element)
+                self._pipe_elements.append(element)
             else:
                 log.warning('Pipeline definition has unknown '
                             'pipeline element: %s .'
@@ -199,19 +246,19 @@ class Pipeline(ManagedService):
         or until a stop() signal is received.
         """
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
-        if not self.pipe_elements:
+        if not self._pipe_elements:
             return
         self._heartbeat()
         # connect pipeline elements as defined by user
-        for i in range(1, len(self.pipe_elements)):
-            e = self.pipe_elements[i-1]
+        for i in range(1, len(self._pipe_elements)):
+            e = self._pipe_elements[i-1]
             assert isinstance(e, PipeElement)
-            e_next = self.pipe_elements[i]
+            e_next = self._pipe_elements[i]
             e.connect_to_next_element(e_next)
-        last_element = self.pipe_elements[len(self.pipe_elements)-1]
+        last_element = self._pipe_elements[len(self._pipe_elements)-1]
         hc = HealthChecker(health_status_callback=self._heartbeat)
         last_element.connect_to_next_element(hc)
-        self.pipe_elements[0].start()
+        self._pipe_elements[0].start()
         log.info("Stopped %s", self.__class__.__name__)
         return
 
@@ -240,7 +287,7 @@ class Pipeline(ManagedService):
                       self.name, self._healing_thread.ident)
         else:
             log.debug('pipeline %s launching healing thread...', self.name)
-            heal_target = self.pipe_elements[0].heal
+            heal_target = self._pipe_elements[0].heal
 
             def healing_finished():
                 log.debug('pipeline %s healing thread id: %d ended. ',
@@ -264,6 +311,6 @@ class Pipeline(ManagedService):
         """
         log.info("Requesting pipeline elements to stop... %s",
                  self.__class__.__name__)
-        self.pipe_elements[0].stop()
+        self._pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
