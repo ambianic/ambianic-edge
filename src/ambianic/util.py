@@ -143,5 +143,5 @@ def stacktrace():
 
     """
     formatted_lines = traceback.format_exc().splitlines()
-    str = 'Runtime stack trace:\n %s' + '\n'.join(formatted_lines)
-    return str
+    strace = 'Runtime stack trace:\n %s' + '\n'.join(formatted_lines)
+    return strace
