@@ -24,24 +24,24 @@ def test_inference_init_no_tflite_model_yes_edgemodel():
 
 
 def _good_labels():
-    dir = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(dir, 'coco_labels.txt')
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(_dir, 'coco_labels.txt')
     return path
 
 
 def _good_tflite_model():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
         )
     return path
 
 
 def _good_edgetpu_model():
-    dir = os.path.dirname(os.path.abspath(__file__))
+    _dir = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(
-        dir,
+        _dir,
         'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
         )
     return path

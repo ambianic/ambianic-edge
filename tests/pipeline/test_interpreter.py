@@ -22,15 +22,14 @@ class _TestSourceElement(pipeline.PipeElement):
         self.receive_next_sample([1, 2, 3])
 
     def heal(self):
-        pass
+        """Empty implementation of abstractmethod."""
 
     def stop(self):
         super().stop()
         self.stop_called = True
 
     def receive_next_sample(self, *sample):
-        """ Placeholder implementation of abstractmethod"""
-        pass
+        """Empty implementation of abstractmethod."""
 
 
 def test_derived_pipe_element():

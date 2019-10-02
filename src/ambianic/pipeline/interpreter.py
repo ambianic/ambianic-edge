@@ -6,8 +6,8 @@ import threading
 
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
-from .store import SaveSamples
-from . import PipeElement, HealthChecker
+from ambianic.pipeline.store import SaveDetectionSamples
+from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.util import ThreadedJob, ManagedService
 
 log = logging.getLogger(__name__)
@@ -98,7 +98,6 @@ class PipelineServer(ManagedService):
         PipelineServer manages its own health as best possible.
         Not much to do here at this time.
         """
-        pass
 
     def heal_pipeline_job(self, threaded_job=None):
         assert threaded_job
@@ -150,7 +149,7 @@ class Pipeline(ManagedService):
     PIPELINE_OPS = {
         'source': AVSourceElement,
         'detect_objects': ObjectDetector,
-        'save_samples': SaveSamples,
+        'save_detections': SaveDetectionSamples,
         'detect_faces': FaceDetector,
     }
 
@@ -268,4 +267,3 @@ class Pipeline(ManagedService):
         self.pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
-        return

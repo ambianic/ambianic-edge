@@ -307,6 +307,25 @@ def test2_on_new_sample_out_queue_full():
     assert result == Gst.FlowReturn.OK
 
 
+class _TestGstService7(GstService):
+
+    def __init__(self):
+        self._gst_cleanup_called = False
+
+    def _gst_loop(self):
+        raise RuntimeError()
+
+    def _gst_cleanup(self):
+        self._gst_cleanup_called = True
+
+
+def test_run_exception():
+    """Exception in gst loop should result in gst cleanup and method exit."""
+    gst = _TestGstService7()
+    gst.run()
+    assert gst._gst_cleanup_called
+
+
 class _TestGstService8(GstService):
 
     def __init__(self):
@@ -382,3 +401,21 @@ def test_on_new_sample():
     assert out_sample['width'] == 321
     assert out_sample['height'] == 98
     assert out_sample['bytes'] == 'good image'
+
+
+class _TestGstService10(GstService):
+
+    def __init__(self):
+        self._gst_cleanup_called = False
+        self.mainloop = 'fake mainloop that causes error'
+
+    def _gst_cleanup(self):
+        self._gst_cleanup_called = True
+        super()._gst_cleanup()
+
+
+def test_gst_cleanup_exception():
+    """Exception in gst cleanup should be handled in the method quietly."""
+    gst = _TestGstService10()
+    gst._gst_cleanup()
+    assert gst._gst_cleanup_called

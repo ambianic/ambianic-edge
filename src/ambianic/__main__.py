@@ -3,7 +3,6 @@ import os
 import ambianic
 import signal
 
-global _svr
 _svr = None
 
 

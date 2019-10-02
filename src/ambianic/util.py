@@ -13,7 +13,6 @@ class ManagedService:
     @abstractmethod
     def start(self, **kwargs):
         """Start and run until finished or asked to stop()."""
-        pass
 
     @abstractmethod
     def stop(self):
@@ -21,7 +20,6 @@ class ManagedService:
 
         Delay to exit may result in forceful process termination.
         """
-        pass
 
     @abstractmethod
     def healthcheck(self):
@@ -35,7 +33,6 @@ class ManagedService:
             status_code should have a semantic mapping to the service health.
 
         """
-        pass
 
     @abstractmethod
     def heal(self):
@@ -48,7 +45,6 @@ class ManagedService:
         The method should try to bring the job back to a healthy state
         as soon as possible to prevent forceful termination.
         """
-        pass
 
 
 class ThreadedJob(threading.Thread, ManagedService):
