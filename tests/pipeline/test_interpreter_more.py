@@ -50,6 +50,37 @@ def test_pipeline_server_init():
     assert len(server._threaded_jobs) == 1
 
 
+def _get_config_invalid_element(source_class=None):
+    # override source op with a mock test class
+    Pipeline.PIPELINE_OPS['source'] = source_class
+    pipeline_config = [
+        {'source': 'some_source'},
+        {'scifi': 'one day soon'},
+        ]
+
+    return pipeline_config
+
+
+class _TestPipeline(Pipeline):
+
+    def __init__(self, pname=None, pconfig=None):
+        self._test_on_unknown_pipe_element_called = False
+        super().__init__(pname=pname, pconfig=pconfig)
+
+    def _on_unknown_pipe_element(self, name=None):
+        self._test_on_unknown_pipe_element_called = True
+        log.debug('_on_unknown_pipe_element called')
+        super()._on_unknown_pipe_element(name=name)
+
+
+def test_pipeline_init_invalid_element():
+    conf = _get_config_invalid_element(_TestSourceElement)
+    pipeline = _TestPipeline(pname='test', pconfig=conf)
+    assert pipeline._test_on_unknown_pipe_element_called
+    assert len(pipeline._pipe_elements) == 1
+    assert isinstance(pipeline._pipe_elements[0], _TestSourceElement)
+
+
 class _TestSourceElement2(pipeline.PipeElement):
     """Produce samples until stop signal."""
 
@@ -125,7 +156,7 @@ def test_pipeline_server_heal():
     assert not server._threaded_jobs[0].is_alive()
 
 
-class _TestPipelineServer(PipelineServer):
+class _TestPipelineServer2(PipelineServer):
 
     def __init__(self, config=None):
         super().__init__(config=config)
@@ -139,7 +170,7 @@ class _TestPipelineServer(PipelineServer):
 
 def test_pipeline_server_terminal():
     conf = _get_config(_TestSourceElement3)
-    server = _TestPipelineServer(conf)
+    server = _TestPipelineServer2(conf)
     assert len(server._pipelines) == 1
     assert len(server._threaded_jobs) == 1
     source_pe = server._pipelines[0]._pipe_elements[0]

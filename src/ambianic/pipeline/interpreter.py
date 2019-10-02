@@ -187,7 +187,7 @@ class HealingThread(threading.Thread):
 
 
 class Pipeline(ManagedService):
-    """ The main Ambianic processing structure.
+    """The main Ambianic data processing structure.
 
     Data flow is arranged in independent pipelines.
     """
@@ -200,14 +200,23 @@ class Pipeline(ManagedService):
         'detect_faces': FaceDetector,
     }
 
+    def _on_unknown_pipe_element(self, name=None):
+        log.warning('Pipeline definition has unknown '
+                    'pipeline element: %s .'
+                    ' Ignoring element and moving forward.',
+                    name)
+
     def __init__(self, pname=None, pconfig=None):
         """Init and load pipeline config."""
         assert pname, "Pipeline name required"
         self.name = pname
         assert pconfig, "Pipeline config required"
         self.config = pconfig
-        assert self.config[0]["source"], \
-            "Pipeline config must begin with a source element"
+        log.debug('Pipeline starts with element %r', self.config[0])
+        source_element_key = [*self.config[0]][0]
+        assert source_element_key == 'source', \
+            "Pipeline config must begin with a 'source' element instead of {}"\
+            .format(source_element_key)
         self._pipe_elements = []
         self._latest_heartbeat_time = time.monotonic()
         # in the future status may represent a spectrum of health issues
@@ -225,10 +234,7 @@ class Pipeline(ManagedService):
                 element = element_class(element_config)
                 self._pipe_elements.append(element)
             else:
-                log.warning('Pipeline definition has unknown '
-                            'pipeline element: %s .'
-                            ' Ignoring element and moving forward.',
-                            element_name)
+                self._on_unknown_pipe_element(name=element_name)
         return
 
     def _heartbeat(self):
