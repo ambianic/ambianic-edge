@@ -252,6 +252,9 @@ class Pipeline(ManagedService):
         log.debug('Pipeline %s heartbeat lapse %f', self.name, lapse)
         self._latest_heartbeat_time = now
 
+    def _on_start_no_elements(self):
+        return
+
     def start(self):
         """Start the pipeline loop.
 
@@ -260,7 +263,7 @@ class Pipeline(ManagedService):
         """
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
         if not self._pipe_elements:
-            return
+            return self._on_start_no_elements()
         self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self._pipe_elements)):
