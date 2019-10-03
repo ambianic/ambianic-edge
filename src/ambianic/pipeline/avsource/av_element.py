@@ -200,6 +200,7 @@ class AVSourceElement(PipeElement):
                 log.debug('GST EOS reached')
                 break
         self._stop_gst_service()
+        super().stop()
         log.info("Stopped %s", self.__class__.__name__)
 
     def heal(self):

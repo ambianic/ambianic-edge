@@ -91,6 +91,13 @@ class PipelineServer(ManagedService):
                   'Latest heartbeat was %f seconds ago. ',
                   pipeline.name, lapse)
 
+    def _on_pipeline_job_ended(self, threaded_job=None):
+        p = threaded_job.job
+        log.debug('Pipeline "%s" has ended. '
+                  'Removing from health watch.',
+                  p.name)
+        self._threaded_jobs.remove(threaded_job)
+
     def healthcheck(self):
         """Check the health of all managed pipelines.
 
@@ -101,7 +108,9 @@ class PipelineServer(ManagedService):
             and worst known status among managed pipelines
         """
         oldest_heartbeat = time.monotonic()
-        for j in self._threaded_jobs:
+        # iterate over a copy of jobs, because
+        # we may need to remove dead jobs in the loop
+        for j in list(self._threaded_jobs):
             # get the pipeline object out of the threaded job wrapper
             p = j.job
             if j.is_alive():
@@ -120,10 +129,8 @@ class PipelineServer(ManagedService):
                     self.heal_pipeline_job(j)
                 if oldest_heartbeat > latest_heartbeat:
                     oldest_heartbeat = latest_heartbeat
-            # something went wrong with a threaded job
             else:
-                log.error('Pipeline "%s" thread ended unexpectedly. '
-                          'Please report a bug.', p.name)
+                self._on_pipeline_job_ended(threaded_job=j)
         status = True  # At some point status may carry richer information
         return oldest_heartbeat, status
 
@@ -281,16 +288,19 @@ class Pipeline(ManagedService):
         """
         return self._latest_heartbeat_time, self._latest_health_status
 
+    def _on_healing_already_in_progress(self):
+        log.debug('pipeline %s healing thread in progress.'
+                  ' Skipping request. '
+                  'Thread id: %d. ',
+                  self.name, self._healing_thread.ident)
+
     def heal(self):
         """Nonblocking asynchronous heal function."""
         # register a heartbeat to prevent looping back
         # into heal while healing
         self._heartbeat()
         if self._healing_thread:
-            log.debug('pipeline %s healing thread in progress.'
-                      ' Skipping request. '
-                      'Thread id: %d. ',
-                      self.name, self._healing_thread.ident)
+            self._on_healing_already_in_progress()
         else:
             log.debug('pipeline %s launching healing thread...', self.name)
             heal_target = self._pipe_elements[0].heal

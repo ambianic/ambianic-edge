@@ -80,14 +80,7 @@ class ThreadedJob(threading.Thread, ManagedService):
         log.info('Thread #%s started with job: %s',
                  self.ident,
                  self.job.__class__.__name__)
-        while not self._stop_requested.is_set():
-            self.job.start()
-        # the following technique is helpful when the job is not stoppable
-        # while not self.shutdown_flag.is_set():
-        #    # ... Job code here ...
-        #    time.sleep(0.5)
-
-        # ... Clean shutdown code here ...
+        self.job.start()
         log.info('Thread #%s for job %s stopped',
                  self.ident,
                  self.job.__class__.__name__)
