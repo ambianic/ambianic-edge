@@ -67,6 +67,7 @@ class _TestPipeline(Pipeline):
     def __init__(self, pname=None, pconfig=None):
         self._test_on_unknown_pipe_element_called = False
         self._test_on_healing_already_in_progress_called = False
+        self._test_on_start_no_elements_called = False
         super().__init__(pname=pname, pconfig=pconfig)
 
     def _on_unknown_pipe_element(self, name=None):
@@ -77,6 +78,10 @@ class _TestPipeline(Pipeline):
     def _on_healing_already_in_progress(self):
         self._test_on_healing_already_in_progress_called = True
         super()._on_healing_already_in_progress()
+
+    def _on_start_no_elements(self):
+        self._test_on_start_no_elements_called = True
+        super()._on_start_no_elements()
 
 
 def test_pipeline_init_invalid_element():
@@ -259,6 +264,18 @@ def test_pipeline_heal2():
     pipeline.heal()
     assert pipeline._test_on_healing_already_in_progress_called
     pipeline.stop()
+
+
+def test_pipeline_start_no_elements():
+    Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
+    pipeline_config = [
+        {'source': 'source element'},
+        ]
+    pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
+    assert len(pipeline._pipe_elements) == 1
+    pipeline._pipe_elements.pop()
+    pipeline.start()
+    assert pipeline._test_on_start_no_elements_called
 
 
 def test_healing_thread():
