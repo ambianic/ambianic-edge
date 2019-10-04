@@ -22,17 +22,17 @@ script:
   # prepare qemu
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   # build image
-  - docker build -t ambianic/ambianic ./Dev.Dockerfile
+  - docker build -t ambianic/ambianic-arm -f Dev.Dockerfile
   # test image
-  - docker run ambianic/ambianic --version
+  - docker run ambianic/ambianic-arm --version
   # push image
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       TAG=dev
-      docker tag ambianic/ambianic ambianic/ambianic:$TAG
-      docker push ambianic/ambianic:$TAG
-      docker push ambianic/ambianic
+      docker tag ambianic/ambianic-arm ambianic/ambianic-arm:$TAG
+      docker push ambianic/ambianic-arm:$TAG
+      docker push ambianic/ambianic-arm
     fi
 after_success:
   - codecov # submit code coverage
