@@ -1,21 +1,39 @@
-language: python
+language: bash
 sudo: required
 services:
   - docker
 before_install:
-  - python --version
- # command to install dependencies
+#  - python --version
+# command to install dependencies
 install:
   - ./ambianic-build.sh
   - pip3 install -U codecov
 # command to run tests
 script:
+  # [x86]
   - docker images
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
   - echo $PWD
   - ls -al
   - ls -al tests/
+  # [arm]
+  # Raspberry PI section
+  # prepare qemu
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+  # build image
+  - docker build -t ambianic/ambianic ./Dev.Dockerfile
+  # test image
+  - docker run ambianic/ambianic --version
+  # push image
+  - >
+    if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+      TAG=dev
+      docker tag ambianic/ambianic ambianic/ambianic:$TAG
+      docker push ambianic/ambianic:$TAG
+      docker push ambianic/ambianic
+    fi
 after_success:
   - codecov # submit code coverage
 deploy:
