@@ -65,10 +65,11 @@ sudo pip3 install -r requirements.txt
 # Install Tensorflow Lite and EdgeTPU libraries for the underlying architecture
 if $(arch | grep -q 86)
 then
-  echo "Installing tflite for X86"
+  echo "Installing tflite for x86 CPU"
   sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
 elif $(arch | grep -q arm)
 then
+  echo "Installing tflite for ARM CPU"
   sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
 fi
 
@@ -86,7 +87,7 @@ echo "Effective CPU architecture: $architecture"
 export architecture
 ls -al
 ls -al build/
-cp build/install-edgetpu.sh /tmp/edgetpu_api/install.sh
+cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 /tmp/edgetpu_api/install.sh
 
 # install ai models

@@ -6,12 +6,14 @@ before_install:
 #  - python --version
 # command to install dependencies
 install:
+  - cd build
   - ./ambianic-build.sh
   - pip3 install -U codecov
 # command to run tests
 script:
   # [x86]
   - docker images
+  - cd $TRAVIS_BUILD_DIR
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
   - echo $PWD
@@ -20,9 +22,10 @@ script:
   # [arm]
   # Raspberry PI section
   # prepare qemu
+  - cd build
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   # build image
-  - docker build -f Dev.Dockerfile -t ambianic/ambianic-arm .
+  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic-arm .
   # test image
   - docker run ambianic/ambianic-arm --version
   # push image
