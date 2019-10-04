@@ -22,7 +22,7 @@ script:
   # prepare qemu
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   # build image
-  - docker build -t ambianic/ambianic-arm -f Dev.Dockerfile
+  - docker build -f Dev.Dockerfile -t ambianic/ambianic-arm .
   # test image
   - docker run ambianic/ambianic-arm --version
   # push image
