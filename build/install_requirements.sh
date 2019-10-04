@@ -86,7 +86,7 @@ tar xzf /tmp/edgetpu_api.tar.gz -C /tmp
 echo "Effective CPU architecture: $architecture"
 export architecture
 ls -al
-ls -al build/
+# ls -al build/
 cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 /tmp/edgetpu_api/install.sh
 
