@@ -32,10 +32,10 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      TAG=dev
-      docker tag ambianic/ambianic-arm ambianic/ambianic-arm:$TAG
-      docker push ambianic/ambianic-arm:$TAG
-      docker push ambianic/ambianic-arm
+      TAG=dev-arm
+      docker tag ambianic/ambianic ambianic/ambianic-arm:$TAG
+      docker push ambianic/ambianic:$TAG
+      docker push ambianic/ambianic
     fi
 after_success:
   - codecov # submit code coverage
