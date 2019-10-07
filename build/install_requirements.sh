@@ -48,7 +48,7 @@ if $(arch | grep -q arm)
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
   echo "Installing Raspberry Pi specific dependencies"
-  sudo apt-get install python3-rpi.gpio
+  sudo apt-get install -y python3-rpi.gpio
   # Add v4l2 video module to kernel
   if ! grep -q "bcm2835-v4l2" /etc/modules; then
     echo bcm2835-v4l2 | sudo tee -a /etc/modules

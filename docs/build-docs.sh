@@ -11,5 +11,6 @@ pip3 install mkdocs
 pip3  install pydoc-markdown
 cp src/ambianic/webapp/client/public/favicon.ico $WORKDIR/docs/
 cd src
-pydocmd simple ambianic++ ambianic.pipeline++ ambianic.webapp++ > "$WORKDIR/docs/ambianic-python-api.md"
+pydocmd simple ambianic++ ambianic.pipeline++ ambianic.pipeline.ai++ \
+  ambianic.pipeline.avsource++ ambianic.webapp++ > "$WORKDIR/docs/ambianic-python-api.md"
 mkdocs build -f "$WORKDIR/docs/mkdocs.yml"
