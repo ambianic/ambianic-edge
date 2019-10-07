@@ -9,24 +9,27 @@ before_install:
 #  - python --version
 # command to install dependencies
 install:
-  - cd ${TRAVIS_BUILD_DIR}/build
-  - ./ambianic-build.sh
+  #- cd ${TRAVIS_BUILD_DIR}/build
+  # - ./ambianic-build.sh
   - pip3 install -U codecov
 # command to run tests
 script:
   # Raspberry PI section
   # prepare qemu
+  - TAG=dev-${ARCH}
   - cd ${TRAVIS_BUILD_DIR}/build
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+  - >
+      if [ "$ARCH" == "arm" ]; then
+        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+      fi
   # build image
-  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic .
+  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic:$TAG --build-arg BASE_IMAGE=$BASE_IMAGE .
   # test image
   - docker run ambianic/ambianic --version
   # push image
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      TAG=dev-${ARCH}
       docker tag ambianic/ambianic ambianic/ambianic:$TAG
       docker push ambianic/ambianic:$TAG
       docker push ambianic/ambianic
