@@ -1,6 +1,6 @@
 # Development version of Ambianic docker image
-FROM debian:buster-slim
-# FROM alpine:latest
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE:-"debian:buster-slim"}
 
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
@@ -48,7 +48,7 @@ EXPOSE 8778
 
 # [development]
 
-# dev only
+# dev only front end server
 EXPOSE 1234
 
 # CMD bash
