@@ -1,6 +1,5 @@
 # Development version of Ambianic docker image
-ARG BASE_IMAGE_PREFIX
-FROM ${BASE_IMAGE:-"${BASE_IMAGE_PREFIX}debian:buster-slim"}
+FROM debian:buster-slim
 
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
@@ -11,7 +10,7 @@ WORKDIR /opt/ambianic
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
-RUN set -ex && sudo ./install_requirements.sh 2>&1
+RUN ./install_requirements.sh
 
 # CMD bash
 

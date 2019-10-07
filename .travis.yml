@@ -4,9 +4,9 @@ services:
   - docker
 matrix:
   fast_finish: true
-env:
-  - ARCH=x86 BASE_IMAGE_PREFIX=""
-  - ARCH=arm BASE_IMAGE_PREFIX="arm32v7/"
+  include:
+    - env: ARCH=amd64
+    - env: ARCH=arm
 before_install:
 #  - python --version
 # command to install dependencies
@@ -27,7 +27,7 @@ script:
         docker run --rm --privileged multiarch/qemu-user-static:register --reset
       fi
   # build image
-  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic:$TAG --build-arg BASE_IMAGE_PREFIX=$BASE_IMAGE_PREFIX .
+  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
   # test image
   - docker run ambianic/ambianic --version
   # push image

@@ -6,10 +6,10 @@ set -ex
 # detect effective CPU architecture
 if $(arch | grep -q 86)
 then
-  TAG="dev-x86"
+  TAG="dev"
 elif $(arch | grep -q arm)
 then
-  TAG="dev-arm"
+  TAG="dev"
 fi
 
 
