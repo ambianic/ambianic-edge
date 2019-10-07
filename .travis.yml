@@ -5,8 +5,8 @@ services:
 matrix:
   fast_finish: true
 env:
-  - ARCH=x86 BASE_IMAGE="debian:buster-slim"
-  - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
+  - ARCH=x86 BASE_IMAGE_PREFIX=""
+  - ARCH=arm BASE_IMAGE_PREFIX="arm32v7/"
 before_install:
 #  - python --version
 # command to install dependencies
