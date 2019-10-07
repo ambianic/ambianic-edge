@@ -2,9 +2,11 @@ language: python
 sudo: required
 services:
   - docker
-env:
-  - ARCH=x86 BASE_IMAGE="debian:buster-slim"
-  - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
+matrix:
+  fast_finish: true
+  env:
+    - ARCH=x86 BASE_IMAGE="debian:buster-slim"
+    - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
 before_install:
 #  - python --version
 # command to install dependencies
@@ -17,6 +19,10 @@ script:
   # Raspberry PI section
   # prepare qemu
   - TAG=dev-${ARCH}
+  # verbose output mode
+  - set -x
+  # fail fast
+  - set -e
   - cd ${TRAVIS_BUILD_DIR}/build
   - >
       if [ "$ARCH" == "arm" ]; then
