@@ -2,6 +2,9 @@ language: python
 sudo: required
 services:
   - docker
+env:
+  - ARCH=x86 BASE_IMAGE="debian:buster-slim"
+  - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
 before_install:
 #  - python --version
 # command to install dependencies
@@ -11,15 +14,6 @@ install:
   - pip3 install -U codecov
 # command to run tests
 script:
-  # [x86]
-  - docker images
-  - cd $TRAVIS_BUILD_DIR
-  - ./ambianic-test.sh
-  - ./ambianic-docs.sh
-  - echo $PWD
-  - ls -al
-  - ls -al tests/
-  # [arm]
   # Raspberry PI section
   # prepare qemu
   - cd build
@@ -32,11 +26,18 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      TAG=dev-arm
+      TAG=dev-${ARCH}
       docker tag ambianic/ambianic ambianic/ambianic:$TAG
       docker push ambianic/ambianic:$TAG
       docker push ambianic/ambianic
     fi
+  - docker images
+  - cd $TRAVIS_BUILD_DIR
+  - ./ambianic-test.sh
+  - ./ambianic-docs.sh
+  - echo $PWD
+  - ls -al
+  - ls -al tests/
 after_success:
   - codecov # submit code coverage
 deploy:
