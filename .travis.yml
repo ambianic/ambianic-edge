@@ -19,10 +19,6 @@ script:
   # Raspberry PI section
   # prepare qemu
   - TAG=dev-${ARCH}
-  # verbose output mode
-  - set -x
-  # fail fast
-  - set -e
   - cd ${TRAVIS_BUILD_DIR}/build
   # setup ARM CPU (raspberry pi) build support
   - >
