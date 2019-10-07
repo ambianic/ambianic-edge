@@ -19,7 +19,7 @@ install:
   - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
   - sudo service docker restart
   - docker --version
-  - docker buildx --help
+#  - docker buildx --help
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
   - pip3 install -U codecov
@@ -30,11 +30,12 @@ script:
   - TAG=dev-${ARCH}
   - docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447ad3
   - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
-  - docker buildx create --name mybuilder
-  - docker buildx use mybuilder
-  - docker buildx inspect --bootstrap
+#  - docker buildx create --name mybuilder
+#  - docker buildx use mybuilder
+#  - docker buildx inspect --bootstrap
   - cd ${TRAVIS_BUILD_DIR}/build
-  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
+  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
+#  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
   # setup ARM CPU (raspberry pi) build support
   #- >
 #      if [ "$ARCH" == "arm" ]; then
@@ -55,7 +56,7 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker buildx build --platform ${ARCH} --push -t ambianic/ambianic:dev .
+      docker build --platform ${ARCH} --push -t ambianic/ambianic:dev .
       if [ "$ARCH" == "linux/amd64"]; then
         ./ambianic-docs.sh
       fi
