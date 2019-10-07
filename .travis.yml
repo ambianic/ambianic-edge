@@ -7,10 +7,17 @@ matrix:
   include:
     - env: ARCH=amd64
     - env: ARCH=arm
+addons:
+  apt:
+    packages:
+      - docker-ce
 before_install:
 #  - python --version
 # command to install dependencies
 install:
+  - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+  - sudo service docker restart
+  - docker --version
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
   - pip3 install -U codecov
