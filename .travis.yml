@@ -4,9 +4,9 @@ services:
   - docker
 matrix:
   fast_finish: true
-  env:
-    - ARCH=x86 BASE_IMAGE="debian:buster-slim"
-    - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
+env:
+  - ARCH=x86 BASE_IMAGE="debian:buster-slim"
+  - ARCH=arm BASE_IMAGE="hypriot/rpi-alpine"
 before_install:
 #  - python --version
 # command to install dependencies
