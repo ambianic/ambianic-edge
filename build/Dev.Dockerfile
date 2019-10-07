@@ -8,12 +8,9 @@ WORKDIR /opt/ambianic
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
-COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
-RUN ls -al /bin/sh && \
-  ls -al /bin/*sh* && \
-  echo "HELLO!2" && \
-  ls -al ./ && \
-  /bin/bash ./install_requirements.sh
+COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", \
+  "raspberrypi.pip.conf", "./"]
+RUN /bin/bash ./install_requirements.sh
 
 # RUN ./install_requirements.sh
 

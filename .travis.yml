@@ -6,7 +6,6 @@ matrix:
   fast_finish: true
   include:
     - env: ARCH=linux/amd64
-    - env: ARCH=linux/arm64
     - env: ARCH=linux/arm/v7
 addons:
   apt:
