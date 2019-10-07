@@ -24,7 +24,7 @@ echo "Effective CPU architecture: $architecture"
 apt-get update -y && apt-get install -y sudo
 
 # install python3 which is not available by default on slim buster
-apt-get install -y python3 && apt-get install -y python3-pip
+sudo apt-get install -y python3 && apt-get install -y python3-pip
 
 # Install gstreamer
 sudo apt-get update

@@ -36,7 +36,7 @@ script:
   # build image
   - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
   # test image
-  - docker run ambianic/ambianic --version
+  - sudo docker run ambianic/ambianic --version
   # push image
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
@@ -50,8 +50,8 @@ script:
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
   - echo $PWD
+  - cd $TRAVIS_BUILD_DIR
   - ls -al
-  - ls -al tests/
 after_success:
   - codecov # submit code coverage
 deploy:
