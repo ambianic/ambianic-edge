@@ -1,6 +1,5 @@
 # Development version of Ambianic docker image
 ARG BASE_IMAGE
-RUN echo BASE_IMAGE=$BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
