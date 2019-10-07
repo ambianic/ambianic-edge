@@ -98,9 +98,11 @@ class _TestSourceElement2(pipeline.PipeElement):
     def __init__(self, element_config=None):
         super().__init__()
         self.config = element_config
+        self._test_element_started = threading.Event()
 
     def start(self):
         super().start()
+        self._test_element_started.set()
         # generate samples until stopped
         while self.state == pipeline.PIPE_STATE_RUNNING:
             self.receive_next_sample(sample=[1, 2, 3])
@@ -115,9 +117,13 @@ def test_pipeline_server_start_stop():
     assert source_pe.state == pipeline.PIPE_STATE_STOPPED
     assert not server._threaded_jobs[0].is_alive()
     server.start()
+    source_pe._test_element_started.wait(timeout=3)
     assert source_pe.state == pipeline.PIPE_STATE_RUNNING
     assert server._threaded_jobs[0].is_alive()
     server.stop()
+    # give it enough time to clean up resources
+    # in child threads (if any).
+    time.sleep(3)
     assert source_pe.state == pipeline.PIPE_STATE_STOPPED
     assert not server._threaded_jobs[0].is_alive()
 
