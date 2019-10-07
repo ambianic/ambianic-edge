@@ -2,6 +2,11 @@ site_name: Ambianic Documentation
 repo_url: https://github.com/ambianic/ambianic-core
 nav:
     - Home: index.md
+    - FAQ: faq.md
+    - How To: howto.md
+    - Support: support.md
     - Python API: ambianic-python-api.md
     - Contributing: CONTRIBUTING.md
 theme: mkdocs
+copyright: Ambianic.ai (2019)
+docs_dir: docs-md

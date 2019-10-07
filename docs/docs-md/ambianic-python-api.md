@@ -97,5 +97,9 @@ based on received output samples and their frequency.
 HealthChecker.process_sample(self, **sample)
 ```
 Call health callback and pass on sample as is.
+# ambianic.pipeline.ai
+
+# ambianic.pipeline.avsource
+
 # ambianic.webapp
 
