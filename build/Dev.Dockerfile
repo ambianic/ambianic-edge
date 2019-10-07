@@ -10,7 +10,10 @@ WORKDIR /opt/ambianic
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
-RUN sudo bash ./install_requirements.sh
+RUN /bin/sh -c echo "HELLO!"
+RUN ./install_requirements.sh
+
+# RUN ./install_requirements.sh
 
 # CMD bash
 
