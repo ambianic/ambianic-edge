@@ -1,6 +1,7 @@
 # Development version of Ambianic docker image
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE:-"debian:buster-slim"}
+RUN echo BASE_IMAGE=$BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
