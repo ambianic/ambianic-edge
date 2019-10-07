@@ -1,4 +1,5 @@
-site_name: Ambianic Developer API Documentation
+site_name: Ambianic Documentation
+repo_url: https://github.com/ambianic/ambianic-core
 nav:
     - Home: index.md
     - Python API: ambianic-python-api.md
