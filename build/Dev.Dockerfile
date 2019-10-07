@@ -1,6 +1,8 @@
 # Development version of Ambianic docker image
-FROM debian:buster-slim
-
+FROM --platform=$BUILDPLATFORM debian:buster-slim AS build
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace
@@ -10,7 +12,10 @@ WORKDIR /opt/ambianic
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
-RUN /bin/sh -c echo "HELLO!"
+RUN ls -al /bin/sh && \
+  ls -al /bin/*sh* \
+  /bin/sh -c echo "HELLO!" \
+  echo "HELLO!2"
 RUN ./install_requirements.sh
 
 # RUN ./install_requirements.sh
