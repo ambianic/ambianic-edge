@@ -1,8 +1,5 @@
 # Development version of Ambianic docker image
-FROM --platform=$BUILDPLATFORM debian:buster-slim AS build
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
+FROM debian:buster-slim
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace
