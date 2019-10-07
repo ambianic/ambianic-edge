@@ -10,10 +10,10 @@ WORKDIR /opt/ambianic
 # COPY install_requirements.sh install_requirements.sh
 COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
 RUN ls -al /bin/sh && \
-  ls -al /bin/*sh* \
-  /bin/sh -c echo "HELLO!" \
-  echo "HELLO!2"
-RUN ./install_requirements.sh
+  ls -al /bin/*sh* && \
+  echo "HELLO!2" && \
+  ls -al ./ && \
+  /bin/bash ./install_requirements.sh
 
 # RUN ./install_requirements.sh
 
