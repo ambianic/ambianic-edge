@@ -43,11 +43,10 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
-elif $(arch | grep -q arm)
+if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
-fi
   echo "Installing Raspberry Pi specific dependencies"
   sudo apt-get install python3-rpi.gpio
   # Add v4l2 video module to kernel
