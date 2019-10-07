@@ -4,14 +4,14 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="None">
         
         
-        <link rel="shortcut icon" href="img/favicon.ico">
-        <title>Ambianic Documentation</title>
-        <link href="css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="css/font-awesome.min.css" rel="stylesheet">
-        <link href="css/base.css" rel="stylesheet">
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>How To - Ambianic Documentation</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -19,13 +19,13 @@
             <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
-        <script src="js/jquery-1.10.2.min.js" defer></script>
-        <script src="js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
-    <body class="homepage">
+    <body>
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container">
@@ -39,30 +39,30 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href=".">Ambianic Documentation</a>
+                    <a class="navbar-brand" href="..">Ambianic Documentation</a>
                 </div>
 
                 <!-- Expanded navigation -->
                 <div class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li >
+                                <a href="../faq/">FAQ</a>
+                            </li>
                             <li class="active">
-                                <a href=".">Home</a>
+                                <a href="./">How To</a>
                             </li>
                             <li >
-                                <a href="faq/">FAQ</a>
+                                <a href="../support/">Support</a>
                             </li>
                             <li >
-                                <a href="howto/">How To</a>
+                                <a href="../ambianic-python-api/">Python API</a>
                             </li>
                             <li >
-                                <a href="support/">Support</a>
-                            </li>
-                            <li >
-                                <a href="ambianic-python-api/">Python API</a>
-                            </li>
-                            <li >
-                                <a href="CONTRIBUTING/">Contributing</a>
+                                <a href="../CONTRIBUTING/">Contributing</a>
                             </li>
                         </ul>
 
@@ -72,18 +72,18 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
-                            <li class="disabled">
-                                <a rel="next" >
+                            <li >
+                                <a rel="next" href="../faq/">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li >
-                                <a rel="prev" href="faq/">
+                                <a rel="prev" href="../support/">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li>
-                                <a href="https://github.com/ambianic/ambianic-core/edit/master/docs/index.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/ambianic/ambianic-core/edit/master/docs/howto.md"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -93,29 +93,13 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#project-mission">Project mission</a></li>
-        <li class="main "><a href="#project-status">Project Status</a></li>
-        <li class="main "><a href="#how-to-run-in-development-mode">How to run in development mode</a></li>
-        <li class="main "><a href="#contributors">Contributors</a></li>
+        <li class="main active"><a href="#how-to">How To</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<p><img alt="Build Status" src="https://travis-ci.org/ambianic/ambianic.svg?branch=master" /> <img alt="Docker Automated" src="https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg" /> <img alt="Docker Build" src="https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg" /></p>
-<p><img alt="Ambianic logo" src="https://avatars2.githubusercontent.com/u/52052162?s=200&amp;v=4" /></p>
-<h1 id="project-mission">Project mission</h1>
-<p>Helpful AI for Home and Business Automation</p>
-<p>Local data, custom AI models, federated learning</p>
-<h1 id="project-status">Project Status</h1>
-<p>At this time, Ambianic is in active early formation stages. Lots of design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible. </p>
-<p>If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise click on the Watch button above (Releases Only option) to be notified when we release a stable end user version.</p>
-<h1 id="how-to-run-in-development-mode">How to run in development mode</h1>
-<p>If you are interested to try the development version, follow these steps:
-1. Clone this git repository.
-2. <code>./ambianic-start.sh</code>
-3. Study <code>config.yaml</code> and go from there.</p>
-<h1 id="contributors">Contributors</h1>
-<p>If you are interested in becoming a contributor to the project, please read the <a href="CONTRIBUTING/">Contributing</a> page and follow the steps. Looking forward to hearing from you!</p></div>
+<h1 id="how-to">How To</h1>
+<p>TBD </p></div>
         </div>
 
         <footer class="col-md-12">
@@ -124,11 +108,11 @@
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
-            var base_url = ".",
+            var base_url = "..",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="js/base.js" defer></script>
-        <script src="search/main.js" defer></script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
     <div class="modal-dialog">
@@ -196,8 +180,3 @@
 
     </body>
 </html>
-
-<!--
-MkDocs version : 1.0.4
-Build Date UTC : 2019-10-07 21:49:46
--->

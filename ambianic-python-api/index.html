@@ -49,6 +49,15 @@
                             <li >
                                 <a href="..">Home</a>
                             </li>
+                            <li >
+                                <a href="../faq/">FAQ</a>
+                            </li>
+                            <li >
+                                <a href="../howto/">How To</a>
+                            </li>
+                            <li >
+                                <a href="../support/">Support</a>
+                            </li>
                             <li class="active">
                                 <a href="./">Python API</a>
                             </li>
@@ -64,7 +73,7 @@
                             </a>
                         </li>
                             <li >
-                                <a rel="next" href="..">
+                                <a rel="next" href="../support/">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
@@ -85,63 +94,96 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#ambianic">ambianic</a></li>
-            <li><a href="#configure">configure</a></li>
-            <li><a href="#start">start</a></li>
-            <li><a href="#stop">stop</a></li>
         <li class="main "><a href="#ambianicpipeline">ambianic.pipeline</a></li>
             <li><a href="#pipeelement">PipeElement</a></li>
+            <li><a href="#parameters">:Parameters:</a></li>
+            <li><a href="#parameters_1">:Parameters:</a></li>
             <li><a href="#healthchecker">HealthChecker</a></li>
+        <li class="main "><a href="#ambianicpipelineai">ambianic.pipeline.ai</a></li>
+        <li class="main "><a href="#ambianicpipelineavsource">ambianic.pipeline.avsource</a></li>
         <li class="main "><a href="#ambianicwebapp">ambianic.webapp</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
 <h1 id="ambianic">ambianic</h1>
-<h2 id="configure">configure</h2>
-<pre><code class="python">configure(env_work_dir)
-</code></pre>
-
-<p>Load configuration settings</p>
-<p>:returns config if configuration was loaded without issues.
-    None or a specific exception otherwise.</p>
-<h2 id="start">start</h2>
-<pre><code class="python">start(env_work_dir=None)
-</code></pre>
-
-<p>Programmatic start of the main service</p>
-<h2 id="stop">stop</h2>
-<pre><code class="python">stop()
-</code></pre>
-
-<p>Programmatic stop of the main service</p>
 <h1 id="ambianicpipeline">ambianic.pipeline</h1>
+<p>Main module for Ambianic AI pipelines.</p>
 <h2 id="pipeelement">PipeElement</h2>
 <pre><code class="python">PipeElement(self)
 </code></pre>
 
-<p>The basic building block of an Ambianic pipeline</p>
+<p>The basic building block of an Ambianic pipeline.</p>
+<h3 id="healthcheck">healthcheck</h3>
+<pre><code class="python">PipeElement.healthcheck(self)
+</code></pre>
+
+<p>Check the health of this element.</p>
+<p>:returns: (timestamp, status) tuple with most recent heartbeat
+timestamp and health status code ('OK' normally).</p>
+<h3 id="heartbeat">heartbeat</h3>
+<pre><code class="python">PipeElement.heartbeat(self)
+</code></pre>
+
+<p>Set the heartbeat timestamp to time.monotonic().</p>
+<h3 id="stop">stop</h3>
+<pre><code class="python">PipeElement.stop(self)
+</code></pre>
+
+<p>Receive stop signal and act accordingly.</p>
+<p>Subclasses should override this method by
+first invoking their super class implementation and then running
+through steps specific to stopping their ongoing sample processing.</p>
 <h3 id="connect_to_next_element">connect_to_next_element</h3>
 <pre><code class="python">PipeElement.connect_to_next_element(self, next_element=None)
 </code></pre>
 
-<p>Connect this element to the next element in the pipe</p>
+<p>Connect this element to the next element in the pipe.</p>
+<p>Subclasses should not have to override this method.</p>
 <h3 id="receive_next_sample">receive_next_sample</h3>
 <pre><code class="python">PipeElement.receive_next_sample(self, **sample)
 </code></pre>
 
-<p>Receive next sample from a connected previous element
-:argument **kwargs a variable list of (key, value) pairs that represent the sample</p>
+<p>Receive next sample from a connected previous element.</p>
+<p>Subclasses should not have to override this method.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>**sample : dict
+    A dict of (key, value) pairs that represent the sample.
+    It is left to specialized implementations of PipeElement to specify
+    their in/out sample formats and enforce compatibility with
+    adjacent connected pipe elements.</p>
+<h3 id="process_sample">process_sample</h3>
+<pre><code class="python">PipeElement.process_sample(self, **sample)
+</code></pre>
+
+<p>Implement processing in subclass as a generator function.</p>
+<p>Invoked by receive_next_sample() when the previous element
+(or pipeline source) feeds another data input sample.</p>
+<p>Implementing subclasses should process input samples and yield
+output samples for the next element in the pipeline.</p>
+<h2 id="parameters_1">:Parameters:</h2>
+<p>**sample : dict
+    A dict of (key, value) pairs that represent the sample.
+    It is left to specialized implementations of PipeElement to specify
+    their in/out sample formats and enforce compatibility with
+    adjacent connected pipe elements.</p>
+<p>:Returns:
+processed_sample: dict
+    Processed sample that will be passed to the next pipeline element.</p>
 <h2 id="healthchecker">HealthChecker</h2>
 <pre><code class="python">HealthChecker(self, health_status_callback=None)
 </code></pre>
 
-<p>Attaches at the end of a pipe to monitor its health status
+<p>Monitor overall pipeline throughput health.</p>
+<p>Attaches at the end of a pipeline to monitor its health status
 based on received output samples and their frequency.</p>
-<h3 id="receive_next_sample_1">receive_next_sample</h3>
-<pre><code class="python">HealthChecker.receive_next_sample(self, **sample)
+<h3 id="process_sample_1">process_sample</h3>
+<pre><code class="python">HealthChecker.process_sample(self, **sample)
 </code></pre>
 
-<p>update pipeline heartbeat status</p>
+<p>Call health callback and pass on sample as is.</p>
+<h1 id="ambianicpipelineai">ambianic.pipeline.ai</h1>
+<h1 id="ambianicpipelineavsource">ambianic.pipeline.avsource</h1>
 <h1 id="ambianicwebapp">ambianic.webapp</h1></div>
         </div>
 
