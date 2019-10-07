@@ -31,7 +31,7 @@ script:
         docker run --rm --privileged multiarch/qemu-user-static:register --reset
       fi
   # build image
-  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic:$TAG --build-arg BASE_IMAGE=$BASE_IMAGE .
+  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic:$TAG --build-arg BASE_IMAGE_PREFIX=$BASE_IMAGE_PREFIX .
   # test image
   - docker run ambianic/ambianic --version
   # push image
@@ -43,7 +43,7 @@ script:
       docker push ambianic/ambianic
     fi
   - docker images
-  - cd $TRAVIS_BUILD_DIR
+  - cd $TRAVIS_BUILD_DIR/build
   - ./ambianic-test.sh
   - ./ambianic-docs.sh
   - echo $PWD

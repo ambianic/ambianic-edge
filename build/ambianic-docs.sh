@@ -19,4 +19,4 @@ docker run -it --rm \
   --publish 1234:1234 \
   --publish 8778:8778 \
   --entrypoint 'bash' \
-  ambianic/ambianic::$TAG /workspace/docs/build-docs.sh
+  ambianic/ambianic:$TAG /workspace/docs/build-docs.sh
