@@ -10,13 +10,6 @@ log = logging.getLogger(__name__)
 class FaceDetector(TFImageDetection):
     """Detecting faces in an image."""
 
-    def __init__(self, element_config=None):
-        # log.warning('FaceDetector __init__ invoked')
-        super().__init__(element_config=element_config)
-        # log.warning('FaceDetector __init__ after super()')
-        # default to top 3 face detections
-        self.topk = element_config.get('top-k', 3)
-
     @staticmethod
     def crop_image(image, box):
         # Size of the image in pixels (size of orginal image)
@@ -51,15 +44,12 @@ class FaceDetector(TFImageDetection):
                 if not prev_inference_result:
                     yield None
                 else:
-                    # - crop out top-k person detections
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
                     for category, confidence, box in prev_inference_result:
                         if category == 'person' and \
                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
-                    # get only topk person detecions
-                    person_regions = person_regions[:self.topk]
                     log.debug('Received %d person boxes for face detection',
                               len(person_regions))
                     for box in person_regions:
