@@ -107,7 +107,7 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 # [frontend]
 
 # install latest npm
-sudo apt-get install -y npm
+## Oct 9, 2019: sudo apt-get install -y npm
 # cd ambianic/webapp/client
 # sudo npm install -g npm@latest
 # sudo npm install -g @vue/cli
