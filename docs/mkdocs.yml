@@ -1,12 +1,25 @@
 site_name: Ambianic Documentation
 repo_url: https://github.com/ambianic/ambianic-core
+edit_uri: /tree/master/docs/docs-md
 nav:
     - Home: index.md
-    - FAQ: faq.md
-    - How To: howto.md
-    - Support: support.md
-    - Python API: ambianic-python-api.md
-    - Contributing: CONTRIBUTING.md
+    - User Guide:
+      - Quick Start: users/quickstart.md
+      - FAQ: users/faq.md
+      - Installing: users/install.md
+      - Configuring: users/configure.md
+      - Web UI: users/webui.md
+      - Mobile UI: users/mobileui.md
+      - AI Apps: users/ai-apps.md
+      - How To: users/howto.md
+      - Support: users/support.md
+    - Developer Guide:
+      - Architecture: developers/architecture.md
+      - APIs: developers/api.md
+      - Integrations: developers/integration.md
+      - Writing AI Apps: developers/writing-ai-app-overview.md
+      - Deployment Scenarios: developers/deployment.md
+      - Contributing: legal/CONTRIBUTING.md
 theme: mkdocs
 copyright: Ambianic.ai (2019)
 docs_dir: docs-md
