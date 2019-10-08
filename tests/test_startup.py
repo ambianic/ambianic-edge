@@ -52,7 +52,7 @@ def _stop_mock_server(server=None, thread=None):
     assert server
     assert thread
     server.stop()
-    thread.join(timeout=3)
+    thread.join(timeout=10)
     assert not thread.is_alive()
 
 
