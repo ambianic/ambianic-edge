@@ -238,7 +238,7 @@ class Pipeline(ManagedService):
             if element_class:
                 log.info('Pipeline %s adding element name %s with class %s and config %s',
                          pname, element_name, element_class, element_config)
-                element = element_class(element_config)
+                element = element_class(**element_config)
                 self._pipe_elements.append(element)
             else:
                 self._on_unknown_pipe_element(name=element_name)
