@@ -27,18 +27,19 @@ script:
   # Raspberry PI section
   # prepare qemu
   - TAG=dev-${ARCH}
+  - docker run --rm --privileged docker/binfmt
 #  - docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447ad3
 #  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
 #  - docker buildx create --name mybuilder
 #  - docker buildx use mybuilder
 #  - docker buildx inspect --bootstrap
   # setup ARM CPU (raspberry pi) build support
-  - >
+#  - >
 #      if [[ $ARCH =~ "arm" ]]; then
-      if [ -z "${ARCH##*arm*}"];  then
-        sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
-        docker run --rm --privileged multiarch/qemu-user-static:register --reset
-      fi
+#      if [ -z "${ARCH##*arm*}"];  then
+#        sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
+#        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+#      fi
 #  # build image
   - cd ${TRAVIS_BUILD_DIR}/build
   - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
