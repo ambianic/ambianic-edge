@@ -184,7 +184,7 @@ def test_on_bus_message_eos():
 def test_on_bus_message_other():
     gst = _TestGstService3()
     message = _TestBusMessage3()
-    message.type = Gst.MessageType.ANY
+    message.type = Gst.MessageType.TAG
     assert gst._on_bus_message(bus=None, message=message, loop=None)
 
 
