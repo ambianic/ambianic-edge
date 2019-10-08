@@ -25,7 +25,7 @@ class AVSourceElement(PipeElement):
     samples to the next pipe element.
     """
 
-    def __init__(self, **source_conf):
+    def __init__(self, uri=None, type=None, **kwargs):
         """Create an av source element with given configuration.
 
         :Parameters:
@@ -35,9 +35,12 @@ class AVSourceElement(PipeElement):
             type: string (video, audio or image)
         """
         super().__init__()
-        assert source_conf
+        assert uri
+        element_conf = dict(kwargs)
+        element_conf['uri'] = uri
+        element_conf['type'] = type
         # pipeline source info
-        self._source_conf = source_conf
+        self._source_conf = element_conf
         self._gst_process = None
         self._gst_out_queue = None
         self._gst_process_stop_signal = None

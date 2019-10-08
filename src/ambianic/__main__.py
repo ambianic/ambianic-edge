@@ -1,6 +1,7 @@
 """Main Ambianic OS executable."""
 import os
 import ambianic
+import ambianic.server
 import signal
 
 _svr = None
