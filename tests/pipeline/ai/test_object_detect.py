@@ -50,7 +50,7 @@ class _OutPipeElement(PipeElement):
 def test_model_inputs():
     """Verify against known model inputs."""
     config = _object_detect_config()
-    object_detector = ObjectDetector(config)
+    object_detector = ObjectDetector(**config)
     tfe = object_detector._tfengine
     samples = tfe.input_details[0]['shape'][0]
     assert samples == 1
@@ -65,7 +65,7 @@ def test_model_inputs():
 def test_model_outputs():
     """Verify against known model outputs."""
     config = _object_detect_config()
-    object_detector = ObjectDetector(config)
+    object_detector = ObjectDetector(**config)
     tfe = object_detector._tfengine
     assert tfe.output_details[0]['shape'][0] == 1
     scores = tfe.output_details[0]['shape'][1]
@@ -88,7 +88,7 @@ def test_background_image():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = inference_result
-    object_detector = ObjectDetector(element_config=config)
+    object_detector = ObjectDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
@@ -105,7 +105,7 @@ def test_one_person():
         nonlocal result
 
         result = inference_result
-    object_detector = ObjectDetector(element_config=config)
+    object_detector = ObjectDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person.jpg')
@@ -127,7 +127,7 @@ def test_no_sample():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = image is None and inference_result is None
-    object_detector = ObjectDetector(element_config=config)
+    object_detector = ObjectDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     object_detector.receive_next_sample()
@@ -142,7 +142,7 @@ def test_bad_sample_good_sample():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = inference_result
-    object_detector = ObjectDetector(element_config=config)
+    object_detector = ObjectDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     # bad sample
@@ -169,7 +169,7 @@ def test_one_person_no_face():
         nonlocal result
 
         result = inference_result
-    object_detector = ObjectDetector(element_config=config)
+    object_detector = ObjectDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-no-face.jpg')

@@ -74,7 +74,7 @@ class _OutPipeElement(PipeElement):
 def test_model_inputs():
     """Verify against known model inputs."""
     config = _face_detect_config()
-    face_detector = FaceDetector(config)
+    face_detector = FaceDetector(**config)
     tfe = face_detector._tfengine
     samples = tfe.input_details[0]['shape'][0]
     assert samples == 1
@@ -89,7 +89,7 @@ def test_model_inputs():
 def test_model_outputs():
     """Verify against known model outputs."""
     config = _face_detect_config()
-    face_detector = FaceDetector(config)
+    face_detector = FaceDetector(**config)
     tfe = face_detector._tfengine
     assert tfe.output_details[0]['shape'][0] == 1
     scores = tfe.output_details[0]['shape'][1]
@@ -112,7 +112,7 @@ def test_no_sample():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = image is None and inference_result is None
-    face_detector = FaceDetector(element_config=config)
+    face_detector = FaceDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     face_detector.receive_next_sample()
@@ -127,7 +127,7 @@ def test_bad_sample_good_sample():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = inference_result
-    face_detector = FaceDetector(element_config=config)
+    face_detector = FaceDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     # bad sample
@@ -158,7 +158,7 @@ def test_background_image_no_person():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = not image and not inference_result
-    face_detector = FaceDetector(element_config=config)
+    face_detector = FaceDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
@@ -176,7 +176,7 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
         nonlocal result
         result = inference_result
     # test stage one, obect detection -> out
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person.jpg')
@@ -190,7 +190,7 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     assert y0 > 0 and y0 < y1
 
     # test stage 2, rearrange pipe elements: object->face->out
-    face_detector = FaceDetector(element_config=face_config)
+    face_detector = FaceDetector(**face_config)
     object_detector.connect_to_next_element(face_detector)
     face_detector.connect_to_next_element(output)
     object_detector.receive_next_sample(image=img)
@@ -208,7 +208,7 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
 
         result = inference_result
     # test stage one, obect detection -> out
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-face2.jpg')
@@ -222,7 +222,7 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     assert y0 > 0 and y0 < y1
 
     # test stage 2, rearrange pipe elements: object->face->out
-    face_detector = FaceDetector(element_config=face_config)
+    face_detector = FaceDetector(**face_config)
     object_detector.connect_to_next_element(face_detector)
     face_detector.connect_to_next_element(output)
     object_detector.receive_next_sample(image=img)
@@ -239,8 +239,8 @@ def test_one_person_two_stage_pipe_low_person_confidence():
         nonlocal result
 
         result = inference_result
-    object_detector = ObjectDetector(element_config=object_config)
-    face_detector = FaceDetector(element_config=face_config)
+    object_detector = ObjectDetector(**object_config)
+    face_detector = FaceDetector(**face_config)
     object_detector.connect_to_next_element(face_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
@@ -260,7 +260,7 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
 
         result = inference_result
     # test stage one, obect detection -> out
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
     img = _get_image(file_name='person2-face1.jpg')
@@ -279,7 +279,7 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     assert y0 > 0 and y0 < y1
 
     # test stage 2, rearrange pipe elements: object->face->out
-    face_detector = FaceDetector(element_config=face_config)
+    face_detector = FaceDetector(**face_config)
     object_detector.connect_to_next_element(face_detector)
     face_detector.connect_to_next_element(output)
     object_detector.receive_next_sample(image=img)
@@ -310,7 +310,7 @@ def test_two_person_with_faces_no_confidence_one_stage_pipe():
     def sample_callback(image=None, inference_result=None):
         nonlocal result
         result = inference_result
-    face_detector = FaceDetector(element_config=face_config)
+    face_detector = FaceDetector(**face_config)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='person2-face1.jpg')
@@ -330,7 +330,7 @@ def test_one_person_face_high_confidence_one_stage_pipe():
         nonlocal result
 
         result = inference_result
-    face_detector = FaceDetector(element_config=face_config)
+    face_detector = FaceDetector(**face_config)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-face.jpg')
@@ -357,8 +357,8 @@ def test_one_person_no_face_two_stage():
         nonlocal result
 
         result = inference_result
-    object_detector = ObjectDetector(element_config=object_config)
-    face_detector = FaceDetector(element_config=face_config)
+    object_detector = ObjectDetector(**object_config)
+    face_detector = FaceDetector(**face_config)
     object_detector.connect_to_next_element(face_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     face_detector.connect_to_next_element(output)

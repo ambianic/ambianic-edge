@@ -14,7 +14,7 @@ log.setLevel(logging.DEBUG)
 class _TestSourceElement(pipeline.PipeElement):
     """Produce one sample and exit start loop."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
         self.start_called = False
@@ -37,7 +37,7 @@ def _get_config(source_class=None):
     server_config = {
         'pipelines': {
             'pipeline_one': [
-                      {'source': 'some_source'}
+                      {'source': {'uri': 'test'}}
                       ]
             },
         }
@@ -55,8 +55,8 @@ def _get_config_invalid_element(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
     pipeline_config = [
-        {'source': 'some_source'},
-        {'scifi': 'one day soon'},
+        {'source': {'uri': 'test'}},
+        {'scifi': {'one': 'day soon'}},
         ]
 
     return pipeline_config
@@ -95,7 +95,7 @@ def test_pipeline_init_invalid_element():
 class _TestSourceElement2(pipeline.PipeElement):
     """Produce samples until stop signal."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
         self._test_element_started = threading.Event()
@@ -131,7 +131,7 @@ def test_pipeline_server_start_stop():
 class _TestSourceElement3(pipeline.PipeElement):
     """Produce samples until stop signal."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self._test_heal_called = threading.Event()
         self._test_sample_released = threading.Event()
@@ -204,7 +204,7 @@ def test_pipeline_terminal_health():
 class _TestDummyElement(pipeline.PipeElement):
     """Dummy pass through element."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self._config = element_config
         self._test_heal_called = False
@@ -222,8 +222,8 @@ def _get_pipeline_config_2_elements():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
     Pipeline.PIPELINE_OPS['dummy'] = _TestDummyElement
     pipeline_config = [
-        {'source': 'some_source'},
-        {'dummy': 'dummy config'}
+        {'source': {'uri': 'test'}},
+        {'dummy': {'dummy': 'config'}}
         ]
     return pipeline_config
 
@@ -243,7 +243,7 @@ def test_pipeline_start2():
 class _TestSourceElement4(pipeline.PipeElement):
     """Produce samples until stop signal."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
 
@@ -259,7 +259,7 @@ class _TestSourceElement4(pipeline.PipeElement):
 def test_pipeline_heal2():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
     pipeline_config = [
-        {'source': 'some_source'},
+        {'source': {'uri': 'test'}},
         ]
     pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
     assert len(pipeline._pipe_elements) == 1
@@ -275,7 +275,7 @@ def test_pipeline_heal2():
 def test_pipeline_start_no_elements():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
     pipeline_config = [
-        {'source': 'source element'},
+        {'source': {'uri': 'test'}},
         ]
     pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
     assert len(pipeline._pipe_elements) == 1
@@ -317,7 +317,7 @@ class _TestPipelineServer5(PipelineServer):
 class _TestSourceElement5(pipeline.PipeElement):
     """Produce one sample and exit start loop."""
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
 
