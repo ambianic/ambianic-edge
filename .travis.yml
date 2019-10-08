@@ -34,14 +34,13 @@ script:
 #  - docker buildx inspect --bootstrap
   # setup ARM CPU (raspberry pi) build support
   - >
-      if [ "$ARCH" == "arm" ]; then
+      if [[ "$ARCH" =~ "arm" ]]; then
         sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
         docker run --rm --privileged multiarch/qemu-user-static:register --reset
       fi
 #  # build image
   - cd ${TRAVIS_BUILD_DIR}/build
   - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
-  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
 #  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
 
 #  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
