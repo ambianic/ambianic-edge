@@ -31,10 +31,10 @@ def _service_shutdown(signum=None, frame=None):
     raise ambianic.util.ServiceExit
 
 
-def _register_sys_handlers(self):  # pragma: no cover
+def _register_sys_handlers():  # pragma: no cover
     """Register system exit handler for graceful shutdown."""
-    signal.signal(signal.SIGTERM, self._service_shutdown)
-    signal.signal(signal.SIGINT, self._service_shutdown)
+    signal.signal(signal.SIGTERM, _service_shutdown)
+    signal.signal(signal.SIGINT, _service_shutdown)
 
 
 if __name__ == '__main__':  # pragma: no cover
