@@ -7,8 +7,11 @@ site_name: "Ambianic Developer API Documentation"
 generate:
 - ambianic/python-api.md:
   - ambianic++:
-#    - ambianic+     # (+ to include members)
+    - ambianic+     # (+ to include members)
     - ambianic.pipeline++     # (+ to include members)
+    - ambianic.pipeline.ai++     # (+ to include members)
+    - ambianic.pipeline.avsource++     # (+ to include members)
+    - ambianic.pipeline.webapp++     # (+ to include members)
 #    - foobar.baz.some_function
 # - baz/more-stuff.md:
 #  - foobar.more++               # (++ to include members, and their members)

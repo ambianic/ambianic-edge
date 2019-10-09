@@ -21,7 +21,7 @@ def test_inference_init_bad_config():
         'confidence_threshold': 654,
     }
     with pytest.raises(AssertionError):
-        TFImageDetection(config)
+        TFImageDetection(**config)
 
 
 def _good_config():
@@ -49,7 +49,7 @@ def _good_config():
 
 def test_inference_init_good_config():
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     assert img_detect
     assert img_detect._tfengine
     assert img_detect._tfengine._model_tflite_path.endswith('.tflite')
@@ -63,7 +63,7 @@ def test_inference_init_good_config():
 def test_model_inputs():
     """Verify against known model inputs."""
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     tfe = img_detect._tfengine
     samples = tfe.input_details[0]['shape'][0]
     assert samples == 1
@@ -78,7 +78,7 @@ def test_model_inputs():
 def test_model_outputs():
     """Verify against known model outputs."""
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     tfe = img_detect._tfengine
     assert tfe.output_details[0]['shape'][0] == 1
     scores = tfe.output_details[0]['shape'][1]
@@ -95,7 +95,7 @@ def test_model_outputs():
 
 def test_resize():
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     _dir = os.path.dirname(os.path.abspath(__file__))
     img_path = os.path.join(_dir, 'background.jpg')
     image = Image.open(img_path)
@@ -113,14 +113,14 @@ def test_resize():
 
 def test_receive_next_sample():
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     # no action expected from the abstract method
     img_detect.receive_next_sample(image=None)
 
 
 def test_load_labels():
     config = _good_config()
-    img_detect = TFImageDetection(config)
+    img_detect = TFImageDetection(**config)
     labels = img_detect._labels
     assert labels[0] == 'person'
     assert labels[15] == 'bird'

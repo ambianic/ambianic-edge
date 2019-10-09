@@ -123,8 +123,6 @@ class ServiceExit(Exception):
     https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
     """
 
-    pass
-
 
 def stacktrace():
     """Get stack trace as a multi line string.

@@ -10,9 +10,6 @@ log = logging.getLogger(__name__)
 class ObjectDetector(TFImageDetection):
     """Detects objects in an image."""
 
-    def __init__(self, element_config=None):
-        super().__init__(element_config=element_config)
-
     def process_sample(self, **sample):
         log.debug("%s received new sample", self.__class__.__name__)
         if not sample:

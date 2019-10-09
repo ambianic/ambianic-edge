@@ -37,6 +37,7 @@ class SaveDetectionSamples(PipeElement):
         assert self._output_directory, \
             'Pipe element %s: requires argument output_directory:' \
             % self.__class__.__name__
+        log.debug('output_directory: %r', output_directory)
         self._output_directory = pathlib.Path(self._output_directory)
         self._output_directory.mkdir(parents=True, exist_ok=True)
         # succeeds even if directory exists.

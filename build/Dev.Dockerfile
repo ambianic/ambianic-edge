@@ -1,7 +1,5 @@
 # Development version of Ambianic docker image
-ARG BASE_IMAGE
-FROM ${BASE_IMAGE:-"debian:buster-slim"}
-
+FROM debian:buster-slim
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace
@@ -10,8 +8,11 @@ WORKDIR /opt/ambianic
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
-COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", "./"]
-RUN ./install_requirements.sh
+COPY ["install_requirements.sh", "requirements.txt", "install-edgetpu.sh", \
+  "raspberrypi.pip.conf", "./"]
+RUN /bin/bash ./install_requirements.sh
+
+# RUN ./install_requirements.sh
 
 # CMD bash
 

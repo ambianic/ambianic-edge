@@ -12,3 +12,4 @@ ambianic/webapp/bower_components/paper/
 **/.coverage*
 **/coverage.xml
 **/.__*
+_mdwriter.cson

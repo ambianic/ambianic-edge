@@ -9,7 +9,7 @@ def test_get_pipelines_none():
 
 class _TestSourceElement(pipeline.PipeElement):
 
-    def __init__(self, element_config=None):
+    def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
         self.start_called = False
@@ -43,7 +43,7 @@ def _one_pipeline_setup():
     p = interpreter.get_pipelines(
         pipelines_config={
             'pipeline_one': [
-                      {'source': 'some_source'}
+                      {'source': {'uri': 'test'}}
                       ]
             }
         )
@@ -56,7 +56,7 @@ def test_get_pipelines_one():
     assert isinstance(p[0], interpreter.Pipeline)
     assert p[0].name == 'pipeline_one'
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
-    assert p[0]._pipe_elements[0].config == 'some_source'
+    assert p[0]._pipe_elements[0].config == {'uri': 'test'}
 
 
 def test_get_pipelines_two():
@@ -65,10 +65,10 @@ def test_get_pipelines_two():
     p = interpreter.get_pipelines(
         pipelines_config={
             'pipeline_one': [
-                  {'source': 'some_source'}
+                  {'source': {'uri': 'test'}}
                   ],
             'pipeline_two': [
-                  {'source': 'another_source'}
+                  {'source': {'uri': 'test2'}}
                   ]
              },
             )
@@ -76,10 +76,10 @@ def test_get_pipelines_two():
     assert p[0].name == 'pipeline_one'
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
     assert isinstance(p[1], interpreter.Pipeline)
-    assert p[0]._pipe_elements[0].config == 'some_source'
+    assert p[0]._pipe_elements[0].config == {'uri': 'test'}
     assert p[1].name == 'pipeline_two'
     assert isinstance(p[1]._pipe_elements[0], _TestSourceElement)
-    assert p[1]._pipe_elements[0].config == 'another_source'
+    assert p[1]._pipe_elements[0].config == {'uri': 'test2'}
 
 
 def test_pipeline_start():

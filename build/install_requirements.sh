@@ -24,7 +24,7 @@ echo "Effective CPU architecture: $architecture"
 apt-get update -y && apt-get install -y sudo
 
 # install python3 which is not available by default on slim buster
-apt-get install -y python3 && apt-get install -y python3-pip
+sudo apt-get install -y python3 && apt-get install -y python3-pip
 
 # Install gstreamer
 sudo apt-get update
@@ -33,7 +33,9 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
   gstreamer1.0-libav gstreamer1.0-doc \
   gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 \
   gstreamer1.0-pulseaudio \
-  python3-gst-1.0 python3-gi \
+  python3-gst-1.0 python3-gi
+# install numpy native lib
+sudo apt-get install -y python3-numpy
 
 
 # [backend]
@@ -43,14 +45,20 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
-if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
+if $(arch | grep -q arm)
+# there is no RPI firmware in docker images, so we will install on ARM flag
+#if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
+then
   echo "Installing Raspberry Pi specific dependencies"
-  sudo apt-get install python3-rpi.gpio
+  sudo apt-get install -y python3-rpi.gpio
+# sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
-  if ! grep -q "bcm2835-v4l2" /etc/modules; then
-    echo bcm2835-v4l2 | sudo tee -a /etc/modules
-  fi
-  sudo modprobe bcm2835-v4l2
+#  if ! grep -q "bcm2835-v4l2" /etc/modules; then
+#    echo bcm2835-v4l2 | sudo tee -a /etc/modules
+#  fi
+#  sudo modprobe bcm2835-v4l2
+  # Enable python wheels for rpi
+  sudo cp raspberrypi.pip.conf /etc/pip.conf
 fi
 
 # install python dependencies
@@ -99,7 +107,7 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 # [frontend]
 
 # install latest npm
-sudo apt-get install -y npm
+## Oct 9, 2019: sudo apt-get install -y npm
 # cd ambianic/webapp/client
 # sudo npm install -g npm@latest
 # sudo npm install -g @vue/cli

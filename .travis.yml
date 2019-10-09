@@ -4,13 +4,21 @@ services:
   - docker
 matrix:
   fast_finish: true
-env:
-  - ARCH=x86 BASE_IMAGE_PREFIX=""
-  - ARCH=arm BASE_IMAGE_PREFIX="arm32v7/"
+  include:
+    - env: ARCH=linux/amd64
+    - env: ARCH=linux/arm/v7
+addons:
+  apt:
+    packages:
+      - docker-ce
 before_install:
 #  - python --version
 # command to install dependencies
 install:
+  - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+  - sudo service docker restart
+  - docker --version
+#  - docker buildx --help
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
   - pip3 install -U codecov
@@ -19,36 +27,45 @@ script:
   # Raspberry PI section
   # prepare qemu
   - TAG=dev-${ARCH}
-  # verbose output mode
-  - set -x
-  # fail fast
-  - set -e
-  - cd ${TRAVIS_BUILD_DIR}/build
+  - docker run --rm --privileged docker/binfmt:66f9012c56a8316f9244ffd7622d7c21c1f6f28d
+#  - docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447ad3
+#  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
+#  - docker buildx create --name mybuilder
+#  - docker buildx use mybuilder
+#  - docker buildx inspect --bootstrap
   # setup ARM CPU (raspberry pi) build support
-  - >
-      if [ "$ARCH" == "arm" ]; then
-        sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
-        docker run --rm --privileged multiarch/qemu-user-static:register --reset
-      fi
-  # build image
-  - sudo docker build -f Dev.Dockerfile -t ambianic/ambianic:$TAG --build-arg BASE_IMAGE=$BASE_IMAGE .
+#  - >
+#      if [[ $ARCH =~ "arm" ]]; then
+#      if [ -z "${ARCH##*arm*}"];  then
+#        sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
+#        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+#      fi
+#  # build image
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
+#  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
+
+#  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
   # test image
-  - docker run ambianic/ambianic --version
+#  - sudo docker run ambianic/ambianic --version
+#      docker tag ambianic/ambianic ambianic/ambianic:$TAG
+#      docker push ambianic/ambianic:$TAG
+#      docker push ambianic/ambianic
+  - docker images
+  - cd $TRAVIS_BUILD_DIR/build
+  - ./ambianic-test.sh
   # push image
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker tag ambianic/ambianic ambianic/ambianic:$TAG
-      docker push ambianic/ambianic:$TAG
-      docker push ambianic/ambianic
+      docker build --platform ${ARCH} --push -t ambianic/ambianic:dev .
+      if [ "$ARCH" == "linux/amd64"]; then
+        ../docs/build-docs.sh
+      fi
     fi
-  - docker images
-  - cd $TRAVIS_BUILD_DIR
-  - ./ambianic-test.sh
-  - ./ambianic-docs.sh
   - echo $PWD
+  - cd $TRAVIS_BUILD_DIR
   - ls -al
-  - ls -al tests/
 after_success:
   - codecov # submit code coverage
 deploy:

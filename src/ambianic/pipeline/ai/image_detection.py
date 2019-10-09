@@ -15,23 +15,31 @@ log = logging.getLogger(__name__)
 class TFImageDetection(PipeElement):
     """Applies Tensorflow image detection."""
 
-    def __init__(self, element_config=None):
+    def __init__(self,
+                 model=None,
+                 labels=None,
+                 confidence_threshold=0.6,
+                 top_k=3,
+                 **kwargs
+                 ):
         """Initialize detector with config parameters.
 
         :Parameters:
         ----------
-        element_config : dict from yaml config
-            Example:
-                model: ai_models/mobilenet_ssd_v2_face.tflite
-                labels: ai_models/coco_labels.txt
-                confidence_threshold: 0.6
-                top_k: 3
+        model: ai_models/mobilenet_ssd_v2_face.tflite
+        labels: ai_models/coco_labels.txt
+        confidence_threshold: 0.6
+        top_k: 3
 
         """
         # log.warning('TFImageDetection __init__ invoked')
         super().__init__()
-        assert isinstance(element_config, dict)
-        self._tfengine = TFInferenceEngine(**element_config)
+        self._tfengine = TFInferenceEngine(
+            model=model,
+            labels=labels,
+            confidence_threshold=confidence_threshold,
+            top_k=top_k,
+            **kwargs)
         self._labels = self.load_labels(self._tfengine.labels_path)
         self.last_time = time.monotonic()
 

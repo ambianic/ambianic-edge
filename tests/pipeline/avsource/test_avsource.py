@@ -153,7 +153,7 @@ def test_start_stop_file_source_person_detect():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
@@ -162,7 +162,7 @@ def test_start_stop_file_source_person_detect():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -248,7 +248,7 @@ def test_still_image_input_detect_person_exit_eos():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
@@ -257,7 +257,7 @@ def test_still_image_input_detect_person_exit_eos():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -302,7 +302,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
@@ -311,7 +311,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -422,7 +422,7 @@ def test_exception_on_new_sample():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
@@ -431,7 +431,7 @@ def test_exception_on_new_sample():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -523,7 +523,7 @@ def test_gst_process_kill():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)
@@ -532,7 +532,7 @@ def test_gst_process_kill():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -639,7 +639,7 @@ def test_gst_process_terminate():
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
-    object_detector = ObjectDetector(element_config=object_config)
+    object_detector = ObjectDetector(**object_config)
     avsource.connect_to_next_element(object_detector)
     output = _OutPipeElement(sample_callback=sample_callback)
     object_detector.connect_to_next_element(output)

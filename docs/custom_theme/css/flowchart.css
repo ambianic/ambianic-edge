@@ -1,0 +1,8 @@
+<style>
+.pre {
+	display:       block;
+	unicode-bidi:  embed;
+	font-family:   monospace;
+	white-space:   pre;
+}
+</style>
