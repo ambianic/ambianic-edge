@@ -58,7 +58,7 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker push --platform ${ARCH} -t ambianic/ambianic:dev .
+      docker push -t ambianic/ambianic:dev .
       if [ "$ARCH" == "linux/amd64"]; then
         ../docs/build-docs.sh
       fi
