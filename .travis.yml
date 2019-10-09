@@ -58,7 +58,7 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker build --platform ${ARCH} --push -t ambianic/ambianic:dev .
+      docker push --platform ${ARCH} -t ambianic/ambianic:dev .
       if [ "$ARCH" == "linux/amd64"]; then
         ../docs/build-docs.sh
       fi
@@ -68,11 +68,11 @@ script:
   - ls -al
 after_success:
   - codecov # submit code coverage
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  keep_history: true
-  local_dir: docs/site
-  on:
-    branch: master
+#deploy:
+#  provider: pages
+#  skip_cleanup: true
+#  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+#  keep_history: true
+#  local_dir: docs/site
+#  on:
+#    branch: master
