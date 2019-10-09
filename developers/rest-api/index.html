@@ -19,7 +19,7 @@
         <script src="../../js/bootstrap.min.js"></script>
         <!-- flowchart js -->
         <script src="../../js/raphael.min.js"></script>
-        <script src="../../js/flowchart.min.js"></script>
+        <script src="../../js/flowchart.js"></script>
         <script src="../../js/jquery-plugin.js"></script>
         <!-- end flowchart js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
@@ -51,40 +51,40 @@
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../../users/quickstart/">Quick Start</a>
+<li>
+    <a href="../../users/quickstart/" class="dropdown-item">Quick Start</a>
 </li>
                                     
-<li >
-    <a href="../../users/faq/">FAQ</a>
+<li>
+    <a href="../../users/faq/" class="dropdown-item">FAQ</a>
 </li>
                                     
-<li >
-    <a href="../../users/install/">Installing</a>
+<li>
+    <a href="../../users/install/" class="dropdown-item">Installing</a>
 </li>
                                     
-<li >
-    <a href="../../users/configure/">Configuring</a>
+<li>
+    <a href="../../users/configure/" class="dropdown-item">Configuring</a>
 </li>
                                     
-<li >
-    <a href="../../users/webui/">Web UI</a>
+<li>
+    <a href="../../users/webui/" class="dropdown-item">Web UI</a>
 </li>
                                     
-<li >
-    <a href="../../users/mobileui/">Mobile UI</a>
+<li>
+    <a href="../../users/mobileui/" class="dropdown-item">Mobile UI</a>
 </li>
                                     
-<li >
-    <a href="../../users/ai-apps/">AI Apps</a>
+<li>
+    <a href="../../users/ai-apps/" class="dropdown-item">AI Apps</a>
 </li>
                                     
-<li >
-    <a href="../../users/howto/">How To</a>
+<li>
+    <a href="../../users/howto/" class="dropdown-item">How To</a>
 </li>
                                     
-<li >
-    <a href="../../users/support/">Support</a>
+<li>
+    <a href="../../users/support/" class="dropdown-item">Support</a>
 </li>
                                 </ul>
                             </li>
@@ -92,28 +92,28 @@
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Developer Guide <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../architecture/">Architecture</a>
+<li>
+    <a href="../architecture/" class="dropdown-item">Architecture</a>
 </li>
                                     
-<li >
-    <a href="../api/">APIs</a>
+<li>
+    <a href="../api/" class="dropdown-item">APIs</a>
 </li>
                                     
-<li >
-    <a href="../integration/">Integrations</a>
+<li>
+    <a href="../integration/" class="dropdown-item">Integrations</a>
 </li>
                                     
-<li >
-    <a href="../writing-ai-app-overview/">Writing AI Apps</a>
+<li>
+    <a href="../writing-ai-app-overview/" class="dropdown-item">Writing AI Apps</a>
 </li>
                                     
-<li >
-    <a href="../deployment/">Deployment Scenarios</a>
+<li>
+    <a href="../deployment/" class="dropdown-item">Deployment Scenarios</a>
 </li>
                                     
-<li >
-    <a href="../../legal/CONTRIBUTING/">Contributing</a>
+<li>
+    <a href="../../legal/CONTRIBUTING/" class="dropdown-item">Contributing</a>
 </li>
                                 </ul>
                             </li>
@@ -135,10 +135,18 @@
 
         <div class="container">
             <div class="row">
-                    <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#rest-api">REST API</a></li>
-    </ul>
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column bs-sidenav">
+            <li class="nav-item main"><a href="#rest-api">REST API</a></li>
+        </ul>
+    </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
@@ -159,19 +167,19 @@
         <script src="../../js/base.js"></script>
         <script src="../../search/main.js"></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
                 <p>
                     From here you can search these documents. Enter
                     your search terms below.
                 </p>
-                <form role="form">
+                <form>
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
@@ -182,12 +190,12 @@
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
