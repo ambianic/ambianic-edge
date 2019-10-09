@@ -20,6 +20,14 @@ nav:
       - Writing AI Apps: developers/writing-ai-app-overview.md
       - Deployment Scenarios: developers/deployment.md
       - Contributing: legal/CONTRIBUTING.md
-theme: mkdocs
+theme:
+    name: mkdocs
+    custom_dir: custom_theme/
 copyright: Ambianic.ai (2019)
 docs_dir: docs-md
+# extra_css:
+#  - assets/flowchart.css
+# extra_javascript:
+#  - assets/raphael.min.js
+#  - assets/flowchart.min.js
+#  - assets/jquery-plugin.js
