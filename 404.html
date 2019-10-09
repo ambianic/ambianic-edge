@@ -8,67 +8,133 @@
         
         
         <link rel="shortcut icon" href="/img/favicon.ico">
-        <title>Ambianic Developer API Documentation</title>
-        <link href="/css/bootstrap-custom.min.css" rel="stylesheet">
+        <title>Ambianic Documentation</title>
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/font-awesome.min.css" rel="stylesheet">
         <link href="/css/base.css" rel="stylesheet">
+        <link href="/css/flowchart.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
 
-        <script src="/js/jquery-1.10.2.min.js" defer></script>
-        <script src="/js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="/js/jquery-1.10.2.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <!-- flowchart js -->
+        <script src="/js/raphael.min.js"></script>
+        <script src="/js/flowchart.min.js"></script>
+        <script src="/js/jquery-plugin.js"></script>
+        <!-- end flowchart js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
 
                 <!-- Collapsed navigation -->
                 <div class="navbar-header">
                     <!-- Expander button -->
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
+                    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                        <span class="navbar-toggler-icon"></span>
                     </button>
-                    <a class="navbar-brand" href="/.">Ambianic Developer API Documentation</a>
+                    <a class="navbar-brand" href="/.">Ambianic Documentation</a>
                 </div>
 
                 <!-- Expanded navigation -->
-                <div class="navbar-collapse collapse">
+                <div id="navbar-collapse" class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
-                            <li >
-                                <a href="/.">Home</a>
+                            <li class="navitem">
+                                <a href="/." class="nav-link">Home</a>
                             </li>
-                            <li >
-                                <a href="/ambianic-python-api/">Python API</a>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="/users/quickstart/">Quick Start</a>
+</li>
+                                    
+<li >
+    <a href="/users/faq/">FAQ</a>
+</li>
+                                    
+<li >
+    <a href="/users/install/">Installing</a>
+</li>
+                                    
+<li >
+    <a href="/users/configure/">Configuring</a>
+</li>
+                                    
+<li >
+    <a href="/users/webui/">Web UI</a>
+</li>
+                                    
+<li >
+    <a href="/users/mobileui/">Mobile UI</a>
+</li>
+                                    
+<li >
+    <a href="/users/ai-apps/">AI Apps</a>
+</li>
+                                    
+<li >
+    <a href="/users/howto/">How To</a>
+</li>
+                                    
+<li >
+    <a href="/users/support/">Support</a>
+</li>
+                                </ul>
                             </li>
-                            <li >
-                                <a href="/CONTRIBUTING/">Contributing</a>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Developer Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="/developers/architecture/">Architecture</a>
+</li>
+                                    
+<li >
+    <a href="/developers/api/">APIs</a>
+</li>
+                                    
+<li >
+    <a href="/developers/integration/">Integrations</a>
+</li>
+                                    
+<li >
+    <a href="/developers/writing-ai-app-overview/">Writing AI Apps</a>
+</li>
+                                    
+<li >
+    <a href="/developers/deployment/">Deployment Scenarios</a>
+</li>
+                                    
+<li >
+    <a href="/legal/CONTRIBUTING/">Contributing</a>
+</li>
+                                </ul>
                             </li>
                         </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/ambianic/ambianic-core/" class="nav-link"><i class="fa fa-github"></i> GitHub</a>
+                            </li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div class="container">
+            <div class="row">
 
     <div class="row-fluid">
       <div id="main-content" class="span12">
@@ -78,18 +144,20 @@
     </div>
 
 
+            </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
+                <p>Ambianic.ai (2019)</p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
             var base_url = "/",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="/js/base.js" defer></script>
-        <script src="/search/main.js" defer></script>
+        <script src="/js/base.js"></script>
+        <script src="/search/main.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
     <div class="modal-dialog">
