@@ -14,10 +14,14 @@ addons:
 before_install:
 #  - python --version
 # command to install dependencies
-install:
+  # update docker to edge
+  - sudo apt update -y
+  - sudo apt install --only-upgrade docker-ce -y
   - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
   - sudo service docker restart
   - docker --version
+install:
 #  - docker buildx --help
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
@@ -64,6 +68,7 @@ script:
         ../docs/build-docs.sh
         docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
         docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
+        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
         docker manifest push ambianic/ambianic:dev
       fi
     fi
