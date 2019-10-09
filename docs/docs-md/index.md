@@ -24,6 +24,7 @@ Our goal is to build a product that is useful out of the box:
 
 # How to run in development mode
 If you are interested to try the development version, follow these steps:
+
 1. Clone this git repository.
 2. `./ambianic-start.sh`
 3. Study `config.yaml` and go from there.
