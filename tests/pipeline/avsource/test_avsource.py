@@ -162,7 +162,7 @@ def test_start_stop_file_source_person_detect():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -257,7 +257,7 @@ def test_still_image_input_detect_person_exit_eos():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -311,7 +311,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -431,7 +431,7 @@ def test_exception_on_new_sample():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -532,7 +532,7 @@ def test_gst_process_kill():
         target=avsource.start, daemon=True
         )
     t.start()
-    detection_received.wait(timeout=5)
+    detection_received.wait(timeout=10)
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
