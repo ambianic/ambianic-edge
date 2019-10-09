@@ -155,6 +155,9 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column bs-sidenav">
             <li class="nav-item main"><a href="#quick-start">Quick Start</a></li>
+                <li class="nav-item">
+                    <a href="#configuration" class="nav-link">Configuration</a>
+                </li>
         </ul>
     </div>
 </div></div>
@@ -187,7 +190,60 @@ op_sav2(path2, right)->io2
 
 <script>
 $(".diagram").flowchart();
-</script></div>
+</script>
+
+<p><br/></p>
+<h2 id="configuration">Configuration</h2>
+<p>Here is the corresponding configuration section in <code>config.yaml</code> for the pipeline above:</p>
+<pre><code class="yaml">pipelines:
+  # sequence of piped operations for use in daytime front door watch
+  daytime_front_door_watch:
+    - source: *src_front_door_cam
+    - detect_objects: # run ai inference on the input data
+        &lt;&lt;: *tfm_image_detection
+        confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+        output_directory: *object_detect_dir
+        positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
+        idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
+    - detect_faces: # run ai inference on the samples from the previous element output
+        &lt;&lt;: *tfm_face_detection
+        confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+        output_directory: *face_detect_dir
+        positive_interval: 2
+        idle_interval: 600
+
+</code></pre>
+
+<p>In the configuration excerpt above, there are a few references to variables
+defined elsewhere in the YAML file. <code>*src_front_door_cam</code> is the only
+reference that you have to understand and configure in order
+to get Ambianic working with your own camera (or other source of video feed).</p>
+<p>Here is the definition of this variable reference that you will find in config.yaml:</p>
+<pre><code class="yaml">sources:
+  front_door_camera: &amp;src_front_door_cam
+    uri: *secret_uri_front_door_camera
+    type: video
+</code></pre>
+
+<p>The key parameter here is <code>uri</code>. We recommended that you store the value
+in <code>secrets.yaml</code> which needs to be located in the same directory as
+<code>config.yaml</code>.</p>
+<p>A valid entry in <code>secretes.yaml</code> for a camera URI, would look like this:</p>
+<pre><code class="yaml">secret_uri_front_door_camera: &amp;secret_uri_front_door_camera 'rtsp://user:pass@192.168.86.111:554/Streaming/Channels/101'
+# add more secret entries as regular yaml mappings
+</code></pre>
+
+<p>Assuming you are familiar with yaml syntax, the rest of the configuration
+settings can be left with their default values.</p>
+<p>Once you specify the URI of your camera, you can navigate to the Ambianic
+working directory and start the server with:</p>
+<pre><code class="sh">./ambianic-start.sh
+</code></pre>
+
+<p>You can find object and face detections stored in the <code>./data</code>
+directory by default.</p></div>
             </div>
         </div>
 
