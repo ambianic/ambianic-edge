@@ -22,4 +22,4 @@ docker run -it --rm \
   --publish 1234:1234 \
   --publish 8778:8778 \
   $USB_ARG \
-  ambianic/ambianic:dev
+  ambianic/ambianic:dev /workspace/src/run-dev.sh

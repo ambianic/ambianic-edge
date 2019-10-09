@@ -1,10 +1,12 @@
 
-![Ambianic logo](https://avatars2.githubusercontent.com/u/52052162?s=200&v=4)
+[![Ambianic logo](https://avatars2.githubusercontent.com/u/52052162?s=200&v=4)](https://ambianic.ai)
 
 # Project mission
 ## Helpful AI for Home and Business Automation
 
 Ambianic is an Open Source AI platform that puts local control and privacy first. It enables users to use and train custom AI models without compromising privacy and without sharing data with cloud providers.
+
+[View on Github](https://github.com/ambianic/ambianic-core)
 
 # Project Status
 At this time, Ambianic is in active early formation stages. Design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.

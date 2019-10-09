@@ -1,3 +1,3 @@
-BASEDIR=$(dirname $0)
-pip3 install -e $BASEDIR/../src
+cd /workspace
+pip3 install -e src
 python3 -m ambianic
