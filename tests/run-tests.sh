@@ -13,7 +13,7 @@ echo "Script location: ${BASEDIR}"
 # where codecov can find the generated reports
 cd $BASEDIR/../
 echo PWD=$PWD
-python3 -m pytest tests/ --cov=ambianic --cov-report=xml
+python3 -m pytest tests/pipeline/avsource/test_avsource.py --cov=ambianic --cov-report=xml
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
 # pylint --errors-only src/ambianic
