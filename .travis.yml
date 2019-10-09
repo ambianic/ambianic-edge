@@ -60,7 +60,7 @@ script:
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker build --platform ${ARCH} --push -t ambianic/ambianic:dev .
       if [ "$ARCH" == "linux/amd64"]; then
-        ./ambianic-docs.sh
+        ../docs/build-docs.sh
       fi
     fi
   - echo $PWD
