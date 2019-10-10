@@ -12,7 +12,7 @@ addons:
     packages:
       - docker-ce
 before_install:
-#  - python --version
+  - python --version
 # command to install dependencies
   # update docker to edge
   - sudo apt update -y
@@ -47,7 +47,7 @@ script:
 #  # build image
   - cd ${TRAVIS_BUILD_DIR}/build
   - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${TAG} .
-  - docker tag ambianic/ambianic:dev ambianic/ambianic:${TAG}
+  - docker tag ambianic/ambianic:${TAG} ambianic/ambianic:dev
 #  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
 
 #  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
@@ -65,6 +65,8 @@ script:
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker push ambianic/ambianic:${TAG}
       if [ "$ARCH" == "linux/amd64" ]; then
+        git remote rm origin
+        git remote add origin https://ivelin:${GITHUB_TOKEN}@https://github.com/ambianic/ambianic-core.git
         ../docs/build-docs.sh
         docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
         docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
