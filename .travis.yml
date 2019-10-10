@@ -59,14 +59,14 @@ script:
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker push ambianic/ambianic:${TAG}
+      docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
+      docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
+      docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
+      docker manifest push ambianic/ambianic:dev
       if [ "$ARCH" == "linux/amd64" ]; then
         git remote rm origin
         git remote add origin https://ivelin:${GITHUB_TOKEN}@https://github.com/ambianic/ambianic-core.git
         ../docs/build-docs.sh
-        docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
-        docker manifest push ambianic/ambianic:dev
       fi
     fi
   - echo $PWD
