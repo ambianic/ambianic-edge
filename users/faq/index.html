@@ -161,7 +161,26 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
-<p>TBD </p></div>
+<ol>
+<li>Does Ambianic use hardware accelerators for AI inference?
+Yes. Ambianic currently supports the Google Coral EdgeTPU.
+The server relies on the Tensorflow Lite Runtime to dynamically detect Coral.
+If no EdgeTPU is available, AI inference falls back on the CPU. Check your logs
+for messages indicating EdgeTPU availability.</li>
+<li>
+<p>Does Ambianic use hardware accelerators for video processing?
+Yes. Ambianic relies on <code>gstreamer</code> to dynamically detect and use any available
+GPU on the host platform for video and image processing.</p>
+</li>
+<li>
+<p>Asked</p>
+</li>
+<li>Asked</li>
+<li>Asked
+6.
+2.</li>
+</ol>
+<p>TBD</p></div>
             </div>
         </div>
 
