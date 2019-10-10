@@ -29,3 +29,67 @@ op_sav2(path2, right)->io2
 <script>
 $(".diagram").flowchart();
 </script>
+
+<br/>
+
+## Configuration
+
+Here is the corresponding configuration section in `config.yaml` for the pipeline above:
+
+```yaml
+pipelines:
+  # sequence of piped operations for use in daytime front door watch
+  daytime_front_door_watch:
+    - source: *src_front_door_cam
+    - detect_objects: # run ai inference on the input data
+        <<: *tfm_image_detection
+        confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+        output_directory: *object_detect_dir
+        positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
+        idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
+    - detect_faces: # run ai inference on the samples from the previous element output
+        <<: *tfm_face_detection
+        confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+        output_directory: *face_detect_dir
+        positive_interval: 2
+        idle_interval: 600
+
+```
+
+In the configuration excerpt above, there are a few references to variables
+defined elsewhere in the YAML file. `*src_front_door_cam` is the only
+reference that you have to understand and configure in order
+to get Ambianic working with your own camera (or other source of video feed).
+
+Here is the definition of this variable reference that you will find in config.yaml:
+
+```yaml
+sources:
+  front_door_camera: &src_front_door_cam
+    uri: *secret_uri_front_door_camera
+    type: video
+```
+
+The key parameter here is `uri`. We recommended that you store the value
+in `secrets.yaml` which needs to be located in the same directory as
+`config.yaml`.
+
+A valid entry in `secretes.yaml` for a camera URI, would look like this:
+```yaml
+secret_uri_front_door_camera: &secret_uri_front_door_camera 'rtsp://user:pass@192.168.86.111:554/Streaming/Channels/101'
+# add more secret entries as regular yaml mappings
+```
+
+Assuming you are familiar with yaml syntax, the rest of the configuration
+settings can be left with their default values.
+
+Once you specify the URI of your camera, you can navigate to the Ambianic
+working directory and start the server with:
+```sh
+./ambianic-start.sh
+```
+
+You can find object and face detections stored in the `./data`
+directory by default.
