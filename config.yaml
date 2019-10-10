@@ -22,6 +22,10 @@ sources:
   front_door_camera: &src_front_door_cam
     uri: *secret_uri_front_door_camera
     type: video
+  # Bryant Park Webcam, New York
+  public_stream: &src_public_stream
+    uri: file:///workspace/data/sample/tv-stream.mov
+    type: video
 
 ai_models:
 #  image_classification:
@@ -45,7 +49,7 @@ ai_models:
 pipelines:
   # sequence of piped operations for use in daytime front door watch
   daytime_front_door_watch:
-    - source: *src_front_door_cam
+    - source: *src_public_stream
     # - mask: svg # apply a mask to the input data
     - detect_objects: # run ai inference on the input data
         <<: *tfm_image_detection
