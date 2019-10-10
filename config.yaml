@@ -24,7 +24,7 @@ sources:
     type: video
   # Bryant Park Webcam, New York
   public_stream: &src_public_stream
-    uri: file:///workspace/data/sample/tv-stream.mov
+    uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
     type: video
 
 ai_models:
