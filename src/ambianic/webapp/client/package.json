@@ -28,7 +28,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.11.0",
     "@vue/cli-plugin-e2e-nightwatch": "^3.11.0",
-    "@vue/cli-plugin-eslint": "^3.11.0",
+    "@vue/cli-plugin-eslint": "^3.12.0",
     "@vue/cli-plugin-unit-jest": "^3.11.0",
     "@vue/cli-service": "^3.11.0",
     "@vue/eslint-config-airbnb": "^4.0.0",
