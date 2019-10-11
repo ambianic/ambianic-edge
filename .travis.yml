@@ -79,12 +79,12 @@ after_success:
 #    - stage: docs
 #      script: ../
 deploy:
-  provider: script
+  - provider: script
     script: $TRAVIS_BUILD_DIR/docs/build-docs.sh
     on:
       branch: master
       condition: "$ARCH" =~ *(amd64)*
-  provider: pages
+  - provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
     keep_history: true
