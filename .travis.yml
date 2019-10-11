@@ -94,5 +94,5 @@ deploy:
   local_dir: docs/site
   on:
     branch: master
-#    condition: "$ARCH" =~ *(amd64)*
+    condition: "$ARCH" =~ *(amd64)*
       
