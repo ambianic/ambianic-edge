@@ -31,7 +31,7 @@ If you are interested to try the development version, follow these steps:
 # Documentation
 
 At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest dev docs are available here:
-[Developer Documentation](https://ambianic.github.io/ambianic-core/ambianic-python-api/)
+[Developer Documentation](https://ambianic.github.io/ambianic-core/)
 
 # Contributing
 Your constructive feedback and help are most welcome!

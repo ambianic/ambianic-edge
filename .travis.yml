@@ -64,11 +64,14 @@ script:
       docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
       docker manifest push ambianic/ambianic:dev
       if [ "$ARCH" == "linux/amd64" ]; then
-        git remote rm origin
-        git remote add origin https://ivelin:${GITHUB_TOKEN}@github.com/ambianic/ambianic-core.git
         ../docs/build-docs.sh
       fi
     fi
+#      if [ "$ARCH" == "linux/amd64" ]; then
+#        ../docs/build-docs.sh
+#      fi
+#        git remote rm origin
+#        git remote add origin https://ivelin:${GITHUB_TOKEN}@github.com/ambianic/ambianic-core.git
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
   - ls -al
@@ -76,13 +79,20 @@ after_success:
   - codecov # submit code coverage
 #jobs:
 #  include:
-#    - stage: manifest
-#      script:
-#deploy:
-#  provider: pages
-#  skip_cleanup: true
-#  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-#  keep_history: true
-#  local_dir: docs/site
-#  on:
-#    branch: master
+#    - stage: docs
+#      script: ../
+deploy:
+#  - provider: script
+#    script: $TRAVIS_BUILD_DIR/docs/build-docs.sh
+#    on:
+#      branch: master
+#      condition: "$ARCH" =~ *(amd64)*
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep_history: true
+  local_dir: docs/site
+  on:
+    branch: master
+    condition: $ARCH == "linux/amd64"
+      

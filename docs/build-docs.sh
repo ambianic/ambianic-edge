@@ -15,4 +15,4 @@ pydocmd simple ambianic++ ambianic.pipeline++ ambianic.pipeline.ai++ \
   ambianic.pipeline.avsource++ ambianic.webapp++ > "$WORKDIR/docs/docs-md/raw-python-api.md"
 cd $WORKDIR/docs
 mkdocs build -f "$WORKDIR/docs/mkdocs.yml"
-mkdocs gh-deploy
+# mkdocs gh-deploy
