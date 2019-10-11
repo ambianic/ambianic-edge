@@ -76,14 +76,19 @@ after_success:
   - codecov # submit code coverage
 #jobs:
 #  include:
-#    - stage: deploy
-#      script:
+#    - stage: docs
+#      script: ../
 deploy:
+  provider: script
+    script: $TRAVIS_BUILD_DIR/docs/build-docs.sh
+    on:
+      branch: master
+      condition: "$ARCH" =~ *(amd64)*
   provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  keep_history: true
-  local_dir: docs/site
-  script: ../docs/build-docs.sh
-  on:
-    branch: master
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+    keep_history: true
+    local_dir: docs/site
+    on:
+      branch: master
+      condition: "$ARCH" =~ *(amd64)*
