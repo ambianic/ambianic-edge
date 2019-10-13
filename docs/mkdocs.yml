@@ -1,6 +1,6 @@
 site_name: Ambianic Documentation
 repo_url: https://github.com/ambianic/ambianic-core
-edit_uri: /tree/master/docs/docs-md
+edit_uri: /edit/master/docs/docs-md/index.md
 nav:
     - Home: index.md
     - User Guide:
