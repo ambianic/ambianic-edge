@@ -16,7 +16,7 @@ What's the root cause for Ambianic.ai to exist? Below is a
 [5 Whys](https://en.wikipedia.org/wiki/Five_whys) diagram that
 tries to answer this key question objectively.
 
-![Ambianic 5 Whys](assets/ambianic-5whys.svg)
+[![Ambianic 5 Whys](assets/ambianic-5whys.svg)](https://www.lucidchart.com/invitations/accept/5e0e2084-0d50-499b-afa3-7bea9f82d1f9)
 
 Needless to say there are
 subjective reasons which are equally if not more influential for the existence
@@ -28,7 +28,7 @@ via open source AI.
 Ambianic's roadmap is inspired by user stories and community feedback.
 The following diagram illustrates an example user journey.
 
-![Ambianic example user journey](assets/ambianic-example-user-journey.svg)
+[![Ambianic example user journey](assets/ambianic-example-user-journey.svg)](https://www.lucidchart.com/invitations/accept/b350d806-3c50-46cb-a39a-98b766f1c4af)
 
 
 User journeys help us align on the bigger picture and segue into  
@@ -45,6 +45,21 @@ candidate topics include:
     - Prevent accidents by alerting drivers who act sleepy or distracted.
     - Make sure that a factory floor position is not left unattended for more than 15 minutes.
     - Recognize presence of unauthorized people in a restricted access work area.
+
+# User - System Interactions
+
+Users interact with the system in two phases:
+
+1. First Time Installation
+2. Consequent App Engagements
+
+The following diagram illustrates the high level user - system interactions.
+
+[![Ambianic User - System Interactions](assets/ambianic-user-system-interactions.svg)](https://www.lucidchart.com/invitations/accept/78d403ce-ebf5-45b3-a4c3-8b89679b0667)
+
+# UX Flow
+
+TBD...
 
 # Project Status
 At this time, Ambianic is in active early formation stages. Design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.
