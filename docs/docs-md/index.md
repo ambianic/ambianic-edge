@@ -57,16 +57,22 @@ The following diagram illustrates the high level user - system interactions.
 
 [![Ambianic User - System Interactions](assets/ambianic-user-system-interactions.svg)](https://www.lucidchart.com/invitations/accept/78d403ce-ebf5-45b3-a4c3-8b89679b0667)
 
-# UX Flow
+# UI Flow
 
-TBD...
+The User Interface is centered around three main activities:
+
+1. Setup Ambianic Edge to communicate with smart home devices: sensors, cameras, microphones, lights, door locks, and others.
+2. Design flows to automatically observe sensors and make helpful recommendations.
+3. Review event timeline, alerts and actionable recommendations.
+
+[![Ambianic User Interface Flow](assets/ambianic-user-flow.svg)](https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=ambianic-user-flow#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1BgeZn_ZX6VTag2fA2HLtwJQIqYhFi6LI%26export%3Ddownload)
 
 # Project Status
 At this time, Ambianic is in active early formation stages. Design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.
 
 If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise you can register to [watch for new releases](https://github.com/ambianic/ambianic-core). We will notify you as soon as a stable release is out.
 
-# Product design guidelines
+# Product Design Goals
 
 Our goal is to build a product that is useful out of the box:
 
@@ -76,8 +82,9 @@ Our goal is to build a product that is useful out of the box:
  - No coding required to get started
  - Decomposable and hackable for open source developers
 
-# How to run in development mode
-If you are interested to try the development version, follow these steps:
+# Run in Development Mode
+
+If you would like to try the current development version, follow these steps:
 
 1. Clone this git repository.
 2. `./ambianic-start.sh`
@@ -85,8 +92,3 @@ If you are interested to try the development version, follow these steps:
 
 # Contributors
 If you are interested in becoming a contributor to the project, please read the [Contributing](legal/CONTRIBUTING.md) page and follow the steps. Looking forward to hearing from you!
-
-# Documentation
-
-At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest dev docs are available here:
-[Developer Documentation](https://ambianic.github.io/ambianic-core/ambianic-python-api/)
