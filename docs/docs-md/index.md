@@ -57,7 +57,7 @@ The following diagram illustrates the high level user - system interactions.
 
 [![Ambianic User - System Interactions](assets/ambianic-user-system-interactions.svg)](https://www.lucidchart.com/invitations/accept/78d403ce-ebf5-45b3-a4c3-8b89679b0667)
 
-# UI Flow
+# User Interface Flow
 
 The User Interface is centered around three main activities:
 
@@ -65,9 +65,23 @@ The User Interface is centered around three main activities:
 2. Design flows to automatically observe sensors and make helpful recommendations.
 3. Review event timeline, alerts and actionable recommendations.
 
+The Ambianic UI is architected as an Offline-First PWA
+(Progressive Web Application). It does not assume that the user has constant
+broadband internet access when she needs to interact with Ambianic local data
+ and devices. We anticipate a range of real world scenarios
+with low bandwidth or no-Internet access at all when the use may need to
+ review Ambianic alerts, timeline data, edit flows and configure Edge devices.
+
+It stores data locally on the client device (mobile or desktop) and,
+when there’s a network connection,
+syncs data to the user's Ambianic server and resolves any data conflicts.
+When possible it communicates directly with local Ambianic Edge devices
+minimizing network routing overhead.
+
 [![Ambianic User Interface Flow](assets/ambianic-user-flow.svg)](https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=ambianic-user-flow#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1BgeZn_ZX6VTag2fA2HLtwJQIqYhFi6LI%26export%3Ddownload)
 
 # Project Status
+
 At this time, Ambianic is in active early formation stages. Design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.
 
 If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise you can register to [watch for new releases](https://github.com/ambianic/ambianic-core). We will notify you as soon as a stable release is out.
