@@ -124,6 +124,8 @@ class _TestGstService3(GstService):
         self._on_bus_message_warning_called = False
         self._on_bus_message_error_called = False
         self._gst_cleanup_called = False
+        self.source = self.PipelineSource(
+            source_conf={'uri': 'http://mockup', 'type': 'image'})
 
     def _on_bus_message_eos(self, message):
         self._on_bus_message_eos_called = True
@@ -171,7 +173,7 @@ def test_on_bus_message_error():
     assert gst._gst_cleanup_called
 
 
-def test_on_bus_message_eos():
+def test_on_bus_message_eos_not_live_source():
     gst = _TestGstService3()
     message = _TestBusMessage3()
     message.type = Gst.MessageType.EOS
@@ -179,6 +181,17 @@ def test_on_bus_message_eos():
     assert gst._on_bus_message_eos_called
     assert gst._gst_cleanup_called
     assert gst._eos_reached.is_set()
+
+
+def test_on_bus_message_eos_live_source():
+    gst = _TestGstService3()
+    gst.source.is_live = True
+    message = _TestBusMessage3()
+    message.type = Gst.MessageType.EOS
+    assert gst._on_bus_message(bus=None, message=message, loop=None)
+    assert gst._on_bus_message_eos_called
+    assert gst._gst_cleanup_called
+    assert not gst._eos_reached.is_set()
 
 
 def test_on_bus_message_other():

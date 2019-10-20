@@ -200,7 +200,8 @@ class AVSourceElement(PipeElement):
             if (self._gst_process_eos_reached):
                 # gst process reached end of its input stream
                 # exit the qavsource element loop
-                log.debug('GST EOS reached')
+                log.debug('GST EOS reached for source uri: %r',
+                          self._source_conf['uri'])
                 break
         self._stop_gst_service()
         super().stop()
