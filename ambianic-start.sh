@@ -13,6 +13,9 @@ else
   USB_ARG=""
 fi
 
+# check if there is an image update
+docker pull ambianic/ambianic:dev
+# run dev image
 docker run -it --rm \
   --name ambianic-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
