@@ -107,7 +107,7 @@ class TFImageDetection(PipeElement):
         inf_time = (end_time - start_time) * 1000
         fps = 1.0/(end_time - self.last_time)
         inf_info = 'Inference: %.2f ms  FPS: %.2f fps'
-        log.debug(inf_info, inf_time, fps)
+        log.info(inf_info, inf_time, fps)
         self.last_time = end_time
 
     def detect(self, image=None):

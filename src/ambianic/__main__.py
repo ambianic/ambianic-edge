@@ -28,7 +28,7 @@ def _service_shutdown(signum=None, frame=None):
     and handled gracefully.
     """
     print('Caught system shutdown signal (Ctrl+C or similar). '
-          'Signal code: %d', signum)
+          'Signal code: ', signum)
     raise ambianic.util.ServiceExit
 
 
