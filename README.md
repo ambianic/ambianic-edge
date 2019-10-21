@@ -9,14 +9,14 @@ Helpful AI for Home and Business Automation
 Local data, custom AI models, federated learning
 
 # Project Status
-At this time, Ambianic is in active early formation stages. Lots of design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible. 
+At this time, Ambianic is in active early formation stages. Lots of design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.
 
 If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise click on the Watch button above (Releases Only option) to be notified when we release a stable end user version.
 
 # Product design guidelines
 
 When the product is officially released, it must show tangible value to first time users with minimal initial investment.
-- Less than 15 minutes setup time 
+- Less than 15 minutes setup time
 - Less than $75 in hardware costs
   + Primary target platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
 - No coding required to get started
@@ -28,14 +28,22 @@ If you are interested to try the development version, follow these steps:
 2. `./ambianic-start.sh`
 3. Study `config.yaml` and go from there.
 
-# Contributors
+# Documentation
+
+At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest docs are available here:
+[Ambianic Documentation](https://ambianic.github.io/ambianic-docs/)
+
+# Contributing
+Your constructive feedback and help are most welcome!
+
 If you are interested in becoming a contributor to the project, please read the [Contributing](CONTRIBUTING.md) page and follow the steps. Looking forward to hearing from you!
 
 [logo]: https://avatars2.githubusercontent.com/u/52052162?s=200&v=4
 
-# Documentation
+# Acknowledgements
 
-At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest dev docs are available here: 
-[Developer Documentation](https://ambianic.github.io/ambianic-core/ambianic-python-api/)
+This project has been inspired by the prior work of many bright people. Special gratitude to:
+* [Yong Tang](https://github.com/yongtang) for his guidance as Tensorflow SIG IO project lead 
+* [Robin Cole](https://github.com/robmarkcole) for his invaluable insights and code on home automation AI with Home Assistant
+* [Blake Blackshear](https://github.com/blakeblackshear) for his work on Frigate and vision for the home automation AI space
 
- 

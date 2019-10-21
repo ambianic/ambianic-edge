@@ -36,7 +36,7 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
   python3-gst-1.0 python3-gi
 # install numpy native lib
 sudo apt-get install -y python3-numpy
-
+sudo apt-get install libjpeg-dev zlib1g-dev
 
 # [backend]
 

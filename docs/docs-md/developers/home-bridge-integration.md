@@ -1,4 +1,0 @@
-
-# Home Bridge Integration 
-
-TBD

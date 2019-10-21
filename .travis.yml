@@ -5,19 +5,19 @@ services:
 matrix:
   fast_finish: true
   include:
-    - env: ARCH=linux/amd64
-    - env: ARCH=linux/arm/v7
-addons:
-  apt:
-    packages:
-      - docker-ce
+    - env: ARCH=linux/amd64 TAG_SUFFIX=amd64
+    - env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
 before_install:
-#  - python --version
+  - python --version
 # command to install dependencies
-install:
+  # update docker to edge
+  - sudo apt-get update -y
+  - sudo apt-get install --only-upgrade docker-ce -y
   - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
   - sudo service docker restart
   - docker --version
+install:
 #  - docker buildx --help
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
@@ -26,10 +26,9 @@ install:
 script:
   # Raspberry PI section
   # prepare qemu
-  - TAG=dev-${ARCH}
+  - TAG=dev-${TAG_SUFFIX}
   - docker run --rm --privileged docker/binfmt:66f9012c56a8316f9244ffd7622d7c21c1f6f28d
-#  - docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447ad3
-#  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
+  - cat /proc/sys/fs/binfmt_misc/qemu-aarch64
 #  - docker buildx create --name mybuilder
 #  - docker buildx use mybuilder
 #  - docker buildx inspect --bootstrap
@@ -42,7 +41,8 @@ script:
 #      fi
 #  # build image
   - cd ${TRAVIS_BUILD_DIR}/build
-  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
+  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${TAG} .
+  - docker tag ambianic/ambianic:${TAG} ambianic/ambianic:dev
 #  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
 
 #  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
@@ -58,21 +58,23 @@ script:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker build --platform ${ARCH} --push -t ambianic/ambianic:dev .
-      if [ "$ARCH" == "linux/amd64"]; then
-        ../docs/build-docs.sh
-      fi
+      docker push ambianic/ambianic:${TAG}
+      docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
+      docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
+      docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
+      docker manifest push ambianic/ambianic:dev
     fi
+#      if [ "$ARCH" == "linux/amd64" ]; then
+#        ../docs/build-docs.sh
+#      fi
+#        git remote rm origin
+#        git remote add origin https://ivelin:${GITHUB_TOKEN}@github.com/ambianic/ambianic-core.git
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
   - ls -al
 after_success:
   - codecov # submit code coverage
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  keep_history: true
-  local_dir: docs/site
-  on:
-    branch: master
+#jobs:
+#  include:
+#    - stage: docs
+#      script: ../

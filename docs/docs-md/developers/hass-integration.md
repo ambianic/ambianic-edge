@@ -1,4 +1,0 @@
-
-# Home Assistant Integration 
-
-TBD

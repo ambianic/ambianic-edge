@@ -1,4 +1,0 @@
-
-# Testing AI Apps
-
-TBD

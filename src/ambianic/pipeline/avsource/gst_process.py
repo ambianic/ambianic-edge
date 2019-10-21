@@ -41,6 +41,7 @@ class GstService:
         width = height = None
 
     class PipelineSource:
+
         def __init__(self, source_conf=None):
             assert source_conf, "pipeline source configuration required."
             assert source_conf['uri'], \
@@ -49,6 +50,7 @@ class GstService:
             self.uri = source_conf['uri']
             # video, image, audio, auto
             self.type = source_conf.get('type', 'auto')
+            self.is_live = False
 
     def __init__(self,
                  source_conf=None,
@@ -102,9 +104,12 @@ class GstService:
 
     def _on_bus_message_eos(self, message):
         # print('GstService._handle_eos_reached')
-        log.debug('End of stream. Exiting gstreamer loop '
-                  'for this video stream.')
-        self._eos_reached.set()
+        # if its a live source uri, we will keep trying to reconnect
+        # otherwise end source input processing
+        if not self.source.is_live:
+            log.debug('End of stream. Exiting gstreamer loop '
+                      'for this video stream.')
+            self._eos_reached.set()
         self._gst_cleanup()
 
     def _on_bus_message_warning(self, message):
@@ -133,13 +138,13 @@ class GstService:
         return True
 
     def _on_new_sample_out_queue_full(self, sink):
-        log.info('Out queue full, skipping sample.')
+        log.debug('Out queue full, skipping sample.')
         # free appsink buffer so its not blocked waiting on app pull
         sink.emit('pull-sample')
         return Gst.FlowReturn.OK
 
     def _on_new_sample(self, sink):
-        log.info('Input stream received new image sample.')
+        log.debug('Input stream received new image sample.')
         if self._out_queue.full():
             return self._on_new_sample_out_queue_full(sink)
         sample = sink.emit('pull-sample')
@@ -194,7 +199,7 @@ class GstService:
         return pipeline_args
 
     def _set_gst_debug_level(self):
-        if log.getEffectiveLevel() <= logging.DEBUG:
+        if log.getEffectiveLevel() <= logging.INFO:
             # set Gst debug log level
             Gst.debug_set_active(True)
             Gst.debug_set_default_threshold(3)
@@ -232,7 +237,18 @@ class GstService:
         # build new gst pipeline
         self._build_gst_pipeline()
         # Run pipeline.
-        self.gst_pipeline.set_state(Gst.State.PLAYING)
+        # Start playing media from source
+        ret = self.gst_pipeline.set_state(Gst.State.PLAYING)
+        # Check if the source is a live stream
+        # Ref: A network-resilient example
+        # https://gstreamer.freedesktop.org/documentation/tutorials/basic/streaming.html?gi-language=c
+        # https://lazka.github.io/pgi-docs/Gst-1.0/classes/Pipeline.html
+        # https://lazka.github.io/pgi-docs/Gst-1.0/enums.html#Gst.StateChangeReturn.NO_PREROLL
+        if (ret == Gst.StateChangeReturn.FAILURE):
+            raise RuntimeError('Unable to set pipeline to playing state ',
+                               self.source.uri)
+        elif (ret == Gst.StateChangeReturn.NO_PREROLL):
+            self.source.is_live = True
         log.debug("Entering main gstreamer loop")
         self.mainloop.run()
         log.debug("Exited main gstreamer loop")

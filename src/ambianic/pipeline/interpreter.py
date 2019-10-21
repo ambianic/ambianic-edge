@@ -236,13 +236,13 @@ class Pipeline(ManagedService):
             element_config = element_def[element_name]
             element_class = self.PIPELINE_OPS.get(element_name, None)
             if element_class:
-                log.info('Pipeline %s adding element name %s with class %s and config %s',
+                log.info('Pipeline %s adding element name %s '
+                         'with class %s and config %s',
                          pname, element_name, element_class, element_config)
                 element = element_class(**element_config)
                 self._pipe_elements.append(element)
             else:
                 self._on_unknown_pipe_element(name=element_name)
-        return
 
     def _heartbeat(self):
         """Set the heartbeat timestamp to time.monotonic()."""

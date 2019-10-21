@@ -134,7 +134,7 @@ class AmbianicServer:
             latest_heartbeat, status = s.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
-            log.info('lapse for %s is %f', s.__class__.__name__, lapse)
+            log.debug('lapse for %s is %f', s.__class__.__name__, lapse)
             if lapse > MANAGED_SERVICE_HEARTBEAT_THRESHOLD:
                 log.warning('Server "%s" is not responsive. '
                             'Latest heart beat was %f seconds ago. '
