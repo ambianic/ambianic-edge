@@ -138,13 +138,13 @@ class GstService:
         return True
 
     def _on_new_sample_out_queue_full(self, sink):
-        log.info('Out queue full, skipping sample.')
+        log.debug('Out queue full, skipping sample.')
         # free appsink buffer so its not blocked waiting on app pull
         sink.emit('pull-sample')
         return Gst.FlowReturn.OK
 
     def _on_new_sample(self, sink):
-        log.info('Input stream received new image sample.')
+        log.debug('Input stream received new image sample.')
         if self._out_queue.full():
             return self._on_new_sample_out_queue_full(sink)
         sample = sink.emit('pull-sample')
@@ -199,7 +199,7 @@ class GstService:
         return pipeline_args
 
     def _set_gst_debug_level(self):
-        if log.getEffectiveLevel() <= logging.DEBUG:
+        if log.getEffectiveLevel() <= logging.INFO:
             # set Gst debug log level
             Gst.debug_set_active(True)
             Gst.debug_set_default_threshold(3)
