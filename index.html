@@ -161,7 +161,7 @@
             <li class="nav-item main"><a href="#why">Why?</a></li>
             <li class="nav-item main"><a href="#user-journey">User Journey</a></li>
             <li class="nav-item main"><a href="#user-system-interactions">User - System Interactions</a></li>
-            <li class="nav-item main"><a href="#ui-flow">UI Flow</a></li>
+            <li class="nav-item main"><a href="#user-interface-flow">User Interface Flow</a></li>
             <li class="nav-item main"><a href="#project-status">Project Status</a></li>
             <li class="nav-item main"><a href="#product-design-goals">Product Design Goals</a></li>
             <li class="nav-item main"><a href="#run-in-development-mode">Run in Development Mode</a></li>
@@ -221,13 +221,24 @@ candidate topics include:</p>
 </ol>
 <p>The following diagram illustrates the high level user - system interactions.</p>
 <p><a href="https://www.lucidchart.com/invitations/accept/78d403ce-ebf5-45b3-a4c3-8b89679b0667"><img alt="Ambianic User - System Interactions" src="assets/ambianic-user-system-interactions.svg" /></a></p>
-<h1 id="ui-flow">UI Flow</h1>
+<h1 id="user-interface-flow">User Interface Flow</h1>
 <p>The User Interface is centered around three main activities:</p>
 <ol>
 <li>Setup Ambianic Edge to communicate with smart home devices: sensors, cameras, microphones, lights, door locks, and others.</li>
 <li>Design flows to automatically observe sensors and make helpful recommendations.</li>
 <li>Review event timeline, alerts and actionable recommendations.</li>
 </ol>
+<p>The Ambianic UI is architected as an Offline-First PWA
+(Progressive Web Application). It does not assume that the user has constant
+broadband internet access when she needs to interact with Ambianic local data
+ and devices. We anticipate a range of real world scenarios
+with low bandwidth or no-Internet access at all when the use may need to
+ review Ambianic alerts, timeline data, edit flows and configure Edge devices.</p>
+<p>It stores data locally on the client device (mobile or desktop) and,
+when there’s a network connection,
+syncs data to the user's Ambianic server and resolves any data conflicts.
+When possible it communicates directly with local Ambianic Edge devices
+minimizing network routing overhead.</p>
 <p><a href="https://www.draw.io/?lightbox=1&amp;highlight=0000ff&amp;edit=_blank&amp;layers=1&amp;nav=1&amp;title=ambianic-user-flow#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1BgeZn_ZX6VTag2fA2HLtwJQIqYhFi6LI%26export%3Ddownload"><img alt="Ambianic User Interface Flow" src="assets/ambianic-user-flow.svg" /></a></p>
 <h1 id="project-status">Project Status</h1>
 <p>At this time, Ambianic is in active early formation stages. Design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.</p>
@@ -334,5 +345,5 @@ candidate topics include:</p>
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-10-17 01:53:27
+Build Date UTC : 2019-10-21 19:23:02
 -->
