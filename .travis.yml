@@ -63,9 +63,6 @@ script:
       docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
       docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
       docker manifest push ambianic/ambianic:dev
-      if [ "$ARCH" == "linux/amd64" ]; then
-        ../docs/build-docs.sh
-      fi
     fi
 #      if [ "$ARCH" == "linux/amd64" ]; then
 #        ../docs/build-docs.sh
@@ -81,18 +78,3 @@ after_success:
 #  include:
 #    - stage: docs
 #      script: ../
-deploy:
-#  - provider: script
-#    script: $TRAVIS_BUILD_DIR/docs/build-docs.sh
-#    on:
-#      branch: master
-#      condition: "$ARCH" =~ *(amd64)*
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  keep_history: true
-  local_dir: docs/site
-  on:
-    branch: master
-    condition: $ARCH == "linux/amd64"
-      

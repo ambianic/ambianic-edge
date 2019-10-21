@@ -1,4 +1,0 @@
-
-# Frontend JavaScript API
-
-TBD
