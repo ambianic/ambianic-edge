@@ -51,7 +51,7 @@ class PipelineServer(ManagedService):
 
     """
 
-    MAX_HEARTBEAT_INTERVAL = 20
+    MAX_HEARTBEAT_INTERVAL = 40
     TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL*3
 
     def __init__(self, config=None):

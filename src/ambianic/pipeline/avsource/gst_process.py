@@ -50,7 +50,7 @@ class GstService:
             self.uri = source_conf['uri']
             # video, image, audio, auto
             self.type = source_conf.get('type', 'auto')
-            self.is_live = False
+            self.is_live = source_conf.get('live', False)
 
     def __init__(self,
                  source_conf=None,
@@ -249,6 +249,9 @@ class GstService:
                                self.source.uri)
         elif (ret == Gst.StateChangeReturn.NO_PREROLL):
             self.source.is_live = True
+            log.info("Live streaming source detected: %r", self.source.uri)
+        # else:
+        #     log.debug("Gst pipeline set_state PLAYING result: %r", ret)
         log.debug("Entering main gstreamer loop")
         self.mainloop.run()
         log.debug("Exited main gstreamer loop")
@@ -297,7 +300,7 @@ class GstService:
                 # while GLib.MainContext.default().iteration(False):
                 #     pass
             else:
-                log.debug("self.gst_pipeline: None")
+                log.debug("self.gst_pipeline: %r", self.gst_pipeline)
             if self.mainloop:
                 log.debug("gst mainloop.quit()")
                 self.mainloop.quit()
@@ -371,4 +374,4 @@ def start_gst_service(source_conf=None,
                      stop_signal=stop_signal,
                      eos_reached=eos_reached)
     svc.run()
-    print('Exiting GST process')
+    log.info('Exiting GST process')
