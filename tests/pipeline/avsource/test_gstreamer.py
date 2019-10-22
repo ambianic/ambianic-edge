@@ -1,9 +1,9 @@
 """Test GStreamer Service."""
 from ambianic.pipeline.avsource.gst_process import GstService
+import pytest
 import threading
 import os
 import signal
-import time
 import pathlib
 from multiprocessing import Queue
 import logging
@@ -432,3 +432,48 @@ def test_gst_cleanup_exception():
     gst = _TestGstService10()
     gst._gst_cleanup()
     assert gst._gst_cleanup_called
+
+
+class _TestGstService11(GstService):
+
+    def __init__(self):
+        source_conf = {
+            'uri': 'rtsp://something',
+            'type': 'video',
+            'live': False
+        }
+        self.source = self.PipelineSource(source_conf=source_conf)
+
+    def _gst_pipeline_play(self):
+        return Gst.StateChangeReturn.FAILURE
+
+    def _gst_cleanup(self):
+        self._gst_cleanup_called = True
+        super()._gst_cleanup()
+
+    def _build_gst_pipeline(self):
+        pass
+
+    def _gst_mainloop_run(self):
+        pass
+
+
+def test_gst_set_state_playing_failure():
+    """Error when setting pipeline state to PLAY should raise RuntimeError."""
+    gst = _TestGstService11()
+    with pytest.raises(RuntimeError):
+        gst._gst_loop()
+
+
+class _TestGstService12(_TestGstService11):
+
+    def _gst_pipeline_play(self):
+        return Gst.StateChangeReturn.NO_PREROLL
+
+
+def test_gst_set_state_playing_no_preroll():
+    """NO_PREROLL result on setting state to PLAY indicates live stream."""
+    gst = _TestGstService12()
+    assert not gst.source.is_live
+    gst._gst_loop()
+    assert gst.source.is_live
