@@ -23,19 +23,19 @@ entry_area_face_detect_dir: &ea_face_detect_dir ./data/detections/entry-area/fac
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
 sources:
-  front_door_camera: &src_front_door_cam
-    uri: *secret_uri_front_door_camera
+  # front_door_camera: &src_front_door_cam
+    # uri: *secret_uri_front_door_camera
     # type: video, audio, or auto
-    type: video
-    live: true
-  entry_area_camera: &src_entry_area_cam
-    uri: *secret_uri_entry_area_camera
-    type: video
+    # type: video
+    # live: true
+  # entry_area_camera: &src_entry_area_cam
+    # uri: *secret_uri_entry_area_camera
+    # type: video
   # recorded front door cam feed for quick testing
     # live: is this a live source or a recording
     # when live is True, the AVSource element will try to reconnect
     # if the stream is interrupted due to network disruption or another reason.
-    live: True
+    # live: True
   # Bryant Park Webcam, New York
   recorded_cam_feed: &src_recorded_cam_feed
     uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
@@ -62,46 +62,26 @@ ai_models:
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
   # sequence of piped operations for use in daytime front door watch
-#  test_recorded_cam_feed:
-#    - source: *src_recorded_cam_feed
-    # - mask: svg # apply a mask to the input data
-#    - detect_objects: # run ai inference on the input data
-#        <<: *tfm_image_detection
-#        confidence_threshold: 0.8
-#    - save_detections: # save samples from the inference results
-#        output_directory: *fd_object_detect_dir
-#        positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
-#        idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
-#    - detect_faces: # run ai inference on the samples from the previous element output
-#        <<: *tfm_face_detection
-#        confidence_threshold: 0.8
-#    - save_detections: # save samples from the inference results
-#        output_directory: *fd_face_detect_dir
-#        positive_interval: 2
-#        idle_interval: 600
-
-  # sequence of piped operations for use in daytime front door watch
-  front_door_watch:
-    - source: *src_front_door_cam
-    # - mask: svg # apply a mask to the input data
-    - detect_objects: # run ai inference on the input data
+   front_door_watch:
+     - source: *src_recorded_cam_feed
+     - detect_objects: # run ai inference on the input data
         <<: *tfm_image_detection
         confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
+     - save_detections: # save samples from the inference results
         output_directory: *fd_object_detect_dir
         positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
         idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
-    - detect_faces: # run ai inference on the samples from the previous element output
+     - detect_faces: # run ai inference on the samples from the previous element output
         <<: *tfm_face_detection
         confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
+     - save_detections: # save samples from the inference results
         output_directory: *fd_face_detect_dir
         positive_interval: 2
         idle_interval: 600
 
   # sequence of piped operations for use in daytime front door watch
 #  entry_area_watch:
-#    - source: *src_entry_area_cam   
+#    - source: *src_entry_area_cam
     # - mask: svg # apply a mask to the input data
 #    - detect_objects: # run ai inference on the input data
 #        <<: *tfm_image_detection
@@ -174,4 +154,3 @@ pipelines:
 # helps debug why some threads hang up or go idle for a variety of potential reasons
 #heartbeat:
 #  interval: 60 # once a minute
-
