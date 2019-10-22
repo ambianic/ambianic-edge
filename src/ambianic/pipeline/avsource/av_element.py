@@ -25,7 +25,7 @@ class AVSourceElement(PipeElement):
     samples to the next pipe element.
     """
 
-    def __init__(self, uri=None, type=None, **kwargs):
+    def __init__(self, uri=None, type=None, live=False, **kwargs):
         """Create an av source element with given configuration.
 
         :Parameters:
@@ -33,14 +33,21 @@ class AVSourceElement(PipeElement):
         source_conf : dict
             uri: string (example rtsp://somehost/ipcam/channel0)
             type: string (video, audio or image)
+            live: boolean (True if the source is a live stream)
+                When live is True AVSourceElement source element will
+                keep trying to reconnect
+                in case there is disruption of the source stream
+                until explicit stop() is requested of the element.
         """
         super().__init__()
         assert uri
         element_conf = dict(kwargs)
         element_conf['uri'] = uri
         element_conf['type'] = type
+        element_conf['live'] = live
         # pipeline source info
         self._source_conf = element_conf
+        self._is_live = live
         self._gst_process = None
         self._gst_out_queue = None
         self._gst_process_stop_signal = None
@@ -197,7 +204,7 @@ class AVSourceElement(PipeElement):
         self._stop_requested = False
         while not self._stop_requested:
             self._run_gst_service()
-            if (self._gst_process_eos_reached):
+            if (self._gst_process_eos_reached and not self._is_live):
                 # gst process reached end of its input stream
                 # exit the qavsource element loop
                 log.debug('GST EOS reached for source uri: %r',

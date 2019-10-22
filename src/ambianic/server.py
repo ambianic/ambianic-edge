@@ -15,7 +15,7 @@ AI_MODELS_DIR = "ai_models"
 CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
 DEFAULT_LOG_LEVEL = logging.INFO
-MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 10
+MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     'pipelines': PipelineServer,
@@ -134,7 +134,11 @@ class AmbianicServer:
             latest_heartbeat, status = s.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
-            log.debug('lapse for %s is %f', s.__class__.__name__, lapse)
+            if lapse > 1:
+                # log only if lapse is over 1 second long.
+                # otherwise things are OK and we don't want
+                # unnecessary log noise
+                log.debug('lapse for %s is %f', s.__class__.__name__, lapse)
             if lapse > MANAGED_SERVICE_HEARTBEAT_THRESHOLD:
                 log.warning('Server "%s" is not responsive. '
                             'Latest heart beat was %f seconds ago. '

@@ -1,7 +1,7 @@
 ######################################
 #  Ambianic main configuration file  #
 ######################################
-version: '0.1.2'
+version: '0.10.21'
 
 # path to the data directory
 data_dir: &data_dir ./data
@@ -21,7 +21,12 @@ face_detect_dir: &face_detect_dir ./data/faces
 sources:
   front_door_camera: &src_front_door_cam
     uri: *secret_uri_front_door_camera
+    # type: video, audio, or auto
     type: video
+    # live: is this a live source or a recording
+    # when live is True, the AVSource element will try to reconnect
+    # if the stream is interrupted due to network disruption or another reason.
+    live: True
   # Bryant Park Webcam, New York
   recorded_cam_feed: &src_recorded_cam_feed
     uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
@@ -49,7 +54,7 @@ ai_models:
 pipelines:
   # sequence of piped operations for use in daytime front door watch
   daytime_front_door_watch:
-    - source: *src_recorded_cam_feed
+    - source: *src_front_door_cam
     # - mask: svg # apply a mask to the input data
     - detect_objects: # run ai inference on the input data
         <<: *tfm_image_detection
