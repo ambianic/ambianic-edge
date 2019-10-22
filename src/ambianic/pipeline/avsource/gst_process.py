@@ -233,12 +233,20 @@ class GstService:
         self.gst_bus.add_signal_watch()
         self.gst_bus.connect('message', self._on_bus_message, self.mainloop)
 
+    def _gst_mainloop_run(self):
+        log.debug("Entering main gstreamer loop")
+        self.mainloop.run()
+        log.debug("Exited main gstreamer loop")
+
+    def _gst_pipeline_play(self):
+        return self.gst_pipeline.set_state(Gst.State.PLAYING)
+
     def _gst_loop(self):
         # build new gst pipeline
         self._build_gst_pipeline()
         # Run pipeline.
         # Start playing media from source
-        ret = self.gst_pipeline.set_state(Gst.State.PLAYING)
+        ret = self._gst_pipeline_play()
         # Check if the source is a live stream
         # Ref: A network-resilient example
         # https://gstreamer.freedesktop.org/documentation/tutorials/basic/streaming.html?gi-language=c
@@ -252,9 +260,7 @@ class GstService:
             log.info("Live streaming source detected: %r", self.source.uri)
         # else:
         #     log.debug("Gst pipeline set_state PLAYING result: %r", ret)
-        log.debug("Entering main gstreamer loop")
-        self.mainloop.run()
-        log.debug("Exited main gstreamer loop")
+        self._gst_mainloop_run()
 
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
