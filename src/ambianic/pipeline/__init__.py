@@ -2,6 +2,7 @@
 import logging
 import abc
 import time
+from typing import Iterable
 from ambianic.util import ManagedService
 
 log = logging.getLogger(__name__)
@@ -16,7 +17,6 @@ class PipeElement(ManagedService):
     """The basic building block of an Ambianic pipeline."""
 
     def __init__(self):
-        # log.warning('PipeElement __init__ invoked')
         super().__init__()
         self._state = PIPE_STATE_STOPPED
         self._next_element = None
@@ -24,13 +24,39 @@ class PipeElement(ManagedService):
 
     @property
     def state(self):
+        """Lifecycle state of the pipe element."""
         return self._state
 
     def start(self):
+        """Only sourcing elements (first in a pipeline) need to override.
+
+        It is invoked once when the enclosing pipeline is started. It should
+        continue to run until the corresponding stop() method is invoked on the
+        same object from a separate pipeline lifecycle manager thread.
+
+        It is recommended for overriding methods to invoke this base method
+        via super().start() before proceeding with custom logic.
+
+        """
         self._state = PIPE_STATE_RUNNING
 
     @abc.abstractmethod
     def heal(self):  # pragma: no cover
+        """Override with adequate implementation of a healing procedure.
+
+        heal() is invoked by a lifecycle manager when its determined that
+        the element does not respond within reasonable timeframe.
+        This can happen for example if the element depends on external IO
+        resources, which become unavailable for an extended period of time.
+
+        The healing procedure should be considered a chance to recover or find
+        an alternative way to proceed.
+
+        If heal does not reset the pipe element back to a responsive state,
+        it is likely that the lifecycle manager will stop the
+        element and its ecnlosing pipeline.
+
+        """
         pass
 
     def healthcheck(self):
@@ -39,25 +65,25 @@ class PipeElement(ManagedService):
         :returns: (timestamp, status) tuple with most recent heartbeat
         timestamp and health status code ('OK' normally).
         """
-        oldest_heartbeat = self._latest_heartbeat
         status = 'OK'  # At some point status may carry richer information
-        return oldest_heartbeat, status
+        return self._latest_heartbeat, status
 
     def heartbeat(self):
-        """Set the heartbeat timestamp to time.monotonic()."""
-        log.debug('Pipeline element %s heartbeat signal.',
-                  self.__class__.__name__)
+        """Set the heartbeat timestamp to time.monotonic().
+
+        Keeping the heartbeat timestamp current informs
+        the lifecycle manager that this element is functioning
+        well.
+
+        """
         now = time.monotonic()
-        lapse = now - self._latest_heartbeat
-        log.debug('Pipeline element %s heartbeat lapse %f',
-                  self.__class__.__name__, lapse)
         self._latest_heartbeat = now
 
     def stop(self):
         """Receive stop signal and act accordingly.
 
-        Subclasses should override this method by
-        first invoking their super class implementation and then running
+        Subclasses implementing sourcing elements should override this method
+        by first invoking their super class implementation and then running
         through steps specific to stopping their ongoing sample processing.
 
         """
@@ -66,7 +92,7 @@ class PipeElement(ManagedService):
     def connect_to_next_element(self, next_element=None):
         """Connect this element to the next element in the pipe.
 
-        Subclasses should not have to override this method.
+        Subclasses should not override this method.
 
         """
         assert next_element
@@ -74,9 +100,13 @@ class PipeElement(ManagedService):
         self._next_element = next_element
 
     def receive_next_sample(self, **sample):
-        """Receive next sample from a connected previous element.
+        """Receive next sample from a connected previous element if applicable.
 
-        Subclasses should not have to override this method.
+        All pipeline elements except for the first (sourcing) element
+        in the pipeline will depend on this method to feed them with new
+        samples to process.
+
+        Subclasses should not override this method.
 
         :Parameters:
         ----------
@@ -88,16 +118,6 @@ class PipeElement(ManagedService):
 
         """
         self.heartbeat()
-        # NOTE: A future implementation could maximize hardware
-        # resources by launching each sample processing into
-        # a separate thread. For example if an AI element
-        # returns 10 person boxes which then need to be
-        # scanned by the next element for faces, and the
-        # underlying architecture provides 16 available CPU cores
-        # or 10 EdgeTPUs, then each face detection in a person box
-        # can be launched independently from the others as soon as
-        # the person boxes come in from the object detection
-        # process_sample generator.
         for processed_sample in self.process_sample(**sample):
             if self._next_element:
                 if (processed_sample):
@@ -107,8 +127,8 @@ class PipeElement(ManagedService):
                 self.heartbeat()
 
     @abc.abstractmethod  # pragma: no cover
-    def process_sample(self, **sample):
-        """Implement processing in subclass as a generator function.
+    def process_sample(self, **sample) -> Iterable[dict]:
+        """Override and implement as generator.
 
         Invoked by receive_next_sample() when the previous element
         (or pipeline source) feeds another data input sample.
@@ -125,8 +145,10 @@ class PipeElement(ManagedService):
             adjacent connected pipe elements.
 
         :Returns:
-        processed_sample: dict
-            Processed sample that will be passed to the next pipeline element.
+        ----------
+        processed_sample: Iterable[dict]
+            Generates processed samples to be passed on
+            to the next pipeline element.
 
         """
         yield sample

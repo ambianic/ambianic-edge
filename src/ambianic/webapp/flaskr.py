@@ -8,6 +8,7 @@ from flask.logging import default_handler
 import flask
 from requests import get
 from werkzeug.serving import make_server
+from pathlib import Path
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from .server import samples
 log = logging.getLogger(__name__)
@@ -182,7 +183,9 @@ def create_app():
 
     @app.route('/api/data/<path:path>')
     def data_file(path):
-        return flask.send_from_directory('../../data', path)
+        data_path = Path('./data').resolve()
+        log.info('Serving static data file from: %r', data_path / path)
+        return flask.send_from_directory(data_path, path)
 
     @app.route('/client', defaults={'path': 'index.html'})
     @app.route('/client/', defaults={'path': 'index.html'})
