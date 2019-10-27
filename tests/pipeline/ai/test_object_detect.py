@@ -85,7 +85,7 @@ def test_background_image():
     config = _object_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
     object_detector = ObjectDetector(**config)
@@ -101,7 +101,7 @@ def test_one_person():
     config = _object_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result
@@ -124,7 +124,7 @@ def test_no_sample():
     config = _object_detect_config()
     result = 'Something'
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = image is None and inference_result is None
     object_detector = ObjectDetector(**config)
@@ -139,7 +139,7 @@ def test_bad_sample_good_sample():
     config = _object_detect_config()
     result = 'nothing passed to me'
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
     object_detector = ObjectDetector(**config)
@@ -165,7 +165,7 @@ def test_one_person_no_face():
     config = _object_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result

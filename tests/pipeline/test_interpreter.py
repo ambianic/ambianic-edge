@@ -56,7 +56,7 @@ def test_get_pipelines_one():
     assert isinstance(p[0], interpreter.Pipeline)
     assert p[0].name == 'pipeline_one'
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
-    assert p[0]._pipe_elements[0].config == {'uri': 'test'}
+    assert p[0]._pipe_elements[0].config['uri'] == 'test'
 
 
 def test_get_pipelines_two():
@@ -76,10 +76,10 @@ def test_get_pipelines_two():
     assert p[0].name == 'pipeline_one'
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
     assert isinstance(p[1], interpreter.Pipeline)
-    assert p[0]._pipe_elements[0].config == {'uri': 'test'}
+    assert p[0]._pipe_elements[0].config['uri'] == 'test'
     assert p[1].name == 'pipeline_two'
     assert isinstance(p[1]._pipe_elements[0], _TestSourceElement)
-    assert p[1]._pipe_elements[0].config == {'uri': 'test2'}
+    assert p[1]._pipe_elements[0].config['uri'] == 'test2'
 
 
 def test_pipeline_start():

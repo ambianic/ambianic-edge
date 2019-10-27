@@ -1,12 +1,14 @@
 """Main Ambianic server module."""
 import time
 import logging
+import logging.handlers
 import os
 import pathlib
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit, stacktrace
+from ambianic.pipeline import timeline
 
 log = logging.getLogger(__name__)
 
@@ -36,34 +38,48 @@ def _configure_logging(config=None):
         except AttributeError as e:
             log.warning("Invalid log level: %s . Error: %s", log_level, e)
             log.warning('Defaulting log level to %s', default_log_level)
+    fmt = None
     if numeric_level <= logging.INFO:
         format_cfg = '%(asctime)s %(levelname)-4s ' \
             '%(pathname)s.%(funcName)s(%(lineno)d): %(message)s'
         datefmt_cfg = '%Y-%m-%d %H:%M:%S'
+        fmt = logging.Formatter(fmt=format_cfg,
+                                datefmt=datefmt_cfg, style='%')
     else:
-        format_cfg = None
-        datefmt_cfg = None
+        fmt = logging.Formatter()
+    root_logger = logging.getLogger()
+    # remove any other handlers that may be assigned previously
+    # and could cause unexpected log collisions
+    root_logger.handlers = []
+    # add a console handler that only shows errors and warnings
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    # add formatter to ch
+    ch.setFormatter(fmt)
+    # add ch to logger
+    root_logger.addHandler(ch)
+    # add a file handler if configured
     log_filename = config.get('file', None)
     if log_filename:
         log_directory = os.path.dirname(log_filename)
         with pathlib.Path(log_directory) as log_dir:
             log_dir.mkdir(parents=True, exist_ok=True)
-        print("Log messages directed to {}".format(log_filename))
-    root_logger = logging.getLogger()
-    # remove any outside handlers
-    while root_logger.hasHandlers():
-        root_logger.removeHandler(root_logger.handlers[0])
-    logging.basicConfig(
-        format=format_cfg,
-        level=numeric_level,
-        datefmt=datefmt_cfg,
-        filename=log_filename)
+            print("Log messages directed to {}".format(log_filename))
+        handler = logging.handlers.RotatingFileHandler(
+                      log_filename,
+                      # each log file will be up to 10MB in size
+                      maxBytes=100*1024*1024,
+                      # 20 backup files will be kept. Older will be erased.
+                      backupCount=20)
+        handler.setFormatter(fmt)
+        root_logger.addHandler(handler)
+    root_logger.setLevel(numeric_level)
     effective_level = log.getEffectiveLevel()
     assert numeric_level == effective_level
     log.info('Logging configured with level %s',
              logging.getLevelName(effective_level))
     if effective_level <= logging.DEBUG:
-        log.debug('Configuration dump:')
+        log.debug('Configuration yaml dump:')
         log.debug(yaml.dump(config))
 
 
@@ -92,15 +108,20 @@ def _configure(env_work_dir=None):
             base_config = cf.read()
             all_config = secrets_config + "\n" + base_config
         config = yaml.safe_load(all_config)
+        log.debug('loaded config from %r: %r', CONFIG_FILE, config)
         # configure logging
         logging_config = None
         if config:
             logging_config = config.get('logging', None)
         _configure_logging(logging_config)
+        # configure pipeline timeline event log
+        timeline_config = None
+        if config:
+            timeline_config = config.get('timeline', None)
+        timeline.configure_timeline(timeline_config)
         return config
     except Exception as e:
-        log.error("Failed to load configuration: %s", str(e))
-        stacktrace()
+        log.exception('Failed to load configuration: %s', e, exc_info=True)
         return None
 
 
@@ -110,7 +131,7 @@ class AmbianicServer:
     def __init__(self, work_dir=None):
         """Inititalize server from working directory files.
 
-        Parameters
+        :Parameters:
         ----------
         work_dir : string
             The working directory where config and data reside.

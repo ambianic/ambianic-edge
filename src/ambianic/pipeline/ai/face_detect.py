@@ -12,6 +12,7 @@ class FaceDetector(TFImageDetection):
 
     @staticmethod
     def crop_image(image, box):
+        """Crop image to given box."""
         # Size of the image in pixels (size of orginal image)
         # (This is not mandatory)
         width, height = image.size
@@ -28,6 +29,7 @@ class FaceDetector(TFImageDetection):
         return im1
 
     def process_sample(self, **sample):
+        """Detect faces in the given image sample."""
         log.debug("Pipe element %s received new sample with keys %s.",
                   self.__class__.__name__,
                   str([*sample]))
@@ -46,8 +48,8 @@ class FaceDetector(TFImageDetection):
                 else:
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
-                    for category, confidence, box in prev_inference_result:
-                        if category == 'person' and \
+                    for label, confidence, box in prev_inference_result:
+                        if label == 'person' and \
                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
                     log.debug('Received %d person boxes for face detection',
@@ -55,11 +57,18 @@ class FaceDetector(TFImageDetection):
                     for box in person_regions:
                         person_image = self.crop_image(image, box)
                         inference_result = self.detect(image=person_image)
-                        log.warning('Face detection inference_result: %r',
-                                    inference_result)
+                        log.debug('Face detection inference_result: %r',
+                                  inference_result)
+                        inf_meta = {
+                            'display': 'Face Detection'
+                            # id
+                            # version
+                            # etc
+                        }
                         processed_sample = {
                             'image': person_image,
-                            'inference_result': inference_result
+                            'inference_result': inference_result,
+                            'inference_meta': inf_meta
                             }
                         yield processed_sample
             except Exception as e:

@@ -1,6 +1,7 @@
 """Test configuration functions."""
 import pytest
 import logging
+import logging.handlers
 import ambianic
 from ambianic.server import AmbianicServer
 from ambianic import server
@@ -21,10 +22,13 @@ def test_log_config_with_file():
     }
     server._configure_logging(config=log_config)
     handlers = logging.getLogger().handlers
+    log_fn = None
     for h in handlers:
-        if isinstance(h, logging.FileHandler):
+        if isinstance(h, logging.handlers.RotatingFileHandler):
             log_fn = h.baseFilename
             assert log_fn == log_config['file']
+    # at least one log file name should be configured
+    assert log_fn
 
 
 def test_log_config_without_file():
@@ -33,7 +37,7 @@ def test_log_config_without_file():
     server._configure_logging(config=log_config)
     handlers = logging.getLogger().handlers
     for h in handlers:
-        assert not isinstance(h, logging.FileHandler)
+        assert not isinstance(h, logging.handlers.RotatingFileHandler)
 
 
 def test_log_config_with_debug_level():

@@ -4,6 +4,8 @@ from ambianic.pipeline.store import SaveDetectionSamples
 from PIL import Image
 import os
 import json
+import logging
+from ambianic.pipeline.timeline import PipelineContext
 
 
 def test_process_sample_none():
@@ -23,11 +25,11 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
     _json_path = None
     _inf_result = None
 
-    def _save_sample(self, now, image, inference_result):
+    def _save_sample(self, now, image, inference_result, inference_meta):
         self._save_sample_called = True
         self._inf_result = inference_result
         self._img_path, self._json_path = \
-            super()._save_sample(now, image, inference_result)
+            super()._save_sample(now, image, inference_result, inference_meta)
 
 
 def test_store_positive_detection():
@@ -38,7 +40,10 @@ def test_store_positive_detection():
         'tmp/'
         )
     out_dir = os.path.abspath(out_dir)
-    store = _TestSaveDetectionSamples(output_directory=out_dir)
+    context = PipelineContext(unique_pipeline_name='test pipeline')
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context,
+                                      event_log=logging.getLogger())
     img = Image.new('RGB', (60, 30), color='red')
     detections = [
             ('person', 0.98, (0, 1, 2, 3))
@@ -58,7 +63,7 @@ def test_store_positive_detection():
     assert store._save_sample_called
     assert store._inf_result == detections
     assert store._img_path
-    img_dir = os.path.dirname(os.path.abspath(store._img_path))
+    img_dir = os.path.dirname(os.path.abspath(store._img_path / "../../"))
     assert img_dir == out_dir
     out_img = Image.open(store._img_path)
     print(img_dir)
@@ -66,20 +71,21 @@ def test_store_positive_detection():
     assert out_img.mode == 'RGB'
     assert out_img.size[0] == 60
     assert out_img.size[1] == 30
-    json_dir = os.path.dirname(os.path.abspath(store._json_path))
+    json_dir = os.path.dirname(os.path.abspath(store._json_path / "../../"))
     assert json_dir == out_dir
     print(json_dir)
     print(store._json_path)
     with open(store._json_path) as f:
         json_inf = json.load(f)
         print(json_inf)
-        img_fname = json_inf['image']
-        img_fpath = os.path.join(out_dir, img_fname)
+        img_fname = json_inf['image_file_name']
+        rel_dir = json_inf['rel_dir']
+        img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
         json_inf_res = json_inf['inference_result']
         assert len(json_inf_res) == 1
         json_inf_res = json_inf_res[0]
-        assert json_inf_res['category'] == 'person'
+        assert json_inf_res['label'] == 'person'
         assert json_inf_res['confidence'] == 0.98
         assert json_inf_res['box']['xmin'] == 0
         assert json_inf_res['box']['ymin'] == 1
@@ -95,7 +101,11 @@ def test_store_negative_detection():
         'tmp/'
         )
     out_dir = os.path.abspath(out_dir)
-    store = _TestSaveDetectionSamples(output_directory=out_dir)
+    out_dir = os.path.abspath(out_dir)
+    context = PipelineContext(unique_pipeline_name='test pipeline')
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context,
+                                      event_log=logging.getLogger())
     img = Image.new('RGB', (60, 30), color='red')
     detections = []
     processed_samples = list(store.process_sample(image=img,
@@ -110,7 +120,7 @@ def test_store_negative_detection():
     assert store._save_sample_called
     assert store._inf_result == detections
     assert store._img_path
-    img_dir = os.path.dirname(os.path.abspath(store._img_path))
+    img_dir = os.path.dirname(os.path.abspath(store._img_path / "../../"))
     assert img_dir == out_dir
     out_img = Image.open(store._img_path)
     print(img_dir)
@@ -118,15 +128,16 @@ def test_store_negative_detection():
     assert out_img.mode == 'RGB'
     assert out_img.size[0] == 60
     assert out_img.size[1] == 30
-    json_dir = os.path.dirname(os.path.abspath(store._json_path))
+    json_dir = os.path.dirname(os.path.abspath(store._json_path / "../../"))
     assert json_dir == out_dir
     print(json_dir)
     print(store._json_path)
     with open(store._json_path) as f:
         json_inf = json.load(f)
         print(json_inf)
-        img_fname = json_inf['image']
-        img_fpath = os.path.join(out_dir, img_fname)
+        img_fname = json_inf['image_file_name']
+        rel_dir = json_inf['rel_dir']
+        img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
         json_inf_res = json_inf['inference_result']
         assert not json_inf_res
@@ -136,20 +147,24 @@ class _TestSaveDetectionSamples2(SaveDetectionSamples):
 
     _save_sample_called = False
 
-    def _save_sample(self, now, image, inference_result):
+    def _save_sample(self, now, image, inference_result, inference_meta):
         self._save_sample_called = True
         raise RuntimeError()
 
 
 def test_process_sample_exception():
     """Exception during processing should not prevent passing the sample on."""
-    store = _TestSaveDetectionSamples2(output_directory="./tmp/")
+    context = PipelineContext(unique_pipeline_name='test pipeline')
+    context.data_dir = "./tmp/"
+    store = _TestSaveDetectionSamples2(context=context,
+                                       event_log=logging.getLogger())
     img = Image.new('RGB', (60, 30), color='red')
     detections = [
             ('person', 0.98, (0, 1, 2, 3))
     ]
     processed_samples = list(store.process_sample(image=img,
-                                                  inference_result=detections))
+                                                  inference_result=detections,
+                                                  inference_meta=None))
     assert store._save_sample_called
     assert len(processed_samples) == 1
     print(processed_samples)

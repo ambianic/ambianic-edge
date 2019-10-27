@@ -33,13 +33,12 @@ class TFImageDetection(PipeElement):
 
         """
         # log.warning('TFImageDetection __init__ invoked')
-        super().__init__()
+        super().__init__(**kwargs)
         self._tfengine = TFInferenceEngine(
             model=model,
             labels=labels,
             confidence_threshold=confidence_threshold,
-            top_k=top_k,
-            **kwargs)
+            top_k=top_k)
         self._labels = self.load_labels(self._tfengine.labels_path)
         self.last_time = time.monotonic()
 
@@ -123,7 +122,7 @@ class TFImageDetection(PipeElement):
         list of tuples
             List of top_k detections above confidence_threshold.
             Each detection is a tuple of:
-            (category, confidence, (x0, y0, x1, y1))
+            (label, confidence, (x0, y0, x1, y1))
 
         """
         assert image
@@ -204,14 +203,14 @@ class TFImageDetection(PipeElement):
                 # protect against models that return arbitrary labels
                 # when the confidence is low
                 if (li < len(self._labels)):
-                    category = self._labels[li]
+                    label = self._labels[li]
                     box = boxes[0, i, :]
                     x0 = box[1]
                     y0 = box[0]
                     x1 = box[3]
                     y1 = box[2]
                     inference_result.append((
-                        category,
+                        label,
                         confidence,
                         (x0, y0, x1, y1)))
         return inference_result
@@ -225,6 +224,6 @@ class TFImageDetection(PipeElement):
 #        for obj in objs:
 #            x0, y0, x1, y1 = obj.bounding_box.flatten().tolist()
 #            confidence = obj.score
-#            category = self.labels[obj.label_id]
-#            inference_result.append((category, confidence, (x0, y0, x1, y1)))
+#            label = self.labels[obj.label_id]
+#            inference_result.append((label, confidence, (x0, y0, x1, y1)))
 #        return inference_result

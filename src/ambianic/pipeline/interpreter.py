@@ -8,12 +8,13 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
+from ambianic.pipeline import timeline
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
 
 log = logging.getLogger(__name__)
 
 
-def get_pipelines(pipelines_config):
+def get_pipelines(pipelines_config, data_dir=None):
     """Initialize and return pipelines given config parameters.
 
     :Parameters:
@@ -36,7 +37,7 @@ def get_pipelines(pipelines_config):
     if pipelines_config:
         for pname, pdef in pipelines_config.items():
             log.info("loading %s pipeline configuration", pname)
-            p = Pipeline(pname=pname, pconfig=pdef)
+            p = Pipeline(pname=pname, pconfig=pdef, data_dir=data_dir)
             pipelines.append(p)
     else:
         log.warning('No pipelines configured.')
@@ -80,7 +81,13 @@ class PipelineServer(ManagedService):
             pipelines_config = config.get('pipelines', None)
             print('pipelines config: %r' % pipelines_config)
             if pipelines_config:
-                self._pipelines = get_pipelines(pipelines_config)
+                # get main data dir config and pass
+                # on to pipelines to use
+                data_dir = config.get('data_dir', None)
+                if not data_dir:
+                    data_dir = './data'
+                self._pipelines = get_pipelines(pipelines_config,
+                                                data_dir=data_dir)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
                     self._threaded_jobs.append(pj)
@@ -213,7 +220,7 @@ class Pipeline(ManagedService):
                     ' Ignoring element and moving forward.',
                     name)
 
-    def __init__(self, pname=None, pconfig=None):
+    def __init__(self, pname=None, pconfig=None, data_dir=None):
         """Init and load pipeline config."""
         assert pname, "Pipeline name required"
         self.name = pname
@@ -229,17 +236,28 @@ class Pipeline(ManagedService):
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
         self._healing_thread = None
+        self._context = timeline.PipelineContext(
+            unique_pipeline_name=self.name)
+        self._context.data_dir = data_dir
+        self._event_log = timeline.get_event_log(
+            pipeline_context=self._context)
         for element_def in self.config:
             log.info('Pipeline %s loading next element: %s',
                      pname, element_def)
             element_name = [*element_def][0]
+            assert element_name
             element_config = element_def[element_name]
             element_class = self.PIPELINE_OPS.get(element_name, None)
             if element_class:
                 log.info('Pipeline %s adding element name %s '
                          'with class %s and config %s',
                          pname, element_name, element_class, element_config)
-                element = element_class(**element_config)
+                element = element_class(
+                    **element_config,
+                    element_name=element_name,
+                    context=self._context,
+                    event_log=self._event_log
+                    )
                 self._pipe_elements.append(element)
             else:
                 self._on_unknown_pipe_element(name=element_name)
@@ -272,7 +290,8 @@ class Pipeline(ManagedService):
             e_next = self._pipe_elements[i]
             e.connect_to_next_element(e_next)
         last_element = self._pipe_elements[len(self._pipe_elements)-1]
-        hc = HealthChecker(health_status_callback=self._heartbeat)
+        hc = HealthChecker(health_status_callback=self._heartbeat,
+                           element_name='health_check')
         last_element.connect_to_next_element(hc)
         self._pipe_elements[0].start()
         log.info("Stopped %s", self.__class__.__name__)

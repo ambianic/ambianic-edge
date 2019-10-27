@@ -79,7 +79,7 @@ def test_start_stop_file_source_image_size():
     sample_received = threading.Event()
     sample_image = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal sample_received
         sample_image = image
@@ -139,7 +139,7 @@ def test_start_stop_file_source_person_detect():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -191,7 +191,7 @@ def test_stop_on_video_EOS():
     sample_received = threading.Event()
     sample_image = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal sample_received
         sample_image = image
@@ -234,7 +234,7 @@ def test_still_image_input_detect_person_exit_eos():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -288,7 +288,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -408,7 +408,7 @@ def test_exception_on_new_sample():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -509,7 +509,7 @@ def test_gst_process_kill():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -625,7 +625,7 @@ def test_gst_process_terminate():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
