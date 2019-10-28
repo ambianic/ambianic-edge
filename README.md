@@ -30,8 +30,9 @@ If you are interested to try the development version, follow these steps:
 
 # Documentation
 
-At this time there is not much documentation in place. The goal is to fill in the gaps as the project advances closer to a stable version. The latest docs are available here:
-[Ambianic Documentation](https://ambianic.github.io/ambianic-docs/)
+An introduction to the project with user journey, architecture and other high level artifacts are [now available here](https://ambianic.github.io/ambianic-docs/).
+
+Additional content is coming in daily as the project advances to its official release. 
 
 # Contributing
 Your constructive feedback and help are most welcome!
