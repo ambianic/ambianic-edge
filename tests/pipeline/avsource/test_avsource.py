@@ -79,7 +79,7 @@ def test_start_stop_file_source_image_size():
     sample_received = threading.Event()
     sample_image = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal sample_received
         sample_image = image
@@ -139,7 +139,7 @@ def test_start_stop_file_source_person_detect():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -148,8 +148,8 @@ def test_start_stop_file_source_person_detect():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -168,8 +168,8 @@ def test_start_stop_file_source_person_detect():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -191,7 +191,7 @@ def test_stop_on_video_EOS():
     sample_received = threading.Event()
     sample_image = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal sample_received
         sample_image = image
@@ -234,7 +234,7 @@ def test_still_image_input_detect_person_exit_eos():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -243,8 +243,8 @@ def test_still_image_input_detect_person_exit_eos():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -263,8 +263,8 @@ def test_still_image_input_detect_person_exit_eos():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -288,7 +288,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -297,8 +297,8 @@ def test_still_image_input_detect_person_exit_stop_signal():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -317,8 +317,8 @@ def test_still_image_input_detect_person_exit_stop_signal():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -408,7 +408,7 @@ def test_exception_on_new_sample():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -417,8 +417,8 @@ def test_exception_on_new_sample():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -437,8 +437,8 @@ def test_exception_on_new_sample():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -509,7 +509,7 @@ def test_gst_process_kill():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -518,8 +518,8 @@ def test_gst_process_kill():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -538,8 +538,8 @@ def test_gst_process_kill():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -625,7 +625,7 @@ def test_gst_process_terminate():
     sample_image = None
     detections = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal sample_image
         nonlocal detection_received
         sample_image = image
@@ -634,8 +634,8 @@ def test_gst_process_terminate():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            category, confidence, _ = detections[0]
-            if category == 'person' and confidence > 0.9:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
                 detection_received.set()
@@ -654,8 +654,8 @@ def test_gst_process_terminate():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    category, confidence, (x0, y0, x1, y1) = detections[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1

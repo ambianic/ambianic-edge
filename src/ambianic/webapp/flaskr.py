@@ -5,6 +5,7 @@ import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask.logging import default_handler
+from flask import g
 import flask
 from requests import get
 from werkzeug.serving import make_server
@@ -21,11 +22,14 @@ class FlaskJob(ManagedService):
 
     def __init__(self, config):
         self.config = config
+        data_dir = config.get('data_dir', './data')
         self.srv = None
-        app = create_app()
+        app = create_app(data_dir=data_dir)
         self.srv = make_server('0.0.0.0', 8778, app)
         ctx = app.app_context()
         ctx.push()
+        with app.app_context():
+            flask.current_app.data_dir = data_dir
         self.flask_stopped = True
         log.debug('Flask process created')
 
@@ -90,7 +94,7 @@ class FlaskServer(ManagedService):
             log.info('Flask server job stopped.')
 
 
-def create_app():
+def create_app(data_dir=None):
     log.debug('Creating Flask app...')
 
     # if Ambianic is in INFO or DEBUG mode, pass that info on to Flask
@@ -129,6 +133,18 @@ def create_app():
     @app.route('/pipelines')
     def view_pipelines():
         return flask.render_template('pipelines.html')
+
+    @app.route('/api/timeline', methods=['GET'])
+    def get_timeline():
+        response_object = {'status': 'success'}
+        req_page = request.args.get('page', default=1, type=int)
+        nonlocal data_dir
+        resp = samples.get_timeline(page=req_page, data_dir=data_dir)
+        response_object['timeline'] = resp
+        log.debug('Returning %d timeline events', len(resp))
+        # log.debug('Returning samples: %s ', response_object)
+        resp = jsonify(response_object)
+        return resp
 
     @app.route('/api/samples', methods=['GET', 'POST'])
     def get_samples():

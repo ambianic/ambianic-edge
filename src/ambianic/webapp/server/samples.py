@@ -5,6 +5,7 @@ import datetime
 from pathlib import Path
 import os
 import json
+import yaml
 
 log = logging.getLogger()
 
@@ -108,6 +109,62 @@ def get_samples(before_datetime=None, page=1):
     # lines = map(str, files)
     # log.debug('File names follow:\n %s', "\n".join(lines))
     return samples
+
+
+def get_timeline(before_datetime=None, page=1, data_dir=None):
+    """Get stored pipeline timeline events.
+
+    :Parameters:
+    ----------
+    before_datetime : date time in ISO 8601 compatible format,
+        YYYY-MM-DDTHH:MM:SS. For example '2002-12-25 00:00:00-06:39'.
+        It uses python's standard function datetime.fromisoformat().
+        If not provided, the function will start with the most recent available
+        sample.
+    page : positive integer
+        Paginates samples in batches of 5. Defaults to page=1.
+
+    :Returns:
+    -------
+    list: json
+        Returns a list of previously saved pipeline events.
+
+    """
+    parsed_datetime = None
+    assert isinstance(page, int)
+    assert page > 0
+    page_size = 5
+    if before_datetime:
+        try:
+            parsed_datetime = datetime.fromisoformat(before_datetime)
+            log.debug('Fetching samples saved before %s',
+                      parsed_datetime)
+        except ValueError as e:
+            log.warning('Unable to parse before_datetime parameter: %s. '
+                        ' Error: %s', before_datetime, str(e))
+    page_start_position = (page-1)*page_size
+    page_end_position = page_start_position + page_size
+    if not parsed_datetime:
+        log.debug('Fetching most recent saved samples')
+    log.debug('Fetching samples page %d. Page size %d. '
+              'Sample index range [%d:%d]. ',
+              page, page_size, page_start_position, page_end_position)
+    p = Path(data_dir) / 'timeline-event-log.yaml'
+    log.debug('Timeline path: %s', p.resolve())
+    with p.open() as pf:
+        timeline_events = yaml.safe_load(pf)
+    log.debug('Fetched timeline file with %d events: ', len(timeline_events))
+    # files = sorted(files, key=os.path.getmtime, reverse=True)
+    # for json_file in files[page_start_position:page_end_position]:
+    # if
+    #    with open(json_file) as f:
+    #        sample = json.load(f)
+    #        sample['id'] = uuid.uuid4().hex
+    #        sample['file'] = str(json_file)
+    #        samples.append(sample)
+    # lines = map(str, files)
+    # log.debug('File names follow:\n %s', "\n".join(lines))
+    return timeline_events
 
 
 def add_sample(new_sample=None):

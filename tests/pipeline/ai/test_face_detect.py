@@ -109,7 +109,7 @@ def test_no_sample():
     config = _object_detect_config()
     result = 'Something'
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = image is None and inference_result is None
     face_detector = FaceDetector(**config)
@@ -124,7 +124,7 @@ def test_bad_sample_good_sample():
     config = _face_detect_config()
     result = 'Something'
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
     face_detector = FaceDetector(**config)
@@ -143,8 +143,8 @@ def test_bad_sample_good_sample():
         )
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -155,7 +155,7 @@ def test_background_image_no_person():
     config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = not image and not inference_result
     face_detector = FaceDetector(**config)
@@ -172,7 +172,7 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
     # test stage one, obect detection -> out
@@ -183,8 +183,8 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -203,7 +203,7 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result
@@ -215,8 +215,8 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -235,7 +235,7 @@ def test_one_person_two_stage_pipe_low_person_confidence():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result
@@ -255,7 +255,7 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result
@@ -267,13 +267,13 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-    category, confidence, (x0, y0, x1, y1) = result[1]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[1]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -285,8 +285,8 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -307,7 +307,7 @@ def test_two_person_with_faces_no_confidence_one_stage_pipe():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
     face_detector = FaceDetector(**face_config)
@@ -326,7 +326,7 @@ def test_one_person_face_high_confidence_one_stage_pipe():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result
@@ -340,8 +340,8 @@ def test_one_person_face_high_confidence_one_stage_pipe():
         )
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
-    assert category == 'person'
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
@@ -353,7 +353,7 @@ def test_one_person_no_face_two_stage():
     face_config = _face_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None):
+    def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
 
         result = inference_result

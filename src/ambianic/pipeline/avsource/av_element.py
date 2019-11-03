@@ -39,7 +39,7 @@ class AVSourceElement(PipeElement):
                 in case there is disruption of the source stream
                 until explicit stop() is requested of the element.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         assert uri
         element_conf = dict(kwargs)
         element_conf['uri'] = uri

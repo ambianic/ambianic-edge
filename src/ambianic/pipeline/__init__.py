@@ -4,6 +4,7 @@ import abc
 import time
 from typing import Iterable
 from ambianic.util import ManagedService
+from ambianic.pipeline.timeline import PipelineContext
 
 log = logging.getLogger(__name__)
 
@@ -16,11 +17,71 @@ PIPE_STATES = [PIPE_STATE_RUNNING, PIPE_STATE_STOPPED]
 class PipeElement(ManagedService):
     """The basic building block of an Ambianic pipeline."""
 
-    def __init__(self):
+    def __init__(self,
+                 element_name=None,
+                 context: PipelineContext = None,
+                 event_log: logging.Logger = None):
+        """Create a PipeElement instance."""
         super().__init__()
+        self._name = element_name
         self._state = PIPE_STATE_STOPPED
         self._next_element = None
         self._latest_heartbeat = time.monotonic()
+        self._context = context
+        self._timeline_event_log = event_log
+
+    @property
+    def name(self) -> str:
+        """Return this element's reference name in pipeline definitions."""
+        return self._name
+
+    @property
+    def context(self) -> PipelineContext:
+        """Pipeline execution context.
+
+        :Returns:
+        -------
+        type: PipelineContext
+            pipeline execution context
+
+        """
+        return self._context
+
+    def push_context(self, element_context: dict = None):
+        """Push this element information to the context stack.
+
+        Invoke before the element yields its first sample output
+        for a given input sample.
+
+        :Parameters:
+        ----------
+        element_context : dict
+            Contextual info about this element.
+
+        """
+        if element_context is None:
+            element_context = {}
+        element_context['class'] = self.__class__.__name__
+        self._context.push_element_context(element_context)
+
+    def pop_context(self) -> dict:
+        """Pop element information from the context stack.
+
+        Invoke after the element yields its last sample output
+        for a given input sample.
+
+        :Returns:
+        -------
+        type: dict
+            Element context info.
+
+        """
+        return self._context.pop_element_context()
+
+    @property
+    def event_log(self) -> logging.Logger:
+        """Get timeline event log for the current pipe execution context."""
+        return self._timeline_event_log
 
     @property
     def state(self):
@@ -161,7 +222,7 @@ class HealthChecker(PipeElement):
     based on received output samples and their frequency.
     """
 
-    def __init__(self, health_status_callback=None):
+    def __init__(self, health_status_callback=None, **kwargs):
         """Create instance given health status callback.
 
         The health status call back will be invoked each time
@@ -173,7 +234,7 @@ class HealthChecker(PipeElement):
             Method that is expected to measure the overall pipeline throughput
             health.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         assert health_status_callback
         self._health_status_callback = health_status_callback
 

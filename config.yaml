@@ -9,16 +9,11 @@ data_dir: &data_dir ./data
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
   file: ./data/ambianic-log.txt
-  level: INFO
+  level: DEBUG
 
-# path to saved object detections from front door camera stream
-front_door_object_detect_dir: &fd_object_detect_dir ./data/detections/front-door/objects
-# path to saved face detections from front door camera stream
-front_door_face_detect_dir: &fd_face_detect_dir ./data/detections/front-door/faces
-
-entry_area_object_detect_dir: &ea_object_detect_dir ./data/detections/entry-area/objects
-entry_area_face_detect_dir: &ea_face_detect_dir ./data/detections/entry-area/faces
-
+# Pipeline event timeline configuration
+timeline:
+  event_log: ./data/timeline-event-log.yaml
 
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
@@ -68,14 +63,12 @@ pipelines:
         <<: *tfm_image_detection
         confidence_threshold: 0.8
      - save_detections: # save samples from the inference results
-        output_directory: *fd_object_detect_dir
         positive_interval: 2 # how often (in seconds) to save samples with ANY results above the confidence threshold
         idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
      - detect_faces: # run ai inference on the samples from the previous element output
         <<: *tfm_face_detection
         confidence_threshold: 0.8
      - save_detections: # save samples from the inference results
-        output_directory: *fd_face_detect_dir
         positive_interval: 2
         idle_interval: 600
 
