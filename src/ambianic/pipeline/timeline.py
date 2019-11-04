@@ -62,7 +62,7 @@ class PipelineContext:
     @property
     def unique_pipeline_name(self):
         """Return pipeline unique name."""
-        return self.unique_pipeline_name
+        return self._unique_pipeline_name
 
     @property
     def data_dir(self):
