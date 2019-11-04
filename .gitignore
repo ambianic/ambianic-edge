@@ -13,3 +13,4 @@ ambianic/webapp/bower_components/paper/
 **/coverage.xml
 **/.__*
 _mdwriter.cson
+**/timeline-event-log.yaml
