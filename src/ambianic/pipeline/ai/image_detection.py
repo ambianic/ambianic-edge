@@ -105,8 +105,9 @@ class TFImageDetection(PipeElement):
         end_time = time.monotonic()
         inf_time = (end_time - start_time) * 1000
         fps = 1.0/(end_time - self.last_time)
-        inf_info = 'Inference: %.2f ms  FPS: %.2f fps'
-        log.info(inf_info, inf_time, fps)
+        pipeline_name = self.context.unique_pipeline_name
+        inf_info = 'Inference time %.2f ms, %.2f fps in pipeline %s'
+        log.info(inf_info, inf_time, fps, pipeline_name)
         self.last_time = end_time
 
     def detect(self, image=None):
