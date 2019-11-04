@@ -11,6 +11,8 @@ def main():
     """Start the main app executable in the hosting OS environment."""
     global _svr
     env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
+    if not env_work_dir:
+        env_work_dir = '/workspace'
     _svr = ambianic.server.AmbianicServer(work_dir=env_work_dir)
     _svr.start()
 
