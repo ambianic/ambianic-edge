@@ -16,13 +16,18 @@ log = logging.getLogger(__name__)
 
 # configuration
 DEBUG = True
+DEFAULT_DATA_DIR = './data'
 
 
 class FlaskJob(ManagedService):
 
     def __init__(self, config):
         self.config = config
-        data_dir = config.get('data_dir', './data')
+        data_dir = None
+        if config:
+            data_dir = config.get('data_dir', None)
+        if not data_dir:
+            data_dir = DEFAULT_DATA_DIR
         self.srv = None
         app = create_app(data_dir=data_dir)
         self.srv = make_server('0.0.0.0', 8778, app)
