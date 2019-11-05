@@ -1,5 +1,5 @@
 # Production version of Ambianic docker image
-FROM ambianic:dev
+FROM ambianic/ambianic:dev
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace

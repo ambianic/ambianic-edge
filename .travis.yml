@@ -24,6 +24,8 @@ install:
   - pip3 install -U codecov
 # command to run tests
 script:
+  # fail fast
+  - set -e
   # Raspberry PI section
   # prepare qemu
   - DEV_TAG=dev-${TAG_SUFFIX}
@@ -55,31 +57,16 @@ script:
   - docker images
   - cd $TRAVIS_BUILD_DIR/build
   - ./ambianic-test.sh
-  - export GITHUB_TOKEN
   # publish binaries
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-        docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-        docker push ambianic/ambianic:${DEV_TAG}
-        docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambianic/ambianic:dev-arm32v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
-        docker manifest push ambianic/ambianic:dev
-        cd ${TRAVIS_BUILD_DIR}/build
-        docker build -f Prod.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${PROD_TAG} .
-        docker tag ambianic/ambianic:${PROD_TAG} ambianic/ambianic:latest
-        docker manifest create ambianic/ambianic:latest ambianic/ambianic:latest-amd64 ambianic/ambianic:latest-arm32v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:latest-arm32v7 --os=linux --arch=arm --variant=v7
-        docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:latest-amd64 --os=linux --arch=amd64
-        docker manifest push ambianic/ambianic:latest
-        nvm install lts/*
-        npx semantic-release
+        export GITHUB_TOKEN
+        export DOCKER_USER
+        export DOCKER_PASS
+        export DEV_TAG
+        export PROD_TAG
+        ./semantic-release.sh
     fi
-#      if [ "$ARCH" == "linux/amd64" ]; then
-#        ../docs/build-docs.sh
-#      fi
-#        git remote rm origin
-#        git remote add origin https://ivelin:${GITHUB_TOKEN}@github.com/ambianic/ambianic-core.git
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
   - ls -al
