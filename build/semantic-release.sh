@@ -1,5 +1,6 @@
 #!/bin/bash
 npm install -g npm@latest
+npm install -U node
 # npm install lts/*
 npm install --save-dev @semantic-release/commit-analyzer
 npm install --save-dev @semantic-release/git
