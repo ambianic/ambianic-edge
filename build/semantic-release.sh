@@ -8,8 +8,13 @@ set -x
 ls -al
 pwd
 
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n stable
+node --version
+
 npm install -g npm@latest
-npm install -U node
+# npm install -U node
 # npm install lts/*
 npm install --save-dev @semantic-release/commit-analyzer
 npm install --save-dev @semantic-release/git
