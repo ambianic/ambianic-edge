@@ -1,5 +1,5 @@
 #!/bin/bash
-nvm install lts/*
+npm install lts/*
 npm install --save-dev @semantic-release/commit-analyzer
 npm install --save-dev @semantic-release/git
 npm install --save-dev semantic-release
