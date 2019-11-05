@@ -31,7 +31,6 @@ sources:
     # when live is True, the AVSource element will try to reconnect
     # if the stream is interrupted due to network disruption or another reason.
     # live: True
-  # Bryant Park Webcam, New York
   recorded_cam_feed: &src_recorded_cam_feed
     uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
     type: video

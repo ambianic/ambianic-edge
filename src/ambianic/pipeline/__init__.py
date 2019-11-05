@@ -20,7 +20,8 @@ class PipeElement(ManagedService):
     def __init__(self,
                  element_name=None,
                  context: PipelineContext = None,
-                 event_log: logging.Logger = None):
+                 event_log: logging.Logger = None,
+                 **kwargs):
         """Create a PipeElement instance."""
         super().__init__()
         self._name = element_name
