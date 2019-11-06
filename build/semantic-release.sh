@@ -9,11 +9,11 @@ ls -al
 pwd
 
 npm cache clean -f
-npm install -g n
+npm install n
 n stable
 node --version
 
-npm install -g npm@latest
+npm install npm@latest
 # npm install -U node
 # npm install lts/*
 npm install --save-dev @semantic-release/commit-analyzer
