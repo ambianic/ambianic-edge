@@ -65,7 +65,12 @@ script:
         export DOCKER_PASS
         export DEV_TAG
         export PROD_TAG
-        ./semantic-release.sh
+        set -ex
+        cmd=./semantic-release.sh
+        $cmd
+        status=$?
+        [ $status -eq 0 ] && echo "$cmd command was successful" || echo "$cmd failed"
+        echo "Semantic Release completed"
     fi
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
