@@ -8,9 +8,15 @@ set -x
 ls -al
 pwd
 
-npm cache clean -f
-npm install n
-n stable
+# nvm install node --reinstall-packages-from=$(nvm current)
+nvm install lts/* --reinstall-packages-from=node
+nvm ls
+nvm uninstall v8
+nvm ls
+
+# npm cache clean -f
+# npm install n
+# n stable
 node --version
 
 npm install npm@latest
