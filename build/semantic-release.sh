@@ -9,8 +9,6 @@ pwd
 
 node --version
 npm --version
-nvm --version
-
 
 # install nvm
 sudo apt-get update
