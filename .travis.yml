@@ -60,17 +60,40 @@ script:
   # publish binaries
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-        export GITHUB_TOKEN
-        export DOCKER_USER
-        export DOCKER_PASS
         export DEV_TAG
         export PROD_TAG
-        cmd=./semantic-release.sh
-        $cmd
-        status=$?
-        [ $status -eq 0 ] && echo "$cmd command was successful" || echo "$cmd failed"
-        echo "Semantic Release completed"
+        node --version
+        npm --version
+        sudo apt-get update
+        sudo apt-get install build-essential checkinstall libssl-dev
+        curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.1/install.sh | bash
+        export NVM_DIR="/home/travis/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+        command -v nvm
+        nvm ls
+        nvm install lts/* --reinstall-packages-from=node
+        nvm ls
+        nvm uninstall v8
+        nvm ls
+        node --version
+        npm install npm@latest
+        npm install --save-dev @semantic-release/commit-analyzer
+        npm install --save-dev @semantic-release/git
+        npm install --save-dev semantic-release
+        npm install --save-dev semantic-release-docker
+        npm install --save-dev @semantic-release/release-notes-generator
+        npm install --save-dev @semantic-release/github
+        npm install --save-dev @semantic-release/changelog
+        npm install --save-dev @semantic-release/exec
+        node --version
+        npx semantic-release
     fi
+
+#        cmd=./semantic-release.sh
+#        $cmd
+#        status=$?
+#        [ $status -eq 0 ] && echo "$cmd command was successful" || echo "$cmd failed"
+#        echo "Semantic Release completed"
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
   - ls -al
