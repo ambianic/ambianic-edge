@@ -7,6 +7,10 @@ set -x
 
 pwd
 
+node --version
+npm --version
+nvm --version
+
 # nvm install node --reinstall-packages-from=$(nvm current)
 nvm install lts/* --reinstall-packages-from=node
 nvm ls
