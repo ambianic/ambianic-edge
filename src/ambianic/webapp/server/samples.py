@@ -153,7 +153,12 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
     log.debug('Timeline path: %s', p.resolve())
     with p.open() as pf:
         timeline_events = yaml.safe_load(pf)
-    log.debug('Fetched timeline file with %d events: ', len(timeline_events))
+    # latest_events_first = timeline_events.reverse()
+    log.debug('Fetched timeline file into struct of type %r with %d events: ',
+              type(timeline_events),
+              len(timeline_events))
+    # bring latest events to front
+    timeline_events.reverse()
     # files = sorted(files, key=os.path.getmtime, reverse=True)
     # for json_file in files[page_start_position:page_end_position]:
     # if
