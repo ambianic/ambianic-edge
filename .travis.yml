@@ -25,7 +25,7 @@ install:
 # command to run tests
 script:
   # fail fast
-  - set -e
+  # - set -e
   # Raspberry PI section
   # prepare qemu
   - DEV_TAG=dev-${TAG_SUFFIX}
@@ -65,7 +65,7 @@ script:
         export DOCKER_PASS
         export DEV_TAG
         export PROD_TAG
-        set -ex
+        set -x
         cmd=./semantic-release.sh
         $cmd
         status=$?

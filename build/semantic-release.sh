@@ -1,6 +1,6 @@
 #!/bin/bash
 # exit bash script on error
-set -e
+# set -e
 
 # verbose mode
 set -x
