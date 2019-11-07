@@ -14,6 +14,9 @@ npm --version
 sudo apt-get update
 sudo apt-get install build-essential checkinstall libssl-dev
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.1/install.sh | bash
+export NVM_DIR="/home/travis/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+
 command -v nvm
 nvm ls
 

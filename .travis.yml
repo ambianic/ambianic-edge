@@ -65,7 +65,6 @@ script:
         export DOCKER_PASS
         export DEV_TAG
         export PROD_TAG
-        set -x
         cmd=./semantic-release.sh
         $cmd
         status=$?
