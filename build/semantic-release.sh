@@ -5,7 +5,6 @@ set -e
 # verbose mode
 set -x
 
-ls -al
 pwd
 
 # nvm install node --reinstall-packages-from=$(nvm current)

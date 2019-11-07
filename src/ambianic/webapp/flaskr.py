@@ -140,6 +140,7 @@ def create_app(data_dir=None):
         return flask.render_template('pipelines.html')
 
     @app.route('/api/timeline', methods=['GET'])
+    @app.route('/api/timeline.json', methods=['GET'])
     def get_timeline():
         response_object = {'status': 'success'}
         req_page = request.args.get('page', default=1, type=int)
