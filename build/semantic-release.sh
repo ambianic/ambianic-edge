@@ -11,6 +11,14 @@ node --version
 npm --version
 nvm --version
 
+
+# install nvm
+sudo apt-get update
+sudo apt-get install build-essential checkinstall libssl-dev
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.1/install.sh | bash
+command -v nvm
+nvm ls
+
 # nvm install node --reinstall-packages-from=$(nvm current)
 nvm install lts/* --reinstall-packages-from=node
 nvm ls
