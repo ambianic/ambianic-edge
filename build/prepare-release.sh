@@ -17,6 +17,10 @@ a=( ${RELEASE_VERSION//./ } )
 MAJOR=${a[0]}
 MINOR=${a[1]}
 PATCH=${a[2]}
+echo "RELEASE_VERSION=$RELEASE_VERSION"
+echo "MAJOR=$MAJOR"
+echo "MINOR=$MAJOR.$MINOR"
+echo "PATCH=$PATCH"
 docker tag ambianic/ambianic:latest ambianic/ambianic:$MAJOR
 docker push ambianic/ambianic:$MAJOR
 docker tag ambianic/ambianic:latest ambianic/ambianic:"$MAJOR.$MINOR"
