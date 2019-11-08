@@ -5,6 +5,7 @@ LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 VOLUME /workspace
 
 WORKDIR /opt/ambianic
+RUN pwd && ls -la ./src/*
 COPY ["./src", "./src/"]
 RUN ls -la ./src/* && pip3 install -e src
 
