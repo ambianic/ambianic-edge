@@ -5,8 +5,8 @@ docker manifest create ambianic/ambianic:dev ambianic/ambianic:dev-amd64 ambiani
 docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-arm32v7 --os=linux --arch=arm --variant=v7
 docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:dev-amd64 --os=linux --arch=amd64
 docker manifest push ambianic/ambianic:dev
-cd ${TRAVIS_BUILD_DIR}/build
-docker build -f Prod.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${PROD_TAG} .
+cd ${TRAVIS_BUILD_DIR}
+docker build -f ./build/Prod.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${PROD_TAG} .
 docker tag ambianic/ambianic:${PROD_TAG} ambianic/ambianic:latest
 docker manifest create ambianic/ambianic:latest ambianic/ambianic:latest-amd64 ambianic/ambianic:latest-arm32v7
 docker manifest annotate ambianic/ambianic:dev ambianic/ambianic:latest-arm32v7 --os=linux --arch=arm --variant=v7
