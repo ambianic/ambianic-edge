@@ -60,8 +60,6 @@ script:
   # publish binaries
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-        export DEV_TAG
-        export PROD_TAG
         node --version
         npm --version
         sudo apt-get update

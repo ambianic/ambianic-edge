@@ -1,13 +1,14 @@
 # Production version of Ambianic docker image
-FROM ambianic/ambianic:dev
+FROM ambianic/ambianic-edge:dev
 LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace
 
-WORKDIR /opt/ambianic
+WORKDIR /opt/ambianic-edge
 RUN pwd && ls -al
-COPY ["src", "./src/"]
-RUN ls -la ./src/* && pip3 install -e src
+# assuming the context of docker build is ambianid-edge/src
+COPY [".", "./src/"]
+RUN ls -al ./src/* && pip3 install -e src
 
 WORKDIR /workspace
 

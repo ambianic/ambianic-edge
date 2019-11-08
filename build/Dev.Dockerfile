@@ -4,7 +4,7 @@ LABEL maintainer="Ivelin Ivanov <ivelin@ambianic.ai>"
 
 VOLUME /workspace
 
-WORKDIR /opt/ambianic
+WORKDIR /opt/ambianic-edge
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
