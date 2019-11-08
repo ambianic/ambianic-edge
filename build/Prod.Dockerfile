@@ -6,7 +6,7 @@ VOLUME /workspace
 
 WORKDIR /opt/ambianic
 RUN pwd && ls -al
-COPY ["./src", "./src/"]
+COPY ["src", "./src/"]
 RUN ls -la ./src/* && pip3 install -e src
 
 WORKDIR /workspace
