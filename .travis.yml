@@ -44,8 +44,8 @@ script:
 #      fi
 #  # build image
   - cd ${TRAVIS_BUILD_DIR}/build
-  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:${DEV_TAG} .
-  - docker tag ambianic/ambianic:${DEV_TAG} ambianic/ambianic:dev
+  - docker build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic-edge:${DEV_TAG} .
+  - docker tag ambianic/ambianic-edge:${DEV_TAG} ambianic/ambianic-edge:dev
 #  - docker buildx build -f Dev.Dockerfile --platform ${ARCH} -t ambianic/ambianic:dev .
 
 #  - sudo docker build -f Dev.Dockerfile --platform $ARCH -t ambianic/ambianic:dev --build-arg ARCH=$ARCH .
