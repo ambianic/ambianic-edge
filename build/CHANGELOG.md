@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [0.1.1](https://github.com/ambianic/ambianic-edge/compare/v0.1.0...v0.1.1) (2019-11-11)
+
+
+### Bug Fixes
+
+* merge branch 'master' of https://github.com/ambianic/ambianic-edge ([e6b98ac](https://github.com/ambianic/ambianic-edge/commit/e6b98acdc24da91b78788475dd73e854f59e18cf))
+
 # [0.1.0](https://github.com/ambianic/ambianic-edge/compare/v0.0.4...v0.1.0) (2019-11-11)
 
 
