@@ -1,4 +1,4 @@
-"""Restful services related to pipeline samples."""
+"""REST API for timeline events from pipeline samples."""
 import logging
 import uuid
 import datetime
@@ -157,8 +157,12 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
     log.debug('Fetched timeline file into struct of type %r with %d events: ',
               type(timeline_events),
               len(timeline_events))
-    # bring latest events to front
-    timeline_events.reverse()
+    # events are appended to the file as they arrive
+    # we need to read in reverse order to get the latest one first
+    timeline_slice = \
+        timeline_events[-1*page_start_position - 1:
+                        -1*page_end_position - 1:
+                        -1]
     # files = sorted(files, key=os.path.getmtime, reverse=True)
     # for json_file in files[page_start_position:page_end_position]:
     # if
@@ -169,7 +173,7 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
     #        samples.append(sample)
     # lines = map(str, files)
     # log.debug('File names follow:\n %s', "\n".join(lines))
-    return timeline_events
+    return timeline_slice
 
 
 def add_sample(new_sample=None):

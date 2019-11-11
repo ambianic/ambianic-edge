@@ -144,6 +144,7 @@ def create_app(data_dir=None):
     def get_timeline():
         response_object = {'status': 'success'}
         req_page = request.args.get('page', default=1, type=int)
+        log.debug('Requested timeline events page" %d', req_page)
         nonlocal data_dir
         resp = samples.get_timeline(page=req_page, data_dir=data_dir)
         response_object['timeline'] = resp
