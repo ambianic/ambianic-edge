@@ -8,6 +8,7 @@ WORKDIR /opt/ambianic-edge
 RUN pwd && ls -al
 # assuming the context of docker build is ambianid-edge/src
 COPY [".", "./src/"]
+COPY ["README.md", "./"]
 RUN ls -al ./src/* && pip3 install -e src
 
 WORKDIR /workspace
