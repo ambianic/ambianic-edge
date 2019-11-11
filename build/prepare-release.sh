@@ -22,6 +22,8 @@ cd ${TRAVIS_BUILD_DIR}
 pwd
 ls -al
 
+cp README.md ./src
+
 docker build -f ./build/Prod.Dockerfile --platform ${ARCH} -t "ambianic/ambianic-edge:${PROD_TAG}" ./src
 docker tag ambianic/ambianic-edge:${PROD_TAG} ambianic/ambianic-edge:latest
 docker manifest create ambianic/ambianic-edge:latest ambianic/ambianic-edge:latest-amd64 ambianic/ambianic-edge:latest-arm32v7
