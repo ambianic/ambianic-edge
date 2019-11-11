@@ -26,6 +26,7 @@ cp README.md ./src
 
 docker build -f ./build/Prod.Dockerfile --platform ${ARCH} -t "ambianic/ambianic-edge:${PROD_TAG}" ./src
 docker tag "ambianic/ambianic-edge:${PROD_TAG}" "ambianic/ambianic-edge:latest"
+docker push "ambianic/ambianic-edge:${PROD_TAG}"
 docker manifest create "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-amd64" "ambianic/ambianic-edge:latest-arm32v7"
 docker manifest annotate "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-arm32v7" --os=linux --arch=arm --variant=v7
 docker manifest annotate "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-amd64" --os=linux --arch=amd64
