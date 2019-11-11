@@ -4,14 +4,15 @@
 ![Ambianic logo][logo]
 
 # Project mission
-Helpful AI for Home and Business Automation
 
-Local data, custom AI models, federated learning
+[Ambianic.ai](https://ambianic.ai): Helpful AI for Home and Business Automation
+
+[Ambianic Edge](https://github.com/ambianic/ambianic-edge) is designed to run on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actioanable observations.
+
+[Ambianic UI](https://github.com/ambianic/ambianic-ui) is the main user interface to Ambianic Edge deployments.
 
 # Project Status
-At this time, Ambianic is in active early formation stages. Lots of design and implementation decisions are made daily with focus on advancing the project to an initial stable version as soon as possible.
-
-If you are willing to take the risk that comes with early stage code and are able to dive deep into Python, Javascript, Gstreamer, and Tensorflow code, then please keep reading. Otherwise click on the Watch button above (Releases Only option) to be notified when we release a stable end user version.
+Ambianic Edge is in active formation stage sprinting towards its first public Beta.
 
 # Product design guidelines
 
