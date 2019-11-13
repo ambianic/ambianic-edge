@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.0.1](https://github.com/ambianic/ambianic-edge/compare/v1.0.0...v1.0.1) (2019-11-13)
+
+
+### Bug Fixes
+
+* sem rel trigger ([058391f](https://github.com/ambianic/ambianic-edge/commit/058391f41638619ceeb97d7d9c78755c4d77a660))
+
 # [1.0.0](https://github.com/ambianic/ambianic-edge/compare/v0.1.1...v1.0.0) (2019-11-13)
 
 
