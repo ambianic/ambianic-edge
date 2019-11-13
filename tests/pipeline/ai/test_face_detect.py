@@ -47,7 +47,7 @@ def _face_detect_config():
             },
         'labels': _good_labels,
         'top_k': 2,
-        'confidence_threshold': 0.5,
+        'confidence_threshold': 0.6,
     }
     return config
 
@@ -229,8 +229,8 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     assert not result
 
 
-def test_one_person_two_stage_pipe_low_person_confidence():
-    """Fail to detect person in 1st stage hence no face in 2nd stage."""
+def test_one_person_two_stage_pipe_high_face_confidence():
+    """Detect a person in 1st stage and a face in 2nd stage."""
     object_config = _object_detect_config()
     face_config = _face_detect_config()
     result = None
@@ -246,7 +246,13 @@ def test_one_person_two_stage_pipe_low_person_confidence():
     face_detector.connect_to_next_element(output)
     img = _get_image(file_name='person-face.jpg')
     object_detector.receive_next_sample(image=img)
-    assert not result
+    assert result
+    assert len(result) == 1
+    label, confidence, (x0, y0, x1, y1) = result[0]
+    assert label == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
 
 
 def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
@@ -287,7 +293,7 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     assert len(result) == 1
     label, confidence, (x0, y0, x1, y1) = result[0]
     assert label == 'person'
-    assert confidence > 0.9
+    assert confidence > 0.8
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
 

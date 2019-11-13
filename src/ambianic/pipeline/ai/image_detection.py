@@ -62,13 +62,10 @@ class TFImageDetection(PipeElement):
             lines = (p.match(line).groups() for line in f.readlines())
             return {int(num): text.strip() for num, text in lines}
 
-    def resize(self, image=None, desired_size=None):
-        """Resizes original image to size expected by input tensor.
+    def thumbnail(self, image=None, desired_size=None):
+        """Resizes original image as close as possible to desired size.
 
-        Preserves aspect ratio to avoid confusing the AI model with
-        unnatural distortions. Pads the resulting image
-        with solid black color pixels to fill the desired size.
-
+        Preserves aspect ratio of original image.
         Does not modify the original image.
 
         :Parameters:
@@ -87,10 +84,42 @@ class TFImageDetection(PipeElement):
         """
         assert image
         assert desired_size
-        log.debug('current image size = %r', image.size)
+        log.debug('input image size = %r', image.size)
         thumb = image.copy()
         thumb.thumbnail(desired_size)
         log.debug('thmubnail image size = %r', thumb.size)
+        return thumb
+
+    def resize(self, image=None, desired_size=None):
+        """Pad original image to exact size expected by input tensor.
+
+        Preserve aspect ratio to avoid confusing the AI model with
+        unnatural distortions. Pad the resulting image
+        with solid black color pixels to fill the desired size.
+
+        Do not modify the original image.
+
+        :Parameters:
+        ----------
+        image : PIL.Image
+            Input Image sized to fit an input tensor but without padding.
+            Its possible that one size fits one tensor dimension exactly
+            but the other size is smaller than
+            the input tensor other dimension.
+
+        desired_size : (width, height)
+            Exact size expected by the AI model.
+
+        :Returns:
+        -------
+        PIL.Image
+            Resized image fitting exactly the AI model input tensor.
+
+        """
+        assert image
+        assert desired_size
+        log.debug('input image size = %r', image.size)
+        thumb = image.copy()
         delta_w = desired_size[0] - thumb.size[0]
         delta_h = desired_size[1] - thumb.size[1]
         padding = (0, 0, delta_w, delta_h)
@@ -119,7 +148,8 @@ class TFImageDetection(PipeElement):
         :Parameters:
         ----------
         image : PIL.Image
-            Input image in raw RGB format.
+            Input image in raw RGB format
+            with the exact size of the input tensor.
 
         :Returns:
         -------
@@ -139,7 +169,17 @@ class TFImageDetection(PipeElement):
         height = tfe.input_details[0]['shape'][1]
         width = tfe.input_details[0]['shape'][2]
 
-        new_im = self.resize(image=image, desired_size=(width, height))
+        # thumbnail is a proportionately resized image
+        thumbnail = self.thumbnail(image=image, desired_size=(width, height))
+
+        # convert thumbnail into an image with exact size as tensor
+        # preserving proportions by padding as needed
+        new_im = self.resize(image=thumbnail, desired_size=(width, height))
+
+        # calculate what fraction of the new image is the thumbnail size
+        # we will use these factors to adjust detection box coordinates
+        w_factor = thumbnail.size[0] / new_im.size[0]
+        h_factor = thumbnail.size[1] / new_im.size[1]
 
         # add N dim
         input_data = np.expand_dims(new_im, axis=0)
@@ -209,25 +249,22 @@ class TFImageDetection(PipeElement):
                 if (li < len(self._labels)):
                     label = self._labels[li]
                     box = boxes[0, i, :]
-                    x0 = box[1]
-                    y0 = box[0]
-                    x1 = box[3]
-                    y1 = box[2]
+                    # refit detections into original image size
+                    # without overflowing outside image borders
+                    x0 = box[1] / w_factor
+                    y0 = box[0] / h_factor
+                    x1 = min(box[3] / w_factor, 1)
+                    y1 = min(box[2] / h_factor, 1)
+                    log.debug('thumbnail image size: %r , '
+                              'tensor image size: %r',
+                              thumbnail.size,
+                              new_im.size)
+                    log.debug('resizing detection box (x0, y0, x1, y1) '
+                              'from: %r to %r',
+                              (box[1], box[0], box[3], box[2]),
+                              (x0, y0, x1, y1))
                     inference_result.append((
                         label,
                         confidence,
                         (x0, y0, x1, y1)))
-        return inference_result
-#        objs = self.engine.DetectWithImage(
-#            image,
-#            threshold=self.confidence_threshold,
-#            keep_aspect_ratio=True,
-#            relative_coord=True,
-#            top_k=3)
-#
-#        for obj in objs:
-#            x0, y0, x1, y1 = obj.bounding_box.flatten().tolist()
-#            confidence = obj.score
-#            label = self.labels[obj.label_id]
-#            inference_result.append((label, confidence, (x0, y0, x1, y1)))
-#        return inference_result
+        return thumbnail, new_im, inference_result

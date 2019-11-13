@@ -46,7 +46,7 @@ ai_models:
     labels: ai_models/coco_labels.txt
   face_detection: &tfm_face_detection
     model:
-      tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
+      tflite: ai_models/mobilenet_ssd_v2_face_quant_postprocess.tflite
       edgetpu: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
     top_k: 2

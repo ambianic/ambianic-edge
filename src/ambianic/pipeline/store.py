@@ -67,11 +67,18 @@ class SaveDetectionSamples(PipeElement):
         self._idle_interval = datetime.timedelta(seconds=ii)
         self._time_latest_saved_idle = self._time_latest_saved_detection
 
-    def _save_sample(self, now, image, inference_result, inference_meta):
-        time_prefix = now.strftime("%Y%m%d-%H%M%S.%f%z.{fext}")
-        image_file = time_prefix.format(fext='jpg')
+    def _save_sample(self,
+                     inf_time=None,
+                     image=None,
+                     thumbnail=None,
+                     inference_result=None,
+                     inference_meta=None):
+        time_prefix = inf_time.strftime("%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}")
+        image_file = time_prefix.format(suffix='image', fext='jpg')
         image_path = self._output_directory / image_file
-        json_file = time_prefix.format(fext='json')
+        thumbnail_file = time_prefix.format(suffix='thumbnail', fext='jpg')
+        thumbnail_path = self._output_directory / thumbnail_file
+        json_file = time_prefix.format(suffix='inference', fext='json')
         json_path = self._output_directory / json_file
         inf_json = []
         for label, confidence, box in inference_result:
@@ -92,8 +99,9 @@ class SaveDetectionSamples(PipeElement):
             inf_json.append(one_inf)
         save_json = {
             'id': uuid.uuid4().hex,
-            'datetime': now.isoformat(),
+            'datetime': inf_time.isoformat(),
             'image_file_name': image_file,
+            'thumbnail_file_name': thumbnail_file,
             'json_file_name': json_file,
             # rel_dir is relative to system data dir
             # this will be important when resloving REST API data
@@ -103,6 +111,7 @@ class SaveDetectionSamples(PipeElement):
             'inference_meta': inference_meta
         }
         image.save(image_path)
+        thumbnail.save(thumbnail_path)
         # save samples to local disk
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(save_json, f, ensure_ascii=False, indent=4)
@@ -112,6 +121,7 @@ class SaveDetectionSamples(PipeElement):
 
     def process_sample(self,
                        image=None,
+                       thumbnail=None,
                        inference_result=None,
                        inference_meta=None,
                        **sample):
@@ -132,10 +142,11 @@ class SaveDetectionSamples(PipeElement):
                     # the user specified positive_interval
                     if now - self._time_latest_saved_detection >= \
                       self._positive_interval:
-                        self._save_sample(now,
-                                          image,
-                                          inference_result,
-                                          inference_meta)
+                        self._save_sample(inf_time=now,
+                                          image=image,
+                                          thumbnail=thumbnail,
+                                          inference_result=inference_result,
+                                          inference_meta=inference_meta)
                         self._time_latest_saved_detection = now
                 else:
                     # non-empty result, there is a detection
@@ -143,10 +154,11 @@ class SaveDetectionSamples(PipeElement):
                     #  the user specified positive_interval
                     if now - self._time_latest_saved_idle >= \
                       self._idle_interval:
-                        self._save_sample(now,
-                                          image,
-                                          inference_result,
-                                          inference_meta)
+                        self._save_sample(inf_time=now,
+                                          image=image,
+                                          thumbnail=thumbnail,
+                                          inference_result=inference_result,
+                                          inference_meta=inference_meta)
                         self._time_latest_saved_idle = now
             except Exception as e:
                 log.exception('Error %r while saving sample %r',

@@ -56,17 +56,16 @@ class FaceDetector(TFImageDetection):
                               len(person_regions))
                     for box in person_regions:
                         person_image = self.crop_image(image, box)
-                        inference_result = self.detect(image=person_image)
+                        thumbnail, tensor_image, inference_result = \
+                            self.detect(image=person_image)
                         log.debug('Face detection inference_result: %r',
                                   inference_result)
                         inf_meta = {
-                            'display': 'Face Detection'
-                            # id
-                            # version
-                            # etc
+                            'display': 'Face Detection',
                         }
                         processed_sample = {
                             'image': person_image,
+                            'thumbnail': thumbnail,
                             'inference_result': inference_result,
                             'inference_meta': inf_meta
                             }

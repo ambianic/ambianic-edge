@@ -25,11 +25,20 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
     _json_path = None
     _inf_result = None
 
-    def _save_sample(self, now, image, inference_result, inference_meta):
+    def _save_sample(self,
+                     inf_time=None,
+                     image=None,
+                     thumbnail=None,
+                     inference_result=None,
+                     inference_meta=None):
         self._save_sample_called = True
         self._inf_result = inference_result
         self._img_path, self._json_path = \
-            super()._save_sample(now, image, inference_result, inference_meta)
+            super()._save_sample(inf_time=inf_time,
+                                 image=image,
+                                 thumbnail=thumbnail,
+                                 inference_result=inference_result,
+                                 inference_meta=inference_meta)
 
 
 def test_store_positive_detection():
@@ -49,6 +58,7 @@ def test_store_positive_detection():
             ('person', 0.98, (0, 1, 2, 3))
     ]
     processed_samples = list(store.process_sample(image=img,
+                                                  thumbnail=img,
                                                   inference_result=detections))
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -109,6 +119,7 @@ def test_store_negative_detection():
     img = Image.new('RGB', (60, 30), color='red')
     detections = []
     processed_samples = list(store.process_sample(image=img,
+                                                  thumbnail=img,
                                                   inference_result=detections))
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -147,7 +158,12 @@ class _TestSaveDetectionSamples2(SaveDetectionSamples):
 
     _save_sample_called = False
 
-    def _save_sample(self, now, image, inference_result, inference_meta):
+    def _save_sample(self,
+                     inf_time=None,
+                     image=None,
+                     thumbnail=None,
+                     inference_result=None,
+                     inference_meta=None):
         self._save_sample_called = True
         raise RuntimeError()
 

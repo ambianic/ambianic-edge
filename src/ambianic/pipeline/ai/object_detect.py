@@ -19,13 +19,17 @@ class ObjectDetector(TFImageDetection):
         else:
             try:
                 image = sample['image']
-                inference_result = self.detect(image=image)
+                thumbnail, tensor_image, inference_result = \
+                    self.detect(image=image)
+                log.debug('Object detection inference_result: %r',
+                          inference_result)
                 inf_meta = {
-                    'display': 'Object Detection'
+                    'display': 'Object Detection',
                 }
                 # pass on the results to the next connected pipe element
                 processed_sample = {
                     'image': image,
+                    'thumbnail': thumbnail,
                     'inference_result': inference_result,
                     'inference_meta': inf_meta
                     }
