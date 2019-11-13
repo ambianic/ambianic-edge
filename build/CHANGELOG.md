@@ -1,5 +1,23 @@
 # Semantic Versioning Changelog
 
+# [1.0.0](https://github.com/ambianic/ambianic-edge/compare/v0.1.1...v1.0.0) (2019-11-13)
+
+
+### Documentation
+
+* update overview to reflect project progress ([a804200](https://github.com/ambianic/ambianic-edge/commit/a8042008720f4bd00660eac6b244a26acb408655))
+
+
+### Features
+
+* **timeline:** provide server side image thumbnails for faster UI render times ([7a43478](https://github.com/ambianic/ambianic-edge/commit/7a4347809dd0a4b9fc744b9126ec4d86c568ed50))
+
+
+### BREAKING CHANGES
+
+* testing semantic release CI automation
+* **timeline:** timeline API format added thmubnail_image_file which requires UI changes
+
 ## [0.1.1](https://github.com/ambianic/ambianic-edge/compare/v0.1.0...v0.1.1) (2019-11-11)
 
 
