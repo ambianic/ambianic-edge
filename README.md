@@ -5,16 +5,16 @@
 
 # Project mission
 
-[Ambianic.ai](https://ambianic.ai): Helpful AI for Home and Business Automation
+[Ambianic.ai](https://ambianic.ai) is an Open Source Ambient Intelligence platform for Home and Business Automation
 
-[Ambianic Edge](https://github.com/ambianic/ambianic-edge) is designed to run on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actioanable observations.
+[Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actioanable observations.
 
-[Ambianic UI](https://github.com/ambianic/ambianic-ui) is the main user interface to Ambianic Edge deployments.
+[Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
 # Project Status
 Ambianic Edge is in active development stage sprinting towards its first public Beta.
 
-# Product design guidelines
+# Product design goals
 
 When the product is officially released, it must show tangible value to first time users with minimal initial investment.
 - Less than 15 minutes setup time
