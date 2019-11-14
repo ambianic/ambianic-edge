@@ -105,9 +105,6 @@ after_success:
 
 jobs:
   include:
-    # Run the test stage matrix to validates the commit
-    - stage: test
-      # inherit all the defaul job steps defined above
     # Define the release stage that runs semantic-release
     - stage: release
       before_install: skip
