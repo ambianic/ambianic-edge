@@ -86,6 +86,7 @@ script:
         docker manifest annotate "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-arm32v7" --os=linux --arch=arm --variant=v7
         docker manifest annotate "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-amd64" --os=linux --arch=amd64
         docker manifest push "ambianic/ambianic-edge:latest"
+
     fi
 
 #        cmd=./semantic-release.sh
@@ -96,34 +97,26 @@ script:
   - echo $PWD
   - cd $TRAVIS_BUILD_DIR
   - ls -al
+
 after_success:
   - codecov # submit code coverage
-#jobs:
-#  include:
-#    - stage: docs
-#      script: ../
 
 jobs:
   include:
-    # Define the release stage that runs semantic-release
+    - stage: test
+      env: ARCH=linux/amd64 TAG_SUFFIX=amd64
+    - stage: test
+      env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
     - stage: release
-      # Advanced: optionally overwrite your default `script` step to skip the tests
       script:
-         - echo Running Semantic Release
-      on:
-        branch: master
-      deploy:
-        provider: script
-        skip_cleanup: true
-        script:
-          # Use nvm to install and use the Node LTS version (nvm is installed on all Travis images)
-          - nvm install lts/*
-          - npm install --save-dev @semantic-release/commit-analyzer
-          - npm install --save-dev @semantic-release/git
-          - npm install --save-dev semantic-release
-          - npm install --save-dev semantic-release-docker
-          - npm install --save-dev @semantic-release/release-notes-generator
-          - npm install --save-dev @semantic-release/github
-          - npm install --save-dev @semantic-release/changelog
-          - npm install --save-dev @semantic-release/exec
-          - npx semantic-release
+        - >
+              nvm install lts/*
+              npm install --save-dev @semantic-release/commit-analyzer
+              npm install --save-dev @semantic-release/git
+              npm install --save-dev semantic-release
+              npm install --save-dev semantic-release-docker
+              npm install --save-dev @semantic-release/release-notes-generator
+              npm install --save-dev @semantic-release/github
+              npm install --save-dev @semantic-release/changelog
+              npm install --save-dev @semantic-release/exec
+              npx semantic-release
