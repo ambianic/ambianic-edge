@@ -4,7 +4,7 @@ on:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
-      - master  
+      - no_existent_branch____  
 
 jobs:
   build:
