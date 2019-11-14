@@ -6,6 +6,7 @@ services:
 test_stage_reference: &test_stage_ref
   stage: test &test
   fast_finish: true
+  python: 3.7
   before_install:
     - python --version
   # command to install dependencies
@@ -104,6 +105,12 @@ jobs:
       env: ARCH=linux/amd64 TAG_SUFFIX=amd64
     - <<: *test_stage_ref
       env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
+
+      #jobs:
+      #  include:
+      #    - stage: docs
+      #      script: ../
+    # Define the release stage that runs semantic-release
     - stage: release
       on:
         branch: master
