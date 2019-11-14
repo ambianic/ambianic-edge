@@ -111,13 +111,13 @@ stage: release
           npm install --save-dev @semantic-release/changelog
           npm install --save-dev @semantic-release/exec
           npx semantic-release
-stages:
-  - test
-  - release
-
 after_success:
   - codecov # submit code coverage
 #jobs:
 #  include:
 #    - stage: docs
 #      script: ../
+
+stages:
+  - test
+  - release
