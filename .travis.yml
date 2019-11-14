@@ -99,8 +99,12 @@ stage: test
     - cd $TRAVIS_BUILD_DIR
     - ls -al
 
-stage: release
-  script:
+after_success:
+  - codecov # submit code coverage
+
+jobs:
+  include:
+    - stage: release
     - >
           nvm install lts/*
           npm install --save-dev @semantic-release/commit-analyzer
@@ -112,10 +116,3 @@ stage: release
           npm install --save-dev @semantic-release/changelog
           npm install --save-dev @semantic-release/exec
           npx semantic-release
-after_success:
-  - codecov # submit code coverage
-#jobs:
-#  include:
-#    - stage: docs
-#      script: ../
-#
