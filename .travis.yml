@@ -105,11 +105,15 @@ after_success:
 
 jobs:
   include:
+    # Run the test stage matrix to validates the commit
+    - stage: test
+      # inherit all the defaul job steps defined above
     # Define the release stage that runs semantic-release
     - stage: release
-      # Advanced: optionally overwrite your default `script` step to skip the tests
-      script:
-         - echo Running Semantic Release
+      before_install: skip
+      install: skip
+      script: skip
+      after_success: skip
       on:
         branch: master
       deploy:
