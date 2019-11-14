@@ -6,9 +6,8 @@ jobs:
   include:
     - stage: test
       fast_finish: true
-      env:
-        - ARCH=linux/amd64 TAG_SUFFIX=amd64
-        - ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
+      env: ARCH=linux/amd64 TAG_SUFFIX=amd64
+      env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
       before_install:
         - python --version
       # command to install dependencies
