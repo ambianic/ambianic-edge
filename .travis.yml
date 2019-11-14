@@ -5,11 +5,10 @@ services:
 jobs:
   include:
     - stage: test
-      matrix:
-        fast_finish: true
-        include:
-          - env: ARCH=linux/amd64 TAG_SUFFIX=amd64
-          - env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
+      fast_finish: true
+      env:
+        - ARCH=linux/amd64 TAG_SUFFIX=amd64
+        - ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
       before_install:
         - python --version
       # command to install dependencies
