@@ -109,7 +109,9 @@ jobs:
     - stage: release
       # Advanced: optionally overwrite your default `script` step to skip the tests
       script:
-      #   - make
+         - echo Running Semantic Release
+      on:
+        branch: master
       deploy:
         provider: script
         skip_cleanup: true
