@@ -1,3 +1,4 @@
+language: python
 test_stage_reference: &test_stage_ref
   language: python 3.7
   sudo: required
