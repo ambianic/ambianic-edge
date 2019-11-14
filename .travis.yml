@@ -100,7 +100,8 @@ stage: test
     - ls -al
 
 stage: release
-  script: >
+  script:
+    - >
           nvm install lts/*
           npm install --save-dev @semantic-release/commit-analyzer
           npm install --save-dev @semantic-release/git
@@ -118,7 +119,3 @@ after_success:
 #    - stage: docs
 #      script: ../
 #
-
-stages:
-  - test
-  - release
