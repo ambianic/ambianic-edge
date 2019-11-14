@@ -1,13 +1,17 @@
-language: python
+language: python 3.7
 sudo: required
 services:
   - docker
 jobs:
   include:
     - stage: test
+      matrix:
+            include:
+            - python: 3.7
+              env: ARCH=linux/amd64 TAG_SUFFIX=amd64
+            - python: 3.7
+              env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
       fast_finish: true
-      env: ARCH=linux/amd64 TAG_SUFFIX=amd64
-      env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
       before_install:
         - python --version
       # command to install dependencies
