@@ -1,5 +1,15 @@
 # Semantic Versioning Changelog
 
+## [1.0.4](https://github.com/ambianic/ambianic-edge/compare/v1.0.3...v1.0.4) (2019-11-15)
+
+
+### Bug Fixes
+
+* docker multi arch support in sem rel ci ([edc1846](https://github.com/ambianic/ambianic-edge/commit/edc1846cd952add7378fd99d96c3273a394c4dba))
+* docker multi architecture image tagging on each semantic release ([2681885](https://github.com/ambianic/ambianic-edge/commit/26818857858a34c1fe03109f57db226806c34a1c))
+* prod docker image ([34fa602](https://github.com/ambianic/ambianic-edge/commit/34fa602036551f89245c9368e1aec611a8d4bb54))
+* remove guizero dependency ([bb24b0e](https://github.com/ambianic/ambianic-edge/commit/bb24b0e96f4b8aa63f8764fdfe36bbd92e686eda))
+
 ## [1.0.3](https://github.com/ambianic/ambianic-edge/compare/v1.0.2...v1.0.3) (2019-11-15)
 
 
