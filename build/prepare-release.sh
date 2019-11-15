@@ -14,9 +14,28 @@ echo "MINOR=$MAJOR.$MINOR"
 echo "PATCH=$PATCH"
 docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 docker pull "ambianic/ambianic-edge:latest"
-docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$MAJOR"
-docker push "ambianic/ambianic-edge:$MAJOR"
-docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$MAJOR.$MINOR"
-docker push "ambianic/ambianic-edge:$MAJOR.$MINOR"
-docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$RELEASE_VERSION"
-docker push "ambianic/ambianic-edge:$RELEASE_VERSION"
+
+# create versioned image tags
+# docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$MAJOR"
+# docker push "ambianic/ambianic-edge:$MAJOR"
+# docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$MAJOR.$MINOR"
+# docker push "ambianic/ambianic-edge:$MAJOR.$MINOR"
+# docker tag "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:$RELEASE_VERSION"
+# docker push "ambianic/ambianic-edge:$RELEASE_VERSION"
+
+# create multi-architecture manifests for each version
+docker manifest create "ambianic/ambianic-edge:$MAJOR" "ambianic/ambianic-edge:latest-amd64" "ambianic/ambianic-edge:latest-arm32v7"
+docker manifest annotate "ambianic/ambianic-edge:$MAJOR" "ambianic/ambianic-edge:latest-arm32v7" --os=linux --arch=arm --variant=v7
+docker manifest annotate "ambianic/ambianic-edge:$MAJOR" "ambianic/ambianic-edge:latest-amd64" --os=linux --arch=amd64
+docker manifest push "ambianic/ambianic-edge:$MAJOR"
+
+docker manifest create "ambianic/ambianic-edge:$MAJOR.$MINOR" "ambianic/ambianic-edge:latest-amd64" "ambianic/ambianic-edge:latest-arm32v7"
+docker manifest annotate "ambianic/ambianic-edge:$MAJOR.$MINOR" "ambianic/ambianic-edge:latest-arm32v7" --os=linux --arch=arm --variant=v7
+docker manifest annotate "ambianic/ambianic-edge:$MAJOR.$MINOR" "ambianic/ambianic-edge:latest-amd64" --os=linux --arch=amd64
+docker manifest push "ambianic/ambianic-edge:$MAJOR.$MINOR"
+
+
+docker manifest create "ambianic/ambianic-edge:$RELEASE_VERSION" "ambianic/ambianic-edge:latest-amd64" "ambianic/ambianic-edge:latest-arm32v7"
+docker manifest annotate "ambianic/ambianic-edge:$RELEASE_VERSION" "ambianic/ambianic-edge:latest-arm32v7" --os=linux --arch=arm --variant=v7
+docker manifest annotate "ambianic/ambianic-edge:$RELEASE_VERSION" "ambianic/ambianic-edge:latest-amd64" --os=linux --arch=amd64
+docker manifest push "ambianic/ambianic-edge:$RELEASE_VERSION"
