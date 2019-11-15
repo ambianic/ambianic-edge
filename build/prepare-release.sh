@@ -12,6 +12,16 @@ echo "RELEASE_VERSION=$RELEASE_VERSION"
 echo "MAJOR=$MAJOR"
 echo "MINOR=$MAJOR.$MINOR"
 echo "PATCH=$PATCH"
+
+
+# update docker to allow multi-arch manifest support
+sudo apt-get update -y
+sudo apt-get install --only-upgrade docker-ce -y
+echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+export DOCKER_CLI_EXPERIMENTAL=enabled
+sudo service docker restart
+docker --version
+
 docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 docker pull "ambianic/ambianic-edge:latest"
 
