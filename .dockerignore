@@ -14,4 +14,8 @@ ambianic/webapp/bower_components/paper/
 **/.__*
 _mdwriter.cson
 **/timeline-event-log.yaml
+tests/
+docs/
 .pytest_cache/
+.github/
+.git/
