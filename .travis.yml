@@ -103,20 +103,28 @@ after_success:
 
 jobs:
   include:
+    - if: branch = master AND env(TRAVIS_PULL_REQUEST) = false
     - stage: test
       env: ARCH=linux/amd64 TAG_SUFFIX=amd64
     - stage: test
       env: ARCH=linux/arm/v7 TAG_SUFFIX=arm32v7
     - stage: release
+      before_install: skip
+      install: skip
       script:
         - >
-              nvm install lts/*
-              npm install --save-dev @semantic-release/commit-analyzer
-              npm install --save-dev @semantic-release/git
-              npm install --save-dev semantic-release
-              npm install --save-dev semantic-release-docker
-              npm install --save-dev @semantic-release/release-notes-generator
-              npm install --save-dev @semantic-release/github
-              npm install --save-dev @semantic-release/changelog
-              npm install --save-dev @semantic-release/exec
-              npx semantic-release
+          if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+            set -x
+            nvm install lts/*
+            npm install --save-dev @semantic-release/commit-analyzer
+            npm install --save-dev @semantic-release/git
+            npm install --save-dev semantic-release
+            npm install --save-dev semantic-release-docker
+            npm install --save-dev @semantic-release/release-notes-generator
+            npm install --save-dev @semantic-release/github
+            npm install --save-dev @semantic-release/changelog
+            npm install --save-dev @semantic-release/exec
+            echo "Running semantic release..."
+            npx semantic-release
+          fi
+      after_success: skip
