@@ -9,6 +9,9 @@ RUN pwd && ls -al
 # assuming the context of docker build is ambianid-edge/src
 COPY [".", "./src/"]
 COPY ["README.md", "./"]
+COPY ["ai_models", "./ai_models/"]
+
+# install the ambianic python package on this docker image
 RUN ls -al ./src/* && pip3 install -e src
 
 WORKDIR /workspace
@@ -17,5 +20,5 @@ WORKDIR /workspace
 EXPOSE 8778
 
 # CMD bash
-ENTRYPOINT ["bash"]
-CMD [ "python3", "-m", "ambianic" ]
+ENTRYPOINT ["python3"]
+CMD [ "-m", "ambianic" ]
