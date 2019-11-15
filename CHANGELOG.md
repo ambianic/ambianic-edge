@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.0.5](https://github.com/ambianic/ambianic-edge/compare/v1.0.4...v1.0.5) (2019-11-15)
+
+
+### Bug Fixes
+
+* production dockerfile image reference to ai models ([c9ff6fd](https://github.com/ambianic/ambianic-edge/commit/c9ff6fd970c76f81be261e66d967873f04f1bba1))
+
 ## [1.0.4](https://github.com/ambianic/ambianic-edge/compare/v1.0.3...v1.0.4) (2019-11-15)
 
 
