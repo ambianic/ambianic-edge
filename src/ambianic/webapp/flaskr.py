@@ -19,8 +19,10 @@ DEFAULT_DATA_DIR = './data'
 
 
 class FlaskJob(ManagedService):
+    """Flask based managed web service."""
 
     def __init__(self, config):
+        """Create Flask based web service."""
         self.config = config
         data_dir = None
         if config:
@@ -38,6 +40,7 @@ class FlaskJob(ManagedService):
         log.debug('Flask process created')
 
     def start(self):
+        """Start service."""
         log.debug('Flask starting main loop')
         self.flask_stopped = False
         try:
@@ -48,10 +51,19 @@ class FlaskJob(ManagedService):
         log.debug('Flask ended main loop')
 
     def stop(self):
+        """Stop service."""
         if not self.flask_stopped:
             log.debug('Flask stopping main loop')
             self.srv.shutdown()
             log.debug('Flask main loop ended')
+
+    def healthcheck(self):
+        """Report health status."""
+        return time.monotonic(), 'OK'
+
+    def heal(self):
+        """Try to recover from a bad health state."""
+        pass
 
 
 class FlaskServer(ManagedService):
@@ -71,7 +83,7 @@ class FlaskServer(ManagedService):
         self.config = config
         self.flask_job = None
 
-    def start(self):
+    def start(self, **kwargs):
         log.info('Flask server job starting...')
         f = FlaskJob(self.config)
         self.flask_job = ThreadedJob(f)
