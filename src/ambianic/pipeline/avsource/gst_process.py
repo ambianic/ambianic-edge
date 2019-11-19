@@ -7,7 +7,7 @@ from ambianic.util import stacktrace
 import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
-from gi.repository import GObject, Gst, GLib
+from gi.repository import Gst  # ,GObject,  GLib
 
 Gst.init(None)
 # No need to call GObject.threads_init() since version 3.11

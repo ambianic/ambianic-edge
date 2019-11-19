@@ -82,8 +82,6 @@ class PipelineContext:
         """Pop element information from the context stack."""
         return self._element_stack.pop()
 
-    pass
-
 
 class PipelineEventFormatter(logging.Formatter):
     """Custom logging formatter for pipeline events."""

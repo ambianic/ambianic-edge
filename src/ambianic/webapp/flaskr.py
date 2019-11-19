@@ -1,11 +1,10 @@
+"""Flask based Web services."""
 import os
-from multiprocessing import Process
 import logging
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask.logging import default_handler
-from flask import g
 import flask
 from requests import get
 from werkzeug.serving import make_server
@@ -84,7 +83,7 @@ class FlaskServer(ManagedService):
         # See if the /healthcheck URL returns a 200 quickly
         return time.monotonic(), True
 
-    def heal():
+    def heal(self):
         """Heal the server.
 
         TODO: Keep an eye for potential scenarios that cause this server to
