@@ -61,10 +61,6 @@ class FlaskJob(ManagedService):
         """Report health status."""
         return time.monotonic(), 'OK'
 
-    def heal(self):
-        """Try to recover from a bad health state."""
-        pass
-
 
 class FlaskServer(ManagedService):
     """ Thin wrapper around Flask constructs.

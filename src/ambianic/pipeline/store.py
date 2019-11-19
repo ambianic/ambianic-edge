@@ -117,8 +117,7 @@ class SaveDetectionSamples(PipeElement):
         self.event_log.info('Detection Event', save_json)
         return image_path, json_path
 
-    def process_sample(self,
-                       **sample) -> Iterable[dict]:
+    def process_sample(self, **sample) -> Iterable[dict]:
         """Process next detection sample."""
         image = sample.get('image', None)
         thumbnail = sample.get('thumbnail', None)
