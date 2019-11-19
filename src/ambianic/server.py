@@ -7,7 +7,7 @@ import pathlib
 import yaml
 from ambianic.webapp.flaskr import FlaskServer
 from ambianic.pipeline.interpreter import PipelineServer
-from ambianic.util import ServiceExit, stacktrace
+from ambianic.util import ServiceExit
 from ambianic.pipeline import timeline
 
 log = logging.getLogger(__name__)

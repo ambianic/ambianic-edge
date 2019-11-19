@@ -2,6 +2,7 @@
 import threading
 import logging
 import traceback
+import time
 from abc import abstractmethod
 
 log = logging.getLogger(__name__)
@@ -33,8 +34,8 @@ class ManagedService:
             status_code should have a semantic mapping to the service health.
 
         """
+        return time.monotonic(), 'OK'
 
-    @abstractmethod
     def heal(self):
         """Inspect and repair the state of the job.
 
@@ -52,6 +53,7 @@ class ThreadedJob(threading.Thread, ManagedService):
 
     Jobs managed by Threaded Job must have a start(), stop() method.
     """
+
     # Reminder: even though multiple processes can work well for pipelines,
     # since they are mostly independent,
     # Google Coral does not allow access to it from different processes yet.
@@ -61,11 +63,10 @@ class ThreadedJob(threading.Thread, ManagedService):
     def __init__(self, job=None):
         """Inititalize with a ManagedService.
 
-        Parameters
+        :Parameters:
         ----------
         job : ManagedService
             The underlying service wrapped in this thread.
-
         """
         threading.Thread.__init__(self, daemon=True)
         assert isinstance(job, ManagedService)

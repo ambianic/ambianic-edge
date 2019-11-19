@@ -102,7 +102,6 @@ class PipeElement(ManagedService):
         """
         self._state = PIPE_STATE_RUNNING
 
-    @abc.abstractmethod
     def heal(self):  # pragma: no cover
         """Override with adequate implementation of a healing procedure.
 
@@ -188,7 +187,6 @@ class PipeElement(ManagedService):
                     self._next_element.receive_next_sample()
                 self.heartbeat()
 
-    @abc.abstractmethod  # pragma: no cover
     def process_sample(self, **sample) -> Iterable[dict]:
         """Override and implement as generator.
 

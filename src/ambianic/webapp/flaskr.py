@@ -1,11 +1,10 @@
+"""Flask based Web services."""
 import os
-from multiprocessing import Process
 import logging
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask.logging import default_handler
-from flask import g
 import flask
 from requests import get
 from werkzeug.serving import make_server
@@ -20,8 +19,10 @@ DEFAULT_DATA_DIR = './data'
 
 
 class FlaskJob(ManagedService):
+    """Flask based managed web service."""
 
     def __init__(self, config):
+        """Create Flask based web service."""
         self.config = config
         data_dir = None
         if config:
@@ -39,6 +40,7 @@ class FlaskJob(ManagedService):
         log.debug('Flask process created')
 
     def start(self):
+        """Start service."""
         log.debug('Flask starting main loop')
         self.flask_stopped = False
         try:
@@ -49,10 +51,15 @@ class FlaskJob(ManagedService):
         log.debug('Flask ended main loop')
 
     def stop(self):
+        """Stop service."""
         if not self.flask_stopped:
             log.debug('Flask stopping main loop')
             self.srv.shutdown()
             log.debug('Flask main loop ended')
+
+    def healthcheck(self):
+        """Report health status."""
+        return time.monotonic(), 'OK'
 
 
 class FlaskServer(ManagedService):
@@ -72,7 +79,7 @@ class FlaskServer(ManagedService):
         self.config = config
         self.flask_job = None
 
-    def start(self):
+    def start(self, **kwargs):
         log.info('Flask server job starting...')
         f = FlaskJob(self.config)
         self.flask_job = ThreadedJob(f)
@@ -84,7 +91,7 @@ class FlaskServer(ManagedService):
         # See if the /healthcheck URL returns a 200 quickly
         return time.monotonic(), True
 
-    def heal():
+    def heal(self):
         """Heal the server.
 
         TODO: Keep an eye for potential scenarios that cause this server to

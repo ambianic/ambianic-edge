@@ -2,7 +2,6 @@
 import logging
 import time
 import re
-import abc
 import numpy as np
 # from importlib import import_module
 from ambianic.pipeline import PipeElement

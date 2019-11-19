@@ -7,8 +7,7 @@ VOLUME /workspace
 WORKDIR /opt/ambianic-edge
 RUN pwd && ls -al
 # assuming the context of docker build is ambianid-edge/src
-COPY ["./src", "./src/"]
-COPY ["README.md", "./"]
+COPY ["./src", "README.md", "./src/"]
 COPY ["./ai_models", "./ai_models/"]
 
 # install the ambianic python package on this docker image

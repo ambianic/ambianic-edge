@@ -1,12 +1,10 @@
 """Pipeline sample storage elements."""
 import logging
 import datetime
-import os
 import pathlib
 import json
 import uuid
-from ambianic.pipeline import timeline
-from ambianic.pipeline.timeline import PipelineEvent
+from typing import Iterable
 
 from ambianic.pipeline import PipeElement
 
@@ -119,13 +117,12 @@ class SaveDetectionSamples(PipeElement):
         self.event_log.info('Detection Event', save_json)
         return image_path, json_path
 
-    def process_sample(self,
-                       image=None,
-                       thumbnail=None,
-                       inference_result=None,
-                       inference_meta=None,
-                       **sample):
+    def process_sample(self, **sample) -> Iterable[dict]:
         """Process next detection sample."""
+        image = sample.get('image', None)
+        thumbnail = sample.get('thumbnail', None)
+        inference_result = sample.get('inference_result', None)
+        inference_meta = sample.get('inference_meta', None)
         log.debug("Pipe element %s received new sample with keys %s.",
                   self.__class__.__name__,
                   str([*sample]))
