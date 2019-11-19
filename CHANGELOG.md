@@ -1,5 +1,15 @@
 # Semantic Versioning Changelog
 
+## [1.0.6](https://github.com/ambianic/ambianic-edge/compare/v1.0.5...v1.0.6) (2019-11-19)
+
+
+### Bug Fixes
+
+* code clean up based on LTGM suggestions ([92c0d0d](https://github.com/ambianic/ambianic-edge/commit/92c0d0d38c3ea6eb347ad5125055265fae6d9d95))
+* code cleanup ([2e163e2](https://github.com/ambianic/ambianic-edge/commit/2e163e2831c4ee482ed5d2c7f7a0f0cf2d7346d7))
+* code cleanup ([4e60a29](https://github.com/ambianic/ambianic-edge/commit/4e60a29c732f4df0c8598d060be14d9861aebf5d))
+* update ambianic edge version in python package metadata in setup.cfg ([ea5fb9a](https://github.com/ambianic/ambianic-edge/commit/ea5fb9ab38fb56340f5ba9a2b564ffb57405deb8))
+
 ## [1.0.5](https://github.com/ambianic/ambianic-edge/compare/v1.0.4...v1.0.5) (2019-11-15)
 
 
