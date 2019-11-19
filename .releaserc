@@ -20,7 +20,8 @@
             "@semantic-release/git",
             {
                 "assets": [
-                    "CHANGELOG.md"
+                    "CHANGELOG.md",
+                    src/setup.cfg
                 ]
             }
         ],

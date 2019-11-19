@@ -13,6 +13,11 @@ echo "MAJOR=$MAJOR"
 echo "MINOR=$MAJOR.$MINOR"
 echo "PATCH=$PATCH"
 
+# update version info in the ambianic python package setup.cfg
+cp README.md src/
+cd src
+python3 setup.py setopt --command metadata --option version --set-value ${nextRelease.version}
+
 
 # update docker to allow multi-arch manifest support
 sudo apt-get update -y
