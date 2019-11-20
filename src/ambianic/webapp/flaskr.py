@@ -39,7 +39,7 @@ class FlaskJob(ManagedService):
         self.flask_stopped = True
         log.debug('Flask process created')
 
-    def start(self):
+    def start(self, **kwargs):
         """Start service."""
         log.debug('Flask starting main loop')
         self.flask_stopped = False

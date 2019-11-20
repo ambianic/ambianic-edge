@@ -16,7 +16,7 @@ echo "PATCH=$PATCH"
 # update version info in the ambianic python package setup.cfg
 cp README.md src/
 cd src
-python3 setup.py setopt --command metadata --option version --set-value ${nextRelease.version}
+python3 setup.py setopt --command metadata --option version --set-value $RELEASE_VERSION
 
 
 # update docker to allow multi-arch manifest support
