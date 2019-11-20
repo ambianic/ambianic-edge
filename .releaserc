@@ -21,7 +21,7 @@
             {
                 "assets": [
                     "CHANGELOG.md",
-                    src/setup.cfg
+                    "src/setup.cfg"
                 ]
             }
         ],
