@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.0.7](https://github.com/ambianic/ambianic-edge/compare/v1.0.6...v1.0.7) (2019-11-20)
+
+
+### Bug Fixes
+
+* code clean up and build fix for python package versioning with semantic release ([aff0c74](https://github.com/ambianic/ambianic-edge/commit/aff0c74bc64511a1afa90f53bd4742a77beaaaed))
+
 ## [1.0.6](https://github.com/ambianic/ambianic-edge/compare/v1.0.5...v1.0.6) (2019-11-19)
 
 
