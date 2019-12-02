@@ -37,7 +37,7 @@ Additional content is coming in daily as the project advances to its official re
 
 # Community Support 
 
-If you have questions, ideas or cool projects you'd like to share with the Ambianic team and community, please use the [Ambianic Spectrum channels](https://spectrum.chat/ambianic?tab=posts).
+If you have questions, ideas or cool projects you'd like to share with the Ambianic team and community, please use the [Ambianic Twitter channel](https://twitter.com/ambianicai).
 
 # Contributing
 Your constructive feedback and help are most welcome!
