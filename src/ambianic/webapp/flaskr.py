@@ -133,18 +133,26 @@ def create_app(data_dir=None):
     # a simple page that says hello
     @app.route('/')
     def hello():
-        return 'Ambianic! Halpful AI for home and business automation.'
+        return 'Ambianic Edge! Helpful AI for home and business automation.'
 
     # healthcheck page available to docker-compose
     # and other health monitoring tools
     @app.route('/healthcheck')
     def health_check():
-        return 'Ambianic is running in a cheerful healthy state!'
+        return 'Ambianic Edge is running in a cheerful healthy state!'
 
     # live view of ambianic pipelines
     @app.route('/pipelines')
     def view_pipelines():
         return flask.render_template('pipelines.html')
+
+    # healthcheck page available to docker-compose
+    # and other health monitoring tools
+    @app.route('/api/status')
+    def get_status():
+        response_object = {'status': 'OK'}
+        resp = jsonify(response_object)
+        return resp
 
     @app.route('/api/timeline', methods=['GET'])
     @app.route('/api/timeline.json', methods=['GET'])
