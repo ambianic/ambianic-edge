@@ -1,5 +1,9 @@
-[![Build Status](https://travis-ci.org/ambianic/ambianic-edge.svg?branch=master)](https://travis-ci.org/ambianic/ambianic-edge) [![Docker Automated](https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) [![Docker Build](https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) [![codecov](https://codecov.io/gh/ambianic/ambianic-core/branch/master/graph/badge.svg)](https://codecov.io/gh/ambianic/ambianic-core)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
+[![Build Status](https://travis-ci.org/ambianic/ambianic-edge.svg?branch=master)](https://travis-ci.org/ambianic/ambianic-edge) 
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) 
+[![Docker Build](https://img.shields.io/docker/cloud/build/ambianic/ambianic.svg)](https://hub.docker.com/r/ambianic/ambianic/builds) 
+[![codecov](https://codecov.io/gh/ambianic/ambianic-core/branch/master/graph/badge.svg)](https://codecov.io/gh/ambianic/ambianic-core)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) 
+[![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
 
 ![Ambianic logo][logo]
 
@@ -7,7 +11,7 @@
 
 [Ambianic.ai](https://ambianic.ai) is an Open Source Ambient Intelligence platform for Home and Business Automation
 
-[Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actioanable observations.
+[Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations.
 
 [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
@@ -34,6 +38,10 @@ If you are interested to try the development version, follow these steps:
 An introduction to the project with user journey, architecture and other high level artifacts are [now available here](https://ambianic.github.io/ambianic-docs/).
 
 Additional content is coming in daily as the project advances to its official release.
+
+# Community Support 
+
+If you have questions, ideas or cool projects you'd like to share with the Ambianic team and community, please use the [Ambianic Twitter channel](https://twitter.com/ambianicai).
 
 # Contributing
 Your constructive feedback and help are most welcome!
