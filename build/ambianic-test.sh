@@ -17,8 +17,7 @@ MY_DIR=$(dirname "${MY_PATH}")
 docker run -it --rm \
   --name ambianic-dev \
   --mount type=bind,source="$MY_DIR/../",target=/workspace \
-  --publish 1234:1234 \
-  --publish 8778:8778 \
+  --net=host \
   --entrypoint 'bash' \
   -e CODECOV_TOKEN \
   ambianic/ambianic-edge:$TAG /workspace/tests/run-tests.sh

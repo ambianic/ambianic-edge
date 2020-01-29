@@ -19,7 +19,6 @@ docker pull ambianic/ambianic:dev
 docker run -it --rm \
   --name ambianic-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
-  --publish 1234:1234 \
-  --publish 8778:8778 \
+  --net=host \
   $USB_ARG \
-  ambianic/ambianic:dev 
+  ambianic/ambianic:dev
