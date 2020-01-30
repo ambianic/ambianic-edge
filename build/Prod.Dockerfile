@@ -18,6 +18,7 @@ WORKDIR /workspace
 # expose http port
 EXPOSE 8778
 
-# CMD bash
 ENTRYPOINT ["python3"]
 CMD [ "-m", "ambianic" ]
+# ENTRYPOINT ["bash"]
+# CMD ["ambianic-docker-entrypoint.sh"]

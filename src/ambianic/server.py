@@ -1,14 +1,16 @@
 """Main Ambianic server module."""
-import time
 import logging
 import logging.handlers
 import os
 import pathlib
+import time
+
 import yaml
-from ambianic.webapp.flaskr import FlaskServer
+
+from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic.pipeline import timeline
+from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
 

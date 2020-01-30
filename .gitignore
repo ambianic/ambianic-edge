@@ -15,3 +15,6 @@ ambianic/webapp/bower_components/paper/
 _mdwriter.cson
 **/timeline-event-log.yaml
 .pytest_cache/
+**/.peerjsrc
+**/ambianic_edge.egg-info/
+
