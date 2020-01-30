@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # install native package that Ambianic needs to run
 
 echo "Installing Ambianic dependencies"
@@ -103,7 +105,7 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 # Install native dependencies for aiortc
 apt-get install -y libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config
 # Install peerjs python
-pip3 install peerjs 
+pip3 install peerjs
 
 # install ai models
 # mkdir -p ai_models

@@ -85,7 +85,13 @@ class TFImageDetection(PipeElement):
         assert desired_size
         log.debug('input image size = %r', image.size)
         thumb = image.copy()
-        thumb.thumbnail(desired_size)
+        try:
+            thumb.thumbnail(desired_size)
+        except Exception as e:
+            log.exception("Exception in "
+                          "PIL.image.thumbnail(desired_size=%r):\n%r",
+                          e,
+                          desired_size)
         log.debug('thmubnail image size = %r', thumb.size)
         return thumb
 
