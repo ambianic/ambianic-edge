@@ -15,9 +15,6 @@ RUN /bin/bash ./install_requirements.sh
 # expose http port
 # EXPOSE 8778
 
-# Start peerjs daemon to proxy connections with Ambianic UI clients
-RUN python3 -m peerjs.ext.http-proxy &
-
 # CMD bash
 ENTRYPOINT ["bash"]
 # CMD [ "ambianic_start_daemon.sh" ]
