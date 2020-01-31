@@ -293,7 +293,7 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     assert len(result) == 1
     label, confidence, (x0, y0, x1, y1) = result[0]
     assert label == 'person'
-    assert confidence > 0.8
+    assert confidence > 0.6
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
 

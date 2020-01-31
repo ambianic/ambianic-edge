@@ -85,7 +85,24 @@ class TFImageDetection(PipeElement):
         assert desired_size
         log.debug('input image size = %r', image.size)
         thumb = image.copy()
-        thumb.thumbnail(desired_size)
+        w, h = desired_size
+        try:
+            # convert from numpy to native Python int type
+            # that PIL expects
+            if isinstance(w, np.generic):
+                w = w.item()
+                w = int(w)
+                h = h.item()
+                h = int(h)
+            thumb.thumbnail((w, h))
+        except Exception as e:
+            msg = (f"Exception in "
+                   f"PIL.image.thumbnail(desired_size={desired_size}):"
+                   f"type(width)={type(w)}, type(height)={type(h)}"
+                   f"\n{e}"
+                   )
+            log.exception(msg)
+            raise RuntimeError(msg)
         log.debug('thmubnail image size = %r', thumb.size)
         return thumb
 
@@ -171,7 +188,8 @@ class TFImageDetection(PipeElement):
         # thumbnail is a proportionately resized image
         thumbnail = self.thumbnail(image=image, desired_size=(width, height))
 
-        # convert thumbnail into an image with exact size as tensor
+        # convert thumbnail into an image with the exact size
+        # as the input tensor
         # preserving proportions by padding as needed
         new_im = self.resize(image=thumbnail, desired_size=(width, height))
 

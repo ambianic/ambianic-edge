@@ -2,7 +2,6 @@
 import logging
 
 from .image_detection import TFImageDetection
-from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
 
@@ -71,8 +70,7 @@ class FaceDetector(TFImageDetection):
                             }
                         yield processed_sample
             except Exception as e:
-                log.warning('Error %r while processing sample. '
-                            'Dropping sample: %r',
-                            e,
-                            sample)
-                log.warning(stacktrace())
+                log.exception('Error %r while processing sample. '
+                              'Dropping sample: %r',
+                              e,
+                              sample)

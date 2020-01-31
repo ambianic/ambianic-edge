@@ -331,6 +331,9 @@ class _TestGstService7(GstService):
     def _gst_cleanup(self):
         self._gst_cleanup_called = True
 
+    def _stop_handler(self):
+        self._gst_stop_handler_called = True
+
 
 def test_run_exception():
     """Exception in gst loop should result in gst cleanup and method exit."""
