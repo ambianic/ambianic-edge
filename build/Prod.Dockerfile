@@ -24,4 +24,4 @@ WORKDIR /workspace
 # ENTRYPOINT ["python3"]
 # CMD [ "-m", "ambianic" ]
 ENTRYPOINT ["bash"]
-CMD ["./ambianic-docker-entrypoint.sh"]
+CMD ["/opt/ambianic-edge/ambianic-docker-entrypoint.sh"]
