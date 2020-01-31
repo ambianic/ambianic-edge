@@ -16,9 +16,12 @@ RUN ls -al ./src/* && pip3 install -e src
 WORKDIR /workspace
 
 # expose http port
-EXPOSE 8778
+# EXPOSE 8778
 
-ENTRYPOINT ["python3"]
-CMD [ "-m", "ambianic" ]
-# ENTRYPOINT ["bash"]
-# CMD ["ambianic-docker-entrypoint.sh"]
+# copy entrypoint script to docker image
+COPY ["./build/ambianic-docker-entrypoint.sh", "./"]
+
+# ENTRYPOINT ["python3"]
+# CMD [ "-m", "ambianic" ]
+ENTRYPOINT ["bash"]
+CMD ["ambianic-docker-entrypoint.sh"]
