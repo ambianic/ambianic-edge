@@ -85,10 +85,17 @@ class TFImageDetection(PipeElement):
         assert desired_size
         log.debug('input image size = %r', image.size)
         thumb = image.copy()
+        w, h = desired_size
         try:
-            thumb.thumbnail(desired_size)
+            # convert from numpy to native Python int type
+            # that PIL expects
+            if isinstance(w, np.generic):
+                w = w.item()
+                w = int(w)
+                h = h.item()
+                h = int(h)
+            thumb.thumbnail((w, h))
         except Exception as e:
-            w, h = desired_size
             msg = (f"Exception in "
                    f"PIL.image.thumbnail(desired_size={desired_size}):"
                    f"type(width)={type(w)}, type(height)={type(h)}"
