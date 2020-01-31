@@ -13,15 +13,15 @@ COPY ["./ai_models", "./ai_models/"]
 # install the ambianic python package on this docker image
 RUN ls -al ./src/* && pip3 install -e src
 
+# copy entrypoint script to docker image
+COPY ["./build/ambianic-docker-entrypoint.sh", "./"]
+
 WORKDIR /workspace
 
 # expose http port
 # EXPOSE 8778
 
-# copy entrypoint script to docker image
-COPY ["./build/ambianic-docker-entrypoint.sh", "./"]
-
 # ENTRYPOINT ["python3"]
 # CMD [ "-m", "ambianic" ]
 ENTRYPOINT ["bash"]
-CMD ["ambianic-docker-entrypoint.sh"]
+CMD ["./ambianic-docker-entrypoint.sh"]
