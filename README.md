@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/ambianic/ambianic-core/branch/master/graph/badge.svg)](https://codecov.io/gh/ambianic/ambianic-core)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) 
 [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
-
+  
 ![Ambianic logo][logo]
 
 # Project mission
