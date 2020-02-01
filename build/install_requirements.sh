@@ -51,7 +51,7 @@ if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
-  echo "Installing Raspberry Pi specific dependencies"
+  echo "Installing Raspberry Pi / ARM CPU specific dependencies"
   sudo apt-get install -y python3-rpi.gpio
 # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
@@ -61,6 +61,9 @@ then
 #  sudo modprobe bcm2835-v4l2
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
+  # Fix a strange issue with root CA database on the Debian ARM distro
+  sudo apt-get remove -y ca-certificates
+  sudo apt-get install -y ca-certificates
 fi
 
 # install python dependencies
@@ -108,29 +111,15 @@ apt-get install -y libsrtp2-dev
 # Install peerjs python
 pip3 install peerjs
 
+# [devtools]
+# Install tools essential for debugging docker image related problems
+apt-get install -y procps
+
 # install ai models
 # mkdir -p ai_models
 # wget https://dl.google.com/coral/canned_models/all_models.tar.gz
 # tar -C ai_models -xvzf all_models.tar.gz
 # rm -f all_models.tar.gz
-
-# [frontend]
-
-# install latest npm
-## Oct 9, 2019: sudo apt-get install -y npm
-# cd ambianic/webapp/client
-# sudo npm install -g npm@latest
-# sudo npm install -g @vue/cli
-# npm run build
-# cd ../../../
-
-
-# install local npm dependencies from package.json
-# runtime dir is where the executable code resides
-# workspace is where local customer configuration files and user data goes
-# cd $runtimedir
-# cd ambianic/webapp/client
-# npm install
 
 # [Cleanup]
 sudo apt-get -y autoremove
