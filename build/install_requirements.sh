@@ -63,7 +63,7 @@ then
   sudo cp raspberrypi.pip.conf /etc/pip.conf
   # Fix a strange issue with root CA database on the Debian ARM distro
   sudo apt-get remove -y ca-certificates
-  sudo apt-get install -y ca-certificates
+  sudo apt-get install -y ca-certificates python-pip-whl python3-pip
 fi
 
 # install python dependencies
