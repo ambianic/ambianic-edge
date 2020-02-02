@@ -38,7 +38,7 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
   python3-gst-1.0 python3-gi
 # install numpy native lib
 sudo apt-get install -y python3-numpy
-sudo apt-get install libjpeg-dev zlib1g-dev
+sudo apt-get install -y libjpeg-dev zlib1g-dev
 
 # [backend]
 
@@ -53,17 +53,14 @@ if $(arch | grep -q arm)
 then
   echo "Installing Raspberry Pi / ARM CPU specific dependencies"
   sudo apt-get install -y python3-rpi.gpio
-# sudo apt-get install -y modprobe
+  # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
-#  if ! grep -q "bcm2835-v4l2" /etc/modules; then
-#    echo bcm2835-v4l2 | sudo tee -a /etc/modules
-#  fi
-#  sudo modprobe bcm2835-v4l2
+  #  if ! grep -q "bcm2835-v4l2" /etc/modules; then
+  #    echo bcm2835-v4l2 | sudo tee -a /etc/modules
+  #  fi
+  #  sudo modprobe bcm2835-v4l2
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
-  # Fix a strange issue with root CA database on the Debian ARM distro
-  sudo apt-get remove -y ca-certificates
-  sudo apt-get install -y ca-certificates python3-pip
 fi
 
 # install python dependencies
@@ -99,6 +96,7 @@ tar xzf /tmp/edgetpu_api.tar.gz -C /tmp
 
 echo "Effective CPU architecture: $architecture"
 export architecture
+pwd
 ls -al
 # ls -al build/
 cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
@@ -121,6 +119,15 @@ apt-get install -y procps
 # wget https://dl.google.com/coral/canned_models/all_models.tar.gz
 # tar -C ai_models -xvzf all_models.tar.gz
 # rm -f all_models.tar.gz
+
+# Re-Install ARM/Raspberry Pi ca-certifcates
+# Which otherwise cause SSL Certificate Verification problems.
+if $(arch | grep -q arm)
+then
+  echo "Re-Installing ca-certifcates on Raspberry Pi / ARM CPU"
+  sudo apt-get remove -y ca-certificates
+  sudo apt-get install -y ca-certificates python3-pip
+fi
 
 # [Cleanup]
 sudo apt-get -y autoremove
