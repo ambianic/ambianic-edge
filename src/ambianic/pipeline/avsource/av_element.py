@@ -121,7 +121,10 @@ class AVSourceElement(PipeElement):
     def _clear_gst_out_queue(self):
         log.debug("Clearing _gst_out_queue.")
         while not self._gst_out_queue.empty():
-            self._gst_out_queue.get_nowait()
+            try:
+                self._gst_out_queue.get_nowait()
+            except queue.Empty:
+                log.debug("_gst_out_queue already empty.")
         log.debug("Cleared _gst_out_queue.")
 
     def _process_terminate(self, proc=None):
