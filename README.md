@@ -16,11 +16,10 @@
 [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
 # Project Status
-Ambianic Edge is in active development stage sprinting towards its first public Beta.
+Ambianic Edge is in now in public Beta stage. All constructive feedback is most welcome!
 
-# Product design goals
+# Product design highlights
 
-When the product is officially released, it must show tangible value to first time users with minimal initial investment.
 - Less than 15 minutes setup time
 - Less than $75 in hardware costs
   + Reference hardware platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
