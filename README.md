@@ -16,7 +16,10 @@
 [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
 # Project Status
-Ambianic Edge is in now in public Beta stage. All constructive feedback is most welcome!
+
+Ambianic Edge is in now in public Beta. Here is a [5 Minutes Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
+
+All constructive feedback is most welcome!
 
 # Product design highlights
 
