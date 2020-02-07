@@ -1,7 +1,7 @@
 ######################################
 #  Ambianic main configuration file  #
 ######################################
-version: '0.10.21'
+version: '1.2.4'
 
 # path to the data directory
 data_dir: &data_dir ./data
