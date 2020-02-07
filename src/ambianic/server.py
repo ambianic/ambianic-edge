@@ -122,9 +122,12 @@ def _configure(env_work_dir=None):
             timeline_config = config.get('timeline', None)
         timeline.configure_timeline(timeline_config)
         return config
+    except FileNotFoundError:
+        log.warning('Configuration file not found: %s', config_file)
+        log.warning('Please provide a configuration file and restart.')
     except Exception as e:
-        log.exception('Failed to load configuration: %s', e, exc_info=True)
-        return None
+        log.exception('Configuration Error!', e, exc_info=True)
+    return None
 
 
 class AmbianicServer:
