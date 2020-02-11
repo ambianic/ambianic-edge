@@ -17,7 +17,7 @@ Flask>=1.0.2
 flask-cors
 gast>=0.2.2
 google-pasta>=0.1.7
-grpcio>=1.22.0
+grpcio~=1.26
 h5py>=2.9.0
 idna>=2.6
 itsdangerous>=0.24
