@@ -14,11 +14,13 @@ else
 fi
 
 # check if there is an image update
-docker pull ambianic/ambianic:dev
+docker pull ambianic/ambianic-edge:dev
 # run dev image
 docker run -it --rm \
-  --name ambianic-dev \
+  --name ambianic-edge-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
-  --net=host \
+  -p 8778:8778 \
   $USB_ARG \
-  ambianic/ambianic:dev /workspace/src/run-dev.sh
+  ambianic/ambianic-edge:dev /workspace/src/run-dev.sh
+# on Mac, --net=host doesnt work as expected
+#  --net=host \

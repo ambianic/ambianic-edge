@@ -14,11 +14,11 @@ else
 fi
 
 # check if there is an image update
-docker pull ambianic/ambianic:dev
+docker pull ambianic/ambianic-edge:dev
 # run dev image
 docker run -it --rm \
-  --name ambianic-dev \
+  --name ambianic-edge-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
   --net=host \
   $USB_ARG \
-  ambianic/ambianic:dev
+  ambianic/ambianic-edge:dev
