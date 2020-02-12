@@ -31,7 +31,10 @@ class FlaskJob(ManagedService):
             data_dir = DEFAULT_DATA_DIR
         self.srv = None
         app = create_app(data_dir=data_dir)
-        self.srv = make_server('0.0.0.0', 8778, app)
+        ip_address = '0.0.0.0'
+        port = 8778
+        log.info('starting flask web server on %s:%d', ip_address, port)
+        self.srv = make_server(ip_address, port, app)
         ctx = app.app_context()
         ctx.push()
         with app.app_context():
