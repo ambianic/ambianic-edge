@@ -188,22 +188,11 @@ class GstService:
         PIPELINE = """
             uridecodebin name=source use-buffering=true
             """
-        # PIPELINE = ' uridecodebin name=source latency=0 '
-        # NOKEYFRAME_FLAGS = \
-        #    int(Gst.BufferFlags.DELTA_UNIT) | \
-        #    int(Gst.BufferFlags.DROPPABLE) | int(Gst.BufferFlags.GAP) | \
-        #    int(Gst.BufferFlags.DECODE_ONLY)
-        # DROP_NON_KEY_FRAMES = \
-        #    f' ! identity drop-buffer-flags={NOKEYFRAME_FLAGS} '
-        # print('DROP_NON_KEY_FRAMES {}: '.format(DROP_NON_KEY_FRAMES))
-        # PIPELINE += DROP_NON_KEY_FRAMES
         PIPELINE += """
              ! {leaky_q0} ! videoconvert name=vconvert ! {sink_caps}
              ! {leaky_q1} ! {sink_element}
              """
 
-        # LEAKY_Q_='queue max-size-bytes=0 max-size-buffers=0 leaky=downstream'
-        # LEAKY_Q_ = 'queue max-size-buffers=10 leaky=downstream'
         LEAKY_Q_ = 'queue2 '
         LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
         LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
@@ -270,29 +259,26 @@ class GstService:
         return self.gst_pipeline.set_state(Gst.State.PLAYING)
 
     def _gst_seek_next_keyframe(self):
-        def _seek_keyframes_task():
-            log.debug('Gst configuring pipeline to seek only keyframes...')
-            found, pos_int = self.gst_pipeline.query_position(Gst.Format.TIME)
-            if not found:
-                log.warning('Gst current pipeline position not found.')
-                return
-            log.debug('Gst current pipeline position: %r', pos_int)
-            rate = 1.0  # keep rate close to real time
-            flags = \
-                Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | \
-                Gst.SeekFlags.TRICKMODE | Gst.SeekFlags.SNAP_AFTER | \
-                Gst.SeekFlags.TRICKMODE_KEY_UNITS | \
-                Gst.SeekFlags.TRICKMODE_NO_AUDIO
-            is_event_handled = self.gst_pipeline.seek(
-                rate,
-                Gst.Format.TIME,
-                flags,
-                Gst.SeekType.SET, pos_int,
-                Gst.SeekType.END, 0)
-            log.debug('Gst pipeline configured to seek only keyframes: %r',
-                      is_event_handled)
-        with ThreadPoolExecutor(max_workers=3) as e:
-            e.submit(_seek_keyframes_task)
+        log.debug('Gst configuring pipeline to seek only keyframes...')
+        found, pos_int = self.gst_pipeline.query_position(Gst.Format.TIME)
+        if not found:
+            log.warning('Gst current pipeline position not found.')
+            return
+        log.debug('Gst current pipeline position: %r', pos_int)
+        rate = 1.0  # keep rate close to real time
+        flags = \
+            Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | \
+            Gst.SeekFlags.TRICKMODE | Gst.SeekFlags.SNAP_AFTER | \
+            Gst.SeekFlags.TRICKMODE_KEY_UNITS | \
+            Gst.SeekFlags.TRICKMODE_NO_AUDIO
+        is_event_handled = self.gst_pipeline.seek(
+            rate,
+            Gst.Format.TIME,
+            flags,
+            Gst.SeekType.SET, pos_int,
+            Gst.SeekType.END, 0)
+        log.debug('Gst pipeline configured to seek only keyframes: %r',
+                  is_event_handled)
 
     def _gst_loop(self):
         # build new gst pipeline
