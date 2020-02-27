@@ -255,7 +255,6 @@ class GstService:
         log.debug("Exited main gstreamer loop")
 
     def _gst_pipeline_play(self):
-        # return self.gst_pipeline.set_state(Gst.State.PAUSED)
         return self.gst_pipeline.set_state(Gst.State.PLAYING)
 
     def _gst_seek_next_keyframe(self):
