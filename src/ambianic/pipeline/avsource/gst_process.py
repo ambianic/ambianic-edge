@@ -3,11 +3,14 @@ import traceback
 import logging
 import signal
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from ambianic.util import stacktrace
 import gi
 gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
 from gi.repository import Gst, GLib  # ,GObject,  GLib
+
 
 Gst.init(None)
 # No need to call GObject.threads_init() since version 3.11
@@ -131,6 +134,16 @@ class GstService:
             self._on_bus_message_warning(message)
         elif t == Gst.MessageType.ERROR:
             self._on_bus_message_error(message)
+        elif t == Gst.MessageType.STREAM_START:
+            # Configure pipeline to play only keyframes
+            # for improved CPU utilization. Skip interim delta frames.
+            log.debug('Gst bus message STREAM_START')
+            self._gst_seek_next_keyframe()
+        elif t == Gst.MessageType.ASYNC_DONE:
+            # seek for keyframe completed
+            # request seek for next keyframe
+            log.debug('Gst bus message ASYNC_DONE')
+            self._gst_seek_next_keyframe()
         else:
             pass
             # log.debug('GST: On bus message: type: %r, details: %r',
@@ -172,12 +185,15 @@ class GstService:
 
     def _get_pipeline_args(self):
         log.debug('Preparing Gstreamer pipeline args')
-        PIPELINE = ' uridecodebin name=source latency=0 '
+        PIPELINE = """
+            uridecodebin name=source use-buffering=true
+            """
         PIPELINE += """
              ! {leaky_q0} ! videoconvert name=vconvert ! {sink_caps}
              ! {leaky_q1} ! {sink_element}
              """
-        LEAKY_Q_ = 'queue max-size-buffers=10 leaky=downstream'
+
+        LEAKY_Q_ = 'queue2 '
         LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
         LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
         # Ask gstreamer to format the images in a way that are close
@@ -241,6 +257,28 @@ class GstService:
     def _gst_pipeline_play(self):
         return self.gst_pipeline.set_state(Gst.State.PLAYING)
 
+    def _gst_seek_next_keyframe(self):
+        log.debug('Gst configuring pipeline to seek only keyframes...')
+        found, pos_int = self.gst_pipeline.query_position(Gst.Format.TIME)
+        if not found:
+            log.warning('Gst current pipeline position not found.')
+            return
+        log.debug('Gst current pipeline position: %r', pos_int)
+        rate = 1.0  # keep rate close to real time
+        flags = \
+            Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | \
+            Gst.SeekFlags.TRICKMODE | Gst.SeekFlags.SNAP_AFTER | \
+            Gst.SeekFlags.TRICKMODE_KEY_UNITS | \
+            Gst.SeekFlags.TRICKMODE_NO_AUDIO
+        is_event_handled = self.gst_pipeline.seek(
+            rate,
+            Gst.Format.TIME,
+            flags,
+            Gst.SeekType.SET, pos_int,
+            Gst.SeekType.END, 0)
+        log.debug('Gst pipeline configured to seek only keyframes: %r',
+                  is_event_handled)
+
     def _gst_loop(self):
         # build new gst pipeline
         self._build_gst_pipeline()
@@ -269,6 +307,8 @@ class GstService:
               self.mainloop.is_running() and \
               self.gst_pipeline and \
               self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
+                self.gst_pipeline.set_state(Gst.State.PAUSED)
+                self.gst_pipeline.set_state(Gst.State.READY)
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 if self.gst_bus:

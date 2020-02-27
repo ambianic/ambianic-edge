@@ -119,6 +119,29 @@ def test_one_person():
     assert y0 > 0 and y0 < y1
 
 
+def test_one_person_thermal():
+    """Expect to detect one person."""
+    config = _object_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person_thermal_bw.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 1
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.8
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+
+
 def test_no_sample():
     """Expect element to pass empty sample to next element."""
     config = _object_detect_config()
