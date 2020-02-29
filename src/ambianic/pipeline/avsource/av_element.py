@@ -80,7 +80,7 @@ class AVSourceElement(PipeElement):
         return gst_process.start_gst_service
 
     def _get_sample_queue(self):
-        q = multiprocessing.Queue(10)
+        q = multiprocessing.Queue(3)
         return q
 
     def _run_gst_service(self):

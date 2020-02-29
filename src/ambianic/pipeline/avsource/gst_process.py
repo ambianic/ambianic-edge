@@ -1,10 +1,12 @@
-
+"""Input source video processing via Gstreamer."""
 import traceback
 import logging
 import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+import time
+import os
 from ambianic.util import stacktrace
 import gi
 gi.require_version('Gst', '1.0')
@@ -134,20 +136,10 @@ class GstService:
             self._on_bus_message_warning(message)
         elif t == Gst.MessageType.ERROR:
             self._on_bus_message_error(message)
-        elif t == Gst.MessageType.STREAM_START:
-            # Configure pipeline to play only keyframes
-            # for improved CPU utilization. Skip interim delta frames.
-            log.debug('Gst bus message STREAM_START')
-            self._gst_seek_next_keyframe()
-        elif t == Gst.MessageType.ASYNC_DONE:
-            # seek for keyframe completed
-            # request seek for next keyframe
-            log.debug('Gst bus message ASYNC_DONE')
-            self._gst_seek_next_keyframe()
         else:
-            pass
-            # log.debug('GST: On bus message: type: %r, details: %r',
-            #          message.type.get_name(message.type), message)
+            # pass
+            log.debug('GST: Unexpected bus message: type: %r, details: %r',
+                      message.type.get_name(message.type), message)
         return True
 
     def _on_new_sample_out_queue_full(self, sink):
@@ -257,28 +249,6 @@ class GstService:
     def _gst_pipeline_play(self):
         return self.gst_pipeline.set_state(Gst.State.PLAYING)
 
-    def _gst_seek_next_keyframe(self):
-        log.debug('Gst configuring pipeline to seek only keyframes...')
-        found, pos_int = self.gst_pipeline.query_position(Gst.Format.TIME)
-        if not found:
-            log.warning('Gst current pipeline position not found.')
-            return
-        log.debug('Gst current pipeline position: %r', pos_int)
-        rate = 1.0  # keep rate close to real time
-        flags = \
-            Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | \
-            Gst.SeekFlags.TRICKMODE | Gst.SeekFlags.SNAP_AFTER | \
-            Gst.SeekFlags.TRICKMODE_KEY_UNITS | \
-            Gst.SeekFlags.TRICKMODE_NO_AUDIO
-        is_event_handled = self.gst_pipeline.seek(
-            rate,
-            Gst.Format.TIME,
-            flags,
-            Gst.SeekType.SET, pos_int,
-            Gst.SeekType.END, 0)
-        log.debug('Gst pipeline configured to seek only keyframes: %r',
-                  is_event_handled)
-
     def _gst_loop(self):
         # build new gst pipeline
         self._build_gst_pipeline()
@@ -307,8 +277,11 @@ class GstService:
               self.mainloop.is_running() and \
               self.gst_pipeline and \
               self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
+                log.debug("gst pipeline still active. Terminating...")
                 self.gst_pipeline.set_state(Gst.State.PAUSED)
+                log.debug("self.gst_pipeline.set_state(Gst.State.PAUSED)")
                 self.gst_pipeline.set_state(Gst.State.READY)
+                log.debug("self.gst_pipeline.set_state(Gst.State.READY)")
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 if self.gst_bus:
@@ -356,23 +329,19 @@ class GstService:
         except Exception as e:
             log.warning('Error while cleaning up gstreamer resources: %s',
                         str(e))
-            # print('Error while cleaning up gstreamer resources: %s' % str(e))
             formatted_lines = traceback.format_exc().splitlines()
             log.warning('Exception stack trace: %s',
                         "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
-        # print("GST clean up exiting.")
 
     def _service_terminate(self, signum, frame):
         log.info('GST service caught system terminate signal %d', signum)
-        # print('GST service caught system terminate signal %d' % signum)
         if not self._stop_signal.is_set():
             self._stop_signal.set()
 
     def _stop_handler(self):
         self._stop_signal.wait()
         log.info('GST service received stop signal')
-        # print('GST service received stop signal')
         self._gst_cleanup()
 
     def _register_stop_handler(self):
@@ -391,24 +360,19 @@ class GstService:
         """Run the gstreamer pipeline service."""
         log.info("Starting %s", self.__class__.__name__)
         self._register_sys_signal_handler()
-        # print("Terminate handler: %r "
-        #       % self._service_terminate)
         self._register_stop_handler()
         try:
             self._gst_loop()
         except Exception as e:
             log.warning('GST loop exited with error: %s. ',
                         str(e))
-            # print('GST loop exited with error: %s. ' % str(e))
             log.warning(stacktrace())
         finally:
             log.debug('Gst service cleaning up before exit...')
             self._gst_cleanup()
             # self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
-            # print("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
-        # print("Stopped %s" % self.__class__.__name__)
 
 
 def start_gst_service(source_conf=None,
@@ -419,5 +383,8 @@ def start_gst_service(source_conf=None,
                      out_queue=out_queue,
                      stop_signal=stop_signal,
                      eos_reached=eos_reached)
+    # set priority level below parent process
+    # in order to preserve UX responsiveness
+    os.nice(10)
     svc.run()
     log.info('Exiting GST process')
