@@ -15,9 +15,10 @@ def main():
         env_work_dir = '/workspace'
     _svr = ambianic.server.AmbianicServer(work_dir=env_work_dir)
     # run with a little lower priority
-    # to avoid delaying docker container from syncing with OS resources 
+    # to avoid delaying docker container from syncing with OS resources
     # such as log files
     os.nice(1)
+    # start main server
     _svr.start()
 
 
