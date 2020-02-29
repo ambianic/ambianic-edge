@@ -5,6 +5,8 @@ import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+import time
+import os
 from ambianic.util import stacktrace
 import gi
 gi.require_version('Gst', '1.0')
@@ -144,10 +146,13 @@ class GstService:
             # request seek for next keyframe
             log.debug('Gst bus message ASYNC_DONE')
             self._gst_seek_next_keyframe()
+        elif t == Gst.MessageType.SEGMENT_DONE:
+            log.debug('Gst bus message SEGMENT_DONE')
+            self._gst_seek_next_keyframe()
         else:
-            pass
-            # log.debug('GST: On bus message: type: %r, details: %r',
-            #          message.type.get_name(message.type), message)
+            # pass
+            log.debug('GST: Unexpected bus message: type: %r, details: %r',
+                      message.type.get_name(message.type), message)
         return True
 
     def _on_new_sample_out_queue_full(self, sink):
@@ -257,25 +262,65 @@ class GstService:
     def _gst_pipeline_play(self):
         return self.gst_pipeline.set_state(Gst.State.PLAYING)
 
+    def _gst_pause_until_q_consumer_ready(self):
+        def _wait_on_q_consumed():
+            while self.mainloop.is_running():
+              log.debug("_wait_on_q_consumed")
+              if self._out_queue.empty():
+                  log.debug("gst pipeline samples output queue is empty.")
+                  pass
+              log.debug("Pausing gst pipeline...")
+              self.gst_pipeline.set_state(Gst.State.PAUSED)
+              log.debug("Paused gst pipeline...")
+              while not self._out_queue.empty():
+                  log.debug("Waiting on sample queue to be empty...")
+                  time.sleep(1)
+              log.debug("Unpausing gst pipeline...")
+              self.gst_pipeline.set_state(Gst.State.PLAYING)
+              log.debug("Unpaused gst pipeline.")
+
+        _wait_on_q_consumed()
+        # with ThreadPoolExecutor(max_workers=4) as exec:
+        #     exec.submit(_wait_on_q_consumed)
+
+    # Note (Ivelin), Feb 28, 2020: For now putting keyframe seeking and fps throttling on hold.
+    # After a few days of testing there are still differences and open issues 
+    # between gstreamer plugins on arm/amd64 architectures as well as 
+    # various camera implementations of rtsp. Certain seek flags work for one platform or camera
+    # but a different set of flags works for another platform or camera.
+    # For the time being resorting to lowering gstreamer process priority os.nice(1)
+    # in order to perserve UX responsiveness.
     def _gst_seek_next_keyframe(self):
+        # self._gst_pause_until_q_consumer_ready()
+        return
         log.debug('Gst configuring pipeline to seek only keyframes...')
         found, pos_int = self.gst_pipeline.query_position(Gst.Format.TIME)
         if not found:
-            log.warning('Gst current pipeline position not found.')
-            return
+            log.warning('Gst current pipeline position not found. Assuming its 0.')
+            pos_int = 0
         log.debug('Gst current pipeline position: %r', pos_int)
         rate = 1.0  # keep rate close to real time
         flags = \
-            Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | \
-            Gst.SeekFlags.TRICKMODE | Gst.SeekFlags.SNAP_AFTER | \
-            Gst.SeekFlags.TRICKMODE_KEY_UNITS | \
-            Gst.SeekFlags.TRICKMODE_NO_AUDIO
+            Gst.SeekFlags.SEGMENT | \
+            Gst.SeekFlags.TRICKMODE | \
+            Gst.SeekFlags.FLUSH # | \
+            # Gst.SeekFlags.KEY_UNIT # | \
+            # Gst.SeekFlags.TRICKMODE_KEY_UNITS # | \
+            # Gst.SeekFlags.KEY_UNIT | \
+            # Gst.SeekFlags.TRICKMODE_NO_AUDIO | \
+            # Gst.SeekFlags.TRICKMODE | \
+            # Gst.SeekFlags.SNAP_AFTER  # | \
+            # Gst.SeekFlags.NONE
+        seek_ns = pos_int + 1 * 1000000000
         is_event_handled = self.gst_pipeline.seek(
             rate,
             Gst.Format.TIME,
             flags,
             Gst.SeekType.SET, pos_int,
-            Gst.SeekType.END, 0)
+            Gst.SeekType.SET, seek_ns)
+        #    Gst.SeekType.END, 0)
+        # seek 1 second forward
+        # is_event_handled = self.gst_pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.KEY_FLUSH, seek_ns)
         log.debug('Gst pipeline configured to seek only keyframes: %r',
                   is_event_handled)
 
@@ -307,8 +352,11 @@ class GstService:
               self.mainloop.is_running() and \
               self.gst_pipeline and \
               self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
+                log.debug("gst pipeline still active. Terminating...")
                 self.gst_pipeline.set_state(Gst.State.PAUSED)
+                log.debug("self.gst_pipeline.set_state(Gst.State.PAUSED)")
                 self.gst_pipeline.set_state(Gst.State.READY)
+                log.debug("self.gst_pipeline.set_state(Gst.State.READY)")
                 # stop pipeline elements in reverse order (from last to first)
                 log.debug("gst_bus.remove_signal_watch()")
                 if self.gst_bus:
@@ -419,5 +467,7 @@ def start_gst_service(source_conf=None,
                      out_queue=out_queue,
                      stop_signal=stop_signal,
                      eos_reached=eos_reached)
+    # set priority level below parent process in order to preserve UX responsiveness
+    os.nice(10)
     svc.run()
     log.info('Exiting GST process')
