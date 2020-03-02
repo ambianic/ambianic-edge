@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.1.5](https://github.com/ambianic/ambianic-edge/compare/v1.1.4...v1.1.5) (2020-03-02)
+
+
+### Bug Fixes
+
+* travis build script ([03ee187](https://github.com/ambianic/ambianic-edge/commit/03ee187c85b15e55fba7b1a7ec3963c2b3137b5f))
+
 ## [1.0.7](https://github.com/ambianic/ambianic-edge/compare/v1.0.6...v1.0.7) (2019-11-20)
 
 
