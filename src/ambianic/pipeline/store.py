@@ -115,6 +115,7 @@ class SaveDetectionSamples(PipeElement):
             json.dump(save_json, f, ensure_ascii=False, indent=4)
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
         self.event_log.info('Detection Event', save_json)
+        log.debug("Saved sample (detection event): %r ", save_json)
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:
@@ -146,9 +147,9 @@ class SaveDetectionSamples(PipeElement):
                                           inference_meta=inference_meta)
                         self._time_latest_saved_detection = now
                 else:
-                    # non-empty result, there is a detection
-                    # let's save it if its been longer than
-                    #  the user specified positive_interval
+                    # empty result, there is no detection
+                    # let's save a sample if its been longer than
+                    #  the user specified idle_interval
                     if now - self._time_latest_saved_idle >= \
                       self._idle_interval:
                         self._save_sample(inf_time=now,
