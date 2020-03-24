@@ -51,7 +51,7 @@ If you are interested in becoming a contributor to the project, please read the 
 [logo]: https://avatars2.githubusercontent.com/u/52052162?s=200&v=4
 
 # Acknowledgements
-
+  
 This project has been inspired by the prior work of many bright people. Special gratitude to:
 * [Yong Tang](https://github.com/yongtang) for his guidance as Tensorflow SIG IO project lead
 * [Robin Cole](https://github.com/robmarkcole) for his invaluable insights and code on home automation AI with Home Assistant
