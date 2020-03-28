@@ -3,7 +3,10 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) 
 [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
 
-![Ambianic logo][logo]
+![Ambianic logo][ambianic-logo]
+ &nbsp; 
+ <img src="https://raw.githubusercontent.com/lfai/artwork/master/lfai-membership-badge/associate/lfai-memberlogos_associate-color.png"  width="200" style="display:inline;vertical-align:middle;padding:2%">    
+
 
 # Project mission
 
@@ -48,7 +51,7 @@ Your constructive feedback and help are most welcome!
 
 If you are interested in becoming a contributor to the project, please read the [Contributing](CONTRIBUTING.md) page and follow the steps. Looking forward to hearing from you!
 
-[logo]: https://avatars2.githubusercontent.com/u/52052162?s=200&v=4
+[ambianic-logo]: https://avatars2.githubusercontent.com/u/52052162?s=200&v=4
 
 # Acknowledgements
   
