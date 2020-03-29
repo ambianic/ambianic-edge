@@ -17,4 +17,4 @@ _mdwriter.cson
 .pytest_cache/
 **/.peerjsrc
 **/ambianic_edge.egg-info/
-
+ambianic-debug2.sh
