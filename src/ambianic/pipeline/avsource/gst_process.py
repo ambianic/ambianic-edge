@@ -266,8 +266,8 @@ class GstService:
         elif (ret == Gst.StateChangeReturn.NO_PREROLL):
             self.source.is_live = True
             log.info("Live streaming source detected: %r", self.source.uri)
-        # else:
-        #     log.debug("Gst pipeline set_state PLAYING result: %r", ret)
+        else:
+             log.debug("Gst pipeline set_state PLAYING result: %r", ret)
         self._gst_mainloop_run()
 
     def _gst_cleanup(self):
