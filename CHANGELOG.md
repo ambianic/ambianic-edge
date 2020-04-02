@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.1.8](https://github.com/ambianic/ambianic-edge/compare/v1.1.7...v1.1.8) (2020-04-02)
+
+
+### Bug Fixes
+
+* cleanup network error handling ([a7ee9f0](https://github.com/ambianic/ambianic-edge/commit/a7ee9f04b2ff765324f8c7bdb9c5b35b0928423f))
+* update peerjs-python version ([80212e6](https://github.com/ambianic/ambianic-edge/commit/80212e6164517ef4940f747e9f99fa3db3d94847))
+
 ## [1.1.7](https://github.com/ambianic/ambianic-edge/compare/v1.1.6...v1.1.7) (2020-03-29)
 
 
