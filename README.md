@@ -17,6 +17,12 @@
 
 [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
+
+
+A more detailed project background document is available [here](https://docs.ambianic.ai/).
+
+A deep dive technical discussion of the project architecture is available in this [WebRTCHacks article](https://webrtchacks.com/private-home-surveillance-with-the-webrtc-datachannel/).
+
 # Project Status
 
 Ambianic Edge is in now in public Beta. Here is a [5 Minutes Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
