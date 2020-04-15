@@ -17,7 +17,13 @@
 
 [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
 
+Following is a conceptual flow diagram:
 
+![Remote Home Care Flow](https://raw.githubusercontent.com/ambianic/ambianic-docs/master/docs-md/assets/images/Ambianic-Remote-Elderly-Care-Flow.png)
+
+High level architecture diagram below:
+
+![Ambianic.ai High Level Architecture](https://raw.githubusercontent.com/ambianic/ambianic-docs/master/docs-md/assets/images/Ambianic-High-Level-Architecture.png)
 
 A more detailed project background document is available [here](https://docs.ambianic.ai/).
 
