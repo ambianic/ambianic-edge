@@ -1,7 +1,7 @@
 """Audio Video sourcing to an Ambianic pipeline."""
 
-from .. import PipeElement
-from . import gst_process
+from ambianic.pipeline import PipeElement
+from ambianic.pipeline.avsource import gst_process
 
 import logging
 import time
@@ -9,6 +9,8 @@ import threading
 import multiprocessing
 import queue
 from PIL import Image
+from io import BytesIO
+import requests
 from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
@@ -22,7 +24,7 @@ class AVSourceElement(PipeElement):
     Pipe element that handles a wide range of media input sources.
 
     Detects media input source, processes and passes on normalized raw
-    samples to the next pipe element.
+    image samples to the next pipe element.
     """
 
     def __init__(self, uri=None, type=None, live=False, **kwargs):
@@ -31,7 +33,10 @@ class AVSourceElement(PipeElement):
         :Parameters:
         ----------
         source_conf : dict
-            uri: string (example rtsp://somehost/ipcam/channel0)
+            uri: string (examples 
+                uri: rtsp://somehost/ipcam/channel0
+                uri: http://somehost/ipcam/sample.jpg
+                )
             type: string (video, audio or image)
             live: boolean (True if the source is a live stream)
                 When live is True AVSourceElement source element will
@@ -82,6 +87,42 @@ class AVSourceElement(PipeElement):
     def _get_sample_queue(self):
         q = multiprocessing.Queue(3)
         return q
+
+    def fetch_img(self, session=None, url=None) -> Image:
+        assert url
+        r = requests.get(url)
+        r.raise_for_status()
+        img = Image.open(BytesIO(r.content))
+        return img
+
+    def _run_http_fetch(self, url=None, continuous=False):
+        log.debug("Fetching source uri sample over http: %r", url)
+        assert url
+        img=None
+        while not self._stop_requested:
+            try:
+                img = self.fetch_img(url=url)
+                log.debug("""
+                    Image fetched: %r
+                    From URL: %r
+                    """, img, url)
+                log.debug('Sending sample to next element.')
+                self.receive_next_sample(image=img)        
+                if not continuous:
+                    # this is not a live (continuous) media source
+                    # exit the image fetch loop
+                    log.debug('Completed one time http image fetch from URL: %r',
+                            url)
+                    break
+            except:
+                log.exception("""
+                    Failed to fetch image from pipeline source. 
+                    URL: %r
+                    """, url)
+                if continuous:
+                    log.warning("Will keep trying to fetch image from continuous source.")
+                    # pause a moment to let remote network issues settle
+                    time.sleep(1)
 
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
@@ -187,7 +228,7 @@ class AVSourceElement(PipeElement):
                     break
             # process did not stop, we need to be a bit more assertive
             if gst_proc.is_alive():
-                log.debug('Gst proess did not stop. Terminating.')
+                log.debug('Gst process did not stop. Terminating.')
                 self._process_terminate(gst_proc)
                 if gst_proc.is_alive():
                     # last resort, force kill the process
@@ -205,15 +246,32 @@ class AVSourceElement(PipeElement):
         super().start()
         log.info("Starting %s", self.__class__.__name__)
         self._stop_requested = False
-        while not self._stop_requested:
-            self._run_gst_service()
-            if (self._gst_process_eos_reached and not self._is_live):
-                # gst process reached end of its input stream
-                # exit the qavsource element loop
-                log.debug('GST EOS reached for source uri: %r',
-                          self._source_conf['uri'])
-                break
-        self._stop_gst_service()
+        if self._source_conf['uri'].startswith('http') and \
+            self._source_conf['type'] == 'image':
+            log.debug("""
+                Input source is an http still image: %r
+                Will use aiohttp client for sampling.
+                """, self._source_conf['uri'])
+            # use http client library to fetch still images
+            self._run_http_fetch(
+                url=self._source_conf['uri'], 
+                continuous=self._is_live)
+        else:
+            log.debug("""
+                Input source is : %r
+                Will use gstreamer for sampling.
+                """, self._source_conf['uri'])
+            # use gstreamer for all other types of media sources
+            while not self._stop_requested:
+                self._run_gst_service()
+                if (self._gst_process_eos_reached and not self._is_live):
+                    # gst process reached end of its input stream
+                    # and this is not a live (continuous) stream loop
+                    # exit the avsource element loop
+                    log.debug('GST EOS reached for source uri: %r',
+                            self._source_conf['uri'])
+                    break
+            self._stop_gst_service()
         super().stop()
         log.info("Stopped %s", self.__class__.__name__)
 

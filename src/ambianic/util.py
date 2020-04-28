@@ -1,5 +1,6 @@
 """Service classes for OS interaction and multithreading."""
 import threading
+from threading import Thread, current_thread, Event
 import logging
 import traceback
 import time
@@ -48,10 +49,10 @@ class ManagedService:
         """
 
 
-class ThreadedJob(threading.Thread, ManagedService):
+class ThreadedJob(Thread, ManagedService):
     """A job that runs in its own python thread.
 
-    Jobs managed by Threaded Job must have a start(), stop() method.
+    Jobs managed by Threaded Job must implement all ManagedService methods.
     """
 
     # Reminder: even though multiple processes can work well for pipelines,
@@ -68,14 +69,14 @@ class ThreadedJob(threading.Thread, ManagedService):
         job : ManagedService
             The underlying service wrapped in this thread.
         """
-        threading.Thread.__init__(self, daemon=True)
+        Thread.__init__(self, daemon=True)
         assert isinstance(job, ManagedService)
         self.job = job
         # The shutdown_flag is a threading.Event object that
         # indicates whether the thread should be terminated.
         # self.shutdown_flag = threading.Event()
         # ... Other thread setup code here ...
-        self._stop_requested = threading.Event()
+        self._stop_requested = Event()
 
     def run(self):
         log.info('Thread #%s started with job: %s',
