@@ -228,3 +228,4 @@ def test_exception_on_new_sample():
     assert y0 > 0 and y0 < y1
     t.join(timeout=3)
     assert not t.is_alive()
+    

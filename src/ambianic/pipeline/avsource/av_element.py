@@ -114,7 +114,7 @@ class AVSourceElement(PipeElement):
                     log.debug('Completed one time http image fetch from URL: %r',
                             url)
                     break
-            except:
+            except Exception:
                 log.exception("""
                     Failed to fetch image from pipeline source. 
                     URL: %r
