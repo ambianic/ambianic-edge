@@ -41,11 +41,11 @@ class _TestAVSourceElement(AVSourceElement):
 
     def __init__(self, **source_conf):
         super().__init__(**source_conf)
-        self._run_gst_service_called = False
-        self._stop_gst_service_called = False
+        self._run_http_fetch_called = False
 
-    def _run_http_fetch(self):
+    def _run_http_fetch(self, url=None, continuous=False):
         self._run_http_fetch_called = True
+        super()._run_http_fetch(url=url, continuous=continuous)
 
 class _OutPipeElement(PipeElement):
 
@@ -61,7 +61,7 @@ class _OutPipeElement(PipeElement):
 def test_http_still_image_input_detect_person_exit():
     """Process a single jpg image. Detect a person and exit pipeline."""
     source_uri = 'https://raw.githubusercontent.com/ambianic/ambianic-edge/master/tests/pipeline/ai/person.jpg'
-    avsource = AVSourceElement(uri=source_uri, type='image', live=False)
+    avsource = _TestAVSourceElement(uri=source_uri, type='image', live=False)
     object_config = _object_detect_config()
     detection_received = threading.Event()
     sample_image = None
@@ -92,6 +92,7 @@ def test_http_still_image_input_detect_person_exit():
         )
     t.start()
     detection_received.wait(timeout=10)
+    assert avsource._run_http_fetch_called
     assert sample_image
     assert sample_image.size[0] == 1280
     assert sample_image.size[1] == 720
@@ -228,4 +229,57 @@ def test_exception_on_new_sample():
     assert y0 > 0 and y0 < y1
     t.join(timeout=3)
     assert not t.is_alive()
-    
+
+
+class _TestAVSourceElement3(AVSourceElement):
+
+    def __init__(self, **source_conf):
+        super().__init__(**source_conf)
+        self._run_http_fetch_called = False
+        self._on_fetch_img_exception_called = False
+        self._fetch_img_exception_recovery_called = threading.Event()
+
+    def _run_http_fetch(self, url=None, continuous=False):
+        self._run_http_fetch_called = True
+        super()._run_http_fetch(url=url, continuous=continuous)
+
+    def _on_fetch_img_exception(self, _exception=None):
+        self._on_fetch_img_exception_called = True
+        super()._on_fetch_img_exception(_exception=_exception)
+
+    def _fetch_img_exception_recovery(self):
+        self._fetch_img_exception_recovery_called.set()
+        super()._fetch_img_exception_recovery()
+
+
+def test_exception_on_http_fetch_single_snapshot():
+    """Exception from http image fetch should not break the pipe loop."""
+    source_uri = 'http://bad.url.non.ex1st3nt'
+    avsource = _TestAVSourceElement3(uri=source_uri, type='image', live=False)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+        )
+    t.start()
+    t.join(timeout=10)
+    assert not t.is_alive()
+    assert avsource._run_http_fetch_called
+    assert avsource._on_fetch_img_exception_called
+    assert not avsource._fetch_img_exception_recovery_called.isSet()
+
+
+def test_exception_on_http_fetch_continuous():
+    """Exception from http image fetch should not break the pipe loop."""
+    source_uri = 'http://bad.url.non.ex1st3nt'
+    avsource = _TestAVSourceElement3(uri=source_uri, type='image', live=True)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+        )
+    t.start()
+    avsource.stop()
+    avsource._fetch_img_exception_recovery_called.wait(timeout=10)
+    t.join(timeout=10)
+    assert not t.is_alive()
+    assert avsource._run_http_fetch_called
+    assert avsource._on_fetch_img_exception_called

@@ -95,11 +95,18 @@ class AVSourceElement(PipeElement):
         img = Image.open(BytesIO(r.content))
         return img
 
+    def _on_fetch_img_exception(self, _exception=None):
+        pass
+
+    def _fetch_img_exception_recovery(self):
+        log.debug("Pausing for a moment to let remote network issues settle")
+        time.sleep(1)
+
     def _run_http_fetch(self, url=None, continuous=False):
         log.debug("Fetching source uri sample over http: %r", url)
         assert url
-        img=None
         while not self._stop_requested:
+            img=None
             try:
                 img = self.fetch_img(url=url)
                 log.debug("""
@@ -108,21 +115,24 @@ class AVSourceElement(PipeElement):
                     """, img, url)
                 log.debug('Sending sample to next element.')
                 self.receive_next_sample(image=img)        
-                if not continuous:
-                    # this is not a live (continuous) media source
-                    # exit the image fetch loop
-                    log.debug('Completed one time http image fetch from URL: %r',
-                            url)
-                    break
-            except Exception:
+            except Exception as e:
+                self._on_fetch_img_exception(_exception=e)
                 log.exception("""
                     Failed to fetch image from pipeline source. 
                     URL: %r
                     """, url)
                 if continuous:
                     log.warning("Will keep trying to fetch image from continuous source.")
-                    # pause a moment to let remote network issues settle
-                    time.sleep(1)
+                    self._fetch_img_exception_recovery()
+            finally:
+                if not continuous:
+                    # this is not a live (continuous) media source
+                    # exit the image fetch loop
+                    log.debug('Completed one time http image fetch from URL: %r',
+                            url)
+                    break
+
+
 
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
@@ -250,7 +260,7 @@ class AVSourceElement(PipeElement):
             self._source_conf['type'] == 'image':
             log.debug("""
                 Input source is an http still image: %r
-                Will use aiohttp client for sampling.
+                Will use python requests lib for sampling.
                 """, self._source_conf['uri'])
             # use http client library to fetch still images
             self._run_http_fetch(
