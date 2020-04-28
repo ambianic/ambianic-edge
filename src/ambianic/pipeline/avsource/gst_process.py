@@ -138,7 +138,7 @@ class GstService:
             self._on_bus_message_error(message)
         else:
             # pass
-            log.debug('GST: Unexpected bus message: type: %r, details: %r',
+            log.debug('GST: Ignoring bus message: type: %r, details: %r',
                       message.type.get_name(message.type), message)
         return True
 
