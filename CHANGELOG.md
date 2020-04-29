@@ -1,5 +1,18 @@
 # Semantic Versioning Changelog
 
+# [1.2.0](https://github.com/ambianic/ambianic-edge/compare/v1.1.8...v1.2.0) (2020-04-29)
+
+
+### Features
+
+* optimized performance for http still image sources ([3eb8f85](https://github.com/ambianic/ambianic-edge/commit/3eb8f858d69e6cdd7a1c042ef99fbfb3edb31a02))
+
+
+### Performance Improvements
+
+* optimized performance for http still image sources ([c21f3ff](https://github.com/ambianic/ambianic-edge/commit/c21f3ff415e3380b2509724da3d8655b7be21358))
+* performance enhancement for still image sources over http ([fe06345](https://github.com/ambianic/ambianic-edge/commit/fe063453b3050c59b56235ddc0f0aa3fc3e3262b))
+
 ## [1.1.8](https://github.com/ambianic/ambianic-edge/compare/v1.1.7...v1.1.8) (2020-04-02)
 
 
