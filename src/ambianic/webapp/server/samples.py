@@ -144,15 +144,23 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
                         ' Error: %s', before_datetime, str(e))
     page_start_position = (page-1)*page_size
     page_end_position = page_start_position + page_size
+
     if not parsed_datetime:
         log.debug('Fetching most recent saved samples')
     log.debug('Fetching samples page %d. Page size %d. '
               'Sample index range [%d:%d]. ',
               page, page_size, page_start_position, page_end_position)
-    p = Path(data_dir) / 'timeline-event-log.yaml'
-    log.debug('Timeline path: %s', p.resolve())
-    with p.open() as pf:
-        timeline_events = yaml.safe_load(pf)
+
+    files = list(Path(data_dir).rglob('timeline-event-log.yaml*'))
+    files = sorted(files, key=os.path.getmtime, reverse=False)
+
+    # load the event history, older first
+    timeline_events = []
+    for file_path in files:
+        with file_path.open() as pf:
+            events = yaml.safe_load(pf)
+            timeline_events += events
+
     # latest_events_first = timeline_events.reverse()
     log.debug('Fetched timeline file into struct of type %r with %d events: ',
               type(timeline_events),
@@ -163,16 +171,7 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
         timeline_events[-1*page_start_position - 1:
                         -1*page_end_position - 1:
                         -1]
-    # files = sorted(files, key=os.path.getmtime, reverse=True)
-    # for json_file in files[page_start_position:page_end_position]:
-    # if
-    #    with open(json_file) as f:
-    #        sample = json.load(f)
-    #        sample['id'] = uuid.uuid4().hex
-    #        sample['file'] = str(json_file)
-    #        samples.append(sample)
-    # lines = map(str, files)
-    # log.debug('File names follow:\n %s', "\n".join(lines))
+
     return timeline_slice
 
 
