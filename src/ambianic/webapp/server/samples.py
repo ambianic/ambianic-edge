@@ -152,27 +152,52 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
               page, page_size, page_start_position, page_end_position)
 
     files = list(Path(data_dir).rglob('timeline-event-log.yaml*'))
-    files = sorted(files, key=os.path.getmtime, reverse=False)
+    files = sorted(files, reverse=False)
 
+    page_count = 1
+    events_queue = []
     # load the event history, older first
-    timeline_events = []
     for file_path in files:
+
         with file_path.open() as pf:
-            events = yaml.safe_load(pf)
-            timeline_events += events
 
-    # latest_events_first = timeline_events.reverse()
-    log.debug('Fetched timeline file into struct of type %r with %d events: ',
-              type(timeline_events),
-              len(timeline_events))
-    # events are appended to the file as they arrive
-    # we need to read in reverse order to get the latest one first
-    timeline_slice = \
-        timeline_events[-1*page_start_position - 1:
-                        -1*page_end_position - 1:
-                        -1]
+            timeline_events = yaml.safe_load(pf)
+            timeline_events += events_queue
 
-    return timeline_slice
+            events_queue = []
+            events_len = len(timeline_events)
+            if events_len < page_end_position:
+
+                pages_mod = events_len % page_size
+                if pages_mod > 0:
+                    events_queue = timeline_events[0:pages_mod]
+                    page_start_position += pages_mod
+                    page_end_position += pages_mod
+
+                page_start_position -= events_len
+                page_end_position -= events_len
+                page_count += 1
+
+            else:
+
+                if page_start_position >= events_len:
+                    return []
+
+                # events are appended to the file as they arrive
+                # we need to read in reverse order to get the latest one first
+
+                return \
+                    timeline_events[-1*page_start_position - 1:
+                                    -1*page_end_position - 1:
+                                    -1]
+
+    page_count += 1
+
+    if page_count < page:
+        return []
+
+    # return the remaining queue if there are no more files to process
+    return events_queue
 
 
 def add_sample(new_sample=None):
