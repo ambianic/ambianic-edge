@@ -19,3 +19,4 @@ _mdwriter.cson
 **/ambianic_edge.egg-info/
 ambianic-debug2.sh
 config.yaml.local
+/.ropeproject
