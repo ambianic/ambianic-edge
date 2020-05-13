@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.3.0](https://github.com/ambianic/ambianic-edge/compare/v1.2.0...v1.3.0) (2020-05-13)
+
+
+### Features
+
+* load events from files progressively ([5a96034](https://github.com/ambianic/ambianic-edge/commit/5a96034aed0ae0eb94e94f7ba68f49ecae6d827c))
+
 # [1.2.0](https://github.com/ambianic/ambianic-edge/compare/v1.1.8...v1.2.0) (2020-04-29)
 
 
