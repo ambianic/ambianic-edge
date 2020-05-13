@@ -1,5 +1,6 @@
 """Pipeline event timeline read/write/search functions."""
 
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 import logging
 import yaml
 import uuid
@@ -145,12 +146,13 @@ def configure_timeline(config: dict = None):
     event_log = logging.getLogger(TIMELINE_EVENT_LOGGER_NAME)
     event_log.setLevel(logging.INFO)
     # Use rotating files as log message handler
-    handler = logging.handlers.RotatingFileHandler(
-                  log_filename,
-                  # each event file will keep up to 100K data
-                  maxBytes=100*1024,
-                  # 100 backup files will be kept. Older will be erased.
-                  backupCount=100)
+    handler = ConcurrentRotatingFileHandler(
+        log_filename,
+        # each event file will keep up to 100K data
+        maxBytes=100*1024,
+        # 100 backup files will be kept. Older will be erased.
+        backupCount=100
+    )
     fmt = PipelineEventFormatter()
     handler.setFormatter(fmt)
     # remove any other handlers that may be assigned previously
