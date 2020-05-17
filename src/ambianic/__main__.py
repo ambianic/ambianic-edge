@@ -10,9 +10,7 @@ _svr = None
 def main():
     """Start the main app executable in the hosting OS environment."""
     global _svr
-    env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
-    if not env_work_dir:
-        env_work_dir = '/workspace'
+    env_work_dir = ambianic.get_work_dir()
     _svr = ambianic.server.AmbianicServer(work_dir=env_work_dir)
     # run with a little lower priority
     # to avoid delaying docker container from syncing with OS resources

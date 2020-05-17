@@ -11,6 +11,7 @@ from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from ambianic.webapp.flaskr import FlaskServer
+from ambianic.config_manager import get_config_manager
 
 log = logging.getLogger(__name__)
 
@@ -94,39 +95,29 @@ def _configure(env_work_dir=None):
     assert env_work_dir, 'Working directory required.'
     assert os.path.exists(env_work_dir), \
         'working directory invalid: {}'.format(env_work_dir)
-    print("Configuring server...")
-    secrets_file = os.path.join(env_work_dir, SECRETS_FILE)
-    config_file = os.path.join(env_work_dir, CONFIG_FILE)
-    try:
-        if os.path.isfile(secrets_file):
-            with open(secrets_file) as sf:
-                secrets_config = sf.read()
-        else:
-            secrets_config = ""
-            log.warning('Secrets file not found. '
-                        'Proceeding without it: %s',
-                        secrets_file)
-        with open(config_file) as cf:
-            base_config = cf.read()
-            all_config = secrets_config + "\n" + base_config
-        config = yaml.safe_load(all_config)
-        log.debug('loaded config from %r: %r', CONFIG_FILE, config)
+
+    config_manager = get_config_manager()
+
+    def logging_config_handler(config):
         # configure logging
         logging_config = None
         if config:
             logging_config = config.get('logging', None)
         _configure_logging(logging_config)
+
+    config_manager.register_handler(logging_config_handler)
+
+    def timeline_config_handler(config):
         # configure pipeline timeline event log
         timeline_config = None
         if config:
             timeline_config = config.get('timeline', None)
         timeline.configure_timeline(timeline_config)
-        return config
-    except FileNotFoundError:
-        log.warning('Configuration file not found: %s', config_file)
-        log.warning('Please provide a configuration file and restart.')
-    except Exception as e:
-        log.exception('Configuration Error!', e, exc_info=True)
+
+    config_manager.register_handler(timeline_config_handler)
+
+    config_manager.load(env_work_dir)
+
     return None
 
 
