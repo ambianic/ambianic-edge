@@ -3,7 +3,9 @@
 import yaml
 import os
 import logging
+from time import sleep
 from ambianic import get_work_dir
+import threading
 
 CONFIG_FILE = "config.yaml"
 SECRETS_FILE = "secrets.yaml"
@@ -15,12 +17,20 @@ class ConfigurationManager:
     """
 
     def __init__(self, work_dir=None):
-
         self.__config = None
+        self.watch_files = {}
+        self.watch_thread = None
+        self.watch_lock = threading.RLock()
         self.log = logging.getLogger()
         self.handlers = []
         if work_dir is not None:
             self.load(work_dir)
+
+    def close(self):
+        """Close the config manager"""
+        self.unwatch_files()
+        self.watch_thread.join()
+        self.watch_thread = None
 
     def register_handler(self, callback):
         """Register a callback to trigger when there is a configuration update"""
@@ -30,14 +40,83 @@ class ConfigurationManager:
         """Remove a callback from the configuration updates handlers"""
         self.handlers.remove(callback)
 
-    def load(self, work_dir=None):
+    def __watcher(self):
+        """Poll for file changes"""
+        while True:
+            if len(self.watch_files) == 0:
+                break
+            with self.watch_lock:
+                try:
+                    for filename, last_mtime in self.watch_files.items():
+                        mtime = os.path.getmtime(filename)
+                        if last_mtime is None:
+                            self.watch_files[filename] = mtime
+                            continue
+                        if last_mtime != mtime:
+                            self.log.info("File change detected: %s", filename)
+                            self.watch_files[filename] = mtime
+                            self.load(self.work_dir)
+                except Exception as ex:
+                    self.log.warning(
+                        "Exception watching file %s: %s", filename, ex)
+                    pass
+        sleep(1)
+
+    def watch_file(self, filename):
+        """Add a file to the watch list"""
+
+        if filename in self.watch_files.keys():
+            return
+
+        if not os.path.exists(filename):
+            return
+
+        with self.watch_lock:
+            self.log.info("Watching %s for changes", filename)
+            self.watch_files[filename] = None
+
+        if self.watch_thread is None:
+            self.watch_thread = threading.Thread(
+                target=self.__watcher,
+                # args=(self,)
+            )
+            self.watch_thread.start()
+
+    def unwatch_files(self):
+        """Remove a file from the watch list"""
+        with self.watch_lock:
+            self.watch_files = {}
+
+    def save(self, config):
+        """Save configuration to files"""
+        if config is not None:
+            return
+
+        with self.watch_lock:
+            with open(self.get_config_file(), 'w') as fh:
+                yaml.dump(config, fh, default_flow_style=False)
+
+    def get_config_file(self):
+        """Return the config file path"""
+        return os.path.join(self.work_dir, CONFIG_FILE)
+
+    def get_secrets_file(self):
+        """Return the secrets file path"""
+        return os.path.join(self.work_dir, SECRETS_FILE)
+
+    def load(self, work_dir):
         """Load configuration from file"""
 
         assert os.path.exists(work_dir), \
             'working directory invalid: {}'.format(work_dir)
 
-        secrets_file = os.path.join(work_dir, SECRETS_FILE)
-        config_file = os.path.join(work_dir, CONFIG_FILE)
+        self.work_dir = work_dir
+
+        secrets_file = self.get_secrets_file()
+        self.watch_file(secrets_file)
+
+        config_file = self.get_config_file()
+        self.watch_file(config_file)
 
         try:
             if os.path.isfile(secrets_file):
@@ -114,4 +193,4 @@ def get_config():
 
 def update_config(new_config):
     """Update the current configuration"""
-    return __config_manager.update(new_config)
+    return __config_manager.save(new_config)

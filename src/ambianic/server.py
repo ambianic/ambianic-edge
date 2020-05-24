@@ -118,7 +118,7 @@ def _configure(env_work_dir=None):
 
     config_manager.load(env_work_dir)
 
-    return None
+    return config_manager.get()
 
 
 class AmbianicServer:
@@ -144,6 +144,7 @@ class AmbianicServer:
         log.debug('Stopping servers...')
         for s in servers.values():
             s.stop()
+        get_config_manager().close()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
