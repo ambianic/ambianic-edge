@@ -4,9 +4,21 @@ import logging
 import logging.handlers
 import ambianic
 from ambianic.server import AmbianicServer
-from ambianic import server
+from ambianic import server, config_manager
+from ambianic.config_manager import reset_config_manager, get_config_manager
 import os
 import pathlib
+
+
+def setup_module(module):
+    """ setup any state specific to the execution of the given module."""
+    get_config_manager()
+
+
+def teardown_module(module):
+    """ teardown any state that was previously setup with a setup_module
+     method."""
+    reset_config_manager()
 
 
 def test_no_config():
@@ -91,8 +103,8 @@ def test_log_config_bad_level2():
 
 
 def test_config_with_secrets():
-    server.SECRETS_FILE = 'test-config-secrets.yaml'
-    server.CONFIG_FILE = 'test-config.yaml'
+    config_manager.SECRETS_FILE = 'test-config-secrets.yaml'
+    config_manager.CONFIG_FILE = 'test-config.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
     assert conf
@@ -101,16 +113,16 @@ def test_config_with_secrets():
 
 
 def test_config_without_secrets_failed_ref():
-    server.SECRETS_FILE = '__no__secrets__.lmay__'
-    server.CONFIG_FILE = 'test-config.yaml'
+    config_manager.SECRETS_FILE = '__no__secrets__.lmay__'
+    config_manager.CONFIG_FILE = 'test-config.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
     assert not conf
 
 
 def test_config_without_secrets_no_ref():
-    server.SECRETS_FILE = '__no__secrets__.lmay__'
-    server.CONFIG_FILE = 'test-config2.yaml'
+    config_manager.SECRETS_FILE = '__no__secrets__.lmay__'
+    config_manager.CONFIG_FILE = 'test-config2.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
     assert conf
@@ -119,7 +131,7 @@ def test_config_without_secrets_no_ref():
 
 
 def test_no_pipelines():
-    server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
+    config_manager.CONFIG_FILE = 'test-config-no-pipelines.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
     assert not conf

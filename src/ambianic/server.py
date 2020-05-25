@@ -11,14 +11,12 @@ from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from ambianic.webapp.flaskr import FlaskServer
-from ambianic.config_manager import get_config_manager
+from ambianic.config_manager import get_config_manager, reset_config_manager
 
 log = logging.getLogger(__name__)
 
 
 AI_MODELS_DIR = "ai_models"
-CONFIG_FILE = "config.yaml"
-SECRETS_FILE = "secrets.yaml"
 DEFAULT_LOG_LEVEL = logging.INFO
 MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
@@ -96,7 +94,7 @@ def _configure(env_work_dir=None):
     assert os.path.exists(env_work_dir), \
         'working directory invalid: {}'.format(env_work_dir)
 
-    config_manager = get_config_manager()
+    config_manager = reset_config_manager()
 
     def logging_config_handler(config):
         # configure logging
@@ -144,7 +142,7 @@ class AmbianicServer:
         log.debug('Stopping servers...')
         for s in servers.values():
             s.stop()
-        get_config_manager().close()
+        reset_config_manager()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""

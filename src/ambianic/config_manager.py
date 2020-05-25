@@ -26,11 +26,12 @@ class ConfigurationManager:
         if work_dir is not None:
             self.load(work_dir)
 
-    def close(self):
-        """Close the config manager"""
+    def stop(self):
+        """Stop the config manager"""
         self.unwatch_files()
-        self.watch_thread.join()
-        self.watch_thread = None
+        if self.watch_thread is not None:
+            self.watch_thread.join()
+            self.watch_thread = None
 
     def register_handler(self, callback):
         """Register a callback to trigger when there is a configuration update"""
@@ -183,14 +184,30 @@ __config_manager = ConfigurationManager()
 
 def get_config_manager():
     """Return the configuration manager singleton"""
+    global __config_manager
+
+    if __config_manager is None:
+        __config_manager = ConfigurationManager()
+
     return __config_manager
+
+
+def reset_config_manager():
+    """Reset the configuration manager singleton"""
+    global __config_manager
+
+    if __config_manager is not None:
+        __config_manager.stop()
+        __config_manager = None
+
+    return get_config_manager()
 
 
 def get_config():
     """Return the current configuration"""
-    return __config_manager.get()
+    return get_config_manager().get()
 
 
-def update_config(new_config):
+def save_config(new_config):
     """Update the current configuration"""
-    return __config_manager.save(new_config)
+    return get_config_manager().save(new_config)
