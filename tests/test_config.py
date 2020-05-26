@@ -1,15 +1,13 @@
 """Test configuration functions."""
-import pytest
 import logging
 import logging.handlers
+import os
+from time import sleep
 import ambianic
 from ambianic.server import AmbianicServer
 from ambianic import server, config_manager
-from ambianic import config_manager
-import os
 import yaml
-import pathlib
-from time import sleep
+import pytest
 
 
 class Watch:
@@ -30,7 +28,6 @@ def write_config(config_file, config):
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
-    pass
 
 
 def teardown_module(module):
@@ -176,8 +173,12 @@ def test_reload():
     write_config(config_file, config)
 
     # wait for polling to happen
+    wait = 3
     while not watcher.changed:
-        sleep(.25)
+        sleep(.5)
+        wait -= 1
+        if wait == 0:
+            raise Exception("Failed to detect change")
 
     config3 = config_manager.get()
     assert config["logging"]["level"] == config3["logging"]["level"]
@@ -199,7 +200,11 @@ def test_callback():
     write_config(config_file, config)
 
     # wait for polling to happen
+    wait = 3
     while not watcher.changed:
-        sleep(.25)
+        sleep(.5)
+        wait -= 1
+        if wait == 0:
+            raise Exception("Failed to detect change")
 
     assert watcher.changed

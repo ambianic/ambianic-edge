@@ -4,26 +4,24 @@ import ambianic
 import ambianic.server
 import signal
 
-_svr = None
-
 
 def main():
     """Start the main app executable in the hosting OS environment."""
-    global _svr
     env_work_dir = ambianic.get_work_dir()
-    _svr = ambianic.server.AmbianicServer(work_dir=env_work_dir)
+    ambianic.server_instance = ambianic.server.AmbianicServer(
+        work_dir=env_work_dir
+    )
     # run with a little lower priority
     # to avoid delaying docker container from syncing with OS resources
     # such as log files
     os.nice(1)
     # start main server
-    _svr.start()
+    ambianic.server_instance.start()
 
 
 def stop():
     """Stop a running app executable in the hosting OS environment."""
-    global _svr
-    _svr.stop()
+    ambianic.server_instance.stop()
 
 
 def _service_shutdown(signum=None, frame=None):

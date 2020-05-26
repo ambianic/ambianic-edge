@@ -60,8 +60,7 @@ class ConfigurationManager:
                 except Exception as ex:
                     self.log.warning(
                         "Exception watching file %s: %s", filename, ex)
-                    pass
-        sleep(0.2)
+        sleep(0.25)
 
     def watch_file(self, filename):
         """Add a file to the watch list"""
