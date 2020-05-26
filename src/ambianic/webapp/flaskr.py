@@ -11,7 +11,7 @@ from werkzeug.serving import make_server
 from pathlib import Path
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from .server import samples
-from ambianic.config_manager import get_config, save_config
+from ambianic import config_manager
 log = logging.getLogger(__name__)
 
 # configuration
@@ -197,8 +197,8 @@ def create_app(data_dir=None):
     @app.route('/api/config', methods=['GET', 'POST'])
     def handle_config():
         if request.method == 'POST':
-            save_config(request.get_json())
-        resp = jsonify(get_config())
+            config_manager.save(request.get_json())
+        resp = jsonify(config_manager.get())
         return resp
 
     @app.route('/api/samples/<sample_id>', methods=['PUT', 'DELETE'])

@@ -5,27 +5,38 @@ import logging.handlers
 import ambianic
 from ambianic.server import AmbianicServer
 from ambianic import server, config_manager
-from ambianic.config_manager import reset_config_manager, get_config_manager
+from ambianic import config_manager
 import os
 import yaml
 import pathlib
 from time import sleep
 
 
+class Watch:
+    """Utililty to watch for changes"""
+
+    def __init__(self):
+        self.changed = False
+
+    def on_change(self):
+        self.changed = True
+
+
 def write_config(config_file, config):
+    """Write YAML configuration to file"""
     with open(config_file, 'w') as fh:
         yaml.dump(config, fh, default_flow_style=False)
 
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
-    get_config_manager()
+    pass
 
 
 def teardown_module(module):
     """ teardown any state that was previously setup with a setup_module
      method."""
-    reset_config_manager()
+    config_manager.stop()
 
 
 def test_no_config():
@@ -153,16 +164,22 @@ def test_reload():
 
     write_config(config_file, config)
 
-    config1 = get_config_manager().load(_dir)
+    config1 = config_manager.load(_dir)
 
     assert config["logging"]["level"] == config1["logging"]["level"]
 
+    watcher = Watch()
+
+    config_manager.register_handler(lambda cfg: watcher.on_change())
+
     config["logging"]["level"] = "WARN"
     write_config(config_file, config)
-    # wait for polling to happen
-    sleep(0.5)
 
-    config3 = get_config_manager().get()
+    # wait for polling to happen
+    while not watcher.changed:
+        sleep(.25)
+
+    config3 = config_manager.get()
     assert config["logging"]["level"] == config3["logging"]["level"]
 
 
@@ -174,14 +191,15 @@ def test_callback():
     config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
 
     write_config(config_file, config)
-    get_config_manager().load(_dir)
+    config_manager.load(_dir)
 
-    def on_change(new_config):
-        new_config["callback_called"] = True
+    watcher = Watch()
 
-    get_config_manager().register_handler(on_change)
+    config_manager.register_handler(lambda cfg: watcher.on_change())
     write_config(config_file, config)
-    # wait for polling to happen
-    sleep(0.5)
 
-    assert get_config_manager().get()["callback_called"] == True
+    # wait for polling to happen
+    while not watcher.changed:
+        sleep(.25)
+
+    assert watcher.changed

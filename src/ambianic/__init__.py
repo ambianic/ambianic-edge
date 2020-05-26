@@ -1,7 +1,10 @@
 
 import os
+from ambianic.config_mgm import ConfigurationManager
 
 DEFAULT_WORK_DIR = '/workspace'
+
+config_manager = ConfigurationManager()
 
 
 def get_work_dir():

@@ -10,8 +10,8 @@ import yaml
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
+from ambianic import config_manager
 from ambianic.webapp.flaskr import FlaskServer
-from ambianic.config_manager import get_config_manager, reset_config_manager
 
 log = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ def _configure(env_work_dir=None):
     assert os.path.exists(env_work_dir), \
         'working directory invalid: {}'.format(env_work_dir)
 
-    config_manager = reset_config_manager()
+    config_manager.stop()
 
     def logging_config_handler(config):
         # configure logging

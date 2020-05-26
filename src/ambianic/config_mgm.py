@@ -1,14 +1,10 @@
 """Centralized configuration manager."""
 
-import yaml
 import os
 import logging
 from time import sleep
-from ambianic import get_work_dir
 import threading
-
-CONFIG_FILE = "config.yaml"
-SECRETS_FILE = "secrets.yaml"
+import yaml
 
 
 class ConfigurationManager:
@@ -17,6 +13,8 @@ class ConfigurationManager:
     """
 
     def __init__(self, work_dir=None):
+        self.CONFIG_FILE = "config.yaml"
+        self.SECRETS_FILE = "secrets.yaml"
         self.__config = None
         self.watch_files = {}
         self.watch_thread = None
@@ -28,7 +26,9 @@ class ConfigurationManager:
 
     def stop(self):
         """Stop the config manager"""
+        self.handlers = []
         self.unwatch_files()
+        self.__config = None
         if self.watch_thread is not None:
             self.watch_thread.join()
             self.watch_thread = None
@@ -49,7 +49,7 @@ class ConfigurationManager:
             with self.watch_lock:
                 try:
                     for filename, last_mtime in self.watch_files.items():
-                        mtime = os.path.getmtime(filename)
+                        mtime = os.stat(filename).st_mtime
                         if last_mtime is None:
                             self.watch_files[filename] = mtime
                             continue
@@ -61,7 +61,7 @@ class ConfigurationManager:
                     self.log.warning(
                         "Exception watching file %s: %s", filename, ex)
                     pass
-        sleep(0.25)
+        sleep(0.2)
 
     def watch_file(self, filename):
         """Add a file to the watch list"""
@@ -99,11 +99,11 @@ class ConfigurationManager:
 
     def get_config_file(self):
         """Return the config file path"""
-        return os.path.join(self.work_dir, CONFIG_FILE)
+        return os.path.join(self.work_dir, self.CONFIG_FILE)
 
     def get_secrets_file(self):
         """Return the secrets file path"""
-        return os.path.join(self.work_dir, SECRETS_FILE)
+        return os.path.join(self.work_dir, self.SECRETS_FILE)
 
     def load(self, work_dir):
         """Load configuration from file"""
@@ -133,7 +133,8 @@ class ConfigurationManager:
                 all_config = secrets_config + "\n" + base_config
             config = yaml.safe_load(all_config)
 
-            self.log.debug('loaded config from %r: %r', CONFIG_FILE, config)
+            self.log.debug('loaded config from %r: %r',
+                           self.CONFIG_FILE, config)
             return self.set(config)
         except FileNotFoundError:
             self.log.warning('Configuration file not found: %s', config_file)
@@ -177,37 +178,3 @@ class ConfigurationManager:
             handler(self.__config)
 
         return self.__config
-
-
-__config_manager = ConfigurationManager()
-
-
-def get_config_manager():
-    """Return the configuration manager singleton"""
-    global __config_manager
-
-    if __config_manager is None:
-        __config_manager = ConfigurationManager()
-
-    return __config_manager
-
-
-def reset_config_manager():
-    """Reset the configuration manager singleton"""
-    global __config_manager
-
-    if __config_manager is not None:
-        __config_manager.stop()
-        __config_manager = None
-
-    return get_config_manager()
-
-
-def get_config():
-    """Return the current configuration"""
-    return get_config_manager().get()
-
-
-def save_config(new_config):
-    """Update the current configuration"""
-    return get_config_manager().save(new_config)
