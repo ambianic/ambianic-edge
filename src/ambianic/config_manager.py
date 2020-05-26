@@ -61,7 +61,7 @@ class ConfigurationManager:
                     self.log.warning(
                         "Exception watching file %s: %s", filename, ex)
                     pass
-        sleep(1)
+        sleep(0.25)
 
     def watch_file(self, filename):
         """Add a file to the watch list"""
@@ -89,7 +89,7 @@ class ConfigurationManager:
             self.watch_files = {}
 
     def save(self, config):
-        """Save configuration to files"""
+        """Save configuration to file"""
         if config is not None:
             return
 
@@ -134,13 +134,13 @@ class ConfigurationManager:
             config = yaml.safe_load(all_config)
 
             self.log.debug('loaded config from %r: %r', CONFIG_FILE, config)
-            return self.update(config)
+            return self.set(config)
         except FileNotFoundError:
             self.log.warning('Configuration file not found: %s', config_file)
             self.log.warning(
                 'Please provide a configuration file and restart.')
         except Exception as e:
-            self.log.exception('Configuration Error!', e, exc_info=True)
+            self.log.exception('Configuration Error!', exc_info=True)
         return None
 
     def get(self):
@@ -157,8 +157,8 @@ class ConfigurationManager:
         """
         return self.__config
 
-    def update(self, new_config):
-        """Update configurations
+    def set(self, new_config):
+        """Set configuration
 
         :Parameters:
         ----------

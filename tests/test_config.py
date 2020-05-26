@@ -7,7 +7,14 @@ from ambianic.server import AmbianicServer
 from ambianic import server, config_manager
 from ambianic.config_manager import reset_config_manager, get_config_manager
 import os
+import yaml
 import pathlib
+from time import sleep
+
+
+def write_config(config_file, config):
+    with open(config_file, 'w') as fh:
+        yaml.dump(config, fh, default_flow_style=False)
 
 
 def setup_module(module):
@@ -135,3 +142,46 @@ def test_no_pipelines():
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
     assert not conf
+
+
+def test_reload():
+
+    config_manager.CONFIG_FILE = 'test-config.1.yaml'
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    config = {"logging": {"level": "INFO"}}
+    config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
+
+    write_config(config_file, config)
+
+    config1 = get_config_manager().load(_dir)
+
+    assert config["logging"]["level"] == config1["logging"]["level"]
+
+    config["logging"]["level"] = "WARN"
+    write_config(config_file, config)
+    # wait for polling to happen
+    sleep(0.5)
+
+    config3 = get_config_manager().get()
+    assert config["logging"]["level"] == config3["logging"]["level"]
+
+
+def test_callback():
+
+    config_manager.CONFIG_FILE = 'test-config.2.yaml'
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    config = {"test": True}
+    config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
+
+    write_config(config_file, config)
+    get_config_manager().load(_dir)
+
+    def on_change(new_config):
+        new_config["callback_called"] = True
+
+    get_config_manager().register_handler(on_change)
+    write_config(config_file, config)
+    # wait for polling to happen
+    sleep(0.5)
+
+    assert get_config_manager().get()["callback_called"] == True
