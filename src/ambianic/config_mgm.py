@@ -5,6 +5,7 @@ import logging
 from time import sleep
 import threading
 import yaml
+from inotify_simple import INotify, flags
 
 
 class ConfigurationManager:
@@ -13,22 +14,25 @@ class ConfigurationManager:
     """
 
     def __init__(self, work_dir=None):
+
         self.CONFIG_FILE = "config.yaml"
         self.SECRETS_FILE = "secrets.yaml"
+
+        self.lock = threading.RLock()
         self.__config = None
-        self.watch_files = {}
         self.watch_thread = None
-        self.watch_lock = threading.RLock()
+        self.watch_event = threading.Event()
         self.log = logging.getLogger()
         self.handlers = []
+
         if work_dir is not None:
             self.load(work_dir)
 
     def stop(self):
         """Stop the config manager"""
         self.handlers = []
-        self.unwatch_files()
         self.__config = None
+        self.watch_stop()
         if self.watch_thread is not None:
             self.watch_thread.join()
             self.watch_thread = None
@@ -42,59 +46,38 @@ class ConfigurationManager:
         self.handlers.remove(callback)
 
     def __watcher(self):
-        """Poll for file changes"""
-        while True:
-            if len(self.watch_files) == 0:
-                break
-            with self.watch_lock:
-                try:
-                    for filename, last_mtime in self.watch_files.items():
-                        mtime = os.stat(filename).st_mtime
-                        if last_mtime is None:
-                            self.watch_files[filename] = mtime
-                            continue
-                        if last_mtime != mtime:
-                            self.log.info("File change detected: %s", filename)
-                            self.watch_files[filename] = mtime
-                            self.load(self.work_dir)
-                except Exception as ex:
-                    self.log.warning(
-                        "Exception watching file %s: %s", filename, ex)
-        sleep(0.25)
+        """Watch for file changes"""
+        inotify = INotify()
+        wd = inotify.add_watch(self.work_dir, flags.MODIFY)
 
-    def watch_file(self, filename):
-        """Add a file to the watch list"""
+        while not self.watch_event.is_set():
+            for event in inotify.read(timeout=0):
+                for filename in [self.CONFIG_FILE, self.SECRETS_FILE]:
+                    if event.name == filename:
+                        self.log.info("File change detected: %s", filename)
+                        self.load(self.work_dir)
+                        break
+        # stop watching
+        inotify.rm_watch(wd)
 
-        if filename in self.watch_files.keys():
-            return
-
-        if not os.path.exists(filename):
-            return
-
-        with self.watch_lock:
-            self.log.info("Watching %s for changes", filename)
-            self.watch_files[filename] = None
-
+    def watch_start(self):
+        """Start watching fs for changes"""
         if self.watch_thread is None:
-            self.watch_thread = threading.Thread(
-                target=self.__watcher,
-                # args=(self,)
-            )
+            self.watch_event.clear()
+            self.watch_thread = threading.Thread(target=self.__watcher)
             self.watch_thread.start()
 
-    def unwatch_files(self):
-        """Remove a file from the watch list"""
-        with self.watch_lock:
-            self.watch_files = {}
+    def watch_stop(self):
+        """Stop watching fs for changes"""
+        self.watch_event.set()
 
     def save(self, config):
         """Save configuration to file"""
         if config is not None:
             return
 
-        with self.watch_lock:
-            with open(self.get_config_file(), 'w') as fh:
-                yaml.dump(config, fh, default_flow_style=False)
+        with open(self.get_config_file(), 'w') as fh:
+            yaml.dump(config, fh, default_flow_style=False)
 
     def get_config_file(self):
         """Return the config file path"""
@@ -111,12 +94,10 @@ class ConfigurationManager:
             'working directory invalid: {}'.format(work_dir)
 
         self.work_dir = work_dir
+        self.watch_start()
 
         secrets_file = self.get_secrets_file()
-        self.watch_file(secrets_file)
-
         config_file = self.get_config_file()
-        self.watch_file(config_file)
 
         try:
             if os.path.isfile(secrets_file):
@@ -171,7 +152,8 @@ class ConfigurationManager:
             Return the current configurations.
 
         """
-        self.__config = new_config
+        with self.lock:
+            self.__config = new_config
 
         for handler in self.handlers:
             handler(self.__config)

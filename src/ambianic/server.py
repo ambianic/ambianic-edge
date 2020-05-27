@@ -142,7 +142,7 @@ class AmbianicServer:
         log.debug('Stopping servers...')
         for s in servers.values():
             s.stop()
-        reset_config_manager()
+        config_manager.stop()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
