@@ -31,7 +31,8 @@ class ConfigurationManager:
     def stop(self):
         """Stop the config manager"""
         self.handlers = []
-        self.__config = None
+        with self.lock:
+            self.__config = None
         self.watch_stop()
         if self.watch_thread is not None:
             self.watch_thread.join()
@@ -49,9 +50,8 @@ class ConfigurationManager:
         """Watch for file changes"""
         inotify = INotify()
         wd = inotify.add_watch(self.work_dir, flags.MODIFY)
-
         while not self.watch_event.is_set():
-            for event in inotify.read(timeout=0):
+            for event in inotify.read(timeout=100, read_delay=100):
                 for filename in [self.CONFIG_FILE, self.SECRETS_FILE]:
                     if event.name == filename:
                         self.log.info("File change detected: %s", filename)
@@ -115,7 +115,9 @@ class ConfigurationManager:
 
             self.log.debug('loaded config from %r: %r',
                            self.CONFIG_FILE, config)
+
             return self.set(config)
+
         except FileNotFoundError:
             self.log.warning('Configuration file not found: %s', config_file)
             self.log.warning(
@@ -136,7 +138,8 @@ class ConfigurationManager:
             Returns a dictionary with current configurations.
 
         """
-        return self.__config
+        with self.lock:
+            return self.__config
 
     def set(self, new_config):
         """Set configuration

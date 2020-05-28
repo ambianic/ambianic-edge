@@ -15,9 +15,11 @@ class Watch:
 
     def __init__(self):
         self.changed = False
+        self.config = None
 
-    def on_change(self):
+    def on_change(self, config):
         self.changed = True
+        self.config = config
 
 
 def write_config(config_file, config):
@@ -28,6 +30,7 @@ def write_config(config_file, config):
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
+    config_manager.stop()
 
 
 def teardown_module(module):
@@ -159,6 +162,7 @@ def test_reload():
     config = {"logging": {"level": "INFO"}}
     config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
 
+    # write 1
     write_config(config_file, config)
 
     config1 = config_manager.load(_dir)
@@ -167,9 +171,11 @@ def test_reload():
 
     watcher = Watch()
 
-    config_manager.register_handler(lambda cfg: watcher.on_change())
+    config_manager.register_handler(lambda cfg: watcher.on_change(cfg))
 
     config["logging"]["level"] = "WARN"
+
+    # write 2
     write_config(config_file, config)
 
     # wait for polling to happen
@@ -181,6 +187,8 @@ def test_reload():
             raise Exception("Failed to detect change")
 
     config3 = config_manager.get()
+
+    assert config["logging"]["level"] == watcher.config["logging"]["level"]
     assert config["logging"]["level"] == config3["logging"]["level"]
 
 
@@ -196,7 +204,7 @@ def test_callback():
 
     watcher = Watch()
 
-    config_manager.register_handler(lambda cfg: watcher.on_change())
+    config_manager.register_handler(lambda cfg: watcher.on_change(cfg))
     write_config(config_file, config)
 
     # wait for polling to happen
@@ -208,3 +216,27 @@ def test_callback():
             raise Exception("Failed to detect change")
 
     assert watcher.changed
+
+
+def test_handlers_mgm():
+
+    def test1(config):
+        pass
+
+    # reset state
+    config_manager.stop()
+    assert len(config_manager.handlers) == 0
+
+    config_manager.register_handler(test1)
+    assert len(config_manager.handlers) == 1
+
+    config_manager.unregister_handler(test1)
+    assert len(config_manager.handlers) == 0
+
+
+def clean_stop():
+    config_manager.CONFIG_FILE = 'test-config.yaml'
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    config_manager.load(_dir)
+    config_manager.stop()
+    assert config_manager.watch_thread is None
