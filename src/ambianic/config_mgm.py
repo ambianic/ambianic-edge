@@ -2,7 +2,6 @@
 
 import os
 import logging
-from time import sleep
 import threading
 import yaml
 from inotify_simple import INotify, flags

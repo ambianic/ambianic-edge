@@ -1,6 +1,5 @@
 """Service classes for OS interaction and multithreading."""
-import threading
-from threading import Thread, current_thread, Event
+from threading import Thread, Event
 import logging
 import traceback
 import time

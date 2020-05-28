@@ -39,6 +39,13 @@ def teardown_module(module):
     config_manager.stop()
 
 
+def test_get_workdir_env():
+    os.environ['AMBIANIC_DIR'] = "/foo"
+    assert ambianic.get_work_dir() == "/foo"
+    os.environ['AMBIANIC_DIR'] = ""
+    assert ambianic.get_work_dir() == ambianic.DEFAULT_WORK_DIR
+
+
 def test_no_config():
     conf = server._configure('/')
     assert not conf
@@ -173,10 +180,10 @@ def test_reload():
 
     config_manager.register_handler(lambda cfg: watcher.on_change(cfg))
 
-    config["logging"]["level"] = "WARN"
+    config2 = {"logging": {"level": "WARN"}}
 
     # write 2
-    write_config(config_file, config)
+    config_manager.save(config2)
 
     # wait for polling to happen
     wait = 3
@@ -234,7 +241,7 @@ def test_handlers_mgm():
     assert len(config_manager.handlers) == 0
 
 
-def clean_stop():
+def test_clean_stop():
     config_manager.CONFIG_FILE = 'test-config.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     config_manager.load(_dir)
