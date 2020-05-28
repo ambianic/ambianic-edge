@@ -178,7 +178,7 @@ def test_reload():
 
     watcher = Watch()
 
-    config_manager.register_handler(lambda cfg: watcher.on_change(cfg))
+    config_manager.register_handler(watcher.on_change)
 
     config2 = {"logging": {"level": "WARN"}}
 
@@ -211,7 +211,7 @@ def test_callback():
 
     watcher = Watch()
 
-    config_manager.register_handler(lambda cfg: watcher.on_change(cfg))
+    config_manager.register_handler(watcher.on_change)
     write_config(config_file, config)
 
     # wait for polling to happen
