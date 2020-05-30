@@ -1,17 +1,19 @@
 """Input source video processing via Gstreamer."""
-import traceback
-import logging
-import signal
-import threading
-from concurrent.futures import ThreadPoolExecutor
-from enum import Enum
-import time
+
 import os
+import sys
+import threading
+import signal
+import logging
+import traceback
 from ambianic.util import stacktrace
 import gi
-gi.require_version('Gst', '1.0')
-gi.require_version('GstBase', '1.0')
-from gi.repository import Gst, GLib  # ,GObject,  GLib
+
+# to prevent flake8 import reordering before setting gi versions
+if 'gi' in sys.modules:
+    gi.require_version('Gst', '1.0')
+    gi.require_version('GstBase', '1.0')
+    from gi.repository import Gst, GLib  # ,GObject,  GLib
 
 
 Gst.init(None)
@@ -267,7 +269,7 @@ class GstService:
             self.source.is_live = True
             log.info("Live streaming source detected: %r", self.source.uri)
         else:
-             log.debug("Gst pipeline set_state PLAYING result: %r", ret)
+            log.debug("Gst pipeline set_state PLAYING result: %r", ret)
         self._gst_mainloop_run()
 
     def _gst_cleanup(self):
