@@ -4,7 +4,11 @@
 # This allow python type hints to cross reference objects
 # before they are referenced
 from __future__ import annotations
+from collections.abc import MutableMapping
 from typing import Callable, Any
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class EventContext:
@@ -95,6 +99,8 @@ class EventHandler:
 
             event_label += str(key)
 
+        log.debug("Configuration property changed: %s", event_label)
+
         if self.__on_change:
             changed_event = ConfigChangedEvent(
                 event_label,
@@ -115,7 +121,7 @@ class EventHandler:
             )
 
 
-class Prop(EventHandler):
+class Prop(MutableMapping, EventHandler):
     """Watch for property changes and notify by triggering a callback"""
 
     def __init__(self):
@@ -138,6 +144,16 @@ class Prop(EventHandler):
 
     def __setitem__(self, key, value):
         self.set(key, value)
+
+    def __delitem__(self, key):
+        self.changed(key, self.__data[key], None)
+        del self.__data[key]
+
+    def __iter__(self):
+        return iter(self.__data)
+
+    def __len__(self):
+        return len(self.__data)
 
     def __set__(self, obj: Any, value: Any):
         self.set(obj, value)
@@ -170,7 +186,7 @@ class ConfigList(EventHandler, list):
         super().__init__()
         self.set_context(context)
         self.__initializing = True
-        self.update(items)
+        self.sync(items)
         self.__initializing = False
 
     def __eq__(self, other):
@@ -197,8 +213,8 @@ class ConfigList(EventHandler, list):
 
         return Config(item, EventContext(i, self))
 
-    def update(self, items):
-        """update a list and attempt to detect changes"""
+    def sync(self, items):
+        """sync a list and attempt to detect changes"""
 
         if len(self) > 0 and len(items) < len(self):
             self.clear()
@@ -217,7 +233,7 @@ class ConfigList(EventHandler, list):
                 self[i] = element
                 continue
 
-            self[i].update(element)
+            self[i].sync(element)
 
     def remove(self, v):
         item = self.__wrap_item(v)
@@ -276,11 +292,14 @@ class Config(Prop):
         self.set_context(context)
         self.__data = {}
         self.__initializing = True
-        self.update(config)
+        self.sync(config)
         self.__initializing = False
 
-    def update(self, src_config: Any):
+    def sync(self, src_config: Any):
         """Update a configuration tree detecting changes"""
+        if src_config is None:
+            return
+
         for key, value in src_config.items():
 
             # handle simple types
@@ -294,7 +313,7 @@ class Config(Prop):
                 if cfglist is None:
                     self.set(key, ConfigList(value, EventContext(key, self)))
                 else:
-                    cfglist.update(value)
+                    cfglist.sync(value)
                 continue
 
             # handle dict
@@ -302,7 +321,7 @@ class Config(Prop):
             if prev_val is None:
                 self.set(key, Config(value, context=EventContext(key, self)))
             else:
-                prev_val.update(value)
+                prev_val.sync(value)
 
 
 def is_value_type(value: Any) -> bool:

@@ -132,7 +132,7 @@ def test_config_with_secrets():
     config_manager.CONFIG_FILE = 'test-config.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
-    assert conf
+    assert conf is not None
     assert conf['logging']['level'] == 'DEBUG'
     assert conf['sources']['front_door_camera']['uri'] == 'secret_uri'
 
@@ -150,7 +150,7 @@ def test_config_without_secrets_no_ref():
     config_manager.CONFIG_FILE = 'test-config2.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
     conf = server._configure(_dir)
-    assert conf
+    assert conf is not None
     assert conf['logging']['level'] == 'DEBUG'
     assert conf['sources']['front_door_camera']['uri'] == 'no_secret_uri'
 
