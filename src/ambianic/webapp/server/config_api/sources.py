@@ -38,6 +38,9 @@ def get(source_id):
     if not source_id:
         raise BadRequest("source id is empy")
 
+    if not isinstance(source_id, str):
+        raise BadRequest("source id should be a string")
+
     config = config_manager.get()
     if source_id not in config["sources"].keys():
         raise NotFound("source id not found")
