@@ -39,7 +39,10 @@ class TFImageDetection(PipeElement):
 
         if id is not None:
             config = config_manager.get()
-            if config.get("ai_models", None) and config["ai_models"].get(id, None):
+            if (
+                config.get("ai_models", None)
+                and config["ai_models"].get(id, None)
+            ):
                 cfg = config["ai_models"][id]
                 model = cfg.get("model", None)
                 labels = cfg.get("labels", None)

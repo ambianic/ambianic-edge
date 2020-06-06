@@ -190,7 +190,8 @@ def test_reload():
         if wait == 0:
             raise Exception("Failed to detect change")
 
-    assert loaded_config["logging"]["level"] == watcher.config["logging"]["level"]
+    assert loaded_config["logging"]["level"] == watcher.config[
+        "logging"]["level"]
     assert loaded_config["logging"]["level"] == config2["logging"]["level"]
 
 

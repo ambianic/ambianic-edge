@@ -259,7 +259,10 @@ class Pipeline(ManagedService):
             if element_class:
                 log.info('Pipeline %s adding element name %s '
                          'with class %s and config %s',
-                         self.name, element_name, element_class, element_config)
+                         self.name,
+                         element_name,
+                         element_class,
+                         element_config)
                 element = element_class(
                     **element_config,
                     element_name=element_name,

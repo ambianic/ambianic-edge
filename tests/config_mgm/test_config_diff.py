@@ -41,7 +41,8 @@ def test_accessors():
     cfg = config_diff.Config(test1)
 
     assert cfg.get("version") == test1["version"]
-    assert cfg["ai_models"]["image_detection"]["model"]["edgetpu"] == test1["ai_models"]["image_detection"]["model"]["edgetpu"]
+    assert cfg["ai_models"]["image_detection"]["model"]["edgetpu"] == test1[
+        "ai_models"]["image_detection"]["model"]["edgetpu"]
     assert len(cfg["pipelines"]["front_door_watch"]) == 1
 
 

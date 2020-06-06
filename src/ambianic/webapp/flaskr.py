@@ -199,7 +199,10 @@ def create_app(data_dir=None):
     def get_config():
         return jsonify(config_manager.get())
 
-    @app.route('/api/config/source/<source_id>', methods=['GET', 'PUT', 'DELETE'])
+    @app.route(
+        '/api/config/source/<source_id>',
+        methods=['GET', 'PUT', 'DELETE']
+    )
     def handle_config_source(source_id):
 
         if request.method == 'DELETE':
