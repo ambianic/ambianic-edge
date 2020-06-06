@@ -33,18 +33,49 @@ class ConfigChangedEvent:
     def __init__(
             self,
             name: str,
+            op: str,
             context: EventContext,
-            old_value: Any,
-            new_value: Any
+            value: Any,
+            config_tree: list
     ):
         self.__name = name
+        self.__op = op
         self.__context = context
-        self.old_value = old_value
-        self.new_value = new_value
+        self.value = value
+        # dereference list passed as argument
+        self.tree = list(config_tree) if config_tree else []
+        self.tree.reverse()
 
     def get_name(self) -> str:
         """return the field contextual name"""
         return self.__name
+
+    def get_operation(self) -> str:
+        """return the operation performed on the field"""
+        return self.__op
+
+    def get_value(self) -> Any:
+        """Return the new value of the field"""
+        return self.value
+
+    def get_tree(self) -> list:
+        """Return the list of tree elements reaching the root"""
+        return self.tree
+
+    def get_paths(self) -> list:
+        """Return the tree as a list of field names"""
+        paths = []
+        for element in self.get_tree():
+            if element.get_context():
+                paths.append(str(element.get_context().get_name()))
+        return paths
+
+    def get_root(self) -> EventHandler:
+        """Return the root field element which children changed"""
+        tree = self.get_tree()
+        if tree is None or len(tree) < 2:
+            return None
+        return tree[-2]
 
     def get_context(self) -> EventContext:
         """return the event context"""
@@ -52,10 +83,11 @@ class ConfigChangedEvent:
 
     def __repr__(self):
         return str(
-            "%s: new=%s <> old=%s" % (
+            "path=%s name=%s op=%s value=`%s`" % (
+                ".".join(self.get_paths()),
                 self.get_name(),
-                self.old_value,
-                self.new_value
+                self.get_operation(),
+                self.get_value(),
             )
         )
 
@@ -83,7 +115,13 @@ class EventHandler:
         """Set the context class"""
         self.__context = context
 
-    def changed(self, key: str, old_value: Any, new_value: Any):
+    def changed(
+            self,
+            key: str,
+            operation: str,
+            new_value: Any,
+            config_tree: list = None
+    ):
         """trigger a callback when a value has changed"""
 
         if self.__initializing:
@@ -99,26 +137,38 @@ class EventHandler:
 
             event_label += str(key)
 
-        log.debug("Configuration property changed: %s", event_label)
-
         if self.__on_change:
             changed_event = ConfigChangedEvent(
-                event_label,
+                key,
+                operation,
                 self.get_context(),
-                old_value,
-                new_value
+                new_value,
+                config_tree
             )
-            self.__on_change(changed_event)
 
-        if (
-                self.get_context() is not None
-                and self.get_context().get_instance() is not None
-        ):
-            self.get_context().get_instance().changed(
-                event_label,
-                old_value,
-                new_value
-            )
+            # print log only whene at the root items
+            if not self.get_context():
+                log.debug("Configuration changed: %s", changed_event)
+
+            try:
+                self.__on_change(changed_event)
+            except Exception as e:
+                log.error("Callback error for %s", event_label)
+                log.exception(e, exc_info=True)
+
+        section = self
+        if config_tree is None:
+            config_tree = [self]
+        while section.get_context() and section.get_context().get_instance():
+            if not section.get_context().get_instance() in config_tree:
+                config_tree.append(section.get_context().get_instance())
+                section.get_context().get_instance().changed(
+                    key,
+                    operation,
+                    new_value,
+                    config_tree
+                )
+            section = section.get_context().get_instance()
 
 
 class Prop(MutableMapping, EventHandler):
@@ -129,9 +179,7 @@ class Prop(MutableMapping, EventHandler):
         self.__data = {}
 
     def __eq__(self, other):
-        if isinstance(other, Config):
-            return str(self) == str(other)
-        return False
+        return str(self) == str(other)
 
     def __repr__(self):
         return str(self.__data)
@@ -146,8 +194,8 @@ class Prop(MutableMapping, EventHandler):
         self.set(key, value)
 
     def __delitem__(self, key):
-        self.changed(key, self.__data[key], None)
         del self.__data[key]
+        self.changed(key, "remove", None)
 
     def __iter__(self):
         return iter(self.__data)
@@ -168,15 +216,15 @@ class Prop(MutableMapping, EventHandler):
     def set(self, key: str, value: Any = None):
         """Set a value"""
 
-        old_value = self.__data[key] if key in self.__data.keys() else None
-
+        has_changed = False
         if key in self.__data.keys():
             if str(self.__data[key]) != str(value):
-                old_value = self.__data[key]
-                new_value = value
-                self.changed(key, old_value, new_value)
+                has_changed = True
 
         self.__data[key] = value
+
+        if has_changed:
+            self.changed(key, "set", value)
 
 
 class ConfigList(EventHandler, list):
@@ -190,13 +238,14 @@ class ConfigList(EventHandler, list):
         self.__initializing = False
 
     def __eq__(self, other):
-        if isinstance(other, ConfigList):
+        if isinstance(other, (ConfigList, list)):
             if len(self) != len(other):
                 return False
             for i, val in enumerate(self):
                 if val != other[i]:
                     return False
-        return True
+            return True
+        return False
 
     def __wrap_item(self, item: Any, i: int = None):
 
@@ -205,20 +254,20 @@ class ConfigList(EventHandler, list):
 
         type_of = type(item)
         if type_of == list:
-            cfglist = ConfigList(item, EventContext(i, self))
+            cfglist = ConfigList(item, EventContext(str(i), self))
             return cfglist
 
         if type_of == Config:
             return item
 
-        return Config(item, EventContext(i, self))
+        return Config(item, EventContext(str(i), self))
 
     def sync(self, items):
         """sync a list and attempt to detect changes"""
 
         if len(self) > 0 and len(items) < len(self):
             self.clear()
-            self.changed(None, None, None)
+            self.changed(None, "remove", None)
 
         for i, item in enumerate(items):
 
@@ -238,50 +287,47 @@ class ConfigList(EventHandler, list):
     def remove(self, v):
         item = self.__wrap_item(v)
         res = super().remove(item)
-        self.changed(None, None, None)
+        self.changed(None, "remove", None)
         return res
 
     def insert(self, i, v):
         item = self.__wrap_item(v)
         res = super().insert(i, item)
-        self.changed(None, None, item)
+        self.changed(None, "add", item)
         return res
 
     def append(self, v):
         item = self.__wrap_item(v)
         res = super().append(item)
-        self.changed(None, None, item)
+        self.changed(None, "add", item)
         return res
 
     def extend(self, t):
         res = super().extend([self.__wrap_item(v) for v in t])
-        self.changed(None, None, None)
+        self.changed(None, "set", None)
         return res
 
     def __add__(self, t):
         res = super().__add__([self.__wrap_item(v) for v in t])
-        self.changed(None, None, None)
+        self.changed(None, "add", None)
         return res
 
     def __iadd__(self, t):
         res = super().__iadd__([self.__wrap_item(v) for v in t])
-        self.changed(None, None, None)
+        self.changed(None, "add", None)
         return res
 
     def __setitem__(self, index, value):
-        old_value = self[index]
-        new_value = value
-
-        if str(old_value) != str(new_value):
-            self.changed(index, old_value, new_value)
-
-        return super().__setitem__(index, value)
+        has_changed = str(self[index]) != str(value)
+        res = super().__setitem__(index, value)
+        if has_changed:
+            self.changed(str(index), "set", value)
+        return res
 
     def __delitem__(self, i):
-        old_value = self[i]
-        new_value = None
-        self.changed(i, old_value, new_value)
-        return super().__delitem__(i)
+        res = super().__delitem__(i)
+        self.changed(str(i), "remove", None)
+        return res
 
 
 class Config(Prop):

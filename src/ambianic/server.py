@@ -4,12 +4,12 @@ import logging.handlers
 import os
 import pathlib
 import time
-
 import yaml
 
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
+from ambianic.config_mgm import ConfigChangedEvent
 from ambianic import config_manager
 from ambianic.webapp.flaskr import FlaskServer
 
@@ -67,11 +67,12 @@ def _configure_logging(config=None):
             log_dir.mkdir(parents=True, exist_ok=True)
             print("Log messages directed to {}".format(log_filename))
         handler = logging.handlers.RotatingFileHandler(
-                      log_filename,
-                      # each log file will be up to 10MB in size
-                      maxBytes=100*1024*1024,
-                      # 20 backup files will be kept. Older will be erased.
-                      backupCount=20)
+            log_filename,
+            # each log file will be up to 10MB in size
+            maxBytes=100*1024*1024,
+            # 20 backup files will be kept. Older will be erased.
+            backupCount=20
+        )
         handler.setFormatter(fmt)
         root_logger.addHandler(handler)
     root_logger.setLevel(numeric_level)
@@ -96,32 +97,30 @@ def _configure(env_work_dir=None):
 
     config_manager.stop()
 
-    def logging_config_handler(event):
-        # configure logging
-        log.info("Reconfiguring logging")
-        logging_config = None
-        if config:
-            logging_config = config.get('logging', None)
-        _configure_logging(logging_config)
-
-    def timeline_config_handler(event):
-        # configure pipeline timeline event log
-        log.info("Reconfiguring pipeline timeline event log")
-        timeline_config = None
-        if config:
-            timeline_config = config.get('timeline', None)
-        timeline.configure_timeline(timeline_config)
-
     config = config_manager.load(env_work_dir)
-
     if config is None:
         return None
 
+    def logging_config_handler(event: ConfigChangedEvent):
+        # configure logging
+        log.info("Reconfiguring logging")
+        _configure_logging(config.get("logging"))
+
+    def timeline_config_handler(event: ConfigChangedEvent):
+        # configure pipeline timeline event log
+        log.info("Reconfiguring pipeline timeline event log")
+        timeline.configure_timeline(config.get("timeline"))
+
+    # set callback to react to specific configuration changes
     if config.get("logging", None) is not None:
         config.get("logging").set_callback(logging_config_handler)
 
     if config.get("timeline", None) is not None:
         config.get("timeline").set_callback(timeline_config_handler)
+
+    # initialize logging
+    logging_config_handler(None)
+    timeline_config_handler(None)
 
     return config
 
@@ -147,8 +146,8 @@ class AmbianicServer:
 
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
-        for s in servers.values():
-            s.stop()
+        for srv in servers.values():
+            srv.stop()
         config_manager.stop()
 
     def _healthcheck(self, servers):
@@ -183,6 +182,21 @@ class AmbianicServer:
         if self._service_exit_requested:
             raise ServiceExit
 
+    def on_config_change(self, event: ConfigChangedEvent):
+
+        root = event.get_root()
+
+        if not root or not root.get_context():
+            return
+
+        log.info("Config change: %s", event)
+
+        section_name = root.get_context().get_name()
+
+        if section_name in ["data_dir"]:
+            self.stop()
+            self.start()
+
     def start(self):
         """Programmatic start of the main service."""
         print("Starting server...")
@@ -190,7 +204,11 @@ class AmbianicServer:
         if not config:
             log.info('No startup configuration provided. '
                      'Proceeding with defaults.')
+        else:
+            config.set_callback(self.on_config_change)
+
         log.info('Starting Ambianic server...')
+
         # Register the signal handlers
         servers = {}
         # Start the job threads

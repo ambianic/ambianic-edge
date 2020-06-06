@@ -1,4 +1,16 @@
+import logging
+from time import sleep
 from ambianic.config_mgm import config_diff
+
+log = logging.getLogger(__name__)
+
+
+class CallbackWatcher:
+    def __init__(self):
+        self.event: config_diff.ConfigChangedEvent = None
+
+    def on_callback(self, event: config_diff.ConfigChangedEvent):
+        self.event = event
 
 
 def test_accessors():
@@ -88,11 +100,18 @@ def test_list_diff():
 
     assert len(cfg["pipelines"]["foo1"]) == 3
 
-    def test1_cb(event: config_diff.ConfigChangedEvent):
-        # print("***** event", event)
-        assert len(cfg["pipelines"]["foo1"]) <= 3
-    cfg.set_callback(test1_cb)
+    watcher = CallbackWatcher()
+    cfg.set_callback(watcher.on_callback)
 
     del cfg["pipelines"]["foo1"][0]
     cfg["pipelines"]["foo1"].remove(el3)
     assert len(cfg["pipelines"]["foo1"]) == 1
+
+    log.info("Config %s", cfg)
+
+    tries = 5
+    while watcher.event is None:
+        sleep(0.1)
+        tries -= 1
+        if tries == 0:
+            raise Exception("Callback not triggered")

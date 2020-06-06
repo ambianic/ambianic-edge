@@ -226,6 +226,12 @@ class Pipeline(ManagedService):
         self.name = pname
         assert pconfig, "Pipeline config required"
         self.config = pconfig
+        self.config.set_callback(self.on_config_change)
+        self.data_dir = data_dir
+        self.__initialize()
+
+    def __initialize(self):
+
         log.debug('Pipeline starts with element %r', self.config[0])
         source_element_key = [*self.config[0]][0]
         assert source_element_key == 'source', \
@@ -238,12 +244,12 @@ class Pipeline(ManagedService):
         self._healing_thread = None
         self._context = timeline.PipelineContext(
             unique_pipeline_name=self.name)
-        self._context.data_dir = data_dir
+        self._context.data_dir = self.data_dir
         self._event_log = timeline.get_event_log(
             pipeline_context=self._context)
         for element_def in self.config:
             log.info('Pipeline %s loading next element: %s',
-                     pname, element_def)
+                     self.name, element_def)
             element_name = [*element_def][0]
             assert element_name
             element_config = element_def[element_name]
@@ -251,7 +257,7 @@ class Pipeline(ManagedService):
             if element_class:
                 log.info('Pipeline %s adding element name %s '
                          'with class %s and config %s',
-                         pname, element_name, element_class, element_config)
+                         self.name, element_name, element_class, element_config)
                 element = element_class(
                     **element_config,
                     element_name=element_name,
@@ -261,6 +267,13 @@ class Pipeline(ManagedService):
                 self._pipe_elements.append(element)
             else:
                 self._on_unknown_pipe_element(name=element_name)
+
+    def on_config_change(self, event):
+        """Callback function invoked on pipeline configuration change"""
+        log.info("Pipeline configuration changed (%s). Reloading..", event)
+        self.stop()
+        self.__initialize()
+        self.start()
 
     def _heartbeat(self):
         """Set the heartbeat timestamp to time.monotonic()."""
