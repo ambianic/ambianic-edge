@@ -4,7 +4,7 @@
 version: '1.3.29'
 
 # path to the data directory
-data_dir: ./data
+data_dir: &data_dir ./data
 
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
@@ -18,44 +18,67 @@ timeline:
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
 sources:
-  src_entry_area_cam:
-    uri: rtsp://192.168.7.13:554/11
+#  front_door_camera: &src_front_door_cam
+#    uri: *secret_uri_front_door_camera
     # type: video, audio, or auto
-    type: video
-    live: true
+#    type: video
+#    live: true
+#  entry_area_camera: &src_entry_area_cam
+#    uri: *secret_uri_entry_area_camera
+#    type: video
+#    live: true
+  recorded_cam_feed: &src_recorded_cam_feed
+    uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
+#    uri: rtsp://admin:121174l2ll74@192.168.86.131:554/Streaming/Channels/101
+#    uri: http://192.168.86.29/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user=admin&password=121174l2ll74
+#    type: video
+#    live: true
 
 ai_models:
-  image_detection:
+  image_detection: &tfm_image_detection
     model:
       tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
       edgetpu: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
-  face_detection:
+  face_detection: &tfm_face_detection
     model:
       tflite: ai_models/mobilenet_ssd_v2_face_quant_postprocess.tflite
       edgetpu: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
     top_k: 2
 
+
 # A named pipeline defines an ordered sequence of operations
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
+  front_door_watch:
+    - source: *src_recorded_cam_feed
+#    - source: *src_front_door_cam
+    - detect_objects: # run ai inference on the input data
+       <<: *tfm_image_detection
+       confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+       positive_interval: 5 # how often (in seconds) to save samples with ANY results above the confidence threshold
+       idle_interval: 21600 # how often (in seconds) to save samples with NO results above the confidence threshold
+    - detect_faces: # run ai inference on the samples from the previous element output
+       <<: *tfm_face_detection
+       confidence_threshold: 0.8
+    - save_detections: # save samples from the inference results
+       positive_interval: 2
+       idle_interval: 6000
 
   # sequence of piped operations for use in daytime front door watch
-  entry_area_watch:
-    - source:
-        id: src_entry_area_cam
-    - detect_objects: # run ai inference on the input data
-        <<:
-          id: image_detection
-        confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
-        positive_interval: 5 # how often (in seconds) to save samples with ANY results above the confidence thresho$
-        idle_interval: 21600 # how often (in seconds) to save samples with NO results above the confidence threshold
-    - detect_faces: # run ai inference on the samples from the previous element output
-        <<:
-          id: face_detection
-        confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
-        positive_interval: 2
-        idle_interval: 6000
+ # entry_area_watch:
+ #   - source: *src_entry_area_cam
+ #   - detect_objects: # run ai inference on the input data
+ #       <<: *tfm_image_detection
+ #       confidence_threshold: 0.8
+ #   - save_detections: # save samples from the inference results
+ #       positive_interval: 5 # how often (in seconds) to save samples with ANY results above the confidence thresho$
+ #       idle_interval: 21600 # how often (in seconds) to save samples with NO results above the confidence threshold
+ #   - detect_faces: # run ai inference on the samples from the previous element output
+ #       <<: *tfm_face_detection
+ #       confidence_threshold: 0.8
+ #   - save_detections: # save samples from the inference results
+ #       positive_interval: 2
+ #       idle_interval: 6000
