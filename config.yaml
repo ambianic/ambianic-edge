@@ -19,7 +19,7 @@ timeline:
 # Using Home Assistant conventions to ease upcoming integration
 sources:
   src_entry_area_cam:
-    uri: rtsp://http://192.168.7.13:554/11
+    uri: rtsp://192.168.7.13:554/11
     # type: video, audio, or auto
     type: video
     live: true

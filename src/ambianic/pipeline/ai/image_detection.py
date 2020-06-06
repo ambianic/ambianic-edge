@@ -4,9 +4,11 @@ import time
 import re
 import numpy as np
 # from importlib import import_module
-from ambianic.pipeline import PipeElement
-from .inference import TFInferenceEngine
 from PIL import ImageOps
+from .inference import TFInferenceEngine
+from ambianic.pipeline import PipeElement
+from ambianic import config_manager
+
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +17,7 @@ class TFImageDetection(PipeElement):
     """Applies Tensorflow image detection."""
 
     def __init__(self,
+                 id=None,
                  model=None,
                  labels=None,
                  confidence_threshold=0.6,
@@ -33,6 +36,17 @@ class TFImageDetection(PipeElement):
         """
         # log.warning('TFImageDetection __init__ invoked')
         super().__init__(**kwargs)
+
+        if id is not None:
+            config = config_manager.get()
+            if config.get("ai_models", None) and config["ai_models"].get(id, None):
+                cfg = config["ai_models"][id]
+                model = cfg.get("model", None)
+                labels = cfg.get("labels", None)
+                top_k = cfg.get("top_k", top_k)
+                confidence_threshold = cfg.get(
+                    "confidence_threshold", confidence_threshold)
+
         self._tfengine = TFInferenceEngine(
             model=model,
             labels=labels,

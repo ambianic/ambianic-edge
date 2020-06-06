@@ -96,27 +96,34 @@ def _configure(env_work_dir=None):
 
     config_manager.stop()
 
-    def logging_config_handler(config):
+    def logging_config_handler(ev):
         # configure logging
+        log.info("Reconfiguring logging")
         logging_config = None
         if config:
             logging_config = config.get('logging', None)
         _configure_logging(logging_config)
 
-    config_manager.register_handler(logging_config_handler)
-
-    def timeline_config_handler(config):
+    def timeline_config_handler(ev):
         # configure pipeline timeline event log
+        log.info("Reconfiguring pipeline timeline event log")
         timeline_config = None
         if config:
             timeline_config = config.get('timeline', None)
         timeline.configure_timeline(timeline_config)
 
-    config_manager.register_handler(timeline_config_handler)
+    config = config_manager.load(env_work_dir)
 
-    config_manager.load(env_work_dir)
+    if config is None:
+        return None
 
-    return config_manager.get()
+    if config.get("logging", None) is not None:
+        config.get("logging").set_callback(logging_config_handler)
+
+    if config.get("timeline", None) is not None:
+        config.get("timeline").set_callback(timeline_config_handler)
+
+    return config
 
 
 class AmbianicServer:

@@ -5,8 +5,8 @@ import logging
 import threading
 import yaml
 from inotify_simple import INotify, flags
-
-from .config_diff import Config
+from ambianic.config_mgm.config_diff import Config
+from ambianic.config_mgm import fileutils
 
 log = logging.getLogger()
 
@@ -73,23 +73,22 @@ class ConfigurationManager:
         """Stop watching fs for changes"""
         self.watch_event.set()
 
-    def save(self, config):
+    def save(self):
         """Save configuration to file"""
-        if config is not None:
+        if self.get() is None:
             return
 
-        with open(self.get_config_file(), 'w') as fh:
-            yaml.dump(config, fh, default_flow_style=False)
+        fileutils.save(self.get_config_file(), self.get())
 
-    def get_config_file(self):
+    def get_config_file(self) -> str:
         """Return the config file path"""
         return os.path.join(self.work_dir, self.CONFIG_FILE)
 
-    def get_secrets_file(self):
+    def get_secrets_file(self) -> str:
         """Return the secrets file path"""
         return os.path.join(self.work_dir, self.SECRETS_FILE)
 
-    def load(self, work_dir):
+    def load(self, work_dir) -> Config:
         """Load configuration from file"""
 
         assert os.path.exists(work_dir), \
@@ -129,7 +128,7 @@ class ConfigurationManager:
 
         return None
 
-    def get(self):
+    def get(self) -> Config:
         """Get stored configuration.
 
         Parameters
@@ -144,7 +143,7 @@ class ConfigurationManager:
         with self.lock:
             return self.__config
 
-    def set(self, new_config):
+    def set(self, new_config: dict) -> Config:
         """Set configuration
 
         :Parameters:
@@ -160,7 +159,6 @@ class ConfigurationManager:
         """
         with self.lock:
             if self.__config:
-                print("************* sync", new_config)
                 self.__config.sync(new_config)
             else:
                 self.__config = Config(new_config)
