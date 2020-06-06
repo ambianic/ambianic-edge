@@ -8,7 +8,7 @@ from inotify_simple import INotify, flags
 from ambianic.config_mgm.config_diff import Config
 from ambianic.config_mgm import fileutils
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class ConfigurationManager:
@@ -164,6 +164,6 @@ class ConfigurationManager:
                 self.__config = Config(new_config)
 
         for handler in self.handlers:
-            handler(self.__config)
+            handler(self.get())
 
-        return self.__config
+        return self.get()

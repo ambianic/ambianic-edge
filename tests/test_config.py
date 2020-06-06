@@ -5,9 +5,12 @@ import os
 from time import sleep
 import ambianic
 from ambianic.server import AmbianicServer
+from ambianic.config_mgm import fileutils
 from ambianic import server, config_manager
 import yaml
 import pytest
+
+log = logging.getLogger(__name__)
 
 
 class Watch:
@@ -18,14 +21,9 @@ class Watch:
         self.config = None
 
     def on_change(self, config):
+        log.info("NEW CONF CALLBACK: %s", config)
         self.changed = True
         self.config = config
-
-
-def write_config(config_file, config):
-    """Write YAML configuration to file"""
-    with open(config_file, 'w') as fh:
-        yaml.dump(config, fh, default_flow_style=False)
 
 
 def setup_module(module):
@@ -166,24 +164,23 @@ def test_reload():
 
     config_manager.CONFIG_FILE = 'test-config.1.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
-    config = {"logging": {"level": "INFO"}}
+    config1 = {"logging": {"level": "INFO"}}
     config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
 
     # write 1
-    write_config(config_file, config)
+    fileutils.save(config_file, config1)
 
-    config1 = config_manager.load(_dir)
+    loaded_config = config_manager.load(_dir)
 
-    assert config["logging"]["level"] == config1["logging"]["level"]
+    assert config1["logging"]["level"] == loaded_config["logging"]["level"]
 
     watcher = Watch()
 
     config_manager.register_handler(watcher.on_change)
 
-    config2 = {"logging": {"level": "WARN"}}
-
     # write 2
-    config_manager.save(config2)
+    config2 = {"logging": {"level": "WARN"}}
+    fileutils.save(config_file, config2)
 
     # wait for polling to happen
     wait = 3
@@ -193,26 +190,24 @@ def test_reload():
         if wait == 0:
             raise Exception("Failed to detect change")
 
-    config3 = config_manager.get()
-
-    assert config["logging"]["level"] == watcher.config["logging"]["level"]
-    assert config["logging"]["level"] == config3["logging"]["level"]
+    assert loaded_config["logging"]["level"] == watcher.config["logging"]["level"]
+    assert loaded_config["logging"]["level"] == config2["logging"]["level"]
 
 
 def test_callback():
 
     config_manager.CONFIG_FILE = 'test-config.2.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
-    config = {"test": True}
+    config1 = {"test": True}
     config_file = os.path.join(_dir, config_manager.CONFIG_FILE)
 
-    write_config(config_file, config)
+    fileutils.save(config_file, config1)
     config_manager.load(_dir)
 
     watcher = Watch()
 
     config_manager.register_handler(watcher.on_change)
-    write_config(config_file, config)
+    fileutils.save(config_file, config1)
 
     # wait for polling to happen
     wait = 3

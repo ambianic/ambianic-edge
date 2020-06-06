@@ -96,7 +96,7 @@ def _configure(env_work_dir=None):
 
     config_manager.stop()
 
-    def logging_config_handler(ev):
+    def logging_config_handler(event):
         # configure logging
         log.info("Reconfiguring logging")
         logging_config = None
@@ -104,7 +104,7 @@ def _configure(env_work_dir=None):
             logging_config = config.get('logging', None)
         _configure_logging(logging_config)
 
-    def timeline_config_handler(ev):
+    def timeline_config_handler(event):
         # configure pipeline timeline event log
         log.info("Reconfiguring pipeline timeline event log")
         timeline_config = None
