@@ -1,5 +1,6 @@
 """More test cases for ambianic.interpreter module."""
 from ambianic import pipeline
+from ambianic.config_mgm import Config
 from ambianic.pipeline.interpreter import \
     PipelineServer, Pipeline, HealingThread
 import logging
@@ -34,13 +35,13 @@ class _TestSourceElement(pipeline.PipeElement):
 def _get_config(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    server_config = {
+    server_config = Config({
         'pipelines': {
             'pipeline_one': [
                       {'source': {'uri': 'test'}}
                       ]
             },
-        }
+        })
     return server_config
 
 

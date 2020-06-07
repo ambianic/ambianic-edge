@@ -96,6 +96,19 @@ def test_callbacks():
     assert len(cfg["logging"]["options"]) == 5
 
 
+def test_list_diff():
+
+    test1 = [
+        {"v": ["a", "b"]},
+        {"v": ["c", "d"]},
+    ]
+
+    cfg = config_diff.Config(test1)
+
+    assert isinstance(cfg, config_diff.ConfigList)
+    assert cfg[1] == test1[1]
+
+
 def test_embed_list_diff():
 
     test1 = {

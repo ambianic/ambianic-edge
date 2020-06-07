@@ -5,7 +5,7 @@
 # before they are referenced
 from __future__ import annotations
 from collections.abc import MutableMapping
-from typing import Callable, Any
+from typing import Callable, Any, Union
 import logging
 
 log = logging.getLogger(__name__)
@@ -171,66 +171,10 @@ class EventHandler:
             section = section.get_context().get_instance()
 
 
-class Prop(MutableMapping, EventHandler):
-    """Watch for property changes and notify by triggering a callback"""
-
-    def __init__(self):
-        super().__init__()
-        self.__data = {}
-
-    def __eq__(self, other):
-        return str(self) == str(other)
-
-    def __repr__(self):
-        return str(self.__data)
-
-    def __str__(self):
-        return str(self.__data)
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __setitem__(self, key, value):
-        self.set(key, value)
-
-    def __delitem__(self, key):
-        del self.__data[key]
-        self.changed(key, "remove", None)
-
-    def __iter__(self):
-        return iter(self.__data)
-
-    def __len__(self):
-        return len(self.__data)
-
-    def __set__(self, obj: Any, value: Any):
-        self.set(obj, value)
-
-    def __get__(self, obj: Any, objtype: Any):
-        return self.get(obj)
-
-    def get(self, key: str, default_value: Any = None) -> Any:
-        """Get a value or a default if not available"""
-        return self.__data.get(key, default_value)
-
-    def set(self, key: str, value: Any = None):
-        """Set a value"""
-
-        has_changed = False
-        if key in self.__data.keys():
-            if str(self.__data[key]) != str(value):
-                has_changed = True
-
-        self.__data[key] = value
-
-        if has_changed:
-            self.changed(key, "set", value)
-
-
 class ConfigList(EventHandler, list):
     """Extend the base list to trigger when changes happens"""
 
-    def __init__(self, items: list, context: EventContext):
+    def __init__(self, items: list, context: EventContext = None):
         super().__init__()
         self.set_context(context)
         self.__initializing = True
@@ -257,10 +201,10 @@ class ConfigList(EventHandler, list):
             cfglist = ConfigList(item, EventContext(str(i), self))
             return cfglist
 
-        if type_of == Config:
+        if type_of == ConfigDict:
             return item
 
-        return Config(item, EventContext(str(i), self))
+        return ConfigDict(item, context=EventContext(str(i), self))
 
     def sync(self, items):
         """sync a list and attempt to detect changes"""
@@ -330,7 +274,7 @@ class ConfigList(EventHandler, list):
         return res
 
 
-class Config(Prop):
+class ConfigDict(MutableMapping, EventHandler):
     """Abstract a section of the configuration file"""
 
     def __init__(self, config: dict, context: EventContext = None):
@@ -365,9 +309,64 @@ class Config(Prop):
             # handle dict
             prev_val = self.get(key, None)
             if prev_val is None:
-                self.set(key, Config(value, context=EventContext(key, self)))
+                self.set(key, ConfigDict(
+                    value, context=EventContext(key, self)))
             else:
                 prev_val.sync(value)
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __repr__(self):
+        return str(self.__data)
+
+    def __str__(self):
+        return str(self.__data)
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
+
+    def __delitem__(self, key):
+        del self.__data[key]
+        self.changed(key, "remove", None)
+
+    def __iter__(self):
+        return iter(self.__data)
+
+    def __len__(self):
+        return len(self.__data)
+
+    def __set__(self, obj: Any, value: Any):
+        self.set(obj, value)
+
+    def __get__(self, obj: Any, objtype: Any):
+        return self.get(obj)
+
+    def get(self, key: str, default_value: Any = None) -> Any:
+        """Get a value or a default if not available"""
+        return self.__data.get(key, default_value)
+
+    def set(self, key: str, value: Any = None):
+        """Set a value"""
+
+        has_changed = False
+        if key in self.__data.keys():
+            if str(self.__data[key]) != str(value):
+                has_changed = True
+
+        self.__data[key] = value
+
+        if has_changed:
+            self.changed(key, "set", value)
+
+
+def Config(values: Any) -> Union[ConfigDict, ConfigList]:
+    if isinstance(values, (ConfigList, list)):
+        return ConfigList(values)
+    return ConfigDict(values)
 
 
 def is_value_type(value: Any) -> bool:
