@@ -12,7 +12,8 @@ from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic import config_manager
-from .server import samples, config_api
+from ambianic.webapp.server import samples, config_sources
+
 log = logging.getLogger(__name__)
 
 # configuration
@@ -185,6 +186,7 @@ def create_app(data_dir=None):
             }
             samples.add_sample(new_sample)
             response_object['message'] = 'Sample added!'
+            response_object['sample_id'] = new_sample["id"]
             log.debug('Sample added: %s ', new_sample)
         else:
             req_page = request.args.get('page', default=1, type=int)
@@ -194,26 +196,6 @@ def create_app(data_dir=None):
         # log.debug('Returning samples: %s ', response_object)
         resp = jsonify(response_object)
         return resp
-
-    @app.route('/api/config', methods=['GET'])
-    def get_config():
-        return jsonify(config_manager.get())
-
-    @app.route(
-        '/api/config/source/<source_id>',
-        methods=['GET', 'PUT', 'DELETE']
-    )
-    def handle_config_source(source_id):
-
-        if request.method == 'DELETE':
-            config_api.sources.save(source_id)
-            return jsonify({'status': 'success'})
-
-        if request.method == 'PUT':
-            source = request.get_json()
-            config_api.sources.save(source_id, source)
-
-        return jsonify(get(source_id))
 
     @app.route('/api/samples/<sample_id>', methods=['PUT', 'DELETE'])
     def update_sample(sample_id):
@@ -233,6 +215,28 @@ def create_app(data_dir=None):
             samples.delete_sample(sample_id)
             response_object['message'] = 'Sample removed!'
         return jsonify(response_object)
+
+    @app.route('/api/config', methods=['GET'])
+    def get_config():
+        config = config_manager.get()
+        config = config if config else {}
+        return jsonify()
+
+    @app.route(
+        '/api/config/source/<source_id>',
+        methods=['GET', 'PUT', 'DELETE']
+    )
+    def handle_config_source(source_id):
+
+        if request.method == 'DELETE':
+            config_sources.remove(source_id)
+            return jsonify({'status': 'success'})
+
+        if request.method == 'PUT':
+            source = request.get_json()
+            config_sources.save(source_id, source)
+
+        return jsonify(config_sources.get(source_id))
 
     # sanity check route
     @app.route('/api/ping', methods=['GET'])

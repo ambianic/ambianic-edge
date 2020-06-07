@@ -58,5 +58,6 @@ def save(source_id, source):
     """Save source configuration information"""
     source = validate(source_id, source)
     config = config_manager.get()
+
     config["sources"][source["id"]] = source
     return config["sources"][source["id"]]

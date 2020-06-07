@@ -130,6 +130,11 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
         Returns a list of previously saved pipeline events.
 
     """
+
+    if data_dir is None or not os.path.exists(data_dir):
+        log.warning("data_dir is not valid: %s", data_dir)
+        return []
+
     parsed_datetime = None
     assert isinstance(page, int)
     assert page > 0

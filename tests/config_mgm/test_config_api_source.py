@@ -1,5 +1,5 @@
 import os
-from ambianic.webapp.server.config_api import sources
+from ambianic.webapp.server import config_sources
 from ambianic import config_manager
 from werkzeug.exceptions import NotFound, BadRequest
 
@@ -24,7 +24,7 @@ def test_save():
     config = get_test_config()
 
     source_id = "test_add"
-    result = sources.save(source_id, {
+    result = config_sources.save(source_id, {
         "uri": source_id,
         "type": "video",
         "live": True,
@@ -65,7 +65,7 @@ def test_save_bad_args():
         try:
             if "id" not in arg.keys():
                 arg["id"] = "test"
-            sources.save(arg["id"], arg)
+            config_sources.save(arg["id"], arg)
             assert False
         except BadRequest:
             pass
@@ -74,7 +74,7 @@ def test_save_bad_args():
 def test_remove_bad_id():
     for arg in [None, {}, 100]:
         try:
-            sources.remove(arg)
+            config_sources.remove(arg)
             assert False
         except BadRequest:
             pass
@@ -95,7 +95,7 @@ def test_remove():
         }
     })
 
-    sources.remove("a")
+    config_sources.remove("a")
 
     assert "a" not in list(config["sources"].keys())
     assert len(config["sources"]) == 2
