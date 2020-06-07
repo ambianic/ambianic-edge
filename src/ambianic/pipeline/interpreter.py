@@ -9,7 +9,7 @@ from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
-from ambianic.config_mgm import Config
+from ambianic.config_mgm import ConfigList, ConfigDict
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
 
 log = logging.getLogger(__name__)
@@ -227,12 +227,16 @@ class Pipeline(ManagedService):
         self.name = pname
         assert pconfig, "Pipeline config required"
         self.config = pconfig
-        if isinstance(self.config, Config):
+        if isinstance(self.config, (ConfigList, ConfigDict)):
             self.config.set_callback(self.on_config_change)
         self.data_dir = data_dir
         self.__initialize()
 
     def __initialize(self):
+        if len(self.config) == 0:
+            log.warning("No element in the pipeline")
+            self._pipe_elements = []
+            return
 
         log.debug('Pipeline starts with element %r', self.config[0])
         source_element_key = [*self.config[0]][0]

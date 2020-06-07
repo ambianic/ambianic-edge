@@ -38,10 +38,10 @@ def _get_config(source_class=None):
     server_config = Config({
         'pipelines': {
             'pipeline_one': [
-                      {'source': {'uri': 'test'}}
-                      ]
-            },
-        })
+                {'source': {'uri': 'test'}}
+            ]
+        },
+    })
     return server_config
 
 
@@ -55,11 +55,10 @@ def test_pipeline_server_init():
 def _get_config_invalid_element(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    pipeline_config = [
+    pipeline_config = Config([
         {'source': {'uri': 'test'}},
         {'scifi': {'one': 'day soon'}},
-        ]
-
+    ])
     return pipeline_config
 
 
@@ -127,6 +126,13 @@ def test_pipeline_server_start_stop():
     time.sleep(3)
     assert source_pe.state == pipeline.PIPE_STATE_STOPPED
     assert not server._threaded_jobs[0].is_alive()
+
+
+def test_pipeline_server_config_change():
+    conf = _get_config(_TestSourceElement2)
+    server = PipelineServer(conf)
+
+    del conf['pipelines']["pipeline_one"][0]
 
 
 class _TestSourceElement3(pipeline.PipeElement):
