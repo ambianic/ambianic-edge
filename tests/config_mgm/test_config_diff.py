@@ -45,6 +45,11 @@ def test_accessors():
         "ai_models"]["image_detection"]["model"]["edgetpu"]
     assert len(cfg["pipelines"]["front_door_watch"]) == 1
 
+    version1 = "1.2.3.4"
+    cfg.set("version", version1)
+    assert cfg.get("version") == version1
+    assert cfg.get("non_existant", "ok") == "ok"
+
 
 def test_callbacks():
 
@@ -82,6 +87,47 @@ def test_callbacks():
 
     assert cfg["logging"]["options"][0] == 'y'
 
+    def test3_cb(event: config_diff.ConfigChangedEvent):
+        raise Exception("ouch!")
+    cfg.set_callback(test3_cb)
+
+    cfg["logging"]["options"].append("z")
+
+    assert len(cfg["logging"]["options"]) == 5
+
+
+def test_embed_list_diff():
+
+    test1 = {
+        "list": [
+            {"v": ["a", "b"]},
+            {"v": ["c", "d"]},
+        ]
+    }
+
+    cfg = config_diff.Config(test1)
+
+    assert isinstance(cfg["list"][0]["v"], config_diff.ConfigList)
+    assert cfg["list"][1] == test1["list"][1]
+
+    test1["list"].clear()
+    cfg.sync(test1)
+
+    assert len(test1["list"]) == 0
+
+    cfg["list"].insert(0, {"v": ["e", "f"]})
+    assert len(cfg["list"]) == 1
+
+    cfg["list"] += [{"v": ["g", "h"]}]
+    assert len(cfg["list"]) == 2
+
+    cfg["list"].extend([{"v": ["i", "l"]}])
+    assert len(cfg["list"]) == 3
+
+    cfg["list"][0] = {"v": []}
+    assert len(cfg["list"]) == 3
+    assert len(cfg["list"][0]["v"]) == 0
+
 
 def test_list_diff():
 
@@ -103,6 +149,9 @@ def test_list_diff():
 
     watcher = CallbackWatcher()
     cfg.set_callback(watcher.on_callback)
+
+    # test equality
+    assert cfg["pipelines"]["foo1"] == test1["pipelines"]["foo1"]
 
     del cfg["pipelines"]["foo1"][0]
     cfg["pipelines"]["foo1"].remove(el3)
