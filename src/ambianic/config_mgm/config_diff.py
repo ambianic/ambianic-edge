@@ -73,9 +73,10 @@ class ConfigChangedEvent:
     def get_root(self) -> EventHandler:
         """Return the root field element which children changed"""
         tree = self.get_tree()
-        if tree is None or len(tree) < 2:
+        log.debug("tree %s", tree)
+        if tree is None or len(tree) == 0:
             return None
-        return tree[-2]
+        return tree[0]
 
     def get_context(self) -> EventContext:
         """return the event context"""

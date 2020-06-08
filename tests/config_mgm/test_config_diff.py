@@ -96,17 +96,26 @@ def test_callbacks():
     assert len(cfg["logging"]["options"]) == 5
 
 
-def test_list_diff():
+def test_list_eq():
 
     test1 = [
         {"v": ["a", "b"]},
         {"v": ["c", "d"]},
     ]
-
+    test2 = [
+        {"v": ["a", "b"]},
+    ]
+    test3 = [
+        {"v": ["c", "d"]},
+        {"v": ["a", "b"]},
+    ]
     cfg = config_diff.Config(test1)
 
     assert isinstance(cfg, config_diff.ConfigList)
     assert cfg[1] == test1[1]
+    assert cfg == test1
+    assert cfg != test2
+    assert cfg != test3
 
 
 def test_embed_list_diff():
@@ -178,3 +187,8 @@ def test_list_diff():
         tries -= 1
         if tries == 0:
             raise Exception("Callback not triggered")
+
+    cfg["pipelines"]["foo1"][0]["name"] = "hello"
+
+    assert len(watcher.event.get_paths()) == 3
+    assert watcher.event.get_root() is not None
