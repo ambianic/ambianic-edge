@@ -220,7 +220,7 @@ def create_app(data_dir=None):
     def get_config():
         config = config_manager.get()
         config = config if config else {}
-        return jsonify()
+        return jsonify(config)
 
     @app.route(
         '/api/config/source/<source_id>',
