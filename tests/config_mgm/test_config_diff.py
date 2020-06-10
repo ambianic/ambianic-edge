@@ -70,7 +70,7 @@ def test_callbacks():
         # print("***** event", event)
         if event.get_name() == "level":
             assert event.new_value == "DEBUG" or event.new_value == "INFO"
-    cfg.set_callback(test1_cb)
+    cfg.add_callback(test1_cb)
 
     test1["logging"]["level"] = "DEBUG"
     cfg.update(test1)
@@ -78,7 +78,7 @@ def test_callbacks():
 
     def test2_cb(event: config_diff.ConfigChangedEvent):
         assert len(cfg["logging"]["options"]) >= 3
-    cfg.set_callback(test2_cb)
+    cfg.add_callback(test2_cb)
 
     test1["logging"]["options"].append('d')
     cfg.update(test1)
@@ -89,7 +89,7 @@ def test_callbacks():
 
     def test3_cb(event: config_diff.ConfigChangedEvent):
         raise Exception("ouch!")
-    cfg.set_callback(test3_cb)
+    cfg.add_callback(test3_cb)
 
     cfg["logging"]["options"].append("z")
 
@@ -170,7 +170,7 @@ def test_list_diff():
     assert len(cfg["pipelines"]["foo1"]) == 3
 
     watcher = CallbackWatcher()
-    cfg.set_callback(watcher.on_callback)
+    cfg.add_callback(watcher.on_callback)
 
     # test equality
     assert cfg["pipelines"]["foo1"] == test1["pipelines"]["foo1"]
