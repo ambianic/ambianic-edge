@@ -113,10 +113,10 @@ def _configure(env_work_dir=None):
 
     # set callback to react to specific configuration changes
     if config.get("logging", None) is not None:
-        config.get("logging").set_callback(logging_config_handler)
+        config.get("logging").add_callback(logging_config_handler)
 
     if config.get("timeline", None) is not None:
-        config.get("timeline").set_callback(timeline_config_handler)
+        config.get("timeline").add_callback(timeline_config_handler)
 
     # initialize logging
     logging_config_handler(None)
@@ -205,7 +205,7 @@ class AmbianicServer:
             log.info('No startup configuration provided. '
                      'Proceeding with defaults.')
         else:
-            config.set_callback(self.on_config_change)
+            config.add_callback(self.on_config_change)
 
         log.info('Starting Ambianic server...')
 
