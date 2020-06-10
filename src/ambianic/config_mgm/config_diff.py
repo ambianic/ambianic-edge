@@ -101,12 +101,16 @@ class EventHandler:
 
     def __init__(self):
         self.__context = None
-        self.__on_change = None
+        self.__on_change = []
         self.__initializing = False
 
-    def set_callback(self, on_change: EventCallback):
-        """Set a callback to be called when a value changes"""
-        self.__on_change = on_change
+    def add_callback(self, on_change: EventCallback):
+        """Add a callback called when a value changes"""
+        self.__on_change.append(on_change)
+
+    def remove_callback(self, on_change: EventCallback):
+        """Remove a callback previously added"""
+        self.__on_change.remove(on_change)
 
     def get_context(self) -> EventContext:
         """Return the context class, if any"""
@@ -138,7 +142,7 @@ class EventHandler:
 
             event_label += str(key)
 
-        if self.__on_change:
+        for callback in self.__on_change:
             changed_event = ConfigChangedEvent(
                 key,
                 operation,
@@ -152,10 +156,10 @@ class EventHandler:
                 log.debug("Configuration changed: %s", changed_event)
 
             try:
-                self.__on_change(changed_event)
-            except Exception as e:
+                callback(changed_event)
+            except Exception as exc:
                 log.error("Callback error for %s", event_label)
-                log.exception(e, exc_info=True)
+                log.exception(exc, exc_info=True)
 
         section = self
         if config_tree is None:
