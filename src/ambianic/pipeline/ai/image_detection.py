@@ -17,7 +17,7 @@ class TFImageDetection(PipeElement):
     """Applies Tensorflow image detection."""
 
     def __init__(self,
-                 source_id=None,
+                 ai_model=None,
                  model=None,
                  labels=None,
                  confidence_threshold=0.6,
@@ -37,13 +37,13 @@ class TFImageDetection(PipeElement):
         # log.warning('TFImageDetection __init__ invoked')
         super().__init__(**kwargs)
 
-        if source_id is not None:
+        if ai_model is not None:
             config = config_manager.get()
             if (
                 config.get("ai_models", None)
-                and config["ai_models"].get(source_id, None)
+                and config["ai_models"].get(ai_model, None)
             ):
-                cfg = config["ai_models"][source_id]
+                cfg = config["ai_models"][ai_model]
                 model = cfg.get("model", None)
                 labels = cfg.get("labels", None)
                 top_k = cfg.get("top_k", top_k)

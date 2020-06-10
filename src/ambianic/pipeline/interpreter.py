@@ -9,7 +9,7 @@ from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
-from ambianic.config_mgm import ConfigList, ConfigDict
+from ambianic import config_mgm, config_manager
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
 
 log = logging.getLogger(__name__)
@@ -78,9 +78,7 @@ class PipelineServer(ManagedService):
         self._threaded_jobs = []
         self._pipelines = []
         if config:
-            print('config: %r' % config)
             pipelines_config = config.get('pipelines', None)
-            print('pipelines config: %r' % pipelines_config)
             if pipelines_config:
                 # get main data dir config and pass
                 # on to pipelines to use
@@ -227,14 +225,12 @@ class Pipeline(ManagedService):
         self.name = pname
         assert pconfig, "Pipeline config required"
         self.config = pconfig
-        if isinstance(self.config, (ConfigList, ConfigDict)):
-            self.config.set_callback(self.on_config_change)
         self.data_dir = data_dir
         self.__initialize()
 
     def __initialize(self):
         if len(self.config) == 0:
-            log.warning("No element in the pipeline")
+            log.warning("No elements in the pipeline")
             self._pipe_elements = []
             return
 
@@ -301,6 +297,7 @@ class Pipeline(ManagedService):
         Run until the pipeline has input from its configured source
         or until a stop() signal is received.
         """
+        self.watch_config()
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
         if not self._pipe_elements:
             return self._on_start_no_elements()
@@ -369,8 +366,58 @@ class Pipeline(ManagedService):
 
         Disconnect from the source and all other external resources.
         """
+        self.unwatch_config()
         log.info("Requesting pipeline elements to stop... %s",
                  self.__class__.__name__)
         self._pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
+
+    def watch_config(self):
+        """Watch for configuration changes"""
+
+        if not isinstance(
+                self.config,
+                (config_mgm.ConfigList, config_mgm.ConfigDict)
+        ):
+            return
+
+        self.config.add_callback(self.on_config_change)
+
+        for pipeline_config in self.config:
+            # monitor changes on `sources[source]` if used
+            if "source" in pipeline_config:
+                source = config_manager.get_source(
+                    pipeline_config["source"])
+                if source:
+                    source.add_callback(self.on_config_change)
+            # monitor changes on `ai_models[ai_model]` if used
+            if "ai_model" in pipeline_config:
+                ai_model = config_manager.get_ai_model(
+                    pipeline_config["ai_model"])
+                if ai_model:
+                    ai_model.add_callback(self.on_config_change)
+
+    def unwatch_config(self):
+        """Stop watching for configuration changes"""
+
+        if not isinstance(
+                self.config,
+                (config_mgm.ConfigList, config_mgm.ConfigDict)
+        ):
+            return
+
+        self.config.remove_callback(self.on_config_change)
+
+        for pipeline_config in self.config:
+            # monitor changes on `sources[source]` if used
+            if "source" in pipeline_config:
+                source = config_manager.get_source(pipeline_config["source"])
+                if source:
+                    source.remove_callback(self.on_config_change)
+            # monitor changes on `ai_models[ai_model]` if used
+            if "ai_model" in pipeline_config:
+                ai_model = config_manager.get_ai_model(
+                    pipeline_config["ai_model"])
+                if ai_model:
+                    ai_model.remove_callback(self.on_config_change)
