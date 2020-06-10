@@ -128,6 +128,44 @@ class ConfigurationManager:
 
         return None
 
+    def get_sources(self) -> Config:
+        """Return sources configuration"""
+        config = self.get()
+        if config is None:
+            return None
+        return config.get("sources", None)
+
+    def get_source(self, source: str) -> Config:
+        """Return a source by name"""
+        sources = self.get_sources()
+        if sources is None:
+            return None
+        return sources.get(source, None)
+
+    def get_ai_models(self) -> Config:
+        """Return ai_models configuration"""
+        config = self.get()
+        if config is None:
+            return None
+        return config.get("ai_models", None)
+
+    def get_ai_model(self, ai_model: str) -> Config:
+        """Return an ai_model by name"""
+        ai_models = self.get_ai_models()
+        if ai_models is None:
+            return None
+        return ai_models.get(ai_model, None)
+
+    def get_pipelines(self) -> Config:
+        """Return ai_models configuration"""
+        config = self.get()
+        return config.get("pipelines", None)
+
+    def get_data_dir(self) -> Config:
+        """Return data_dir configuration"""
+        config = self.get()
+        return config.get("data_dir", None)
+
     def get(self) -> Config:
         """Get stored configuration.
 
