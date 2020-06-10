@@ -221,6 +221,22 @@ def test_callback():
     assert watcher.changed
 
 
+def test_config_getters():
+
+    config_manager.stop()
+    config_manager.CONFIG_FILE = 'test-config2.yaml'
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    config_manager.load(_dir)
+
+    assert config_manager.get_ai_models() is not None
+    assert config_manager.get_ai_model("image_detection") is not None
+
+    assert config_manager.get_sources() is not None
+    assert config_manager.get_source("front_door_camera") is not None
+
+    assert config_manager.get_data_dir() is not None
+
+
 def test_handlers_mgm():
 
     def test1(config):
