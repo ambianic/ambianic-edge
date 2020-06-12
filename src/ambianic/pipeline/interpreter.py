@@ -398,13 +398,15 @@ class Pipeline(ManagedService):
 
         for pipeline_config in self.config:
             # monitor changes on `sources[source]` if used
-            if "source" in pipeline_config:
+            if ("source" in pipeline_config
+                    and isinstance(pipeline_config["source"], str)):
                 source = config_manager.get_source(
                     pipeline_config["source"])
                 if source:
                     source.add_callback(self.on_config_change)
             # monitor changes on `ai_models[ai_model]` if used
-            if "ai_model" in pipeline_config:
+            if ("ai_model" in pipeline_config
+                    and isinstance(pipeline_config["ai_model"], str)):
                 ai_model = config_manager.get_ai_model(
                     pipeline_config["ai_model"])
                 if ai_model:
@@ -423,12 +425,14 @@ class Pipeline(ManagedService):
 
         for pipeline_config in self.config:
             # monitor changes on `sources[source]` if used
-            if "source" in pipeline_config:
+            if ("source" in pipeline_config
+                    and isinstance(pipeline_config["source"], str)):
                 source = config_manager.get_source(pipeline_config["source"])
                 if source:
                     source.remove_callback(self.on_config_change)
             # monitor changes on `ai_models[ai_model]` if used
-            if "ai_model" in pipeline_config:
+            if ("ai_model" in pipeline_config
+                    and isinstance(pipeline_config["ai_model"], str)):
                 ai_model = config_manager.get_ai_model(
                     pipeline_config["ai_model"])
                 if ai_model:

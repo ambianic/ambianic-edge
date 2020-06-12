@@ -1,6 +1,8 @@
 """More test cases for ambianic.interpreter module."""
 from ambianic import pipeline
 from ambianic.config_mgm import Config
+from ambianic.pipeline import interpreter
+from ambianic.pipeline.avsource.av_element import AVSourceElement
 from ambianic.pipeline.interpreter import \
     PipelineServer, Pipeline, HealingThread
 import logging
@@ -10,6 +12,21 @@ import threading
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
+
+
+def setup_module(module):
+    """ setup any state specific to the execution of the given module."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+
+
+def teardown_module(module):
+    """ teardown any state that was previously setup with a setup_module
+     method."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
 
 
 class _TestSourceElement(pipeline.PipeElement):
