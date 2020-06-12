@@ -14,6 +14,9 @@ from ambianic.util import ThreadedJob, ManagedService, stacktrace
 
 log = logging.getLogger(__name__)
 
+# Pipeline class, overridden by test
+PIPELINE_CLASS = None
+
 
 def get_pipelines(pipelines_config, data_dir=None):
     """Initialize and return pipelines given config parameters.
@@ -38,7 +41,8 @@ def get_pipelines(pipelines_config, data_dir=None):
     if pipelines_config:
         for pname, pdef in pipelines_config.items():
             log.info("loading %s pipeline configuration", pname)
-            p = Pipeline(pname=pname, pconfig=pdef, data_dir=data_dir)
+            pipeline_class = Pipeline if PIPELINE_CLASS is None else PIPELINE_CLASS
+            p = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
             pipelines.append(p)
     else:
         log.warning('No pipelines configured.')
@@ -255,7 +259,14 @@ class Pipeline(ManagedService):
             element_name = [*element_def][0]
             assert element_name
             element_config = element_def[element_name]
+
+            # if dealing with a static reference, pass the whole object
+            # eg. { [source]: [source-name] }
+            if isinstance(element_config, str):
+                element_config = {element_name: element_config}
+
             element_class = self.PIPELINE_OPS.get(element_name, None)
+
             if element_class:
                 log.info('Pipeline %s adding element name %s '
                          'with class %s and config %s',

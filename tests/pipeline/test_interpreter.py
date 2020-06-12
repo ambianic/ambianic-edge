@@ -1,9 +1,32 @@
+import logging
+import os
 from ambianic import pipeline, config_manager
 from ambianic.pipeline import interpreter
+from ambianic.pipeline.avsource.av_element import AVSourceElement
+
+
+log = logging.getLogger(__name__)
+
+
+def setup_module(module):
+    """ setup any state specific to the execution of the given module."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+    _TestPipelineEvent.PIPELINE_OPS['source'] = AVSourceElement
+
+
+def teardown_module(module):
+    """ teardown any state that was previously setup with a setup_module
+     method."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+    _TestPipelineEvent.PIPELINE_OPS['source'] = AVSourceElement
 
 
 def _get_pipelines_config():
-    return config_manager.set({
+    return config_manager.Config({
         'pipeline_one': [
             {'source': {'uri': 'test'}}
         ]
@@ -13,6 +36,18 @@ def _get_pipelines_config():
 def test_get_pipelines_none():
     p = interpreter.get_pipelines(pipelines_config=[])
     assert not p
+
+
+class _TestPipelineEvent(interpreter.Pipeline):
+    """Extend Pipeline to detect changes"""
+
+    def __init__(self, pname=None, pconfig=None, data_dir=None):
+        super().__init__(pname, pconfig, data_dir)
+        self.on_change_called = False
+
+    def on_config_change(self, event):
+        super().on_config_change(event)
+        self.on_change_called = True
 
 
 class _TestSourceElement(pipeline.PipeElement):
@@ -46,11 +81,13 @@ def test_derived_pipe_element():
     assert derived_element.state == pipeline.PIPE_STATE_STOPPED
 
 
-def _one_pipeline_setup(pipelines_config=None):
+def _one_pipeline_setup(pipelines_config=None, set_source_el=True):
     if pipelines_config is None:
         pipelines_config = _get_pipelines_config()
     # override source op with a mock test class
-    interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
+    if set_source_el:
+        log.info("set source=_TestPipelineEvent")
+        interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
     return interpreter.get_pipelines(pipelines_config=pipelines_config)
 
 
@@ -112,6 +149,7 @@ def test_pipeline_stop():
 
 
 def test_pipeline_reload_onchange():
+    """Test that when a reference in the pipeline changes, the pipeline reload"""
     config = _get_pipelines_config()
     p = _one_pipeline_setup(config)
     p[0].start()
@@ -121,3 +159,37 @@ def test_pipeline_reload_onchange():
 
     config["pipeline_one"][0]["source"]["uri"] = "test2"
     assert p[0]._pipe_elements[0].config['uri'] == 'test2'
+
+
+def test_pipeline_reload_onchange_sources_ref():
+    """Test that when a source reference changes, the pipeline reload"""
+    interpreter.PIPELINE_CLASS = _TestPipelineEvent
+    interpreter.PIPELINE_CLASS.PIPELINE_OPS['source'] = AVSourceElement
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    video_file = os.path.join(_dir, 'avsource', 'test2-cam-person1.mkv')
+    config = config_manager.set({
+        "sources": {
+            "source1": {
+                "uri": video_file,
+                "type": "video",
+                "live": False
+            }
+        },
+        "pipelines": {
+            "pipeline1": [
+                {"source": "source1"}
+            ]
+        }
+    })
+
+    pipe = _one_pipeline_setup(config["pipelines"], set_source_el=False)
+    assert _TestPipelineEvent.PIPELINE_OPS['source'] == AVSourceElement
+
+    pipe[0].start()
+
+    config["sources"]["source1"]["uri"] = "videotestsrc"
+
+    assert isinstance(pipe[0]._pipe_elements[0], AVSourceElement)
+    assert pipe[0].on_change_called
+    assert pipe[0]._pipe_elements[0]._source_conf['uri'] == "videotestsrc"
+    pipe[0].stop()

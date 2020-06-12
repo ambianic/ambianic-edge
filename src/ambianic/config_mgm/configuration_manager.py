@@ -18,7 +18,6 @@ class ConfigurationManager:
 
     def __init__(self, work_dir=None):
 
-        # static
         self.Config = Config
         self.CONFIG_FILE = "config.yaml"
         self.SECRETS_FILE = "secrets.yaml"
