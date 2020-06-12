@@ -279,6 +279,7 @@ class Pipeline(ManagedService):
         self.stop()
         self.__initialize()
         self.start()
+        log.info("Pipeline reloaded.")
 
     def _heartbeat(self):
         """Set the heartbeat timestamp to time.monotonic()."""
@@ -313,7 +314,7 @@ class Pipeline(ManagedService):
                            element_name='health_check')
         last_element.connect_to_next_element(hc)
         self._pipe_elements[0].start()
-        log.info("Stopped %s", self.__class__.__name__)
+        log.info("Started %s", self.__class__.__name__)
         return
 
     def healthcheck(self):
