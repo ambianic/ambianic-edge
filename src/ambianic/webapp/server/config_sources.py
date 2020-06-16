@@ -1,6 +1,9 @@
 
 from werkzeug.exceptions import NotFound, BadRequest
 from ambianic import config_manager
+import logging
+
+log = logging.getLogger(__name__)
 
 source_model = {
     "id": str,
@@ -16,7 +19,9 @@ def validate(source_id, source):
     """Validate input object"""
 
     if not isinstance(source, dict):
-        raise BadRequest("source should be an object")
+        raise BadRequest(
+            "Source should be a valid dictionary of pipeline source objects"
+        )
 
     source["id"] = source_id
     source_keys = source.keys()
@@ -35,6 +40,8 @@ def validate(source_id, source):
 
 def get(source_id):
     """Retrieve a source by id"""
+    log.info("Get source_id=%s", source_id)
+
     if not source_id:
         raise BadRequest("source id is empy")
 
@@ -50,12 +57,14 @@ def get(source_id):
 
 def remove(source_id):
     """Remove source by id"""
+    log.info("Removing source_id=%s", source_id)
     get(source_id)
     del config_manager.get()["sources"][source_id]
 
 
 def save(source_id, source):
     """Save source configuration information"""
+    log.info("Saving source_id=%s", source_id)
     source = validate(source_id, source)
     config = config_manager.get()
 
