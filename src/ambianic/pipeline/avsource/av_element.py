@@ -11,7 +11,6 @@ import requests
 from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.avsource import gst_process
-from ambianic import config_manager
 
 log = logging.getLogger(__name__)
 

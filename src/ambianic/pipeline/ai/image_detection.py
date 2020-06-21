@@ -7,7 +7,6 @@ import numpy as np
 from PIL import ImageOps
 from .inference import TFInferenceEngine
 from ambianic.pipeline import PipeElement
-from ambianic import config_manager
 
 
 log = logging.getLogger(__name__)
