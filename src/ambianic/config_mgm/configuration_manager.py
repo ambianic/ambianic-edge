@@ -162,6 +162,11 @@ class ConfigurationManager:
         config = self.get()
         return config.get("pipelines", None)
 
+    def get_pipeline(self, name) -> Config:
+        """Return pipeline configuration"""
+        pipelines = self.get_pipelines()
+        return pipelines.get(name, None)
+
     def get_data_dir(self) -> Config:
         """Return data_dir configuration"""
         config = self.get()

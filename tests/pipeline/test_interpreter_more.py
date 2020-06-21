@@ -299,11 +299,10 @@ def test_pipeline_heal2():
 def test_pipeline_start_no_elements():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
     pipeline_config = [
-        {'source': {'uri': 'test'}},
+        {'source': "unavailable"},
         ]
     pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
-    assert len(pipeline._pipe_elements) == 1
-    pipeline._pipe_elements.pop()
+    assert len(pipeline._pipe_elements) == 0
     pipeline.start()
     assert pipeline._test_on_start_no_elements_called
 

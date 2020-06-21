@@ -3,6 +3,7 @@ import logging
 from .avsource.av_element import AVSourceElement
 import time
 import threading
+import copy
 
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
@@ -11,6 +12,7 @@ from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
 from ambianic import config_mgm, config_manager
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
+
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +44,8 @@ def get_pipelines(pipelines_config, data_dir=None):
         for pname, pdef in pipelines_config.items():
             log.info("loading %s pipeline configuration", pname)
             pipeline_class = Pipeline if PIPELINE_CLASS is None else PIPELINE_CLASS
-            p = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
-            pipelines.append(p)
+            pipe = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
+            pipelines.append(pipe)
     else:
         log.warning('No pipelines configured.')
     return pipelines
@@ -230,19 +232,6 @@ class Pipeline(ManagedService):
         assert pconfig, "Pipeline config required"
         self.config = pconfig
         self.data_dir = data_dir
-        self.__initialize()
-
-    def __initialize(self):
-        if len(self.config) == 0:
-            log.warning("No elements in the pipeline")
-            self._pipe_elements = []
-            return
-
-        log.debug('Pipeline starts with element %r', self.config[0])
-        source_element_key = [*self.config[0]][0]
-        assert source_element_key == 'source', \
-            "Pipeline config must begin with a 'source' element instead of {}"\
-            .format(source_element_key)
         self._pipe_elements = []
         self._latest_heartbeat_time = time.monotonic()
         # in the future status may represent a spectrum of health issues
@@ -253,9 +242,40 @@ class Pipeline(ManagedService):
         self._context.data_dir = self.data_dir
         self._event_log = timeline.get_event_log(
             pipeline_context=self._context)
-        for element_def in self.config:
+        self.load_elements()
+
+    def load_elements(self):
+        """load pipeline elements based on configuration"""
+        self._pipe_elements = []
+
+        log.debug('Pipeline starts with element %r', self.config[0])
+        source_element_key = [*self.config[0]][0]
+        assert source_element_key == 'source', \
+            "Pipeline config must begin with a 'source' element instead of {}"\
+            .format(source_element_key)
+
+        for _element_config in self.config:
+
+            # copy the dictionary to not modify the configuration reference
+            if isinstance(_element_config, (config_mgm.ConfigList, config_mgm.ConfigDict)):
+                element_def = _element_config.to_values()
+            else:
+                # if it is a dict (eg. in tests)
+                element_def = copy.deepcopy(_element_config)
+
             log.info('Pipeline %s loading next element: %s',
                      self.name, element_def)
+
+            is_valid = self.parse_source_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
+            is_valid = self.parse_ai_model_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
             element_name = [*element_def][0]
             assert element_name
             element_config = element_def[element_name]
@@ -284,13 +304,93 @@ class Pipeline(ManagedService):
             else:
                 self._on_unknown_pipe_element(name=element_name)
 
-    def on_config_change(self, event):
+    def parse_ai_model_config(self, element_def: dict):
+        """parse AI model configuration"""
+
+        # ai_model: accept just a source_id and take it from sources
+        if "ai_model" not in element_def:
+            return True
+
+        ai_model_id = None
+        if isinstance(element_def["ai_model"], str):
+            ai_model_id = element_def["ai_model"]
+
+        if element_def["ai_model"] is not None and "ai_model_id" in element_def["ai_model"]:
+            ai_model_id = element_def["ai_model"]["ai_model_id"]
+
+        if ai_model_id is None:
+            return True
+
+        ai_model = config_manager.get_ai_model(ai_model_id)
+        if ai_model is None:
+            log.warning(
+                "AI model id %s not found, cannot start pipeline %s",
+                ai_model_id,
+                self.name,
+            )
+            return False
+
+        # merge the model config but keep the pipe element specific one
+        for key, val in ai_model.items():
+            if key not in element_def:
+                element_def["model"][key] = val
+
+        # track the id
+        element_def["model"]["ai_model_id"] = ai_model_id
+
+        return True
+
+    def parse_source_config(self, element_def: dict):
+        """parse source configuration"""
+        # source: accept just a source_id and take it from sources
+        if "source" not in element_def:
+            return True
+
+        source_id = None
+        if isinstance(element_def["source"], str):
+            source_id = element_def["source"]
+        if "source_id" in element_def["source"]:
+            source_id = element_def["source"]["source_id"]
+
+        if source_id is None:
+            return True
+
+        # track the source_id
+        source = config_manager.get_source(source_id)
+        if source is None:
+            log.warning(
+                "Source id %s not found, cannot start pipeline %s",
+                source_id,
+                self.name,
+            )
+            return False
+
+        element_def["source"] = {}
+        for key, value in source.items():
+            element_def["source"][key] = value
+        # track the id
+        element_def["source"]["source_id"] = source_id
+
+        return True
+
+    def on_config_change(self, event: config_mgm.ConfigChangedEvent):
         """Callback function invoked on pipeline configuration change"""
+
         log.info("Pipeline configuration changed (%s). Reloading..", event)
+        log.error("TODO ----- handle paths changes!!!!")
+
+        self.restart()
+
+    def restart(self):
+        """Restart a pipeline"""
         self.stop()
-        self.__initialize()
+        self.reset()
         self.start()
-        log.info("Pipeline reloaded.")
+        log.info("Pipeline restarted")
+
+    def reset(self):
+        """Reset the pipeline elements"""
+        self._pipe_elements = []
 
     def _heartbeat(self):
         """Set the heartbeat timestamp to time.monotonic()."""
@@ -309,10 +409,14 @@ class Pipeline(ManagedService):
         Run until the pipeline has input from its configured source
         or until a stop() signal is received.
         """
+        if len(self._pipe_elements) == 0:
+            self.load_elements()
+
         self.watch_config()
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
         if not self._pipe_elements:
             return self._on_start_no_elements()
+
         self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self._pipe_elements)):
@@ -326,7 +430,6 @@ class Pipeline(ManagedService):
         last_element.connect_to_next_element(hc)
         self._pipe_elements[0].start()
         log.info("Started %s", self.__class__.__name__)
-        return
 
     def healthcheck(self):
         """Return health vitals status report.
@@ -381,7 +484,8 @@ class Pipeline(ManagedService):
         self.unwatch_config()
         log.info("Requesting pipeline elements to stop... %s",
                  self.__class__.__name__)
-        self._pipe_elements[0].stop()
+        if len(self._pipe_elements) > 0:
+            self._pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
 
@@ -392,25 +496,42 @@ class Pipeline(ManagedService):
                 self.config,
                 (config_mgm.ConfigList, config_mgm.ConfigDict)
         ):
+            log.warning(
+                "Configuration is not reactive, cannot watch for changes")
             return
 
-        self.config.add_callback(self.on_config_change)
+        config = config_manager.get()
+        if config is not None:
+            config.add_callback(self.on_config_change)
 
-        for pipeline_config in self.config:
-            # monitor changes on `sources[source]` if used
-            if ("source" in pipeline_config
-                    and isinstance(pipeline_config["source"], str)):
-                source = config_manager.get_source(
-                    pipeline_config["source"])
-                if source:
-                    source.add_callback(self.on_config_change)
-            # monitor changes on `ai_models[ai_model]` if used
-            if ("ai_model" in pipeline_config
-                    and isinstance(pipeline_config["ai_model"], str)):
-                ai_model = config_manager.get_ai_model(
-                    pipeline_config["ai_model"])
-                if ai_model:
-                    ai_model.add_callback(self.on_config_change)
+        # for i, pipeline_config in enumerate(self.config):
+        #     pipeline_config.add_callback(self.on_config_change)
+        #     # monitor changes on `sources[source]` if used
+        #     if ("source" in pipeline_config
+        #             and pipeline_config["source"] is not None
+        #             and "source_id" in pipeline_config["source"]):
+        #         source = config_manager.get_source(
+        #             pipeline_config["source"]["source_id"])
+        #         if source is not None:
+        #             source.add_callback(
+        #                 self.on_config_change)
+        #     else:
+        #         # add callback to source element
+        #         self.config[i].add_callback(self.on_config_change)
+        #         config_manager.get_sources().add_callback(
+        #             self.on_config_change)
+        #
+        #     # # monitor changes on `ai_models[ai_model]` if used
+        #     if ("model" in pipeline_config
+        #             and pipeline_config["model"] is not None
+        #             and "ai_model_id" in pipeline_config["model"]):
+        #         ai_model = config_manager.get_ai_model(
+        #             pipeline_config["model"]["ai_model_id"])
+        #         if ai_model is not None:
+        #             ai_model.add_callback(
+        #                 self.on_config_change)
+        #         config_manager.get_ai_models().add_callback(
+        #             self.on_config_change)
 
     def unwatch_config(self):
         """Stop watching for configuration changes"""
@@ -421,19 +542,28 @@ class Pipeline(ManagedService):
         ):
             return
 
-        self.config.remove_callback(self.on_config_change)
+        config = config_manager.get()
+        if config is not None:
+            config.remove_callback(self.on_config_change)
 
-        for pipeline_config in self.config:
-            # monitor changes on `sources[source]` if used
-            if ("source" in pipeline_config
-                    and isinstance(pipeline_config["source"], str)):
-                source = config_manager.get_source(pipeline_config["source"])
-                if source:
-                    source.remove_callback(self.on_config_change)
-            # monitor changes on `ai_models[ai_model]` if used
-            if ("ai_model" in pipeline_config
-                    and isinstance(pipeline_config["ai_model"], str)):
-                ai_model = config_manager.get_ai_model(
-                    pipeline_config["ai_model"])
-                if ai_model:
-                    ai_model.remove_callback(self.on_config_change)
+        # for i, pipeline_config in enumerate(self.config):
+        #     pipeline_config.remove_callback(self.on_config_change)
+        #     # monitor changes on `sources[source]` if used
+        #     if ("source" in pipeline_config
+        #             and "source_id" in pipeline_config["source"]):
+        #         source = config_manager.get_source(
+        #             pipeline_config["source"]["source_id"])
+        #         if source is not None:
+        #             source.remove_callback(self.on_config_change)
+        #     else:
+        #         # add callback to source element
+        #         self.config[i].remove_callback(self.on_config_change)
+        #
+        #     # monitor changes on `ai_models[ai_model]` if used
+        #     if ("model" in pipeline_config
+        #             and pipeline_config["model"] is not None
+        #             and "ai_model_id" in pipeline_config["model"]):
+        #         ai_model = config_manager.get_ai_model(
+        #             pipeline_config["model"]["ai_model_id"])
+        #         if ai_model is not None:
+        #             ai_model.remove_callback(self.on_config_change)

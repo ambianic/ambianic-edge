@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import Callable, Any, Union
 import logging
+import copy
 
 log = logging.getLogger(__name__)
 
@@ -73,7 +74,6 @@ class ConfigChangedEvent:
     def get_root(self) -> EventHandler:
         """Return the root field element which children changed"""
         tree = self.get_tree()
-        log.debug("tree %s", tree)
         if tree is None or len(tree) == 0:
             return None
         return tree[0]
@@ -110,7 +110,10 @@ class EventHandler:
 
     def remove_callback(self, on_change: EventCallback):
         """Remove a callback previously added"""
-        self.__on_change.remove(on_change)
+        if self.__on_change.__contains__(on_change):
+            self.__on_change.remove(on_change)
+        else:
+            log.warning("Can no remove callback: not found")
 
     def get_context(self) -> EventContext:
         """Return the context class, if any"""
@@ -278,6 +281,19 @@ class ConfigList(EventHandler, list):
         self.changed(str(i), "remove", None)
         return res
 
+    def to_values(self):
+        """Return the inner list data as copy"""
+        values = []
+        for key, val in enumerate(self):
+            val = self[key]
+            if isinstance(val, (ConfigDict, ConfigList)):
+                values[key] = val.to_values()
+            elif isinstance(val, (list, dict)):
+                values[key] = copy.deepcopy(val)
+            else:
+                values[key] = val
+        return values
+
 
 class ConfigDict(MutableMapping, EventHandler):
     """Abstract a section of the configuration file"""
@@ -323,7 +339,7 @@ class ConfigDict(MutableMapping, EventHandler):
         return str(self) == str(other)
 
     def __repr__(self):
-        return str(self.__data)
+        return str(self["__data"])
 
     def __str__(self):
         return str(self.__data)
@@ -366,6 +382,19 @@ class ConfigDict(MutableMapping, EventHandler):
 
         if has_changed:
             self.changed(key, "set", value)
+
+    def to_values(self):
+        """Return the inner dict data as copy"""
+        values = {}
+        for key in self.__data:
+            val = self.__data[key]
+            if isinstance(val, (ConfigDict, ConfigList)):
+                values[key] = val.to_values()
+            elif isinstance(val, (list, dict)):
+                values[key] = copy.deepcopy(val)
+            else:
+                values[key] = val
+        return values
 
 
 def Config(values: Any) -> Union[ConfigDict, ConfigList]:

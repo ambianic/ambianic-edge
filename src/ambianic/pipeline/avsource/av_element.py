@@ -27,7 +27,7 @@ class AVSourceElement(PipeElement):
     image samples to the next pipe element.
     """
 
-    def __init__(self, source=None, uri=None, type=None, live=False, **kwargs):
+    def __init__(self, uri=None, type=None, live=False, **kwargs):
         """Create an av source element with given configuration.
 
         :Parameters:
@@ -45,18 +45,6 @@ class AVSourceElement(PipeElement):
                 until explicit stop() is requested of the element.
         """
         super().__init__(**kwargs)
-
-        # accept just an source_id and take it from sources
-        if source is not None:
-            config = config_manager.get()
-            if (
-                    "sources" in config.keys() and
-                    source in config["sources"].keys()
-            ):
-                cfg = config["sources"][source]
-                uri = cfg["uri"]
-                type = cfg["type"]
-                live = cfg["live"]
 
         assert uri
 
