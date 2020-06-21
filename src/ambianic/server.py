@@ -4,7 +4,6 @@ import logging.handlers
 import os
 import pathlib
 import time
-import yaml
 
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
@@ -82,7 +81,7 @@ def _configure_logging(config=None):
              logging.getLevelName(effective_level))
     if effective_level <= logging.DEBUG:
         log.debug('Configuration yaml dump:')
-        log.debug(yaml.dump(config))
+        log.debug(config)
 
 
 def _configure(env_work_dir=None):

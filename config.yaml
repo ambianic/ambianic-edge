@@ -9,7 +9,7 @@ data_dir: &data_dir ./data
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
   file: ./data/ambianic-log.txt
-  level: INFO
+  level: DEBUG
 
 # Pipeline event timeline configuration
 timeline:

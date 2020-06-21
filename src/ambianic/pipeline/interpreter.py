@@ -307,16 +307,23 @@ class Pipeline(ManagedService):
     def parse_ai_model_config(self, element_def: dict):
         """parse AI model configuration"""
 
-        # ai_model: accept just a source_id and take it from sources
-        if "ai_model" not in element_def:
+        # its one
+        ai_element = None
+        for element_name in element_def:
+            # ai_model: accept just a source_id and take it from sources
+            if "ai_model" in element_def[element_name]:
+                ai_element = element_def[element_name]
+                break
+
+        if ai_element is None:
             return True
 
         ai_model_id = None
-        if isinstance(element_def["ai_model"], str):
-            ai_model_id = element_def["ai_model"]
+        if isinstance(ai_element["ai_model"], str):
+            ai_model_id = ai_element["ai_model"]
 
-        if element_def["ai_model"] is not None and "ai_model_id" in element_def["ai_model"]:
-            ai_model_id = element_def["ai_model"]["ai_model_id"]
+        if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
+            ai_model_id = ai_element["ai_model"]["ai_model_id"]
 
         if ai_model_id is None:
             return True
@@ -331,12 +338,12 @@ class Pipeline(ManagedService):
             return False
 
         # merge the model config but keep the pipe element specific one
-        for key, val in ai_model.items():
-            if key not in element_def:
-                element_def["model"][key] = val
+        for key, val in ai_model.to_values().items():
+            if key not in ai_element:
+                ai_element[key] = val
 
         # track the id
-        element_def["model"]["ai_model_id"] = ai_model_id
+        ai_element["ai_model_id"] = ai_model_id
 
         return True
 
@@ -365,10 +372,7 @@ class Pipeline(ManagedService):
             )
             return False
 
-        element_def["source"] = {}
-        for key, value in source.items():
-            element_def["source"][key] = value
-        # track the id
+        element_def["source"] = source.to_values()
         element_def["source"]["source_id"] = source_id
 
         return True
@@ -379,7 +383,18 @@ class Pipeline(ManagedService):
         log.info("Pipeline configuration changed (%s). Reloading..", event)
         log.error("TODO ----- handle paths changes!!!!")
 
-        self.restart()
+        restart = False
+        paths = event.get_paths()
+        if len(paths) > 1:
+            source = self.config[0]
+            source_model = source["source_id"] if "source_id" in source else None
+            if paths[0] == "sources" and source_model and paths[1] == source_model:
+                restart = True
+            if paths[0] == "pipelines" and paths[1] == self.name:
+                restart = True
+
+        if restart:
+            self.restart()
 
     def restart(self):
         """Restart a pipeline"""
@@ -504,35 +519,6 @@ class Pipeline(ManagedService):
         if config is not None:
             config.add_callback(self.on_config_change)
 
-        # for i, pipeline_config in enumerate(self.config):
-        #     pipeline_config.add_callback(self.on_config_change)
-        #     # monitor changes on `sources[source]` if used
-        #     if ("source" in pipeline_config
-        #             and pipeline_config["source"] is not None
-        #             and "source_id" in pipeline_config["source"]):
-        #         source = config_manager.get_source(
-        #             pipeline_config["source"]["source_id"])
-        #         if source is not None:
-        #             source.add_callback(
-        #                 self.on_config_change)
-        #     else:
-        #         # add callback to source element
-        #         self.config[i].add_callback(self.on_config_change)
-        #         config_manager.get_sources().add_callback(
-        #             self.on_config_change)
-        #
-        #     # # monitor changes on `ai_models[ai_model]` if used
-        #     if ("model" in pipeline_config
-        #             and pipeline_config["model"] is not None
-        #             and "ai_model_id" in pipeline_config["model"]):
-        #         ai_model = config_manager.get_ai_model(
-        #             pipeline_config["model"]["ai_model_id"])
-        #         if ai_model is not None:
-        #             ai_model.add_callback(
-        #                 self.on_config_change)
-        #         config_manager.get_ai_models().add_callback(
-        #             self.on_config_change)
-
     def unwatch_config(self):
         """Stop watching for configuration changes"""
 
@@ -545,25 +531,3 @@ class Pipeline(ManagedService):
         config = config_manager.get()
         if config is not None:
             config.remove_callback(self.on_config_change)
-
-        # for i, pipeline_config in enumerate(self.config):
-        #     pipeline_config.remove_callback(self.on_config_change)
-        #     # monitor changes on `sources[source]` if used
-        #     if ("source" in pipeline_config
-        #             and "source_id" in pipeline_config["source"]):
-        #         source = config_manager.get_source(
-        #             pipeline_config["source"]["source_id"])
-        #         if source is not None:
-        #             source.remove_callback(self.on_config_change)
-        #     else:
-        #         # add callback to source element
-        #         self.config[i].remove_callback(self.on_config_change)
-        #
-        #     # monitor changes on `ai_models[ai_model]` if used
-        #     if ("model" in pipeline_config
-        #             and pipeline_config["model"] is not None
-        #             and "ai_model_id" in pipeline_config["model"]):
-        #         ai_model = config_manager.get_ai_model(
-        #             pipeline_config["model"]["ai_model_id"])
-        #         if ai_model is not None:
-        #             ai_model.remove_callback(self.on_config_change)

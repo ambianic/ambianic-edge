@@ -232,7 +232,61 @@ def test_pipeline_reload_delete_source_ref():
 
     del config["sources"]["source1"]
 
-    log.debug("DEL ------------------------------------------------------------")
-
     assert p[0].restart_called
     assert len(p[0]._pipe_elements) == 0
+
+
+def test_pipeline_source_config():
+    """Test the source ref is resolved"""
+    config_manager.set({
+        "sources": {
+            "source1": {
+                "uri": "test",
+                "type": "video",
+                "live": False
+            }
+        },
+        "pipelines": {
+            "pipeline1": [
+                {"source": "source1"}
+            ]
+        }
+    })
+    p = _one_pipeline_setup(config_manager.get_pipelines())
+    p[0].load_elements()
+
+    log.debug(p[0]._pipe_elements[0])
+    assert p[0]._pipe_elements[0].config["uri"] == "test"
+
+
+def test_pipeline_ai_model_config():
+    """Test the source ref is resolved"""
+
+    dir = os.path.dirname(os.path.abspath(__file__))
+    dummypath = os.path.abspath(dir + "/test_interpreter.py")
+
+    config_manager.set({
+        "ai_models": {
+            "test": {
+                "labels": "ai_models/coco_labels.txt",
+                "model": {
+                    "tflite": "ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite",
+                }
+            }
+        },
+        "pipelines": {
+            "pipeline1": [
+                {"source": {"uri": "test"}},
+                {"detect_objects": {
+                    "ai_model": "test",
+                    "confidence_threshold": 0.0
+                }}
+            ]
+        }
+    })
+    p = _one_pipeline_setup(config_manager.get_pipelines())
+    p[0].load_elements()
+
+    log.debug(p[0]._pipe_elements[1])
+    assert len(p[0]._pipe_elements) == 2
+    assert p[0]._pipe_elements[1]._tfengine._confidence_threshold == 0.0

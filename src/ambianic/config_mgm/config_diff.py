@@ -339,7 +339,7 @@ class ConfigDict(MutableMapping, EventHandler):
         return str(self) == str(other)
 
     def __repr__(self):
-        return str(self["__data"])
+        return str(self.__data)
 
     def __str__(self):
         return str(self.__data)
