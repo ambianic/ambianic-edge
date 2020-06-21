@@ -380,20 +380,50 @@ class Pipeline(ManagedService):
     def on_config_change(self, event: config_mgm.ConfigChangedEvent):
         """Callback function invoked on pipeline configuration change"""
 
-        log.info("Pipeline configuration changed (%s). Reloading..", event)
-        log.error("TODO ----- handle paths changes!!!!")
-
         restart = False
         paths = event.get_paths()
-        if len(paths) > 1:
-            source = self.config[0]
-            source_model = source["source_id"] if "source_id" in source else None
-            if paths[0] == "sources" and source_model and paths[1] == source_model:
-                restart = True
-            if paths[0] == "pipelines" and paths[1] == self.name:
+        if len(paths) > 0:
+
+            if paths[0] == "sources":
+                source = self.config[0]
+                source_model = source["source"] if "source" in source else None
+                if source_model is None:
+                    source_model = source["source_id"] if "source_id" in source else None
+
+                if source_model and (
+                        event.get_name() == source_model
+                        or len(paths) > 1 and paths[1] == source_model
+                ):
+                    restart = True
+
+            if paths[0] == "pipelines" and (
+                    event.get_name() == self.name
+                    or (len(paths) > 1 and paths[1] == self.name)
+            ):
                 restart = True
 
+            if paths[0] == "ai_models":
+
+                i = 1
+                while i < len(self.config):
+                    model_type = self.config[i].keys()[0]
+                    ai_element = self.config[i][model_type]
+
+                    ai_model_id = ai_element["ai_model"] if "ai_model" in ai_element else None
+                    if ai_model_id is None:
+                        ai_model_id = ai_element["ai_model_id"] if "ai_model_id" in ai_element else None
+
+                    if (
+                        event.get_name() == ai_model_id
+                        or (len(paths) > 1 and paths[1] == ai_model_id)
+                    ):
+                        restart = True
+                        break
+
+                    i += 1
+
         if restart:
+            log.info("Pipeline configuration changed, restarting")
             self.restart()
 
     def restart(self):

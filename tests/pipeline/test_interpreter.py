@@ -262,8 +262,7 @@ def test_pipeline_source_config():
 def test_pipeline_ai_model_config():
     """Test the source ref is resolved"""
 
-    dir = os.path.dirname(os.path.abspath(__file__))
-    dummypath = os.path.abspath(dir + "/test_interpreter.py")
+    config_manager.stop()
 
     config_manager.set({
         "ai_models": {
