@@ -1,0 +1,4 @@
+sources:
+  test1:
+    uri: rtsp://test1
+    type: video

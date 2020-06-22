@@ -1,5 +1,8 @@
 """More test cases for ambianic.interpreter module."""
 from ambianic import pipeline
+from ambianic.config_mgm import Config
+from ambianic.pipeline import interpreter
+from ambianic.pipeline.avsource.av_element import AVSourceElement
 from ambianic.pipeline.interpreter import \
     PipelineServer, Pipeline, HealingThread
 import logging
@@ -9,6 +12,21 @@ import threading
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
+
+
+def setup_module(module):
+    """ setup any state specific to the execution of the given module."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+
+
+def teardown_module(module):
+    """ teardown any state that was previously setup with a setup_module
+     method."""
+    # Reset default class
+    interpreter.PIPELINE_CLASS = None
+    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
 
 
 class _TestSourceElement(pipeline.PipeElement):
@@ -34,13 +52,13 @@ class _TestSourceElement(pipeline.PipeElement):
 def _get_config(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    server_config = {
+    server_config = Config({
         'pipelines': {
             'pipeline_one': [
-                      {'source': {'uri': 'test'}}
-                      ]
-            },
-        }
+                {'source': {'uri': 'test'}}
+            ]
+        },
+    })
     return server_config
 
 
@@ -54,11 +72,10 @@ def test_pipeline_server_init():
 def _get_config_invalid_element(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    pipeline_config = [
+    pipeline_config = Config([
         {'source': {'uri': 'test'}},
         {'scifi': {'one': 'day soon'}},
-        ]
-
+    ])
     return pipeline_config
 
 
@@ -126,6 +143,13 @@ def test_pipeline_server_start_stop():
     time.sleep(3)
     assert source_pe.state == pipeline.PIPE_STATE_STOPPED
     assert not server._threaded_jobs[0].is_alive()
+
+
+def test_pipeline_server_config_change():
+    conf = _get_config(_TestSourceElement2)
+    server = PipelineServer(conf)
+
+    del conf['pipelines']["pipeline_one"][0]
 
 
 class _TestSourceElement3(pipeline.PipeElement):
@@ -275,11 +299,10 @@ def test_pipeline_heal2():
 def test_pipeline_start_no_elements():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
     pipeline_config = [
-        {'source': {'uri': 'test'}},
+        {'source': "unavailable"},
         ]
     pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
-    assert len(pipeline._pipe_elements) == 1
-    pipeline._pipe_elements.pop()
+    assert len(pipeline._pipe_elements) == 0
     pipeline.start()
     assert pipeline._test_on_start_no_elements_called
 

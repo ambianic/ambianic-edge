@@ -1,8 +1,5 @@
 """Audio Video sourcing to an Ambianic pipeline."""
 
-from ambianic.pipeline import PipeElement
-from ambianic.pipeline.avsource import gst_process
-
 import logging
 import time
 import threading
@@ -12,6 +9,8 @@ from PIL import Image
 from io import BytesIO
 import requests
 from ambianic.util import stacktrace
+from ambianic.pipeline import PipeElement
+from ambianic.pipeline.avsource import gst_process
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ class AVSourceElement(PipeElement):
         :Parameters:
         ----------
         source_conf : dict
-            uri: string (examples 
+            uri: string (examples
                 uri: rtsp://somehost/ipcam/channel0
                 uri: http://somehost/ipcam/sample.jpg
                 )
@@ -45,11 +44,14 @@ class AVSourceElement(PipeElement):
                 until explicit stop() is requested of the element.
         """
         super().__init__(**kwargs)
+
         assert uri
+
         element_conf = dict(kwargs)
         element_conf['uri'] = uri
         element_conf['type'] = type
         element_conf['live'] = live
+
         # pipeline source info
         self._source_conf = element_conf
         self._is_live = live
@@ -114,11 +116,11 @@ class AVSourceElement(PipeElement):
                     From URL: %r
                     """, img, url)
                 log.debug('Sending sample to next element.')
-                self.receive_next_sample(image=img)        
+                self.receive_next_sample(image=img)
             except Exception as e:
                 self._on_fetch_img_exception(_exception=e)
                 log.exception("""
-                    Failed to fetch image from pipeline source. 
+                    Failed to fetch image from pipeline source.
                     URL: %r
                     """, url)
                 if continuous:
@@ -264,7 +266,7 @@ class AVSourceElement(PipeElement):
                 """, self._source_conf['uri'])
             # use http client library to fetch still images
             self._run_http_fetch(
-                url=self._source_conf['uri'], 
+                url=self._source_conf['uri'],
                 continuous=self._is_live)
         else:
             log.debug("""

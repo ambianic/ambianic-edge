@@ -4,9 +4,10 @@ import time
 import re
 import numpy as np
 # from importlib import import_module
-from ambianic.pipeline import PipeElement
-from .inference import TFInferenceEngine
 from PIL import ImageOps
+from .inference import TFInferenceEngine
+from ambianic.pipeline import PipeElement
+
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class TFImageDetection(PipeElement):
         """
         # log.warning('TFImageDetection __init__ invoked')
         super().__init__(**kwargs)
+
         self._tfengine = TFInferenceEngine(
             model=model,
             labels=labels,

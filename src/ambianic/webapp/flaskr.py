@@ -2,16 +2,18 @@
 import os
 import logging
 import time
-from flask import Flask, request, jsonify
+from pathlib import Path
+import flask
+from flask import Flask, request, jsonify, json
 from flask_cors import CORS
 from flask.logging import default_handler
-import flask
 from requests import get
 from werkzeug.serving import make_server
-from pathlib import Path
+from werkzeug.exceptions import HTTPException
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
-from .server import samples
 from ambianic import config_manager
+from ambianic.webapp.server import samples, config_sources
+
 log = logging.getLogger(__name__)
 
 # configuration
@@ -184,6 +186,7 @@ def create_app(data_dir=None):
             }
             samples.add_sample(new_sample)
             response_object['message'] = 'Sample added!'
+            response_object['sample_id'] = new_sample["id"]
             log.debug('Sample added: %s ', new_sample)
         else:
             req_page = request.args.get('page', default=1, type=int)
@@ -192,13 +195,6 @@ def create_app(data_dir=None):
             log.debug('Returning %d samples', len(resp))
         # log.debug('Returning samples: %s ', response_object)
         resp = jsonify(response_object)
-        return resp
-
-    @app.route('/api/config', methods=['GET', 'POST'])
-    def handle_config():
-        if request.method == 'POST':
-            config_manager.save(request.get_json())
-        resp = jsonify(config_manager.get())
         return resp
 
     @app.route('/api/samples/<sample_id>', methods=['PUT', 'DELETE'])
@@ -219,6 +215,28 @@ def create_app(data_dir=None):
             samples.delete_sample(sample_id)
             response_object['message'] = 'Sample removed!'
         return jsonify(response_object)
+
+    @app.route('/api/config', methods=['GET'])
+    def get_config():
+        config = config_manager.get()
+        config = config if config else {}
+        return jsonify(config)
+
+    @app.route(
+        '/api/config/source/<source_id>',
+        methods=['GET', 'PUT', 'DELETE']
+    )
+    def handle_config_source(source_id):
+
+        if request.method == 'DELETE':
+            config_sources.remove(source_id)
+            return jsonify({'status': 'success'})
+
+        if request.method == 'PUT':
+            source = request.get_json()
+            config_sources.save(source_id, source)
+
+        return jsonify(config_sources.get(source_id))
 
     # sanity check route
     @app.route('/api/ping', methods=['GET'])
@@ -247,9 +265,29 @@ def create_app(data_dir=None):
         # production mode
         return flask.send_from_directory('client/dist', path)
 
-#    @app.errorhandler(404)
-#    def page_not_found(e):
-#        return flask.send_from_directory('client/dist', 'index.html')
+    @app.errorhandler(Exception)
+    def handle_exception(e: Exception):
+        """Return JSON instead of HTML for HTTP errors."""
+
+        # start with the correct headers and status code from the error
+        if isinstance(e, HTTPException):
+            response = e.get_response()
+            response.content_type = "application/json"
+            # replace the body with JSON
+            response.data = json.dumps({
+                "code": e.code,
+                "error": e.description,
+            })
+            return response
+
+        # generic error handler
+        log.error("Request failed")
+        log.exception(e)
+
+        return jsonify(
+            code=500,
+            error="Request failed"
+        ), 500
 
 #    @app.route('/', defaults={'path': 'index.html'})
 #    @app.route('/<path:path>')
