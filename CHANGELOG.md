@@ -1,5 +1,19 @@
 # Semantic Versioning Changelog
 
+# [1.4.0](https://github.com/ambianic/ambianic-edge/compare/v1.3.0...v1.4.0) (2020-06-22)
+
+
+### Bug Fixes
+
+* corrected linter issues ([7cedca7](https://github.com/ambianic/ambianic-edge/commit/7cedca7b007bcb87e2ea5a09b2efe077fdc814a6))
+* corrected pipeline test ([ff65db0](https://github.com/ambianic/ambianic-edge/commit/ff65db0e343401127438af637202ac0934d45463))
+* redundant import of ConfigChangedEvent ([1aea908](https://github.com/ambianic/ambianic-edge/commit/1aea90896c2f76a61322d49080c2f58c5262bf50))
+
+
+### Features
+
+* reactive configuration merge pull request [#197](https://github.com/ambianic/ambianic-edge/issues/197) from muka/feature/config_reload ([0a01232](https://github.com/ambianic/ambianic-edge/commit/0a012321d763fe008f0580c0f06a75ab20415c87))
+
 # [1.3.0](https://github.com/ambianic/ambianic-edge/compare/v1.2.0...v1.3.0) (2020-05-13)
 
 
