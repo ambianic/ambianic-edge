@@ -263,21 +263,23 @@ class Pipeline(ManagedService):
                 # if it is a dict (eg. in tests)
                 element_def = copy.deepcopy(_element_config)
 
-            log.info('Pipeline %s loading next element: %s',
-                     self.name, element_def)
+            log.info('Pipeline %s loading next element: %s', self.name, element_def)
 
             is_valid = self.parse_source_config(element_def)
             if not is_valid:
+                log.warning('FAILED: Pipeline: %s; source: %s',self.name, element_def)
                 self._pipe_elements = []
                 break
 
             is_valid = self.parse_ai_model_config(element_def)
             if not is_valid:
+                log.warning('FAILED: Pipeline: %s; ai_model: %s',self.name, element_def)
                 self._pipe_elements = []
                 break
 
             element_name = [*element_def][0]
             assert element_name
+            log.debug('SUCCESS: Pipeline: %s; element: %s',self.name,element_name)
             element_config = element_def[element_name]
 
             # if dealing with a static reference, pass the whole object
@@ -302,6 +304,7 @@ class Pipeline(ManagedService):
                     )
                 self._pipe_elements.append(element)
             else:
+                log.warning('Pipe element failed %s', element_name)
                 self._on_unknown_pipe_element(name=element_name)
 
     def parse_ai_model_config(self, element_def: dict):
@@ -316,6 +319,7 @@ class Pipeline(ManagedService):
                 break
 
         if ai_element is None:
+            log.debug('No ai_element')
             return True
 
         ai_model_id = None
