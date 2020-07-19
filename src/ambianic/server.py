@@ -198,7 +198,7 @@ class AmbianicServer:
 
     def start(self):
         """Programmatic start of the main service."""
-        print("Starting server...")
+        log.info('Configuring Ambianic server...')
         config = _configure(self._env_work_dir)
         if not config:
             log.info('No startup configuration provided. '
@@ -225,6 +225,7 @@ class AmbianicServer:
                 time.sleep(0.5)
                 self._healthcheck(servers)
                 self._heartbeat()
+                log.debug('Watchdog')
 
         except ServiceExit:
             log.info('Service exit requested.')
