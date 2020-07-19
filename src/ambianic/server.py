@@ -198,7 +198,7 @@ class AmbianicServer:
 
     def start(self):
         """Programmatic start of the main service."""
-        log.info('Configuring Ambianic server...')
+        print('Configuring Ambianic server...')
         config = _configure(self._env_work_dir)
         if not config:
             log.info('No startup configuration provided. '
@@ -214,7 +214,9 @@ class AmbianicServer:
         try:
             for s_name, s_class in ROOT_SERVERS.items():
                 srv = s_class(config=config)
+                log.debug('Service starting')
                 srv.start()
+                log.debug('Service started')
                 servers[s_name] = srv
 
             self._latest_heartbeat = time.monotonic()
