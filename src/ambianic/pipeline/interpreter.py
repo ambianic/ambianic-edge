@@ -324,7 +324,7 @@ class Pipeline(ManagedService):
         if ai_element is None:
             log.warning('No ai_element in element_def')
             return True
-        else
+        else:
             log.debug('AI element is not none')
 
         ai_model_id = None
@@ -339,7 +339,7 @@ class Pipeline(ManagedService):
         if ai_model_id is None:
             log.warning('AI model not found')
             return True
-        else
+        else:
             log.debug('AI model found: %s', ai_model_id)
 
         ai_model = config_manager.get_ai_model(ai_model_id)
@@ -350,7 +350,7 @@ class Pipeline(ManagedService):
                 self.name,
             )
             return False
-        else
+        else:
             log.debug("Pipeline %s; AI model configured: %s", self.name, ai_model_id)
 
         # merge the model config but keep the pipe element specific one
