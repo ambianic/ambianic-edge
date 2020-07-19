@@ -317,18 +317,20 @@ class Pipeline(ManagedService):
         for element_name in element_def:
             # ai_model: accept just a source_id and take it from sources
             if "ai_model" in element_def[element_name]:
-                log.debug('AI model defined')
+                log.debug('AI model definition %s', element_name)
                 ai_element = element_def[element_name]
                 break
 
         if ai_element is None:
-            log.warning('No ai_element')
+            log.warning('No ai_element in element_def')
             return True
+        else
+            log.debug('AI element is not none')
 
         ai_model_id = None
         if isinstance(ai_element["ai_model"], str):
-            log.debug('AI model is string')
             ai_model_id = ai_element["ai_model"]
+            log.debug('AI model id: %s', ai_model_id)
 
         if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
             log.debug('AI model found')
@@ -337,6 +339,8 @@ class Pipeline(ManagedService):
         if ai_model_id is None:
             log.warning('AI model not found')
             return True
+        else
+            log.debug('AI model found: %s', ai_model_id)
 
         ai_model = config_manager.get_ai_model(ai_model_id)
         if ai_model is None:
@@ -346,6 +350,8 @@ class Pipeline(ManagedService):
                 self.name,
             )
             return False
+        else
+            log.debug("Pipeline %s; AI model configured: %s", self.name, ai_model_id)
 
         # merge the model config but keep the pipe element specific one
         for key, val in ai_model.to_values().items():
