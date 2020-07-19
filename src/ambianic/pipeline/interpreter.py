@@ -277,14 +277,16 @@ class Pipeline(ManagedService):
                 self._pipe_elements = []
                 break
 
+            log.debug('CHECKPOINT: Pipeline: %s; element: %s',self.name,element_def)
+
             element_name = [*element_def][0]
             assert element_name
-            log.debug('SUCCESS: Pipeline: %s; element: %s',self.name,element_name)
             element_config = element_def[element_name]
 
             # if dealing with a static reference, pass the whole object
             # eg. { [source]: [source-name] }
             if isinstance(element_config, str):
+                log.debug('element is string')
                 element_config = {element_name: element_config}
 
             element_class = self.PIPELINE_OPS.get(element_name, None)
@@ -315,21 +317,25 @@ class Pipeline(ManagedService):
         for element_name in element_def:
             # ai_model: accept just a source_id and take it from sources
             if "ai_model" in element_def[element_name]:
+                log.debug('AI model defined')
                 ai_element = element_def[element_name]
                 break
 
         if ai_element is None:
-            log.debug('No ai_element')
+            log.warning('No ai_element')
             return True
 
         ai_model_id = None
         if isinstance(ai_element["ai_model"], str):
+            log.debug('AI model is string')
             ai_model_id = ai_element["ai_model"]
 
         if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
+            log.debug('AI model found')
             ai_model_id = ai_element["ai_model"]["ai_model_id"]
 
         if ai_model_id is None:
+            log.warning('AI model not found')
             return True
 
         ai_model = config_manager.get_ai_model(ai_model_id)
@@ -344,6 +350,7 @@ class Pipeline(ManagedService):
         # merge the model config but keep the pipe element specific one
         for key, val in ai_model.to_values().items():
             if key not in ai_element:
+                log.debug('Adding ai_element')
                 ai_element[key] = val
 
         # track the id
@@ -355,15 +362,19 @@ class Pipeline(ManagedService):
         """parse source configuration"""
         # source: accept just a source_id and take it from sources
         if "source" not in element_def:
+            log.warning('Not a source')
             return True
 
         source_id = None
         if isinstance(element_def["source"], str):
+            log.debug('Source is string')
             source_id = element_def["source"]
         if "source_id" in element_def["source"]:
+            log.debug('Source is found')
             source_id = element_def["source"]["source_id"]
 
         if source_id is None:
+            log.warning('No source found')
             return True
 
         # track the source_id
