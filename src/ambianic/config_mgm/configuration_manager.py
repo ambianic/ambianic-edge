@@ -115,7 +115,7 @@ class ConfigurationManager:
                 all_config = secrets_config + "\n" + base_config
             config = yaml.safe_load(all_config)
 
-            log.debug('loaded config from %r: %r',
+            log.info('loaded config from %r: %r',
                       self.CONFIG_FILE, config)
 
             return self.set(config)

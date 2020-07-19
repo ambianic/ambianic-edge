@@ -2,7 +2,7 @@
 import os
 from ambianic.config_mgm import ConfigurationManager
 
-DEFAULT_WORK_DIR = '/workspace'
+DEFAULT_WORK_DIR = '/data/ambianic'
 
 config_manager = ConfigurationManager()
 server_instance = None
