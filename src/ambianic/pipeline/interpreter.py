@@ -42,12 +42,14 @@ def get_pipelines(pipelines_config, data_dir=None):
     pipelines = []
     if pipelines_config:
         for pname, pdef in pipelines_config.items():
-            log.info("loading %s pipeline configuration", pname)
+            log.debug("PROCESSING START: pipeline: %s", pname)
             pipeline_class = Pipeline if PIPELINE_CLASS is None else PIPELINE_CLASS
             pipe = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
+            log.debug("PROCESSING COMPLETE: pipeline: %s; pipe: %r", pname, pipe)
             pipelines.append(pipe)
     else:
         log.warning('No pipelines configured.')
+    log.debug("ALL PIPELINES: %r", pipelines)
     return pipelines
 
 
@@ -86,16 +88,20 @@ class PipelineServer(ManagedService):
         if config:
             pipelines_config = config.get('pipelines', None)
             if pipelines_config:
-                # get main data dir config and pass
-                # on to pipelines to use
                 data_dir = config.get('data_dir', None)
                 if not data_dir:
-                    data_dir = './data'
-                self._pipelines = get_pipelines(pipelines_config,
-                                                data_dir=data_dir)
-                for pp in self._pipelines:
-                    pj = ThreadedJob(pp)
-                    self._threaded_jobs.append(pj)
+                    log.error('NO "data_dir" in configuration')
+                else:
+                    log.debug('READING pipelines: data: %s; config: %r',data_dir,pipelines_config)
+                    self._pipelines = get_pipelines(pipelines_config,data_dir=data_dir)
+                    log.debug('READ pipelines: result: %r',self._pipelines)
+                    for pp in self._pipelines:
+                        pj = ThreadedJob(pp)
+                        self._threaded_jobs.append(pj)
+            else:
+                log.warning('No "pipelines" in configuration')
+        else:
+            log.error('NO CONFIGURATION FOUND')
 
     def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
         log.error('Pipeline %s in terminal condition. '
@@ -156,27 +162,26 @@ class PipelineServer(ManagedService):
     def heal_pipeline_job(self, threaded_job=None):
         assert threaded_job
         pipeline = threaded_job.job
-        log.debug('pipline %s healing request...', pipeline.name)
+        log.debug('HEALING: pipeline: %r', self)
         threaded_job.heal()
-        log.debug('pipeline %s healing request completed.', pipeline.name)
+        log.debug('HEALED: pipeline: %r', self)
 
     def start(self):
         # Start pipeline interpreter threads
-        log.info('pipeline jobs starting...')
+        log.debug('STARTING: pipeline: %r', self)
         for tj in self._threaded_jobs:
             tj.start()
-        log.info('pipeline jobs started')
+        log.debug('STARTED: pipeline: %r', self)
 
     def stop(self):
-        log.info('pipeline jobs stopping...')
+        log.debug('STOPPING: pipeline: %r', self)
         # Signal pipeline interpreter threads to close
         for tj in self._threaded_jobs:
             tj.stop()
         # Wait for the pipeline interpreter threads to close...
         for tj in self._threaded_jobs:
             tj.join()
-        log.info('pipeline jobs stopped.')
-
+        log.debug('STOPPED: pipeline: %r', self)
 
 class HealingThread(threading.Thread):
     """ A thread focused on healing a broken pipeline. """
@@ -246,52 +251,42 @@ class Pipeline(ManagedService):
 
     def load_elements(self):
         """load pipeline elements based on configuration"""
-        self._pipe_elements = []
+        log.debug('LOAD ELEMENTS: config: %r', self.config)
 
-        log.debug('Pipeline first element: %r', self.config[0])
         source_element_key = [*self.config[0]][0]
-        log.debug('First element key: %s', source_element_key)
-
         assert source_element_key == 'source', "Pipeline config must begin with a 'source' element instead of {}" .format(source_element_key)
 
-        log.debug('CHECKPOINT: First element is source')
-
+        self._pipe_elements = []
         for _element_config in self.config:
 
             # copy the dictionary to not modify the configuration reference
             if isinstance(_element_config, (config_mgm.ConfigList, config_mgm.ConfigDict)):
-                log.debug('Copying values: %s',element_def)
                 element_def = _element_config.to_values()
             else:
                 # if it is a dict (eg. in tests)
-                log.debug('Deep copying values: %s',element_def)
                 element_def = copy.deepcopy(_element_config)
-
-            log.info('Pipeline %s loading next element: %s', self.name, element_def)
 
             is_valid = self.parse_source_config(element_def)
             if not is_valid:
-                log.warning('Not source: Pipeline: %s; elementL %s',self.name, element_def)
+                log.warning('INVALID source; pipeline: %s; element: %s',self.name,element_def)
                 self._pipe_elements = []
                 break
             else:
-                log.debug('Valid source %s',element_def)
+                log.debug('VALID source; pipeline: %s; element: %s',self.name,element_def)
 
             is_valid = self.parse_ai_model_config(element_def)
             if not is_valid:
-                log.warning('Not ai_model: Pipeline: %s; elementL %s',self.name, element_def)
+                log.warning('INVALID ai_model; pipeline: %s; element: %s',self.name,element_def)
                 self._pipe_elements = []
                 break
             else:
-                log.debug('Valid ai_model %s',element_def)
-
-            log.debug('CHECKPOINT: Pipeline: %s; element: %s',self.name,element_def)
+                log.debug('VALID ai_model; pipeline: %s; element: %s',self.name,element_def)
 
             element_name = [*element_def][0]
-            assert element_name
-            element_config = element_def[element_name]
 
-            log.debug('CHECKPOINT: Pipeline: %s; element config: %s',self.name,element_config)
+            assert element_name
+
+            element_config = element_def[element_name]
 
             # if dealing with a static reference, pass the whole object
             # eg. { [source]: [source-name] }
@@ -302,75 +297,58 @@ class Pipeline(ManagedService):
                 log.debug('Element config: %s',element_config)
 
             element_class = self.PIPELINE_OPS.get(element_name, None)
-
-            log.debug('CHECKPOINT: Pipeline: %s; element name: %s; class: %s',self.name,element_name, element_class)
-
             if element_class:
-                log.info('Pipeline %s adding element name %s '
-                         'with class %s and config %s',
-                         self.name,
-                         element_name,
-                         element_class,
-                         element_config)
-                element = element_class(
-                    **element_config,
-                    element_name=element_name,
-                    context=self._context,
-                    event_log=self._event_log
-                    )
+                log.debug('ELEMENT SUCCESS: pipeline %s; name: %s; class: %s',self.name,element_name,element_class)
+                element = element_class( **element_config, element_name=element_name, context=self._context, event_log=self._event_log)
                 self._pipe_elements.append(element)
             else:
-                log.warning('Pipe element failed %s', element_name)
+                log.warning('ELEMENT FAILED: pipeline: %s; name: %s; config: %r',self.name,element_name,element_config)
                 self._on_unknown_pipe_element(name=element_name)
 
     def parse_ai_model_config(self, element_def: dict):
         """parse AI model configuration"""
+        log.debug('AI MODEL: config: %r', element_def)
 
         # its one
         ai_element = None
         for element_name in element_def:
             # ai_model: accept just a source_id and take it from sources
             if "ai_model" in element_def[element_name]:
-                log.debug('AI model definition %s', element_name)
                 ai_element = element_def[element_name]
                 break
 
         if ai_element is None:
-            log.warning('No ai_element in element_def')
-            return True
+            log.warning('AI MODEL: not ai_model; config: %r', element_def)
+            return False
         else:
-            log.debug('AI element is not none')
+            log.debug('AI MODEL: config: %r', ai_element)
 
         ai_model_id = None
         if isinstance(ai_element["ai_model"], str):
             ai_model_id = ai_element["ai_model"]
-            log.debug('AI model id: %s', ai_model_id)
+            log.debug('AI MODEL: requested: %s', ai_model_id)
 
         if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
-            log.debug('AI model found')
             ai_model_id = ai_element["ai_model"]["ai_model_id"]
+            log.debug('AI MODEL: found: %s',ai_model_id)
 
         if ai_model_id is None:
-            log.warning('AI model not found')
-            return True
+            log.warning('AI MODEL: no model found')
+            return False
         else:
-            log.debug('AI model found: %s', ai_model_id)
+            log.debug('AI MODEL: found model: %s', ai_model_id)
 
         ai_model = config_manager.get_ai_model(ai_model_id)
         if ai_model is None:
-            log.warning(
-                "AI model id %s not found, cannot start pipeline %s",
-                ai_model_id,
-                self.name,
-            )
+            log.warning('AI MODEL: failed to configure; id: %s',ai_model_id)
             return False
         else:
-            log.debug("Pipeline %s; AI model configured: %s", self.name, ai_model_id)
+            log.debug('AI MODEL: configured: id: %s; config: %r',ai_model_id,ai_model)
 
         # merge the model config but keep the pipe element specific one
         for key, val in ai_model.to_values().items():
             if key not in ai_element:
-                log.debug('Adding ai_element')
+                log.debug('AI MODEL: adding; model: %s; config: %r',key,val)
                 ai_element[key] = val
 
         # track the id
@@ -380,35 +358,38 @@ class Pipeline(ManagedService):
 
     def parse_source_config(self, element_def: dict):
         """parse source configuration"""
+
+        log.debug('SOURCE: config: %r', element_def)
+
         # source: accept just a source_id and take it from sources
         if "source" not in element_def:
-            log.warning('Not a source')
-            return True
+            log.warning('SOURCE: not source; config: %r', element_def)
+            return False
 
         source_id = None
         if isinstance(element_def["source"], str):
-            log.debug('Source is string')
             source_id = element_def["source"]
+
         if "source_id" in element_def["source"]:
-            log.debug('Source is found')
             source_id = element_def["source"]["source_id"]
 
         if source_id is None:
-            log.warning('No source found')
-            return True
+            log.warning('SOURCE: no "source_id" defined')
+            return False
+        else:
+            log.debug('SOURCE: found: id: %s',source_id)
 
         # track the source_id
         source = config_manager.get_source(source_id)
         if source is None:
-            log.warning(
-                "Source id %s not found, cannot start pipeline %s",
-                source_id,
-                self.name,
-            )
+            log.warning('SOURCE: failed to configure; id: %s',source_id)
             return False
+        else:
+            log.debug('SOURCE: configured; id: %s; config: %r',source_id,source)
 
         element_def["source"] = source.to_values()
         element_def["source"]["source_id"] = source_id
+        log.debug('SOURCE: added; id: %s',source_id)
 
         return True
 
@@ -490,26 +471,32 @@ class Pipeline(ManagedService):
         or until a stop() signal is received.
         """
         if len(self._pipe_elements) == 0:
+            log.debug('PIPELINE: no pipelines; name: %s; attempting reload...',self.name)
             self.load_elements()
 
         self.watch_config()
-        log.info("Starting %s main pipeline loop", self.__class__.__name__)
-        if not self._pipe_elements:
+
+        if len(self._pipe_elements) == 0:
+            log.warning('PIPELINE: no pipeline elements; name: %s; class: %s', self.name,self.__class__.__name__)
             return self._on_start_no_elements()
 
         self._heartbeat()
+
         # connect pipeline elements as defined by user
         for i in range(1, len(self._pipe_elements)):
             e = self._pipe_elements[i-1]
             assert isinstance(e, PipeElement)
             e_next = self._pipe_elements[i]
             e.connect_to_next_element(e_next)
+
+        # add healthcheck as last element in every pipeline
         last_element = self._pipe_elements[len(self._pipe_elements)-1]
-        hc = HealthChecker(health_status_callback=self._heartbeat,
-                           element_name='health_check')
+        hc = HealthChecker(health_status_callback=self._heartbeat, element_name='health_check')
         last_element.connect_to_next_element(hc)
+
+        log.debug('PIPELINE: starting pipeline; name: %s; class: %s',self.name,self.__class__.__name__)
         self._pipe_elements[0].start()
-        log.info("Started %s", self.__class__.__name__)
+        log.debug('PIPELINE: started pipeline; name: %s; class: %s',self.name,self.__class__.__name__)
 
     def healthcheck(self):
         """Return health vitals status report.

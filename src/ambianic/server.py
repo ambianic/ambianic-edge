@@ -19,11 +19,7 @@ AI_MODELS_DIR = "ai_models"
 DEFAULT_LOG_LEVEL = logging.INFO
 MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
-ROOT_SERVERS = {
-    'pipelines': PipelineServer,
-    'web': FlaskServer,
-}
-
+ROOT_SERVERS = { 'pipelines': PipelineServer, 'web': FlaskServer } 
 
 def _configure_logging(config=None):
     default_log_level = DEFAULT_LOG_LEVEL
@@ -77,8 +73,7 @@ def _configure_logging(config=None):
     root_logger.setLevel(numeric_level)
     effective_level = log.getEffectiveLevel()
     assert numeric_level == effective_level
-    log.info('Logging configured with level %s',
-             logging.getLevelName(effective_level))
+    log.debug('Logging configured with level %s', logging.getLevelName(effective_level))
     if effective_level <= logging.DEBUG:
         log.debug('Configuration yaml dump:')
         log.debug(config)
@@ -90,15 +85,19 @@ def _configure(env_work_dir=None):
     :returns config dict if configuration was loaded without issues.
             None or a specific exception otherwise.
     """
+    log.debug('CONFIGURATION START')
+
     assert env_work_dir, 'Working directory required.'
-    assert os.path.exists(env_work_dir), \
-        'working directory invalid: {}'.format(env_work_dir)
+    assert os.path.exists(env_work_dir), 'working directory invalid: {}'.format(env_work_dir)
 
     config_manager.stop()
 
     config = config_manager.load(env_work_dir)
     if config is None:
+        log.warning('NO CONFIGURATION')
         return None
+    else:
+        log.info('CONFIGURATION: %r', config)
 
     def logging_config_handler(event: ConfigChangedEvent):
         # configure logging
@@ -199,35 +198,43 @@ class AmbianicServer:
     def start(self):
         """Programmatic start of the main service."""
         print('Configuring Ambianic server...')
+
         config = _configure(self._env_work_dir)
+
         if not config:
-            log.info('No startup configuration provided. '
-                     'Proceeding with defaults.')
+            log.error('No startup configuration provided')
+            return False
         else:
-            config.add_callback(self.on_config_change)
+            log.debug('Configuration found: %r', config)
+
+        config.add_callback(self.on_config_change)
 
         log.info('Starting Ambianic server...')
 
         # Register the signal handlers
         servers = {}
+
         # Start the job threads
         try:
             for s_name, s_class in ROOT_SERVERS.items():
                 srv = s_class(config=config)
-                log.debug('Service starting')
+                log.debug('Service starting; service: %s; class: %r',s_name,s_class)
                 srv.start()
-                log.debug('Service started')
+                log.debug('Service started; service: %s; class: %s',s_name,s_class)
                 servers[s_name] = srv
 
-            self._latest_heartbeat = time.monotonic()
+            if not servers is None:
+                self._latest_heartbeat = time.monotonic()
 
-            self._servers = servers
-            # Keep the main thread running, otherwise signals are ignored.
-            while True:
-                time.sleep(0.5)
-                self._healthcheck(servers)
-                self._heartbeat()
-                log.debug('Watchdog')
+                self._servers = servers
+                # Keep the main thread running, otherwise signals are ignored.
+                while True:
+                    time.sleep(0.5)
+                    self._healthcheck(servers)
+                    self._heartbeat()
+                    log.debug('Watchdog')
+            else:
+                log.error('No servers started')
 
         except ServiceExit:
             log.info('Service exit requested.')
