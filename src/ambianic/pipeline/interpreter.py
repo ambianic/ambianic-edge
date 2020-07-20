@@ -258,24 +258,30 @@ class Pipeline(ManagedService):
 
             # copy the dictionary to not modify the configuration reference
             if isinstance(_element_config, (config_mgm.ConfigList, config_mgm.ConfigDict)):
+                log.debug('Copying values: %s',element_def)
                 element_def = _element_config.to_values()
             else:
                 # if it is a dict (eg. in tests)
+                log.debug('Deep copying values: %s',element_def)
                 element_def = copy.deepcopy(_element_config)
 
             log.info('Pipeline %s loading next element: %s', self.name, element_def)
 
             is_valid = self.parse_source_config(element_def)
             if not is_valid:
-                log.warning('FAILED: Pipeline: %s; source: %s',self.name, element_def)
+                log.warning('Not source: Pipeline: %s; elementL %s',self.name, element_def)
                 self._pipe_elements = []
                 break
+            else:
+                log.debug('Valid source %s',element_def)
 
             is_valid = self.parse_ai_model_config(element_def)
             if not is_valid:
-                log.warning('FAILED: Pipeline: %s; ai_model: %s',self.name, element_def)
+                log.warning('Not ai_model: Pipeline: %s; elementL %s',self.name, element_def)
                 self._pipe_elements = []
                 break
+            else:
+                log.debug('Valid ai_model %s',element_def)
 
             log.debug('CHECKPOINT: Pipeline: %s; element: %s',self.name,element_def)
 
@@ -283,13 +289,19 @@ class Pipeline(ManagedService):
             assert element_name
             element_config = element_def[element_name]
 
+            log.debug('CHECKPOINT: Pipeline: %s; element config: %s',self.name,element_config)
+
             # if dealing with a static reference, pass the whole object
             # eg. { [source]: [source-name] }
             if isinstance(element_config, str):
-                log.debug('element is string')
+                log.debug('Element config is string')
                 element_config = {element_name: element_config}
+            else:
+                log.debug('Element config: %s',element_config)
 
             element_class = self.PIPELINE_OPS.get(element_name, None)
+
+            log.debug('CHECKPOINT: Pipeline: %s; element name: %s; class: %s',self.name,element_name, element_class)
 
             if element_class:
                 log.info('Pipeline %s adding element name %s '
