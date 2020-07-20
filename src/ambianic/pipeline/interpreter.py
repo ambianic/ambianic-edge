@@ -266,26 +266,25 @@ class Pipeline(ManagedService):
                 # if it is a dict (eg. in tests)
                 element_def = copy.deepcopy(_element_config)
 
-            is_valid = self.parse_source_config(element_def)
-            if not is_valid:
-                log.warning('INVALID source; pipeline: %s; element: %s',self.name,element_def)
-                self._pipe_elements = []
-                break
-            else:
-                log.debug('VALID source; pipeline: %s; element: %s',self.name,element_def)
+            # source: accept just a source_id and take it from sources
+            if "source" in element_def:
+                is_valid = self.parse_source_config(element_def)
+                if not is_valid:
+                    log.warning('INVALID source; pipeline: %s; element: %s',self.name,element_def)
+                    self._pipe_elements = []
+                    break
+                else:
+                    log.debug('VALID source; pipeline: %s; element: %s',self.name,element_def)
 
-            is_valid = self.parse_ai_model_config(element_def)
-            if not is_valid:
-                log.warning('INVALID ai_model; pipeline: %s; element: %s',self.name,element_def)
-                self._pipe_elements = []
-                break
-            else:
-                log.debug('VALID ai_model; pipeline: %s; element: %s',self.name,element_def)
+            if "ai_model" in element_def:
+                is_valid = self.parse_ai_model_config(element_def)
+                if not is_valid:
+                    log.warning('INVALID ai_model; pipeline: %s; element: %s',self.name,element_def)
+                else:
+                    log.debug('VALID ai_model; pipeline: %s; element: %s',self.name,element_def)
 
             element_name = [*element_def][0]
-
             assert element_name
-
             element_config = element_def[element_name]
 
             # if dealing with a static reference, pass the whole object
@@ -307,7 +306,7 @@ class Pipeline(ManagedService):
 
     def parse_ai_model_config(self, element_def: dict):
         """parse AI model configuration"""
-        log.debug('AI MODEL: config: %r', element_def)
+        log.debug('AI MODEL: parsing "ai_model" configuration: %r', element_def)
 
         # its one
         ai_element = None
@@ -315,22 +314,23 @@ class Pipeline(ManagedService):
             # ai_model: accept just a source_id and take it from sources
             if "ai_model" in element_def[element_name]:
                 ai_element = element_def[element_name]
+                log.debug('AI MODEL: ai_element: %r', ai_element)
                 break
 
         if ai_element is None:
-            log.warning('AI MODEL: not ai_model; config: %r', element_def)
+            log.warning('AI MODEL: no "ai_model" defined', element_def)
             return False
         else:
-            log.debug('AI MODEL: config: %r', ai_element)
+            log.debug('AI MODEL: name: %s; config: %r', element_name, ai_element)
 
         ai_model_id = None
         if isinstance(ai_element["ai_model"], str):
             ai_model_id = ai_element["ai_model"]
-            log.debug('AI MODEL: requested: %s', ai_model_id)
+            log.debug('AI MODEL: named: %s', ai_model_id)
 
         if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
             ai_model_id = ai_element["ai_model"]["ai_model_id"]
-            log.debug('AI MODEL: found: %s',ai_model_id)
+            log.debug('AI MODEL: existing: %s',ai_model_id)
 
         if ai_model_id is None:
             log.warning('AI MODEL: no model found')
