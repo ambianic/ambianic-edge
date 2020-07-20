@@ -248,11 +248,13 @@ class Pipeline(ManagedService):
         """load pipeline elements based on configuration"""
         self._pipe_elements = []
 
-        log.debug('Pipeline starts with element %r', self.config[0])
+        log.debug('Pipeline first element: %r', self.config[0])
         source_element_key = [*self.config[0]][0]
-        assert source_element_key == 'source', \
-            "Pipeline config must begin with a 'source' element instead of {}"\
-            .format(source_element_key)
+        log.debug('First element key: %s', source_element_key)
+
+        assert source_element_key == 'source', "Pipeline config must begin with a 'source' element instead of {}" .format(source_element_key)
+
+        log.debug('CHECKPOINT: First element is source')
 
         for _element_config in self.config:
 
