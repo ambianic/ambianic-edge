@@ -297,8 +297,9 @@ class Pipeline(ManagedService):
 
             element_class = self.PIPELINE_OPS.get(element_name, None)
             if element_class:
-                log.debug('ELEMENT SUCCESS: pipeline %s; name: %s; class: %s',self.name,element_name,element_class)
+                log.debug('ELEMENT CLASS: pipeline %s; name: %s; class: %s',self.name,element_name,element_class)
                 element = element_class( **element_config, element_name=element_name, context=self._context, event_log=self._event_log)
+                log.debug('ELEMENT: pipeline %s; name: %s; class: %s; element: %r',self.name,element_name,element_class,element)
                 self._pipe_elements.append(element)
             else:
                 log.warning('ELEMENT FAILED: pipeline: %s; name: %s; config: %r',self.name,element_name,element_config)
