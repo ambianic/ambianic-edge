@@ -250,7 +250,7 @@ def create_app(data_dir=None):
 
     @app.route('/api/data/<path:path>')
     def data_file(path):
-        data_path = Path('./data').resolve()
+        data_path = Path('./').resolve()
         log.info('Serving static data file from: %r', data_path / path)
         return flask.send_from_directory(data_path, path)
 
