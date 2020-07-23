@@ -48,25 +48,24 @@ def get(source_id):
     if not isinstance(source_id, str):
         raise BadRequest("source id should be a string")
 
-    config = config_manager.get()
-    if source_id not in config["sources"].keys():
-        raise NotFound("source id not found")
+    source = config_manager.get_source(source_id)
+    
+    if source is None:
+        raise NotFound("source not found")
 
-    return config["sources"][source_id]
+    return source.to_values()
 
 
 def remove(source_id):
     """Remove source by id"""
     log.info("Removing source_id=%s", source_id)
     get(source_id)
-    del config_manager.get()["sources"][source_id]
+    del config_manager.get_sources()[source_id]
 
 
 def save(source_id, source):
     """Save source configuration information"""
     log.info("Saving source_id=%s", source_id)
     source = validate(source_id, source)
-    config = config_manager.get()
-
-    config["sources"][source["id"]] = source
-    return config["sources"][source["id"]]
+    config_manager.get_sources().set(source["id"], source)
+    return config_manager.get_source(source["id"]).to_values()
