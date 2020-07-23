@@ -155,8 +155,8 @@ class EventHandler:
             )
 
             # print log only whene at the root items
-            if not self.get_context():
-                log.debug("Configuration changed: %s", changed_event)
+            # if not self.get_context():
+            #     log.debug("Configuration changed: %s", changed_event)
 
             try:
                 callback(changed_event)
@@ -330,8 +330,7 @@ class ConfigDict(MutableMapping, EventHandler):
             # handle dict
             prev_val = self.get(key, None)
             if prev_val is None:
-                self.set(key, ConfigDict(
-                    value, context=EventContext(key, self)))
+                self.set(key, ConfigDict(value, context=EventContext(key, self)))
             else:
                 prev_val.sync(value)
 
@@ -377,6 +376,11 @@ class ConfigDict(MutableMapping, EventHandler):
         if key in self.__data.keys():
             if str(self.__data[key]) != str(value):
                 has_changed = True
+        else:
+            # new key
+            self.changed(key, "add", value)
+
+        value = Config(value, context=EventContext(key, self)) if not is_value_type(value) else value
 
         self.__data[key] = value
 
@@ -397,10 +401,10 @@ class ConfigDict(MutableMapping, EventHandler):
         return values
 
 
-def Config(values: Any) -> Union[ConfigDict, ConfigList]:
+def Config(values: Any, context: EventContext = None) -> Union[ConfigDict, ConfigList]:
     if isinstance(values, (ConfigList, list)):
-        return ConfigList(values)
-    return ConfigDict(values)
+        return ConfigList(values, context)
+    return ConfigDict(values, context)
 
 
 def is_value_type(value: Any) -> bool:
