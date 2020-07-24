@@ -4,7 +4,7 @@ from ambianic.config_mgm import Config
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
 from ambianic.pipeline.interpreter import \
-    PipelineServer, Pipeline, HealingThread
+    PipelineServer, Pipeline, HealingThread, PipelineServerJob
 import logging
 import time
 import threading
@@ -64,7 +64,7 @@ def _get_config(source_class=None):
 
 def test_pipeline_server_init():
     conf = _get_config(_TestSourceElement)
-    server = PipelineServer(conf)
+    server = PipelineServerJob(conf)
     assert len(server._pipelines) == 1
     assert len(server._threaded_jobs) == 1
 
@@ -127,7 +127,7 @@ class _TestSourceElement2(pipeline.PipeElement):
 
 def test_pipeline_server_start_stop():
     conf = _get_config(_TestSourceElement2)
-    server = PipelineServer(conf)
+    server = PipelineServerJob(conf)
     assert len(server._pipelines) == 1
     assert len(server._threaded_jobs) == 1
     source_pe = server._pipelines[0]._pipe_elements[0]
@@ -179,7 +179,7 @@ class _TestSourceElement3(pipeline.PipeElement):
 
 def test_pipeline_server_heal():
     conf = _get_config(_TestSourceElement3)
-    server = PipelineServer(conf)
+    server = PipelineServerJob(conf)
     assert len(server._pipelines) == 1
     assert len(server._threaded_jobs) == 1
     source_pe = server._pipelines[0]._pipe_elements[0]
@@ -197,7 +197,7 @@ def test_pipeline_server_heal():
     assert not server._threaded_jobs[0].is_alive()
 
 
-class _TestPipelineServer2(PipelineServer):
+class _TestPipelineServer2(PipelineServerJob):
 
     def __init__(self, config=None):
         super().__init__(config=config)
@@ -328,7 +328,7 @@ def test_healing_thread():
     assert _on_finished_called
 
 
-class _TestPipelineServer5(PipelineServer):
+class _TestPipelineServer5(PipelineServerJob):
 
     _test_on_threaded_job_ended_called = False
 

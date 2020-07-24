@@ -155,8 +155,8 @@ class EventHandler:
             )
 
             # print log only whene at the root items
-            # if not self.get_context():
-            #     log.debug("Configuration changed: %s", changed_event)
+            if not self.get_context():
+                log.debug("Configuration changed: %s", changed_event)
 
             try:
                 callback(changed_event)

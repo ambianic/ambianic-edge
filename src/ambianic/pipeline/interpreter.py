@@ -144,6 +144,7 @@ class PipelineServerJob(ManagedService):
         """
         self._threaded_jobs = []
         self._pipelines = []
+        self._config = None
         self.reset(config)
 
 
