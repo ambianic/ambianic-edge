@@ -185,6 +185,12 @@ class AmbianicServer:
 
         root = event.get_root()
 
+        # track changes on root elements
+        if len(event.get_paths()) == 1 and (event.get_paths()[0] in ["sources", "ai_models", "pipelines"]):
+            log.info("config.%s changed, restarting pipelines",
+                     event.get_paths()[0])
+            self._servers['pipelines'].trigger_event(event)
+
         if not root or not root.get_context():
             return
 
