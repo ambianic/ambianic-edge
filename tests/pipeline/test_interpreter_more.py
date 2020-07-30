@@ -365,4 +365,3 @@ def test_on_pipeline_job_ended():
     server.healthcheck()
     assert source_pe.state == pipeline.PIPE_STATE_STOPPED
     assert not server._threaded_jobs
-

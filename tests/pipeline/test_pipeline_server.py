@@ -80,6 +80,3 @@ def test_pipeline_server_config_change():
     config_manager.get_sources().set("test", source_cfg)
     # the callback will restart the process    
     assert srv.triggered
-
-
-
