@@ -147,12 +147,11 @@ class PipelineServerJob(ManagedService):
         self._config = None
         self.reset(config)
 
-
     def reset(self, config=None):
         self._threaded_jobs = []
         self._pipelines = []
         if config is not None:
-           self._config = config
+            self._config = config
         if self._config:
             pipelines_config = self._config.get('pipelines', None)
             if pipelines_config:

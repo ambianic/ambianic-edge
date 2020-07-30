@@ -330,7 +330,8 @@ class ConfigDict(MutableMapping, EventHandler):
             # handle dict
             prev_val = self.get(key, None)
             if prev_val is None:
-                self.set(key, ConfigDict(value, context=EventContext(key, self)))
+                self.set(key, ConfigDict(value, 
+                    context=EventContext(key, self)))
             else:
                 prev_val.sync(value)
 
@@ -380,7 +381,8 @@ class ConfigDict(MutableMapping, EventHandler):
             # new key
             self.changed(key, "add", value)
 
-        value = Config(value, context=EventContext(key, self)) if not is_value_type(value) else value
+        if not is_value_type(value):
+            value = Config(value, context=EventContext(key, self))
 
         self.__data[key] = value
 
