@@ -134,6 +134,8 @@ class ConfigurationManager:
         config = self.get()
         if config is None:
             return None
+        if config.get("sources", None) is None:
+            config.set("sources", {})
         return config.get("sources", None)
 
     def get_source(self, source: str) -> Config:
@@ -148,6 +150,8 @@ class ConfigurationManager:
         config = self.get()
         if config is None:
             return None
+        if config.get("ai_models", None) is None:
+            config.set("ai_models", {})
         return config.get("ai_models", None)
 
     def get_ai_model(self, ai_model: str) -> Config:

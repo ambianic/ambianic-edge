@@ -118,6 +118,47 @@ def test_list_eq():
     assert cfg != test3
 
 
+def test_list_ops():
+
+    test1 = [
+        {"v": ["a", "b"]},
+        {"v": ["c", "d"]},
+    ]
+    cfg = config_diff.Config(test1)
+
+    assert isinstance(cfg, config_diff.ConfigList)
+    assert cfg[1] == test1[1]
+
+    cfg.append({ "v": ["e", "f"] })
+    
+    assert cfg[2]["v"][0] == "e"
+
+def test_dict_ops():
+
+    test1 = {
+        "obj": {}, 
+        "num": 1
+    }
+    cfg = config_diff.Config(test1)
+
+    assert isinstance(cfg, config_diff.ConfigDict)
+    assert cfg == test1
+
+    cfg["obj"]["add"] = True
+    cfg["obj"]["remove"] = False
+    del cfg["obj"]["remove"]
+    del cfg["obj"]["add"]
+
+    cfg["num"] += 1
+    cfg["num"] -=1
+
+    assert cfg == test1
+
+
+
+
+
+
 def test_embed_list_diff():
 
     test1 = {
