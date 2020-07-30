@@ -147,7 +147,7 @@ def test_pipeline_server_start_stop():
 
 def test_pipeline_server_config_change():
     conf = _get_config(_TestSourceElement2)
-    server = PipelineServer(conf)
+    PipelineServer(conf)
 
     del conf['pipelines']["pipeline_one"][0]
 

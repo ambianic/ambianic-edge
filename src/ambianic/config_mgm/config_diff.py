@@ -104,6 +104,9 @@ class EventHandler:
         self.__on_change = []
         self.__initializing = False
 
+    def get_callbacks(self) -> []:
+        return self.__on_change
+
     def add_callback(self, on_change: EventCallback):
         """Add a callback called when a value changes"""
         self.__on_change.append(on_change)

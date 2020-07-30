@@ -52,7 +52,7 @@ ai_models:
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
   front_door_watch:
-    - source: 89a746fe1bf5c0d57bfae4c8205b2183
+    - source: recorded_cam_feed
 #    - source: front_door_cam
     - detect_objects: # run ai inference on the input data
        ai_model: image_detection
