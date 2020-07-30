@@ -40,5 +40,6 @@ def test_callbacks():
     assert watcher.event is not None
 
     cfg.remove_callback(watcher.on_callback)
+    cfg.remove_callback(lambda ev: print(ev))
 
     assert len(cfg.get_callbacks()) == 0
