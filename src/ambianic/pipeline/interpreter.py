@@ -86,15 +86,13 @@ class PipelineServer(ManagedService):
         self._restarting.clear()
 
     def start(self, **kwargs):
-        log.info('Flask server job starting...')
+        log.info('PipelineServer server job starting...')
         f = PipelineServerJob(self.config)
         self.pipeline_server_job = ThreadedJob(f)
         self.pipeline_server_job.start()
         log.info('Pipeline server job started')
 
     def healthcheck(self):
-        # Note: Implement actual health check for Flask
-        # See if the /healthcheck URL returns a 200 quickly
         return time.monotonic(), True
 
     def heal(self):
