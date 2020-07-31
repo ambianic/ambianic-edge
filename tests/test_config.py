@@ -6,7 +6,7 @@ from time import sleep
 import ambianic
 from ambianic.server import AmbianicServer
 from ambianic.config_mgm import fileutils
-from ambianic import server, config_manager
+from ambianic import server, config_manager, logger
 import yaml
 import pytest
 
@@ -55,7 +55,7 @@ def test_log_config_with_file():
     log_config = {
         'file': log_path,
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     handlers = logging.getLogger().handlers
     log_fn = None
     for h in handlers:
@@ -69,7 +69,7 @@ def test_log_config_with_file():
 def test_log_config_without_file():
     log_config = {
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     handlers = logging.getLogger().handlers
     for h in handlers:
         assert not isinstance(h, logging.handlers.RotatingFileHandler)
@@ -79,7 +79,7 @@ def test_log_config_with_debug_level():
     log_config = {
         'level': 'DEBUG'
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     root_logger = logging.getLogger()
     effective_level = root_logger.getEffectiveLevel()
     lname = logging.getLevelName(effective_level)
@@ -90,7 +90,7 @@ def test_log_config_with_warning_level():
     log_config = {
         'level': 'WARNING'
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     root_logger = logging.getLogger()
     effective_level = root_logger.getEffectiveLevel()
     lname = logging.getLevelName(effective_level)
@@ -99,30 +99,30 @@ def test_log_config_with_warning_level():
 
 def test_log_config_without_level():
     log_config = {}
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     root_logger = logging.getLogger()
     effective_level = root_logger.getEffectiveLevel()
-    assert effective_level == server.DEFAULT_LOG_LEVEL
+    assert effective_level == logger.DEFAULT_FILE_LOG_LEVEL
 
 
 def test_log_config_bad_level1():
     log_config = {
         'level': '_COOCOO_'
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     root_logger = logging.getLogger()
     effective_level = root_logger.getEffectiveLevel()
-    assert effective_level == server.DEFAULT_LOG_LEVEL
+    assert effective_level == logger.DEFAULT_FILE_LOG_LEVEL
 
 
 def test_log_config_bad_level2():
     log_config = {
         'level': 2.56
     }
-    server._configure_logging(config=log_config)
+    logger.configure(config=log_config)
     root_logger = logging.getLogger()
     effective_level = root_logger.getEffectiveLevel()
-    assert effective_level == server.DEFAULT_LOG_LEVEL
+    assert effective_level == logger.DEFAULT_FILE_LOG_LEVEL
 
 
 def test_config_with_secrets():
