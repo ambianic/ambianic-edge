@@ -32,10 +32,11 @@ def _get_log_level(log_level, default_log_level):
 
     return numeric_level, fmt
 
+
 def configure(config=None):
     if config is None:
         config = {}
-    
+
     log_level = config.get("level", None)
 
     file_log_level = config.get("file", log_level)

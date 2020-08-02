@@ -236,4 +236,3 @@ def test_to_values():
     cfg = config_diff.Config(val)
 
     assert val == cfg.to_values()
-    
