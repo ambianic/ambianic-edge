@@ -24,7 +24,7 @@ sources:
   #   type: video, audio, or auto
   #   type: video
   #   live: true
-  
+
   # local video device integration example
   webcam:
     uri: /dev/video0
