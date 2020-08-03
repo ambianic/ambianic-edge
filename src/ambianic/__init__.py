@@ -4,7 +4,7 @@ from ambianic.config_mgm import ConfigurationManager
 
 DEFAULT_WORK_DIR = '/workspace'
 
-config_manager = ConfigurationManager()
+config_manager = ConfigurationManager(config={})
 server_instance = None
 
 

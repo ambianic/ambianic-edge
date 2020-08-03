@@ -9,80 +9,18 @@ from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from ambianic.config_mgm import ConfigChangedEvent
-from ambianic import config_manager
+from ambianic import config_manager, logger
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
 
-
 AI_MODELS_DIR = "ai_models"
-DEFAULT_LOG_LEVEL = logging.INFO
 MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     'pipelines': PipelineServer,
     'web': FlaskServer,
 }
-
-
-def _configure_logging(config=None):
-    default_log_level = DEFAULT_LOG_LEVEL
-    if config is None:
-        config = {}
-    log_level = config.get("level", None)
-    numeric_level = default_log_level
-    if log_level:
-        try:
-            numeric_level = getattr(logging, log_level.upper(),
-                                    DEFAULT_LOG_LEVEL)
-        except AttributeError as e:
-            log.warning("Invalid log level: %s . Error: %s", log_level, e)
-            log.warning('Defaulting log level to %s', default_log_level)
-    fmt = None
-    if numeric_level <= logging.INFO:
-        format_cfg = '%(asctime)s %(levelname)-4s ' \
-            '%(pathname)s.%(funcName)s(%(lineno)d): %(message)s'
-        datefmt_cfg = '%Y-%m-%d %H:%M:%S'
-        fmt = logging.Formatter(fmt=format_cfg,
-                                datefmt=datefmt_cfg, style='%')
-    else:
-        fmt = logging.Formatter()
-    root_logger = logging.getLogger()
-    # remove any other handlers that may be assigned previously
-    # and could cause unexpected log collisions
-    root_logger.handlers = []
-    # add a console handler that only shows errors and warnings
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
-    # add formatter to ch
-    ch.setFormatter(fmt)
-    # add ch to logger
-    root_logger.addHandler(ch)
-    # add a file handler if configured
-    log_filename = config.get('file', None)
-    if log_filename:
-        log_directory = os.path.dirname(log_filename)
-        with pathlib.Path(log_directory) as log_dir:
-            log_dir.mkdir(parents=True, exist_ok=True)
-            print("Log messages directed to {}".format(log_filename))
-        handler = logging.handlers.RotatingFileHandler(
-            log_filename,
-            # each log file will be up to 10MB in size
-            maxBytes=100*1024*1024,
-            # 20 backup files will be kept. Older will be erased.
-            backupCount=20
-        )
-        handler.setFormatter(fmt)
-        root_logger.addHandler(handler)
-    root_logger.setLevel(numeric_level)
-    effective_level = log.getEffectiveLevel()
-    assert numeric_level == effective_level
-    log.info('Logging configured with level %s',
-             logging.getLevelName(effective_level))
-    if effective_level <= logging.DEBUG:
-        log.debug('Configuration yaml dump:')
-        log.debug(config)
-
 
 def _configure(env_work_dir=None):
     """Load configuration settings.
@@ -103,7 +41,7 @@ def _configure(env_work_dir=None):
     def logging_config_handler(event: ConfigChangedEvent):
         # configure logging
         log.info("Reconfiguring logging")
-        _configure_logging(config.get("logging"))
+        logger.configure(config.get("logging"))
 
     def timeline_config_handler(event: ConfigChangedEvent):
         # configure pipeline timeline event log
