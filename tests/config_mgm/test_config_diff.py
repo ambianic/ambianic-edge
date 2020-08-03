@@ -154,11 +154,6 @@ def test_dict_ops():
 
     assert cfg == test1
 
-
-
-
-
-
 def test_embed_list_diff():
 
     test1 = {
@@ -233,3 +228,11 @@ def test_list_diff():
 
     assert len(watcher.event.get_paths()) == 3
     assert watcher.event.get_root() is not None
+
+
+def test_to_values():
+
+    val = {"name": "el3"}
+    cfg = config_diff.Config(val)
+
+    assert val == cfg.to_values()

@@ -16,7 +16,7 @@ class ConfigurationManager:
        notify via callbacks of changes
     """
 
-    def __init__(self, work_dir=None):
+    def __init__(self, work_dir=None, config=None):
 
         self.Config = Config
         self.CONFIG_FILE = "config.yaml"
@@ -27,6 +27,9 @@ class ConfigurationManager:
         self.watch_thread = None
         self.watch_event = threading.Event()
         self.handlers = []
+
+        if config is not None:
+            self.set(config)
 
         if work_dir is not None:
             self.load(work_dir)
@@ -206,10 +209,10 @@ class ConfigurationManager:
 
         """
         with self.lock:
-            if self.__config:
-                self.__config.sync(new_config)
-            else:
+            if self.__config is None:
                 self.__config = Config(new_config)
+            else:
+                self.__config.sync(new_config)
 
         for handler in self.handlers:
             handler(self.get())
