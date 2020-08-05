@@ -65,7 +65,7 @@ def test_no_pipelines():
     assert hb_flag.is_set()
     pps = srv._servers['pipelines']
     assert isinstance(pps, ambianic.pipeline.interpreter.PipelineServer)
-    assert not pps._pipelines
+    assert not pps.pipeline_server_job.job._pipelines
     _stop_mock_server(server=srv, thread=t)
 
 

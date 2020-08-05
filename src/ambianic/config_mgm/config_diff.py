@@ -104,6 +104,9 @@ class EventHandler:
         self.__on_change = []
         self.__initializing = False
 
+    def get_callbacks(self) -> []:
+        return self.__on_change
+
     def add_callback(self, on_change: EventCallback):
         """Add a callback called when a value changes"""
         self.__on_change.append(on_change)
@@ -330,8 +333,8 @@ class ConfigDict(MutableMapping, EventHandler):
             # handle dict
             prev_val = self.get(key, None)
             if prev_val is None:
-                self.set(key, ConfigDict(
-                    value, context=EventContext(key, self)))
+                self.set(key, ConfigDict(value, 
+                    context=EventContext(key, self)))
             else:
                 prev_val.sync(value)
 
@@ -377,6 +380,12 @@ class ConfigDict(MutableMapping, EventHandler):
         if key in self.__data.keys():
             if str(self.__data[key]) != str(value):
                 has_changed = True
+        else:
+            # new key
+            self.changed(key, "add", value)
+
+        if not is_value_type(value):
+            value = Config(value, context=EventContext(key, self))
 
         self.__data[key] = value
 
@@ -397,10 +406,10 @@ class ConfigDict(MutableMapping, EventHandler):
         return values
 
 
-def Config(values: Any) -> Union[ConfigDict, ConfigList]:
+def Config(values: Any, context: EventContext = None) -> Union[ConfigDict, ConfigList]:
     if isinstance(values, (ConfigList, list)):
-        return ConfigList(values)
-    return ConfigDict(values)
+        return ConfigList(values, context)
+    return ConfigDict(values, context)
 
 
 def is_value_type(value: Any) -> bool:

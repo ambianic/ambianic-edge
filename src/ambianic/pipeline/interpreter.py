@@ -52,6 +52,66 @@ def get_pipelines(pipelines_config, data_dir=None):
 
 
 class PipelineServer(ManagedService):
+    """ Thin wrapper around PipelineServer constructs.
+
+    Allows controlled start and stop of the web app server
+    in a separate process.
+
+    Parameters
+    ----------
+    config : yaml
+        reference to the yaml configuration file
+
+    """
+
+    def __init__(self, config):
+        self.config = config
+        self.pipeline_server_job = None
+        self._restarting = threading.Event()
+
+    def trigger_event(self, event: config_mgm.ConfigChangedEvent):
+        """Trigger change event on pipelines not running. 
+        Pipelines already runnig are already notified by rective configurations
+
+        """
+        if self.pipeline_server_job is None:
+            return
+
+        if self._restarting.is_set():
+            return
+
+        self._restarting.set()
+        self.stop()
+        self.start()
+        self._restarting.clear()
+
+    def start(self, **kwargs):
+        log.info('PipelineServer server job starting...')
+        f = PipelineServerJob(self.config)
+        self.pipeline_server_job = ThreadedJob(f)
+        self.pipeline_server_job.start()
+        log.info('Pipeline server job started')
+
+    def healthcheck(self):
+        return time.monotonic(), True
+
+    def heal(self):
+        """Heal the server.
+
+        TODO: Keep an eye for potential scenarios that cause this server to
+         become unresponsive.
+        """
+
+    def stop(self):
+        if self.pipeline_server_job:
+            log.info('Pipeline server job stopping...')
+            self.pipeline_server_job.stop()
+            self.pipeline_server_job.join()
+            self.pipeline_server_job = None
+            log.info('Pipeline server job stopped.')
+
+
+class PipelineServerJob(ManagedService):
     """Main pipeline interpreter class.
 
     Responsible for loading, running and overseeing the health
@@ -80,19 +140,25 @@ class PipelineServer(ManagedService):
                   ...
 
         """
-        self._config = config
         self._threaded_jobs = []
         self._pipelines = []
-        if config:
-            pipelines_config = config.get('pipelines', None)
+        self._config = None
+        self.reset(config)
+
+    def reset(self, config=None):
+        self._threaded_jobs = []
+        self._pipelines = []
+        if config is not None:
+            self._config = config
+        if self._config:
+            pipelines_config = self._config.get('pipelines', None)
             if pipelines_config:
                 # get main data dir config and pass
                 # on to pipelines to use
-                data_dir = config.get('data_dir', None)
+                data_dir = self._config.get('data_dir', None)
                 if not data_dir:
                     data_dir = './data'
-                self._pipelines = get_pipelines(pipelines_config,
-                                                data_dir=data_dir)
+                self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
                     self._threaded_jobs.append(pj)
@@ -161,7 +227,7 @@ class PipelineServer(ManagedService):
         log.debug('pipeline %s healing request completed.', pipeline.name)
 
     def start(self):
-        # Start pipeline interpreter threads
+        # Start pipeline interpreter threads        
         log.info('pipeline jobs starting...')
         for tj in self._threaded_jobs:
             tj.start()
@@ -377,55 +443,6 @@ class Pipeline(ManagedService):
 
         return True
 
-    def on_config_change(self, event: config_mgm.ConfigChangedEvent):
-        """Callback function invoked on pipeline configuration change"""
-
-        restart = False
-        paths = event.get_paths()
-        if len(paths) > 0:
-
-            if paths[0] == "sources":
-                source = self.config[0]
-                source_model = source["source"] if "source" in source else None
-                if source_model is None:
-                    source_model = source["source_id"] if "source_id" in source else None
-
-                if source_model and (
-                        event.get_name() == source_model
-                        or len(paths) > 1 and paths[1] == source_model
-                ):
-                    restart = True
-
-            if paths[0] == "pipelines" and (
-                    event.get_name() == self.name
-                    or (len(paths) > 1 and paths[1] == self.name)
-            ):
-                restart = True
-
-            if paths[0] == "ai_models":
-
-                i = 1
-                while i < len(self.config):
-                    model_type = self.config[i].keys()[0]
-                    ai_element = self.config[i][model_type]
-
-                    ai_model_id = ai_element["ai_model"] if "ai_model" in ai_element else None
-                    if ai_model_id is None:
-                        ai_model_id = ai_element["ai_model_id"] if "ai_model_id" in ai_element else None
-
-                    if (
-                        event.get_name() == ai_model_id
-                        or (len(paths) > 1 and paths[1] == ai_model_id)
-                    ):
-                        restart = True
-                        break
-
-                    i += 1
-
-        if restart:
-            log.info("Pipeline configuration changed, restarting")
-            self.restart()
-
     def restart(self):
         """Restart a pipeline"""
         self.stop()
@@ -457,7 +474,6 @@ class Pipeline(ManagedService):
         if len(self._pipe_elements) == 0:
             self.load_elements()
 
-        self.watch_config()
         log.info("Starting %s main pipeline loop", self.__class__.__name__)
         if not self._pipe_elements:
             return self._on_start_no_elements()
@@ -526,38 +542,9 @@ class Pipeline(ManagedService):
 
         Disconnect from the source and all other external resources.
         """
-        self.unwatch_config()
         log.info("Requesting pipeline elements to stop... %s",
                  self.__class__.__name__)
         if len(self._pipe_elements) > 0:
             self._pipe_elements[0].stop()
         log.info("Completed request to pipeline elements to stop. %s",
                  self.__class__.__name__)
-
-    def watch_config(self):
-        """Watch for configuration changes"""
-
-        if not isinstance(
-                self.config,
-                (config_mgm.ConfigList, config_mgm.ConfigDict)
-        ):
-            log.warning(
-                "Configuration is not reactive, cannot watch for changes")
-            return
-
-        config = config_manager.get()
-        if config is not None:
-            config.add_callback(self.on_config_change)
-
-    def unwatch_config(self):
-        """Stop watching for configuration changes"""
-
-        if not isinstance(
-                self.config,
-                (config_mgm.ConfigList, config_mgm.ConfigDict)
-        ):
-            return
-
-        config = config_manager.get()
-        if config is not None:
-            config.remove_callback(self.on_config_change)

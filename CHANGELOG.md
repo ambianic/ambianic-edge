@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.5.0](https://github.com/ambianic/ambianic-edge/compare/v1.4.0...v1.5.0) (2020-08-04)
+
+
+### Features
+
+* new reactive config and local cam features ([b394258](https://github.com/ambianic/ambianic-edge/commit/b394258a69245acb2684b5100f4637231baade43))
+
 # [1.4.0](https://github.com/ambianic/ambianic-edge/compare/v1.3.0...v1.4.0) (2020-06-22)
 
 
