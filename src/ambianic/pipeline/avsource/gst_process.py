@@ -58,6 +58,7 @@ class GstService:
             # video, image, audio, auto
             self.type = source_conf.get('type', 'auto')
             self.is_live = source_conf.get('live', False)
+            self.format = source_conf.get('format', None)
 
     def __init__(self,
                  source_conf=None,
@@ -179,17 +180,27 @@ class GstService:
 
     def _get_pipeline_args(self):
         log.debug('Preparing Gstreamer pipeline args')
+
+        videosrc = self.source.uri
+        videofmt = self.source.format
+
+        if videofmt == 'h264':
+            SRC_CAPS = 'video/x-h264,framerate=30/1'
+        elif videofmt == 'jpeg':
+            SRC_CAPS = 'image/jpeg,framerate=30/1'
+        else:
+            SRC_CAPS = 'video/x-raw,framerate=30/1'
+
+        PIPELINE_SRC = "uridecodebin uri=%s use-buffering=true" % videosrc
+        if videosrc.startswith('/dev/video'):
+            PIPELINE_SRC = 'v4l2src device=%s ! %s' % (videosrc, SRC_CAPS)
+
         PIPELINE = """
-            uridecodebin name=source use-buffering=true
-            """
-        PIPELINE += """
+            {pipeline_src}
              ! {leaky_q0} ! videoconvert name=vconvert ! {sink_caps}
              ! {leaky_q1} ! {sink_element}
              """
 
-        LEAKY_Q_ = 'queue2 '
-        LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
-        LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
         # Ask gstreamer to format the images in a way that are close
         # to the TF model tensor.
         # Note: Having gstreamer resize doesn't appear to make
@@ -197,6 +208,11 @@ class GstService:
         # Need to look closer at hardware acceleration options where available.
         # ,width={width},pixel-aspect-ratio=1/1'
         SINK_CAPS = 'video/x-raw,format=RGB'
+
+        LEAKY_Q_ = 'queue2 '
+        LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
+        LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
+        
         SINK_ELEMENT = """
                 appsink name=appsink sync=false
                 emit-signals=true max-buffers=1 drop=true
@@ -204,8 +220,12 @@ class GstService:
         pipeline_args = PIPELINE.format(leaky_q0=LEAKY_Q0,
                                         leaky_q1=LEAKY_Q1,
                                         sink_caps=SINK_CAPS,
-                                        sink_element=SINK_ELEMENT)
+                                        sink_element=SINK_ELEMENT,
+                                        pipeline_src=PIPELINE_SRC)
         log.debug('Gstreamer pipeline args: %s', pipeline_args)
+
+        print("pipeline_args ", pipeline_args)
+
         return pipeline_args
 
     def _set_gst_debug_level(self):
@@ -219,11 +239,11 @@ class GstService:
         pipeline_args = self._get_pipeline_args()
         log.debug("Initializing gstreamer pipeline")
         self.gst_pipeline = Gst.parse_launch(pipeline_args)
-        self.gst_video_source = self.gst_pipeline.get_by_name('source')
-        self.gst_video_source.props.uri = self.source.uri
-        self.gst_video_source_connect_id = self.gst_video_source.connect(
-            'autoplug-continue', self.on_autoplug_continue)
-        assert self.gst_video_source_connect_id
+        # self.gst_video_source = self.gst_pipeline.get_by_name('source')
+        # self.gst_video_source.props.uri = self.source.uri
+        # self.gst_video_source_connect_id = self.gst_video_source.connect(
+        #     'autoplug-continue', self.on_autoplug_continue)
+        # assert self.gst_video_source_connect_id
         self.gst_queue0 = self.gst_pipeline.get_by_name('queue0')
         self.gst_vconvert = self.gst_pipeline.get_by_name('vconvert')
         self.gst_queue1 = self.gst_pipeline.get_by_name('queue1')

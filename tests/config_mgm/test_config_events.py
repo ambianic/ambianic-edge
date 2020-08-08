@@ -41,7 +41,7 @@ def test_callbacks():
 
     cfg.remove_callback(watcher.on_callback)
 
-    def cb1(ev): 
+    def cb1(ev):
         pass
     cfg.remove_callback(cb1)
 
