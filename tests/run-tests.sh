@@ -13,7 +13,9 @@ echo "Script location: ${BASEDIR}"
 # where codecov can find the generated reports
 cd $BASEDIR/../
 echo PWD=$PWD
-python3 -m pytest --cov=ambianic --cov-report=xml --cov-report=term tests/
+# use -u option to prevent buffering of stdout, stderr and hence default file logging
+# that addresses some issues with tests expecting file system changes
+python3 -u -m pytest --cov=ambianic --cov-report=xml --cov-report=term tests/
 # pytest --cov-report=xml --cov=ambianic tests
 # codecov
 # pylint --errors-only src/ambianic
