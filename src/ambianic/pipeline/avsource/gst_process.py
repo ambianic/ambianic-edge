@@ -192,7 +192,8 @@ class GstService:
             SRC_CAPS = 'video/x-raw,framerate=30/1'
 
         PIPELINE_SRC = "uridecodebin uri=%s use-buffering=true" % videosrc
-        if videosrc.startswith('/dev/video'):
+
+        if videosrc.startswith('/dev/video') or videosrc.startswith('file:///dev/video'):
             PIPELINE_SRC = 'v4l2src device=%s ! %s' % (videosrc, SRC_CAPS)
 
         PIPELINE = """
