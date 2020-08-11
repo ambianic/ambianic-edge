@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.6.0](https://github.com/ambianic/ambianic-edge/compare/v1.5.0...v1.6.0) (2020-08-11)
+
+
+### Features
+
+* local camera support ([54983c7](https://github.com/ambianic/ambianic-edge/commit/54983c7533fd168ac186e8cda5089c7f971a8d16)), closes [#205](https://github.com/ambianic/ambianic-edge/issues/205)
+
 # [1.5.0](https://github.com/ambianic/ambianic-edge/compare/v1.4.0...v1.5.0) (2020-08-04)
 
 
