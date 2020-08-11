@@ -183,9 +183,9 @@ def test_reload():
     fileutils.save(config_file, config2)
 
     # wait for polling to happen
-    wait = 3
+    wait = 5
     while not watcher.changed:
-        sleep(.5)
+        sleep(1)
         wait -= 1
         if wait == 0:
             raise Exception("Failed to detect change")
