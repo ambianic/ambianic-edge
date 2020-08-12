@@ -488,10 +488,10 @@ def test_gst_set_state_playing_no_preroll():
 
 def test_dev_video_source():
     
-    def create_gst(fmt=None):
+    def create_gst(fmt=None, uri=False):
         gst = GstService(
             source_conf={
-                "uri": "/dev/video0",
+                "uri": "/dev/video0" if not uri else "file:///dev/video0",
                 "format": fmt
             },
             out_queue=multiprocessing.Queue(1),
@@ -500,7 +500,7 @@ def test_dev_video_source():
         )
         return gst._get_pipeline_args()
 
-    pipeline = create_gst("h264")
+    pipeline = create_gst("h264", True)
     assert "v4l2src" in pipeline
     assert "x-h264" in pipeline
 
