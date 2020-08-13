@@ -63,7 +63,7 @@ class FallDetector(TFImageDetection):
                           'Dropping sample: %s',
                           str(e),
                           str(sample)
-                          )self._pipe_elements
+                          )
                 log.warning(stacktrace())
 
     def fall_detect(self, image=None):
