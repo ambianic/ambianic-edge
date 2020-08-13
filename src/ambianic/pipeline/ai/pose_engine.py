@@ -13,13 +13,9 @@
 # limitations under the License.
 
 from edgetpu.basic.basic_engine import BasicEngine
-from edgetpu.utils import image_processing
-from PIL import Image
 from pkg_resources import parse_version
 from edgetpu import __version__ as edgetpu_version
 
-import collections
-import math
 import numpy as np
 
 assert parse_version(edgetpu_version) >= parse_version('2.11.1'), \
