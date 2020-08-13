@@ -116,6 +116,8 @@ class FallDetector(TFImageDetection):
                         pose.score,
                         (x0 / w_factor, y0 / h_factor, \
                          x1 / w_factor, y1 / h_factor)))
+            except:
+                pass
 
         self._prev_vals = pose_vals_list
 
