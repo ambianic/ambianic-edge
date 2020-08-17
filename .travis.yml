@@ -18,6 +18,8 @@ install:
   #- cd ${TRAVIS_BUILD_DIR}/build
   # - ./ambianic-build.sh
   - pip3 install -U codecov
+  - bash install_requirements.sh
+  - bash install-edgetpu.sh
 # command to run tests
 script:
   # fail fast
