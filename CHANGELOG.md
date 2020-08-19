@@ -1,5 +1,19 @@
 # Semantic Versioning Changelog
 
+# [1.7.0](https://github.com/ambianic/ambianic-edge/compare/v1.6.0...v1.7.0) (2020-08-18)
+
+
+### Features
+
+* added file:// prefix support to uniform uri ([7808b81](https://github.com/ambianic/ambianic-edge/commit/7808b8129fc53b77ab96feef603d03f31b822238)), closes [#211](https://github.com/ambianic/ambianic-edge/issues/211)
+
+# [1.6.0](https://github.com/ambianic/ambianic-edge/compare/v1.5.0...v1.6.0) (2020-08-11)
+
+
+### Features
+
+* local camera support ([54983c7](https://github.com/ambianic/ambianic-edge/commit/54983c7533fd168ac186e8cda5089c7f971a8d16)), closes [#205](https://github.com/ambianic/ambianic-edge/issues/205)
+
 # [1.5.0](https://github.com/ambianic/ambianic-edge/compare/v1.4.0...v1.5.0) (2020-08-04)
 
 
