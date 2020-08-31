@@ -13,8 +13,6 @@ before_install:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - sudo service docker restart
   - docker --version
-  - bash install_requirements.sh
-  - bash install-edgetpu.sh
 install:
 #  - docker buildx --help
   #- cd ${TRAVIS_BUILD_DIR}/build
