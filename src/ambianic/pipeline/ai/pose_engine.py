@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from edgetpu.basic.basic_engine import BasicEngine
-from pkg_resources import parse_version
-from edgetpu import __version__ as edgetpu_version
+from ambianic.pipeline.ai.inference import TFInferenceEngine
+# from edgetpu.basic.basic_engine import BasicEngine
+# from pkg_resources import parse_version
+# from edgetpu import __version__ as edgetpu_version
+#assert parse_version(edgetpu_version) >= parse_version('2.11.1'), \
+#        'This demo requires Edge TPU version >= 2.11.1'
 
 import numpy as np
 
-assert parse_version(edgetpu_version) >= parse_version('2.11.1'), \
-        'This demo requires Edge TPU version >= 2.11.1'
 
 KEYPOINTS = (
   'nose',

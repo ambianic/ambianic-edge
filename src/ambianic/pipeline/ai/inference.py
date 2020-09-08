@@ -1,4 +1,6 @@
-"""Tensorflow inference engine wrapper."""
+"""Tensorflow inference engine wrapper.
+Automatically detects EdgeTPU if present. Otherwise uses CPU.
+"""
 import logging
 import os
 import numpy as np

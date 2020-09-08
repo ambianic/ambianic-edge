@@ -5,7 +5,7 @@ import re
 import numpy as np
 # from importlib import import_module
 from PIL import ImageOps
-from .inference import TFInferenceEngine
+from ambianic.pipeline.ai.inference import TFInferenceEngine
 from ambianic.pipeline import PipeElement
 
 
@@ -26,7 +26,9 @@ class TFImageDetection(PipeElement):
 
         :Parameters:
         ----------
-        model: ai_models/mobilenet_ssd_v2_face.tflite
+        model:
+            tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
+            edgetpu: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
         labels: ai_models/coco_labels.txt
         confidence_threshold: 0.6
         top_k: 3

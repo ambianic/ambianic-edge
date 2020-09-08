@@ -2,9 +2,11 @@
 import logging
 import time
 
-from .image_detection import TFImageDetection
-from .pose_engine import PoseEngine
+from ambianic.pipeline.ai.image_detection import TFImageDetection
+from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
+
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -30,9 +32,12 @@ class FallDetector(TFImageDetection):
         self._prev_vals = []
         self._prev_infer_time = time.monotonic()
         self._pose_engine = PoseEngine(self._model_edgetpu_path)
-        # This value would need to be tuned experimentally
-        # It represents the proportion of full-body distance a person's
+        # This value represents the proportion of full-body distance a person's
         # top body part would need to drop in one second to constitute a fall
+        # 
+        # This value would need to be tuned experimentally
+        # or replaced by a DNN classification model 
+        # trained how to detect falls given a before and after image.
         self._fall_factor = 1.5
 
     def process_sample(self, **sample):
