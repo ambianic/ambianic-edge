@@ -12,26 +12,29 @@ log = logging.getLogger(__name__)
 
 
 class FallDetector(TFImageDetection):
-    """
-    Detects falls in an image.
+    """Detects falls comparing two images spaced about 1-2 seconds apart."""
 
-    :Parameters:
-    ----------
-    model: dict
-      {
-        'tflite': 
-    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
-        'edgetpu': 
-    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
+    def __init__(self,
+                 model=None,
+                 **kwargs
+                 ):
+        """Initialize detector with config parameters.
 
-        labels: ai_models/pose_labels.txt
-      }
-    """
-
-    def __init(self):
+        :Parameters:
+        ----------
+        model: dict
+        {
+            'tflite': 
+                'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
+            'edgetpu': 
+                'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
+            labels: ai_models/pose_labels.txt
+        }
+        """
+        
         self._prev_vals = []
         self._prev_infer_time = time.monotonic()
-        self._pose_engine = PoseEngine(self._model_edgetpu_path)
+        self._pose_engine = PoseEngine(model)
         # This value represents the proportion of full-body distance a person's
         # top body part would need to drop in one second to constitute a fall
         # 

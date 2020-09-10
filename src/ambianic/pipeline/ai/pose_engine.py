@@ -19,8 +19,10 @@ from ambianic.pipeline.ai.inference import TFInferenceEngine
 #assert parse_version(edgetpu_version) >= parse_version('2.11.1'), \
 #        'This demo requires Edge TPU version >= 2.11.1'
 
+import logging
 import numpy as np
 
+log = logging.getLogger(__name__)
 
 KEYPOINTS = (
   'nose',
@@ -67,18 +69,26 @@ class Pose:
         return 'Pose({}, {})'.format(self.keypoints, self.score)
 
 
-class PoseEngine(BasicEngine):
+class PoseEngine(TFInferenceEngine):
     """Engine used for pose tasks."""
 
-    def __init__(self, model_path, mirror=False):
+    def __init__(self, model=None, mirror=False):
         """Creates a PoseEngine with given model.
         Args:
-          model_path: String, path to TF-Lite Flatbuffer file.
-          mirror: Flip keypoints horizontally
+            model: dict
+            {
+                'tflite': 
+                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
+                'edgetpu': 
+                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
+                labels: ai_models/pose_labels.txt
+            }
+            mirror: Flip keypoints horizontally
         Raises:
           ValueError: An error occurred when model output is invalid.
         """
-        BasicEngine.__init__(self, model_path)
+        assert model is not None
+        super().__init__(self, model)
         self._mirror = mirror
 
         self._input_tensor_shape = self.get_input_tensor_shape()
@@ -98,6 +108,38 @@ class PoseEngine(BasicEngine):
         for size in self.get_all_output_tensors_sizes():
             offset += size
             self._output_offsets.append(int(offset))
+
+    def get_input_tensor_shape(self):
+        """Get the shape of the input tensor structure.
+        Gets the shape required for the input tensor.
+        For models trained for image classification / detection, the shape is always
+        [1, height, width, channels]. To be used as input for :func:`run_inference`,
+        this tensor shape must be flattened into a 1-D array with size ``height *
+        width * channels``. To instead get that 1-D array size, use
+        :func:`required_input_array_size`.
+        Returns:
+        A 1-D array (:obj:`numpy.ndarray`) representing the required input tensor
+        shape.
+        """
+        return self.input_details[0]['shape']
+
+
+    def get_all_output_tensors_sizes(self):
+        """Gets the size of each output tensor.
+        A model may output several tensors, but the return from :func:`run_inference`
+        and :func:`get_raw_output` concatenates them together into a 1-D array.
+        So this function provides the size for each original output tensor, allowing
+        you to calculate the offset for each tensor within the concatenated array.
+        Returns:
+        An array (:obj:`numpy.ndarray`) with the length of each output tensor
+        (this assumes that all output tensors are 1-D).
+        """
+        log.INFO('PoseNet model output tensor details: ', self.output_details)
+        output_tensor_sizes = [0]
+        # for output_tensor_detail in tfe.output_details:
+        #     self.output_tensor_sizes.append(output_tensor_detail[?])
+        #return self._engine.get_all_output_tensors_sizes()
+        raise NotImplementedError()
 
     def DetectPosesInImage(self, img):
         """
@@ -120,6 +162,9 @@ class PoseEngine(BasicEngine):
 
         # Run the inference (API expects the data to be flattened).
         return self.ParseOutput(self.run_inference(img.flatten()))
+
+    def run_inference(self, img=None):
+        raise NotImplementedError()
 
     def ParseOutput(self, output):
         inference_time, output = output
