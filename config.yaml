@@ -28,16 +28,17 @@ sources:
   #   type: video
   #   live: true
 
+  # direct support for picamera
+  picamera:
+    uri: picamera
+    type: video
+    live: true
+
   # local video device integration example
   webcam:
     uri: /dev/video0
     type: video
     live: true
-
-  um:uuid:5f5a69c2-e0ae-504f-829b-0076E58E0DDE:
-    live: true
-    type: video
-    uri: rtsp://192.168.7.13:554/11
 
   recorded_cam_feed:
     uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
@@ -64,7 +65,7 @@ ai_models:
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
   front_door_watch:
-    - source: webcam
+    - source: picamera
     - detect_objects: # run ai inference on the input data
        ai_model: image_detection
        confidence_threshold: 0.8

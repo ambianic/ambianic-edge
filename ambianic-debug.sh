@@ -27,6 +27,11 @@ docker pull ambianic/ambianic-edge:dev
 docker run -it --rm \
   --name ambianic-edge-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
+  -v /opt/vc:/opt/vc \
+  -v /sys/class/gpio:/sys/class/gpio \
+  -v /dev:/dev \
+  --device /dev/gpiomem \
+  --privileged \
   --net=host \
   $VIDEO_ARG \
   $USB_ARG \
