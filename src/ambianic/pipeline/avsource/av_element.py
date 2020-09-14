@@ -111,8 +111,7 @@ class AVSourceElement(PipeElement):
         camera.led = True
         camera.start_preview()
         time.sleep(2)
-
-        # todo: setup or expose ISO shutter awb properties
+        # note: setup or expose ISO shutter awb properties
         while not self._stop_requested:
             camera.capture(stream, format='jpeg')
             stream.seek(0)
