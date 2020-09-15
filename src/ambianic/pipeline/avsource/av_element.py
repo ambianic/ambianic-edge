@@ -11,7 +11,6 @@ import requests
 from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.avsource import gst_process
-import picamera
 
 log = logging.getLogger(__name__)
 
@@ -106,6 +105,8 @@ class AVSourceElement(PipeElement):
         time.sleep(1)
 
     def _run_picamera_fetch(self):
+        # avoid unit testing to fail when env is not PI
+        import picamera
         camera = picamera.PiCamera()
         stream = BytesIO()
         camera.led = True
