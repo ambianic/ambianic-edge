@@ -118,7 +118,6 @@ class AVSourceElement(PipeElement):
             except Exception as err:
                 log.debug("Error acquiring from picamera: %s" % err)
                 time.sleep(1)
-                pass
 
         picamera.stop()
 

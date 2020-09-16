@@ -21,7 +21,6 @@ class _TestPiCamera():
         )
 
         self.led = False
-        pass
     
     def start_preview(self):
         pass
