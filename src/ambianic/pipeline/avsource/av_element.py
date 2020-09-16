@@ -10,7 +10,8 @@ from io import BytesIO
 import requests
 from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
-from ambianic.pipeline.avsource import gst_process
+from ambianic.pipeline.avsource import gst_process, picam
+from ambianic.pipeline.avsource.picam import Picamera
 
 log = logging.getLogger(__name__)
 
@@ -105,21 +106,21 @@ class AVSourceElement(PipeElement):
         time.sleep(1)
 
     def _run_picamera_fetch(self):
-        # avoid unit testing to fail when env is not PI
-        import picamera
-        camera = picamera.PiCamera()
-        stream = BytesIO()
-        camera.led = True
-        camera.start_preview()
-        time.sleep(2)
-        # note: setup or expose ISO shutter awb properties
-        while not self._stop_requested:
-            camera.capture(stream, format='jpeg')
-            stream.seek(0)
-            image = Image.open(stream)
-            self.receive_next_sample(image=image)
 
-        camera.led = False
+        picamera = Picamera()
+        if picamera.has_failure():
+            log.error("Picamera setup failed, exiting..")
+            return None
+
+        while not self._stop_requested:
+            try:
+                self.receive_next_sample(image=picamera.acquire())
+            except Exception as err:
+                log.debug("Error acquiring from picamera: %s" % err)
+                time.sleep(1)
+                pass
+
+        picamera.stop()
 
     def _run_http_fetch(self, url=None, continuous=False):
         log.debug("Fetching source uri sample over http: %r", url)
