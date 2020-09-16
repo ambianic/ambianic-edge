@@ -32,7 +32,6 @@ class Picamera():
 
         self.stream = BytesIO()
         self.camera.led = True
-        self.camera.start_preview()
         # note: setup or expose properties (ISO shutter awb)
         time.sleep(2)
 
