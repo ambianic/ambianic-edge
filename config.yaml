@@ -28,7 +28,7 @@ sources:
   #   type: video
   #   live: true
 
-  # direct support for picamera
+  # direct support for raspberry picamera
   picamera:
     uri: picamera
     type: video
