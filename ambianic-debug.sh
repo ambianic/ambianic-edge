@@ -15,6 +15,14 @@ else
   USB_ARG=""
 fi
 
+
+VC_SHARED_LIB=""
+if grep -s -q "Raspberry Pi" /proc/cpuinfo;
+then
+  VC_SHARED_LIB="-v /opt/vc:/opt/vc"
+fi
+
+
 if [ -e "$VIDEO_0" ]; then
   VIDEO_ARG="--device $VIDEO_0"
 else
@@ -27,7 +35,7 @@ docker pull ambianic/ambianic-edge:dev
 docker run -it --rm \
   --name ambianic-edge-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
-  -v /opt/vc:/opt/vc \
+  $VC_SHARED_LIB \
   --privileged \
   --net=host \
   $VIDEO_ARG \
