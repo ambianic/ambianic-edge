@@ -47,9 +47,10 @@ sudo apt-get install -y libjpeg-dev zlib1g-dev
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
 # Install Raspberry Pi video drivers
-if $(arch | grep -q arm)
+# if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
+if grep -s -q "Raspberry Pi" /proc/cpuinfo;
 then
   echo "Installing Raspberry Pi / ARM CPU specific dependencies"
   sudo pip3 install --upgrade RPi.GPIO picamera
