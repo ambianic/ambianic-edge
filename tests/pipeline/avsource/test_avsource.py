@@ -329,8 +329,21 @@ def test_still_image_input_detect_person_exit_stop_signal():
     t.join(timeout=10)
     assert not t.is_alive()
 
-def test_picamera_input_exit_stop_signal():
 
+def test_picamera_fail_import():
+    # mock picamera module
+    picam.picamera_override = None
+
+
+    avsource = AVSourceElement(uri="picamera", type='video')
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+    )
+    t.start()
+
+
+def test_picamera_input_exit_stop_signal():
     # mock picamera module
     picam.picamera_override = picamera_override
 
