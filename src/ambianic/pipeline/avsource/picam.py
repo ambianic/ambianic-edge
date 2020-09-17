@@ -20,11 +20,11 @@ class Picamera():
                 import picamera
                 self.camera = picamera.PiCamera()
             except ImportError as err:
-                log.warn("Failed to import picamera module: %s" % err)
+                log.warning("Failed to import picamera module: %s" % err)
                 self.error = err
                 return
             except Exception as err:
-                log.warn("Error importing picamera module: %s" % err)
+                log.warning("Error importing picamera module: %s" % err)
                 self.error = err
                 return
         else:
