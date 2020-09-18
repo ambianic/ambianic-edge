@@ -11,7 +11,7 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
-from test_avsource_picamera import picamera_override
+from test_avsource_picamera import picamera_override_failure
 from ambianic.pipeline.avsource.av_element import picam
 
 log = logging.getLogger()
@@ -343,7 +343,7 @@ def test_picamera_fail_import():
 
 def test_picamera_input_exit_stop_signal():
     # mock picamera module
-    picam.picamera_override = picamera_override
+    picam.picamera_override = picamera_override_failure
 
     avsource = AVSourceElement(uri="picamera", type='video')
     object_config = _object_detect_config()
