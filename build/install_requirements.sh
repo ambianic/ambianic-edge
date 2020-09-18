@@ -39,7 +39,7 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
 # install numpy native lib
 sudo apt-get install -y python3-numpy
 sudo apt-get install -y libjpeg-dev zlib1g-dev
-sudo apt-get install -y libssl-dev
+sudo apt-get install -y libssl-dev pkg-config libhdf5-100 libhdf5-dev
 # [backend]
 
 # make sure python sees the packages installed via apt-get
