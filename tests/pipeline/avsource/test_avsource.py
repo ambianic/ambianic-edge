@@ -11,7 +11,7 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
-from test_avsource_picamera import picamera_override_failure
+from test_avsource_picamera import picamera_override_failure, picamera_override
 from ambianic.pipeline.avsource.av_element import picam
 
 log = logging.getLogger()
@@ -341,9 +341,9 @@ def test_picamera_fail_import():
     assert not t.is_alive()
 
 
-def test_picamera_input_exit_stop_signal():
+def test_picamera_input():
     # mock picamera module
-    picam.picamera_override = picamera_override_failure
+    picam.picamera_override = picamera_override
 
     avsource = AVSourceElement(uri="picamera", type='video')
     object_config = _object_detect_config()
@@ -372,7 +372,7 @@ def test_picamera_input_exit_stop_signal():
     t = threading.Thread(
         name="Test AVSourceElement",
         target=avsource.start, daemon=True
-        )
+    )
     t.start()
     detection_received.wait(timeout=10)
     assert sample_image
@@ -385,6 +385,21 @@ def test_picamera_input_exit_stop_signal():
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
+    avsource.stop()
+    t.join(timeout=10)
+    assert not t.is_alive()
+
+
+def test_picamera_input_fail():
+    # mock picamera module
+    picam.picamera_override = picamera_override_failure
+    avsource = AVSourceElement(uri="picamera", type='video')
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+    )
+    t.start()
+    time.sleep(1)
     avsource.stop()
     t.join(timeout=10)
     assert not t.is_alive()

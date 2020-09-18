@@ -19,7 +19,6 @@ class _TestPiCamera():
             _dir,
             '../ai/person.jpg'
         )
-        self.read = 0
         self.fail_read = fail_read
         self.led = False
     
@@ -27,11 +26,10 @@ class _TestPiCamera():
         pass
 
     def capture(self, stream, format):
-        if self.fail_read and (self.read > 0 and self.read % 2 == 0):
+        if self.fail_read:
             raise Exception("Read failed")
         img = Image.open(self.img_path, mode='r')
         img.save(stream, format=format)
-        self.read += 1
 
     def close(self): 
         pass
@@ -67,10 +65,7 @@ def test_acquire_failure():
     failed = False
     try:
         cam.acquire()
-        cam.acquire()
-        cam.acquire()
     except Exception:
         failed = True
-        pass
     assert failed
     cam.stop()
