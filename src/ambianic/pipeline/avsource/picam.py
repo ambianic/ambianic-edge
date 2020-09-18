@@ -15,14 +15,9 @@ class Picamera():
         self.format = image_format
 
         if picamera_override is None:
-
             try:
                 import picamera
                 self.camera = picamera.PiCamera()
-            except ImportError as err:
-                log.warning("Failed to import picamera module: %s" % err)
-                self.error = err
-                return
             except Exception as err:
                 log.warning("Error importing picamera module: %s" % err)
                 self.error = err
@@ -39,8 +34,6 @@ class Picamera():
         return self.error is not None
 
     def acquire(self):
-        if self.has_failure():
-            return None
         self.camera.capture(self.stream, format=self.format)
         self.stream.seek(0)
         return Image.open(self.stream)
