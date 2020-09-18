@@ -18,10 +18,6 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
-def test_no_config():
-    with pytest.raises(AssertionError):
-        AVSourceElement()
-
 
 class _TestAVSourceElement(AVSourceElement):
 
@@ -334,13 +330,15 @@ def test_picamera_fail_import():
     # mock picamera module
     picam.picamera_override = None
 
-
     avsource = AVSourceElement(uri="picamera", type='video')
     t = threading.Thread(
-        name="Test AVSourceElement",
+        name="Test AVSourceElement Picamera",
         target=avsource.start, daemon=True
     )
     t.start()
+    time.sleep(1)
+    t.join(timeout=10)
+    assert not t.is_alive()
 
 
 def test_picamera_input_exit_stop_signal():
