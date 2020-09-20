@@ -57,8 +57,6 @@ if grep -s -q "Raspberry Pi" /proc/cpuinfo;
 then
   echo "Installing Raspberry Pi / ARM CPU specific dependencies"
   sudo pip3 install --upgrade RPi.GPIO picamera
-  # 2020-09-14 this install 0.65 which seems incompatible with RPI4
-  ##  sudo apt-get install -y python3-rpi.gpio
   # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
   #  if ! grep -q "bcm2835-v4l2" /etc/modules; then
