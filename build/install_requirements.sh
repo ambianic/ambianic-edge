@@ -39,18 +39,14 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
 # install numpy native lib
 sudo apt-get install -y python3-numpy
 sudo apt-get install -y libjpeg-dev zlib1g-dev
-sudo apt-get install -y libssl-dev pkg-config libhdf5-103 libhdf5-dev
 # [backend]
 
 # make sure python sees the packages installed via apt-get
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
 
-pip3 --version
-sudo pip3 install -U pip
-
 # Install Raspberry Pi video drivers
-# if $(arch | grep -q arm)
+if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 if grep -s -q "Raspberry Pi" /proc/cpuinfo;
@@ -67,12 +63,9 @@ then
   sudo cp raspberrypi.pip.conf /etc/pip.conf
 fi
 
-
-# install cython v0.29 to address a compile time bug for h5py
-# see https://github.com/h5py/h5py/issues/1533#issuecomment-617519250
-sudo pip3 install cython
-
 # install python dependencies
+pip3 --version
+sudo pip3 install -U pip
 sudo pip3 install -r requirements.txt
 
   # install gcc as some of the python native dependencies
