@@ -11,13 +11,12 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
+from test_avsource_picamera import picamera_override_failure, picamera_override
+from ambianic.pipeline.avsource.av_element import picam
+
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-
-def test_no_config():
-    with pytest.raises(AssertionError):
-        AVSourceElement()
 
 
 class _TestAVSourceElement(AVSourceElement):
@@ -322,6 +321,85 @@ def test_still_image_input_detect_person_exit_stop_signal():
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
+    avsource.stop()
+    t.join(timeout=10)
+    assert not t.is_alive()
+
+
+def test_picamera_fail_import():
+    # mock picamera module
+    picam.picamera_override = None
+
+    avsource = AVSourceElement(uri="picamera", type='video')
+    t = threading.Thread(
+        name="Test AVSourceElement Picamera",
+        target=avsource.start, daemon=True
+    )
+    t.start()
+    time.sleep(1)
+    t.join(timeout=10)
+    assert not t.is_alive()
+
+
+def test_picamera_input():
+    # mock picamera module
+    picam.picamera_override = picamera_override
+
+    avsource = AVSourceElement(uri="picamera", type='video')
+    object_config = _object_detect_config()
+    detection_received = threading.Event()
+    sample_image = None
+    detections = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal sample_image
+        nonlocal detection_received
+        sample_image = image
+        nonlocal detections
+        detections = inference_result
+        print('detections: {det}'.format(det=detections))
+        print('len(detections): {len}'.format(len=len(detections)))
+        if detections:
+            label, confidence, _ = detections[0]
+            if label == 'person' and confidence > 0.9:
+                # skip video image samples until we reach a person detection
+                # with high level of confidence
+                detection_received.set()
+    object_detector = ObjectDetector(**object_config)
+    avsource.connect_to_next_element(object_detector)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+    )
+    t.start()
+    detection_received.wait(timeout=10)
+    assert sample_image
+    assert sample_image.size[0] == 1280
+    assert sample_image.size[1] == 720
+    assert detections
+    assert len(detections) == 1
+    label, confidence, (x0, y0, x1, y1) = detections[0]
+    assert label == 'person'
+    assert confidence > 0.9
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    avsource.stop()
+    t.join(timeout=10)
+    assert not t.is_alive()
+
+
+def test_picamera_input_fail():
+    # mock picamera module
+    picam.picamera_override = picamera_override_failure
+    avsource = AVSourceElement(uri="picamera", type='video')
+    t = threading.Thread(
+        name="Test AVSourceElement",
+        target=avsource.start, daemon=True
+    )
+    t.start()
+    time.sleep(1)
     avsource.stop()
     t.join(timeout=10)
     assert not t.is_alive()

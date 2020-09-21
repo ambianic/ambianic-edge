@@ -39,7 +39,6 @@ sudo apt-get install -y libgstreamer1.0-0 gstreamer1.0-plugins-base \
 # install numpy native lib
 sudo apt-get install -y python3-numpy
 sudo apt-get install -y libjpeg-dev zlib1g-dev
-
 # [backend]
 
 # make sure python sees the packages installed via apt-get
@@ -51,16 +50,20 @@ if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
+  # avoid install during CI builds
   echo "Installing Raspberry Pi / ARM CPU specific dependencies"
-  sudo apt-get install -y python3-rpi.gpio
+  sudo READTHEDOCS=True pip3 install --upgrade RPi.GPIO picamera
+
   # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
   #  if ! grep -q "bcm2835-v4l2" /etc/modules; then
   #    echo bcm2835-v4l2 | sudo tee -a /etc/modules
   #  fi
   #  sudo modprobe bcm2835-v4l2
+
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
+  
 fi
 
 # install python dependencies
