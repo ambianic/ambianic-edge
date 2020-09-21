@@ -50,16 +50,22 @@ if $(arch | grep -q arm)
 # there is no RPI firmware in docker images, so we will install on ARM flag
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
-  echo "Installing Raspberry Pi / ARM CPU specific dependencies"
-  sudo pip3 install --upgrade RPi.GPIO picamera
+  # avoid install during CI builds
+  if [ ! $TRAVIS ] ; then
+    echo "Installing Raspberry Pi / ARM CPU specific dependencies"
+    sudo pip3 install --upgrade RPi.GPIO picamera
+  fi
+
   # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
   #  if ! grep -q "bcm2835-v4l2" /etc/modules; then
   #    echo bcm2835-v4l2 | sudo tee -a /etc/modules
   #  fi
   #  sudo modprobe bcm2835-v4l2
+
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
+  
 fi
 
 # install python dependencies
