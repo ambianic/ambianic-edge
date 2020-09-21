@@ -51,10 +51,9 @@ if $(arch | grep -q arm)
 #if grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 then
   # avoid install during CI builds
-  if [ ! $TRAVIS ] ; then
-    echo "Installing Raspberry Pi / ARM CPU specific dependencies"
-    sudo pip3 install --upgrade RPi.GPIO picamera
-  fi
+  export READTHEDOCS=True
+  echo "Installing Raspberry Pi / ARM CPU specific dependencies"
+  sudo pip3 install --upgrade RPi.GPIO picamera
 
   # sudo apt-get install -y modprobe
   # Add v4l2 video module to kernel
