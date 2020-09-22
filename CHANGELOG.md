@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.8.0](https://github.com/ambianic/ambianic-edge/compare/v1.7.0...v1.8.0) (2020-09-22)
+
+
+### Features
+
+* initial picamera support [#214](https://github.com/ambianic/ambianic-edge/issues/214) ([37c4031](https://github.com/ambianic/ambianic-edge/commit/37c4031c2a88beb73de31add64d0793ce1ce1d3d))
+
 # [1.7.0](https://github.com/ambianic/ambianic-edge/compare/v1.6.0...v1.7.0) (2020-08-18)
 
 
