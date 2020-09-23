@@ -13,6 +13,8 @@ class Picamera():
         self.error = None
         self.format = image_format
         self.stream = BytesIO()
+        # test picamera import works
+        self._get_camera()
 
     def has_failure(self):
         return self.error is not None
