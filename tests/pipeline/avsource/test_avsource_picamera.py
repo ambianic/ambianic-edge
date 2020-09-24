@@ -22,6 +22,12 @@ class _TestPiCamera():
         self.fail_read = fail_read
         self.led = False
     
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        pass
+
     def start_preview(self):
         pass
 
