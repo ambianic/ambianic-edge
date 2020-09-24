@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.8.1](https://github.com/ambianic/ambianic-edge/compare/v1.8.0...v1.8.1) (2020-09-24)
+
+
+### Bug Fixes
+
+* **pencil:** picamera buffer access [#215](https://github.com/ambianic/ambianic-edge/issues/215) ([4f77e0a](https://github.com/ambianic/ambianic-edge/commit/4f77e0a704f3d38b490bbf394358055034947634))
+
 # [1.8.0](https://github.com/ambianic/ambianic-edge/compare/v1.7.0...v1.8.0) (2020-09-22)
 
 
