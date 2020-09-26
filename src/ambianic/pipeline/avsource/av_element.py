@@ -106,18 +106,19 @@ class AVSourceElement(PipeElement):
         time.sleep(1)
 
     def _run_picamera_fetch(self):
-
+        
         picamera = Picamera()
+        picamera.start()
+
         if picamera.has_failure():
-            log.error("Picamera setup failed, exiting..")
+            log.warn("Picamera setup failed: %s" % picamera.error)
+            picamera.stop()
             return None
 
         while not self._stop_requested:
-            try:
-                self.receive_next_sample(image=picamera.acquire())
-            except Exception as err:
-                log.debug("Error acquiring from picamera: %s" % err)
-                time.sleep(1)
+            image = picamera.acquire()
+            if image is not None:
+                self.receive_next_sample(image=image)
 
         picamera.stop()
 
