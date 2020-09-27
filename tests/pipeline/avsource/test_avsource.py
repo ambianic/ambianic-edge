@@ -11,8 +11,8 @@ from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
-from test_avsource_picamera import picamera_override_failure, picamera_override
-from ambianic.pipeline.avsource.av_element import picam
+from test_avsource_picamera import picamera_override
+from ambianic.pipeline.avsource import picam
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -390,19 +390,19 @@ def test_picamera_input():
     assert not t.is_alive()
 
 
-def test_picamera_input_fail():
-    # mock picamera module
-    picam.picamera_override = picamera_override_failure
-    avsource = AVSourceElement(uri="picamera", type='video')
-    t = threading.Thread(
-        name="Test AVSourceElement",
-        target=avsource.start, daemon=True
-    )
-    t.start()
-    time.sleep(1)
-    avsource.stop()
-    t.join(timeout=10)
-    assert not t.is_alive()
+# def test_picamera_input_fail():
+#     # mock picamera module
+#     picam.picamera_override = picamera_override_failure
+#     avsource = AVSourceElement(uri="picamera", type='video')
+#     t = threading.Thread(
+#         name="Test AVSourceElement",
+#         target=avsource.start, daemon=True
+#     )
+#     t.start()
+#     time.sleep(1)
+#     avsource.stop()
+#     t.join(timeout=10)
+#     assert not t.is_alive()
 
 
 def test_heal():
