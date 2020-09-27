@@ -106,21 +106,15 @@ class AVSourceElement(PipeElement):
         time.sleep(1)
 
     def _run_picamera_fetch(self):
-        
-        picamera = Picamera()
-        picamera.start()
-
-        if picamera.has_failure():
-            log.warn("Picamera setup failed: %s" % picamera.error)
-            picamera.stop()
-            return None
-
-        while not self._stop_requested:
-            image = picamera.acquire()
-            if image is not None:
-                self.receive_next_sample(image=image)
-
-        picamera.stop()
+        with Picamera() as picamera:
+            if picamera.has_failure():
+                log.warn("Picamera setup failed: %s" % picamera.error)
+                picamera.stop()
+                return None
+            while not self._stop_requested:
+                image = picamera.acquire()
+                if image is not None:
+                    self.receive_next_sample(image=image)
 
     def _run_http_fetch(self, url=None, continuous=False):
         log.debug("Fetching source uri sample over http: %r", url)

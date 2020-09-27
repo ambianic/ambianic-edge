@@ -19,6 +19,14 @@ class Picamera():
         self._stop = threading.Event()
         self.thread1 = threading.Thread(target=self.run, args=())
 
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.stop()
+        return self
+
     def start(self):
         self._stop.clear()
         self.thread1.start()
@@ -51,6 +59,7 @@ class Picamera():
             for _ in camera.capture_continuous(stream, format=self.format):
                 
                 if self._stop.is_set():
+                    log.debug("Stop requested")
                     break
                 
                 if not self.queue.full():
@@ -63,7 +72,6 @@ class Picamera():
                 stream.seek(0)
                 stream.truncate()
 
-
             try:
                 stream.close()
             except:
@@ -71,10 +79,12 @@ class Picamera():
 
     def acquire(self):
         try:
+            log.debug("queue len=%s" % self.queue.qsize())
             return self.queue.get(block=False)
         except queue.Empty:
             return None
 
     def stop(self):
         self._stop.set()
+        self.queue = queue.Queue()
         self.thread1.join()
