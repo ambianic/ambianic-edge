@@ -48,7 +48,7 @@ class Picamera():
 
     def run(self):
         with self._get_camera() as camera:
-            
+
             if self.has_failure():
                 return None
 
@@ -57,25 +57,30 @@ class Picamera():
             time.sleep(2)
             stream = BytesIO()
             for _ in camera.capture_continuous(stream, format=self.format):
-                
+
                 if self._stop.is_set():
                     log.debug("Stop requested")
                     break
-                
+
                 if not self.queue.full():
                     try:
-                        self.queue.put(Image.open(BytesIO(stream.getvalue())), block=False)
+                        self.queue.put(
+                            Image.open(BytesIO(stream.getvalue())), 
+                            block=False
+                        )
                         log.debug("Queued capture")
-                    except:
+                    except queue.Full:
                         pass
+                    except Exception as ex:
+                        log.error("Failed to add to queue: %s" % ex)
 
                 stream.seek(0)
                 stream.truncate()
 
             try:
                 stream.close()
-            except:
-                pass
+            except Exception as ex:
+                log.error("Failed to close stream: %s" % ex)
 
     def acquire(self):
         try:
