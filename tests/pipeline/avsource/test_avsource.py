@@ -12,7 +12,7 @@ from ambianic.pipeline.avsource.gst_process import GstService
 import logging
 
 from test_avsource_picamera import picamera_override
-from ambianic.pipeline.avsource.av_element import picam
+from ambianic.pipeline.avsource import picam
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)

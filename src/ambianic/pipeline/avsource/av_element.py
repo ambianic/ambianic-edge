@@ -10,7 +10,7 @@ from io import BytesIO
 import requests
 from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
-from ambianic.pipeline.avsource import gst_process, picam
+from ambianic.pipeline.avsource import gst_process
 from ambianic.pipeline.avsource.picam import Picamera
 
 log = logging.getLogger(__name__)
@@ -107,11 +107,10 @@ class AVSourceElement(PipeElement):
 
     def _run_picamera_fetch(self):
         with Picamera() as picamera:
-            if picamera.has_failure():
-                log.warn("Picamera setup failed: %s" % picamera.error)
-                picamera.stop()
-                return None
             while not self._stop_requested:
+                if picamera.has_failure():
+                    log.warning(picamera.error)
+                    break
                 image = picamera.acquire()
                 if image is not None:
                     self.receive_next_sample(image=image)

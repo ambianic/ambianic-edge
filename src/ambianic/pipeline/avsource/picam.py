@@ -84,7 +84,7 @@ class Picamera():
 
     def acquire(self):
         try:
-            log.debug("queue len=%s" % self.queue.qsize())
+            # log.debug("queue len=%s" % self.queue.qsize())
             return self.queue.get(block=False)
         except queue.Empty:
             return None

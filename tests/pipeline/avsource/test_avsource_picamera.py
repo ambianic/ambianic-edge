@@ -1,6 +1,6 @@
 """Test audio/video source pipeline element."""
 import pytest
-from ambianic.pipeline.avsource.av_element import picam
+from ambianic.pipeline.avsource import picam
 import logging
 from io import BytesIO
 import time
@@ -14,10 +14,11 @@ class _TestPiCamera():
 
     def __init__(self, fail_read=False):
         _dir = os.path.dirname(os.path.abspath(__file__))
-        self.img_path = os.path.join(
+        img_path = os.path.join(
             _dir,
             '../ai/person.jpg'
         )
+        self.img = Image.open(img_path, mode='r')
         self.fail_read = fail_read
         self.led = False
 
@@ -43,14 +44,13 @@ class _TestPiCamera():
 
     def capture_continuous(self, stream, format):
         self.capture(stream, format)
-        time.sleep(0.1)
         return self
 
-    def capture(self, stream, format):
+    def capture(self, stream: BytesIO, format: str):
         if self.fail_read:
             raise Exception("Read failed")
-        img = Image.open(self.img_path, mode='r')
-        img.save(stream, format=format)
+        self.img.save(stream, format=format)
+        stream.seek(0)
         log.debug("acquired image stream")
 
     def close(self): 
