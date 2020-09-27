@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.8.2](https://github.com/ambianic/ambianic-edge/compare/v1.8.1...v1.8.2) (2020-09-27)
+
+
+### Bug Fixes
+
+* use picamera continous_capture ([e3ec59a](https://github.com/ambianic/ambianic-edge/commit/e3ec59a69eb7fd59b5b00f34b7f2e23f29b6990e)), closes [#217](https://github.com/ambianic/ambianic-edge/issues/217)
+
 ## [1.8.1](https://github.com/ambianic/ambianic-edge/compare/v1.8.0...v1.8.1) (2020-09-24)
 
 
