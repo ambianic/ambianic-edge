@@ -5,13 +5,17 @@ import threading
 import os
 import signal
 import pathlib
-from multiprocessing import Queue
+import multiprocessing
 import logging
 from PIL import Image
 import gi
-gi.require_version('Gst', '1.0')
-gi.require_version('GstBase', '1.0')
-from gi.repository import Gst
+import sys
+
+
+if 'gi' in sys.modules:
+    gi.require_version('Gst', '1.0')
+    gi.require_version('GstBase', '1.0')
+    from gi.repository import Gst  # ,GObject,  GLib
 
 Gst.init(None)
 
@@ -75,10 +79,10 @@ def test_image_source_one_sample():
     source_file = os.path.join(
         dir_name,
         '../ai/person.jpg'
-        )
+    )
     abs_path = os.path.abspath(source_file)
     source_uri = pathlib.Path(abs_path).as_uri()
-    _gst_out_queue = Queue(10)
+    _gst_out_queue = multiprocessing.Queue(10)
     _gst_stop_signal = threading.Event()
     _gst_eos_reached = threading.Event()
     _gst_thread = threading.Thread(
@@ -90,7 +94,7 @@ def test_image_source_one_sample():
                 'stop_signal': _gst_stop_signal,
                 'eos_reached': _gst_eos_reached,
                 }
-        )
+    )
     _gst_thread.daemon = True
     _gst_thread.start()
     print('Gst service started. Waiting for a sample.')
@@ -207,10 +211,10 @@ def test_still_image_source_one_sample_main_thread():
     source_file = os.path.join(
         dir_name,
         '../ai/person.jpg'
-        )
+    )
     abs_path = os.path.abspath(source_file)
     source_uri = pathlib.Path(abs_path).as_uri()
-    _gst_out_queue = Queue(10)
+    _gst_out_queue = multiprocessing.Queue(10)
     _gst_stop_signal = threading.Event()
     _gst_eos_reached = threading.Event()
     _test_start_gst_service2(
@@ -218,7 +222,7 @@ def test_still_image_source_one_sample_main_thread():
         out_queue=_gst_out_queue,
         stop_signal=_gst_stop_signal,
         eos_reached=_gst_eos_reached
-        )
+    )
     print('Gst service started. Waiting for a sample.')
     sample_img = _gst_out_queue.get(timeout=5)
     print('sample: %r' % (sample_img.keys()))
@@ -259,10 +263,10 @@ def test_sample_out_queue_full_on_sample():
     source_file = os.path.join(
         dir_name,
         '../ai/person.jpg'
-        )
+    )
     abs_path = os.path.abspath(source_file)
     source_uri = pathlib.Path(abs_path).as_uri()
-    _gst_out_queue = Queue(1)
+    _gst_out_queue = multiprocessing.Queue(1)
     last_in = 'only one sample allowed in this queue'
     _gst_out_queue.put(last_in)
     assert _gst_out_queue.full()
@@ -273,7 +277,7 @@ def test_sample_out_queue_full_on_sample():
         out_queue=_gst_out_queue,
         stop_signal=_gst_stop_signal,
         eos_reached=_gst_eos_reached
-        )
+    )
     svc.run()
     print('Gst service started. Waiting for a sample.')
     _gst_eos_reached.wait(timeout=2)
@@ -357,7 +361,7 @@ def test_service_terminate_no_stop_signal():
 
 class _TestGstService9(GstService):
     def __init__(self):
-        self._out_queue = Queue(1)
+        self._out_queue = multiprocessing.Queue(1)
 
 
 class _TestMapInfo:
@@ -480,3 +484,28 @@ def test_gst_set_state_playing_no_preroll():
     assert not gst.source.is_live
     gst._gst_loop()
     assert gst.source.is_live
+
+
+def test_dev_video_source():
+    
+    def create_gst(fmt=None, uri=False):
+        gst = GstService(
+            source_conf={
+                "uri": "/dev/video0" if not uri else "file:///dev/video0",
+                "format": fmt
+            },
+            out_queue=multiprocessing.Queue(1),
+            stop_signal=multiprocessing.Event(),
+            eos_reached=multiprocessing.Event()
+        )
+        return gst._get_pipeline_args()
+
+    pipeline = create_gst("h264", True)
+    assert "v4l2src" in pipeline
+    assert "x-h264" in pipeline
+
+    pipeline = create_gst("jpeg")
+    assert "jpeg" in pipeline
+
+    pipeline = create_gst(None)
+    assert "raw" in pipeline

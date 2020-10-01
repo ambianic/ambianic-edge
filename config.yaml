@@ -21,15 +21,25 @@ timeline:
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
 sources:
-#  front_door_camera:
-#    uri: *secret_uri_front_door_camera
-    # type: video, audio, or auto
-#    type: video
-#    live: true
-#  entry_area_camera:
-#    uri: *secret_uri_entry_area_camera
-#    type: video
-#    live: true
+
+  # front_door_camera:
+  #   uri: *secret_uri_front_door_camera
+  #   type: video, audio, or auto
+  #   type: video
+  #   live: true
+
+  # direct support for raspberry picamera
+  picamera:
+    uri: picamera
+    type: video
+    live: true
+
+  # local video device integration example
+  webcam:
+    uri: /dev/video0
+    type: video
+    live: true
+
   recorded_cam_feed:
     uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
 #    uri: rtsp://admin:121174l2ll74@192.168.86.131:554/Streaming/Channels/101
@@ -55,8 +65,7 @@ ai_models:
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
   front_door_watch:
-    - source: recorded_cam_feed
-#    - source: front_door_cam
+    - source: picamera
     - detect_objects: # run ai inference on the input data
        ai_model: object_detection
        confidence_threshold: 0.8

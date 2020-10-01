@@ -1,5 +1,40 @@
 # Semantic Versioning Changelog
 
+## [1.8.2](https://github.com/ambianic/ambianic-edge/compare/v1.8.1...v1.8.2) (2020-09-27)
+
+
+### Bug Fixes
+
+* use picamera continous_capture ([e3ec59a](https://github.com/ambianic/ambianic-edge/commit/e3ec59a69eb7fd59b5b00f34b7f2e23f29b6990e)), closes [#217](https://github.com/ambianic/ambianic-edge/issues/217)
+
+## [1.8.1](https://github.com/ambianic/ambianic-edge/compare/v1.8.0...v1.8.1) (2020-09-24)
+
+
+### Bug Fixes
+
+* **pencil:** picamera buffer access [#215](https://github.com/ambianic/ambianic-edge/issues/215) ([4f77e0a](https://github.com/ambianic/ambianic-edge/commit/4f77e0a704f3d38b490bbf394358055034947634))
+
+# [1.8.0](https://github.com/ambianic/ambianic-edge/compare/v1.7.0...v1.8.0) (2020-09-22)
+
+
+### Features
+
+* initial picamera support [#214](https://github.com/ambianic/ambianic-edge/issues/214) ([37c4031](https://github.com/ambianic/ambianic-edge/commit/37c4031c2a88beb73de31add64d0793ce1ce1d3d))
+
+# [1.7.0](https://github.com/ambianic/ambianic-edge/compare/v1.6.0...v1.7.0) (2020-08-18)
+
+
+### Features
+
+* added file:// prefix support to uniform uri ([7808b81](https://github.com/ambianic/ambianic-edge/commit/7808b8129fc53b77ab96feef603d03f31b822238)), closes [#211](https://github.com/ambianic/ambianic-edge/issues/211)
+
+# [1.6.0](https://github.com/ambianic/ambianic-edge/compare/v1.5.0...v1.6.0) (2020-08-11)
+
+
+### Features
+
+* local camera support ([54983c7](https://github.com/ambianic/ambianic-edge/commit/54983c7533fd168ac186e8cda5089c7f971a8d16)), closes [#205](https://github.com/ambianic/ambianic-edge/issues/205)
+
 # [1.5.0](https://github.com/ambianic/ambianic-edge/compare/v1.4.0...v1.5.0) (2020-08-04)
 
 

@@ -11,6 +11,7 @@ import requests
 from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.avsource import gst_process
+from ambianic.pipeline.avsource.picam import Picamera
 
 log = logging.getLogger(__name__)
 
@@ -104,6 +105,16 @@ class AVSourceElement(PipeElement):
         log.debug("Pausing for a moment to let remote network issues settle")
         time.sleep(1)
 
+    def _run_picamera_fetch(self):
+        with Picamera() as picamera:
+            while not self._stop_requested:
+                if picamera.has_failure():
+                    log.warning(picamera.error)
+                    break
+                image = picamera.acquire()
+                if image is not None:
+                    self.receive_next_sample(image=image)
+
     def _run_http_fetch(self, url=None, continuous=False):
         log.debug("Fetching source uri sample over http: %r", url)
         assert url
@@ -133,8 +144,6 @@ class AVSourceElement(PipeElement):
                     log.debug('Completed one time http image fetch from URL: %r',
                             url)
                     break
-
-
 
     def _run_gst_service(self):
         log.debug("Starting Gst service process...")
@@ -258,7 +267,11 @@ class AVSourceElement(PipeElement):
         super().start()
         log.info("Starting %s", self.__class__.__name__)
         self._stop_requested = False
-        if self._source_conf['uri'].startswith('http') and \
+
+        if self._source_conf['uri'] == "picamera":
+            log.debug("Input source is picamera")
+            self._run_picamera_fetch()
+        elif self._source_conf['uri'].startswith('http') and \
             self._source_conf['type'] == 'image':
             log.debug("""
                 Input source is an http still image: %r
