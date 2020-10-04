@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 from ambianic.pipeline.ai.inference import TFInferenceEngine
 # from edgetpu.basic.basic_engine import BasicEngine
 # from pkg_resources import parse_version
@@ -88,7 +88,8 @@ class PoseEngine(TFInferenceEngine):
           ValueError: An error occurred when model output is invalid.
         """
         assert model is not None
-        super().__init__(self, model)
+        labels = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pose_labels.txt")
+        super().__init__(model, labels)
         self._mirror = mirror
 
         self._input_tensor_shape = self.get_input_tensor_shape()
@@ -105,9 +106,9 @@ class PoseEngine(TFInferenceEngine):
         # have to figure out the boundaries from the tensor shapes & sizes.
         offset = 0
         self._output_offsets = [0]
-        for size in self.get_all_output_tensors_sizes():
-            offset += size
-            self._output_offsets.append(int(offset))
+        # for size in self.get_all_output_tensors_sizes():
+        #     offset += size
+        #     self._output_offsets.append(int(offset))
 
     def get_input_tensor_shape(self):
         """Get the shape of the input tensor structure.
@@ -134,12 +135,13 @@ class PoseEngine(TFInferenceEngine):
         An array (:obj:`numpy.ndarray`) with the length of each output tensor
         (this assumes that all output tensors are 1-D).
         """
-        log.INFO('PoseNet model output tensor details: ', self.output_details)
-        output_tensor_sizes = [0]
+        log.info('PoseNet model output tensor details: %s' % self.output_details)
+        # output_tensor_sizes = [0]
         # for output_tensor_detail in tfe.output_details:
         #     self.output_tensor_sizes.append(output_tensor_detail[?])
-        #return self._engine.get_all_output_tensors_sizes()
-        raise NotImplementedError()
+        # return self._engine.get_all_output_tensors_sizes()
+        # raise NotImplementedError()
+        return self.output_details
 
     def DetectPosesInImage(self, img):
         """

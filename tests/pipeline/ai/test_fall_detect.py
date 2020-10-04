@@ -9,7 +9,8 @@ def _fall_detect_config():
     _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
         _dir,
-        'posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
+        # 'posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite' 
+        'posenet_mobilenet_v1_075_721_1281_quant.tflite'
         )
     _good_edgetpu_model = os.path.join(
         _dir,
@@ -51,13 +52,13 @@ def test_model_inputs():
     """Verify against known model inputs."""
     config = _fall_detect_config()
     fall_detector = FallDetector(**config)
-    tfe = fall_detector._tfengine
+    tfe = fall_detector._pose_engine
     samples = tfe.input_details[0]['shape'][0]
     assert samples == 1
     height = tfe.input_details[0]['shape'][1]
-    assert height == 300
+    assert height == 721
     width = tfe.input_details[0]['shape'][2]
-    assert width == 300
+    assert width == 1281
     colors = tfe.input_details[0]['shape'][3]
     assert colors == 3
 
@@ -65,19 +66,19 @@ def test_model_inputs():
 def test_model_outputs():
     """Verify against known model outputs."""
     config = _fall_detect_config()
-    object_detector = FallDetector(**config)
-    tfe = fall_detector._tfengine
+    fall_detector = FallDetector(**config)
+    tfe = fall_detector._pose_engine
     assert tfe.output_details[0]['shape'][0] == 1
     scores = tfe.output_details[0]['shape'][1]
-    assert scores == 20
+    assert scores == 46
     assert tfe.output_details[1]['shape'][0] == 1
     boxes = tfe.output_details[1]['shape'][1]
-    assert boxes == 20
+    assert boxes == 46
     assert tfe.output_details[2]['shape'][0] == 1
     labels = tfe.output_details[2]['shape'][1]
-    assert labels == 20
-    num = tfe.output_details[3]['shape'][0]
-    assert num == 1
+    assert labels == 46
+    # num = tfe.output_details[3]['shape'][0]
+    # assert num == 1
 
 
 def test_background_image():
@@ -110,8 +111,8 @@ def test_one_person():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
-    img_1 = _get_image(file_name='basic_fall_1.jpg')
-    img_2 = _get_image(file_name='basic_fall_2.jpg')
+    img_1 = _get_image(file_name='basic_fall_1.png')
+    img_2 = _get_image(file_name='basic_fall_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.receive_next_sample(image=img_2)
 
