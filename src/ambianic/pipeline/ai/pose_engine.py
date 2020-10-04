@@ -124,7 +124,6 @@ class PoseEngine(TFInferenceEngine):
         """
         return self.input_details[0]['shape']
 
-
     def get_all_output_tensors_sizes(self):
         """Gets the size of each output tensor.
         A model may output several tensors, but the return from :func:`run_inference`
@@ -166,7 +165,9 @@ class PoseEngine(TFInferenceEngine):
         return self.ParseOutput(self.run_inference(img.flatten()))
 
     def run_inference(self, img=None):
-        raise NotImplementedError()
+        self._tf_interpreter.set_tensor(self.input_details[0]['index'], img)
+        self._tf_interpreter.invoke()
+        return self._tf_interpreter.get_tensor(self.output_details[0]['index'])
 
     def ParseOutput(self, output):
         inference_time, output = output

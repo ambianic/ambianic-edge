@@ -26,6 +26,10 @@ def _get_edgetpu_interpreter(model=None):  # pragma: no cover
         except Exception as e:
             log.debug('EdgeTPU init error: %r', e)
             # log.debug(stacktrace())
+#        edgetpu_class = 'DetectionEngine'
+#        module_object = import_module('edgetpu.detection.engine',
+#                                      packaage=edgetpu_class)
+#        target_class = getattr(module_object, edgetpu_class)
     return tf_interpreter
 
 
@@ -97,16 +101,6 @@ class TFInferenceEngine:
                   top_k)
         # EdgeTPU is not available in testing and other environments
         # load dynamically as needed
-#        edgetpu_class = 'DetectionEngine'
-#        module_object = import_module('edgetpu.detection.engine',
-#                                      packaage=edgetpu_class)
-#        target_class = getattr(module_object, edgetpu_class)
-
-        posenet_decoder_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 
-            "posenet_decoder.so"
-        )
-
         self._tf_interpreter = _get_edgetpu_interpreter(model=model_edgetpu)
         if not self._tf_interpreter:
             log.debug('EdgeTPU not available. Will use TFLite CPU runtime.')

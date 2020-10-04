@@ -148,15 +148,15 @@ def test_bad_sample_good_sample():
     def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result
         result = inference_result
-    object_detector = ObjectDetector(**config)
+    fall_detector = FallDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
-    object_detector.connect_to_next_element(output)
+    fall_detector.connect_to_next_element(output)
     # bad sample
-    object_detector.receive_next_sample(image=None)
+    fall_detector.receive_next_sample(image=None)
     assert result == 'nothing passed to me'
     # good sample
-    img_1 = _get_image(file_name='basic_fall_1.jpg')
-    img_2 = _get_image(file_name='basic_fall_2.jpg')
+    img_1 = _get_image(file_name='basic_fall_1.png')
+    img_2 = _get_image(file_name='basic_fall_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.receive_next_sample(image=img_2)
 
