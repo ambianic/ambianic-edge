@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+
 class PoseNet():
 	def __init__(self, run_on_pi=True):
 
@@ -24,14 +25,12 @@ class PoseNet():
 			import tensorflow as tf
 			self.interpreter = tf.lite.Interpreter(model_path=self.model_path)
 
-
 		self.interpreter.allocate_tensors()
 		self.input_details = self.interpreter.get_input_details()
 		self.output_details = self.interpreter.get_output_details()
 
 		self.height = self.input_details[0]['shape'][1]
 		self.width = self.input_details[0]['shape'][2]
-
 
 	def parse_output(self, heatmap_data, offset_data, threshold):
 
@@ -51,10 +50,10 @@ class PoseNet():
 		for i in range(heatmap_data.shape[-1]):
 
 			joint_heatmap = heatmap_data[...,i]
-			max_val_pos = np.squeeze(np.argwhere(joint_heatmap==np.max(joint_heatmap)))
-			remap_pos = np.array(max_val_pos/8*257,dtype=np.int32)
-			pose_kps[i,0] = int(remap_pos[0] + offset_data[max_val_pos[0],max_val_pos[1],i])
-			pose_kps[i,1] = int(remap_pos[1] + offset_data[max_val_pos[0],max_val_pos[1],i+joint_num])
+			max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
+			remap_pos = np.array(max_val_pos/8*257, dtype=np.int32)
+			pose_kps[i,0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1],i])
+			pose_kps[i,1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1],i+joint_num])
 			max_prob = np.max(joint_heatmap)
 
 			if max_prob > threshold:
@@ -63,23 +62,19 @@ class PoseNet():
 
 		return pose_kps
 
-
 	def draw_kps(self, show_img, kps, ratio):
 
 		pil_im = Image.fromarray(show_img)
 		draw = ImageDraw.Draw(pil_im)
 
 		for i in range(kps.shape[0]):
-			if kps[i,2]:
-						
-				x, y, r  = int(round(kps[i,1]*ratio[1])), int(round(kps[i,0]*ratio[0])), 2
+			if kps[i,2]:		
+				x, y, r = int(round(kps[i,1]*ratio[1])), int(round(kps[i,0]*ratio[0])), 2
 				leftUpPoint = (x-r, y-r)
 				rightDownPoint = (x+r, y+r)
 				twoPointList = [leftUpPoint, rightDownPoint]
 				draw.ellipse(twoPointList, fill=(255,0,0,255))
-				
 		pil_im.save(self.output_path, "PNG")
-
 
 	def detection_from_image(self, image_path):
 
@@ -87,12 +82,11 @@ class PoseNet():
 		self.output_path = self.template_path.replace("jpg", "png")
 
 		template_image_src = Image.open(self.template_path)
-		src_templ_height, src_tepml_width = template_image_src.size 
+		src_templ_height, src_tepml_width = template_image_src.size
 		template_image = template_image_src.resize((self.width, self.height), Image.ANTIALIAS)
 
 		templ_ratio_width = src_tepml_width/self.width
-		templ_ratio_height = src_templ_height/self.height
-		
+		templ_ratio_height = src_templ_height/self.height		
 
 		template_input = np.expand_dims(template_image.copy(), axis=0)
 		floating_model = self.input_details[0]['dtype'] == np.float32
@@ -116,7 +110,6 @@ class PoseNet():
 
 		tt = np.asarray(template_image_src)
 		self.draw_kps(tt,template_kps, (templ_ratio_width, templ_ratio_height))
-
 	
 	def detection_from_video(self, video_path=0):
 
@@ -139,9 +132,7 @@ class PoseNet():
 			if floating_model:
 				template_input = (np.float32(template_input) - 127.5) / 127.5
 				
-			
 			self.interpreter.set_tensor(self.input_details[0]['index'], template_input)
-			
 			self.interpreter.invoke()
 			
 			template_output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
@@ -149,8 +140,7 @@ class PoseNet():
 			
 			template_heatmaps = np.squeeze(template_output_data)
 			template_offsets = np.squeeze(template_offset_data)
-			
-			
+						
 			template_show = np.squeeze((template_input.copy()*127.5+127.5)/255.0)
 			template_show = np.array(template_show*255,np.uint8)
 			template_kps = self.parse_output(template_heatmaps,template_offsets,0.3)
@@ -183,7 +173,6 @@ class PoseNet():
 		vs.release()
 		out.release()
 		cv2.destroyAllWindows()
-
 		
 posenet_model = PoseNet(run_on_pi=False)
 
@@ -195,7 +184,3 @@ posenet_model.detection_from_video(video_path='test_input.avi')
 
 # Detect key points from webcam
 posenet_model.detection_from_video()
-
-
-
-
