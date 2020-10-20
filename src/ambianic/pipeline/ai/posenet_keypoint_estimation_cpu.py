@@ -175,8 +175,8 @@ if __name__ == "__main__":
    Detect key points from image
    posenet_model.detection_from_image("1.jpg")
 
-   Detect key points from video
-   posenet_model.detection_from_video(video_path='test_input.avi')
+   #Detect key points from video
+   #posenet_model.detection_from_video(video_path='test_input.avi')
 
    Detect key points from webcam
    posenet_model.detection_from_video()
