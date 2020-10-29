@@ -95,8 +95,7 @@ class FallDetector(TFImageDetection):
         h_factor = thumbnail.size[1] / new_im.size[1]
 
         # Detection using tensorflow posenet module
-        poses, inference_time = self._pose_engine.DetectPosesInImage(\
-                                                  np.uint8(new_im))
+        poses, inference_time = self._pose_engine.DetectPosesInImage(np.uint8(new_im))
 
         # Obtain time difference between consecutive frames
         time_diff = time.monotonic() - self._prev_infer_time

@@ -97,6 +97,23 @@ def test_background_image():
     assert not result
 
 
+def test_posenet_load_image():
+    """Expect to detect a fall."""
+    config = _fall_detect_config()
+    result = None
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='basic_fall_1.png')
+    fall_detector.receive_next_sample(image=img_1)
+
+    assert result is not None
+
 def test_one_person():
     """Expect to detect a fall."""
     config = _fall_detect_config()

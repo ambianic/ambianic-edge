@@ -160,19 +160,20 @@ class PoseEngine(TFInferenceEngine):
                                [0, 0]], mode='constant')
         img = img[0:self.image_height, 0:self.image_width]
         assert (img.shape == tuple(self._input_tensor_shape[1:]))
+        
+        img = np.reshape(img, self._input_tensor_shape)
 
         # Run the inference (API expects the data to be flattened).
-        return self.ParseOutput(self.run_inference(img.flatten()))
+        return self.ParseOutput(self.run_inference(img))
 
     def run_inference(self, img=None):
         self._tf_interpreter.set_tensor(self.input_details[0]['index'], img)
         self._tf_interpreter.invoke()
         return self._tf_interpreter.get_tensor(self.output_details[0]['index'])
 
-    def ParseOutput(self, output):
-        inference_time, output = output
-        outputs = [output[i:j] for i, j in zip(self._output_offsets, \
-                                               self._output_offsets[1:])]
+    def ParseOutput(self, outputs):
+        # outputs = [output[i:j] for i, j in zip(self._output_offsets, \
+        #                                        self._output_offsets[1:])]
 
         keypoints = outputs[0].reshape(-1, len(KEYPOINTS), 2)
         keypoint_scores = outputs[1].reshape(-1, len(KEYPOINTS))
