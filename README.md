@@ -9,7 +9,7 @@
   <img src="https://github.com/lfai/artwork/raw/master/lfaidata-assets/lf-member/associate/lf_mem_asso.png"  height="200" style="display:inline;vertical-align:middle;padding:2%">   
 </a>
  &nbsp; 
-<a href=" https://twitter.com/TensorFlow/status/1291071490062983172?s=20">
+<a href="https://twitter.com/TensorFlow/status/1291071490062983172?s=20">
   <img src="https://pbs.twimg.com/profile_banners/1195860619284664320/1596827858/1500x500"  height="200" style="display:inline;vertical-align:middle;padding:2%">   
 </a>
 
