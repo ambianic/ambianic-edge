@@ -73,4 +73,4 @@ This project has been inspired by the prior work of many bright people. Special 
 * [Robin Cole](https://github.com/robmarkcole) for his invaluable insights and code on home automation AI with Home Assistant
 * [Blake Blackshear](https://github.com/blakeblackshear) for his work on Frigate and vision for the home automation AI space
   
-  
+    
