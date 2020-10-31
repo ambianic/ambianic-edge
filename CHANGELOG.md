@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.8.5](https://github.com/ambianic/ambianic-edge/compare/v1.8.4...v1.8.5) (2020-10-31)
+
+
+### Bug Fixes
+
+* upgrade to aiortc 1.0 ([ee97847](https://github.com/ambianic/ambianic-edge/commit/ee97847e2a6a1ec020d63dd8f1ccb14cf98bafb7))
+
 ## [1.8.4](https://github.com/ambianic/ambianic-edge/compare/v1.8.3...v1.8.4) (2020-10-31)
 
 
