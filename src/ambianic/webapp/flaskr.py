@@ -10,8 +10,8 @@ from flask.logging import default_handler
 from requests import get
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
+from ambianic import config
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
-from ambianic import config_manager
 from ambianic.webapp.server import samples, config_sources
 
 log = logging.getLogger(__name__)
@@ -218,9 +218,7 @@ def create_app(data_dir=None):
 
     @app.route('/api/config', methods=['GET'])
     def get_config():
-        config = config_manager.get()
-        config = config if config else {}
-        return jsonify(config)
+        return jsonify(config.as_dict())
 
     @app.route(
         '/api/config/source/<source_id>',

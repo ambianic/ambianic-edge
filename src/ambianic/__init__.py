@@ -1,11 +1,13 @@
-
 import os
-from ambianic.config_mgm import ConfigurationManager
-
+from dynaconf import Dynaconf
 DEFAULT_WORK_DIR = '/workspace'
 
-config_manager = ConfigurationManager(config={})
 server_instance = None
+
+config = Dynaconf(
+    settings_files=['config.yaml', 'secrets.yaml'],
+    environments=False,
+)
 
 
 def get_work_dir():

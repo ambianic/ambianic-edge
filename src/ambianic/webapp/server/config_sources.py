@@ -1,6 +1,6 @@
 
 from werkzeug.exceptions import NotFound, BadRequest
-from ambianic import config_manager
+from ambianic import config
 import logging
 
 log = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def get(source_id):
     if not isinstance(source_id, str):
         raise BadRequest("source id should be a string")
 
-    source = config_manager.get_source(source_id)
+    source = config.sources[source_id]
     
     if source is None:
         raise NotFound("source not found")
@@ -60,12 +60,12 @@ def remove(source_id):
     """Remove source by id"""
     log.info("Removing source_id=%s", source_id)
     get(source_id)
-    del config_manager.get_sources()[source_id]
+    del config.sources[source_id]
 
 
 def save(source_id, source):
     """Save source configuration information"""
     log.info("Saving source_id=%s", source_id)
     source = validate(source_id, source)
-    config_manager.get_sources().set(source["id"], source)
-    return config_manager.get_source(source["id"]).to_values()
+    config.sources[source["id"]] = source
+    return config.sources[source["id"]]

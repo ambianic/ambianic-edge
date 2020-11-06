@@ -10,9 +10,8 @@ from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
-from ambianic import config_mgm, config_manager
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
-
+from ambianic import config
 
 log = logging.getLogger(__name__)
 
@@ -67,23 +66,6 @@ class PipelineServer(ManagedService):
     def __init__(self, config):
         self.config = config
         self.pipeline_server_job = None
-        self._restarting = threading.Event()
-
-    def trigger_event(self, event: config_mgm.ConfigChangedEvent):
-        """Trigger change event on pipelines not running. 
-        Pipelines already runnig are already notified by rective configurations
-
-        """
-        if self.pipeline_server_job is None:
-            return
-
-        if self._restarting.is_set():
-            return
-
-        self._restarting.set()
-        self.stop()
-        self.start()
-        self._restarting.clear()
 
     def start(self, **kwargs):
         log.info('PipelineServer server job starting...')
@@ -320,15 +302,7 @@ class Pipeline(ManagedService):
             "Pipeline config must begin with a 'source' element instead of {}"\
             .format(source_element_key)
 
-        for _element_config in self.config:
-
-            # copy the dictionary to not modify the configuration reference
-            if isinstance(_element_config, (config_mgm.ConfigList, config_mgm.ConfigDict)):
-                element_def = _element_config.to_values()
-            else:
-                # if it is a dict (eg. in tests)
-                element_def = copy.deepcopy(_element_config)
-
+        for element_def in self.config:
             log.info('Pipeline %s loading next element: %s',
                      self.name, element_def)
 
@@ -394,7 +368,7 @@ class Pipeline(ManagedService):
         if ai_model_id is None:
             return True
 
-        ai_model = config_manager.get_ai_model(ai_model_id)
+        ai_model = config.ai_models[ai_model_id]
         if ai_model is None:
             log.warning(
                 "AI model id %s not found, cannot start pipeline %s",
@@ -429,7 +403,7 @@ class Pipeline(ManagedService):
             return True
 
         # track the source_id
-        source = config_manager.get_source(source_id)
+        source = config.sources[source_id]
         if source is None:
             log.warning(
                 "Source id %s not found, cannot start pipeline %s",
