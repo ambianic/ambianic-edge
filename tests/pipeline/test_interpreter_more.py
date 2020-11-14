@@ -1,6 +1,5 @@
 """More test cases for ambianic.interpreter module."""
 from ambianic import pipeline
-from ambianic.config_mgm import Config
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
 from ambianic.pipeline.interpreter import \
@@ -52,13 +51,13 @@ class _TestSourceElement(pipeline.PipeElement):
 def _get_config(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    server_config = Config({
+    server_config = {
         'pipelines': {
             'pipeline_one': [
                 {'source': {'uri': 'test'}}
             ]
         },
-    })
+    }
     return server_config
 
 
@@ -72,10 +71,10 @@ def test_pipeline_server_init():
 def _get_config_invalid_element(source_class=None):
     # override source op with a mock test class
     Pipeline.PIPELINE_OPS['source'] = source_class
-    pipeline_config = Config([
+    pipeline_config = [
         {'source': {'uri': 'test'}},
         {'scifi': {'one': 'day soon'}},
-    ])
+    ]
     return pipeline_config
 
 
@@ -298,9 +297,7 @@ def test_pipeline_heal2():
 
 def test_pipeline_start_no_elements():
     Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
-    pipeline_config = [
-        {'source': "unavailable"},
-        ]
+    pipeline_config = [{'source': "unavailable"}]
     pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
     assert len(pipeline._pipe_elements) == 0
     pipeline.start()

@@ -5,6 +5,7 @@ import time
 import threading
 import copy
 
+from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
@@ -137,9 +138,7 @@ class PipelineServerJob(ManagedService):
             if pipelines_config:
                 # get main data dir config and pass
                 # on to pipelines to use
-                data_dir = self._config.get('data_dir', None)
-                if not data_dir:
-                    data_dir = './data'
+                data_dir = self._config.get('data_dir', DEFAULT_DATA_DIR)
                 self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
@@ -378,7 +377,7 @@ class Pipeline(ManagedService):
             return False
 
         # merge the model config but keep the pipe element specific one
-        for key, val in ai_model.to_values().items():
+        for key, val in ai_model.items():
             if key not in ai_element:
                 ai_element[key] = val
 
@@ -403,7 +402,7 @@ class Pipeline(ManagedService):
             return True
 
         # track the source_id
-        source = config.sources[source_id]
+        source = config.sources.get(source_id, None)
         if source is None:
             log.warning(
                 "Source id %s not found, cannot start pipeline %s",
@@ -412,7 +411,7 @@ class Pipeline(ManagedService):
             )
             return False
 
-        element_def["source"] = source.to_values()
+        element_def["source"] = source
         element_def["source"]["source_id"] = source_id
 
         return True

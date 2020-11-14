@@ -53,7 +53,7 @@ def get(source_id):
     if source is None:
         raise NotFound("source not found")
 
-    return source.to_values()
+    return source
 
 
 def remove(source_id):

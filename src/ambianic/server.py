@@ -10,7 +10,7 @@ from watchdog.events import LoggingEventHandler
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic import logger, config
+from ambianic import logger, config, config_util
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
@@ -36,20 +36,30 @@ class AmbianicServer:
 
         """
         assert work_dir
+
         self._env_work_dir = work_dir
+
         # array of managed specialized servers
         self._servers = {}
         self._service_exit_requested = False
         self._latest_heartbeat = time.monotonic()
 
         self.config_observer = Observer()
-        self.watch_config()
+        self.watching_config = False
 
-    def watch_config(self):
+    def stop_watch_config(self):
+        if self.watching_config:
+            self.config_observer.stop()
+            self.config_observer.join()
+
+    def start_watch_config(self):
+
+        if self.watching_config:
+            self.stop_watch_config()
 
         config_paths = [
             os.path.join(self._env_work_dir, "config.yaml"),
-            os.path.join(self._env_work_dir, "secrets.yaml"),
+            # os.path.join(self._env_work_dir, "secrets.yaml"),
         ]
 
         for filepath in config_paths:
@@ -62,13 +72,13 @@ class AmbianicServer:
                 recursive=False
             )
         self.config_observer.start()
+        self.watching_config = True
 
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
         for srv in servers.values():
             srv.stop()
-        self.config_observer.stop()
-        self.config_observer.join()
+        self.stop_watch_config()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
@@ -109,6 +119,11 @@ class AmbianicServer:
 
     def start(self):
         """Programmatic start of the main service."""
+
+        assert os.path.exists(self._env_work_dir)
+
+        self.start_watch_config()
+
         logger.configure(config.get("logging"))
         timeline.configure_timeline(config.get("timeline"))
 

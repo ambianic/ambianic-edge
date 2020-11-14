@@ -4,7 +4,7 @@
 version: '0.1.1'
 
 # path to the data directory
-data_dir: &data_dir ./data
+data_dir: ./data
 
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
@@ -12,15 +12,15 @@ logging:
   level: DEBUG
 
 # path to saved object detections
-object_detect_dir: &object_detect_dir ./data/objects
+object_detect_dir: ./data/objects
 # path to saved face detections
-face_detect_dir: &face_detect_dir ./data/faces
+face_detect_dir: ./data/faces
 
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
 sources:
-  front_door_camera: &src_front_door_cam
-    uri: *secret_uri_front_door_camera
+  front_door_camera: 
+    uri: null
     type: video
 
 ai_models:

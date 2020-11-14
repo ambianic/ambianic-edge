@@ -1,12 +1,13 @@
 import logging
 import os
-from ambianic import pipeline, config_manager
+from ambianic import pipeline, config
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
 
+from dynaconf.utils import DynaconfDict
+# mocked_settings = DynaconfDict({'FOO': 'BAR'})
 
 log = logging.getLogger(__name__)
-
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
@@ -14,7 +15,7 @@ def setup_module(module):
     interpreter.PIPELINE_CLASS = None
     interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
     _TestPipeline.PIPELINE_OPS['source'] = AVSourceElement
-    config_manager.stop()
+    config.reload()
 
 
 def teardown_module(module):
@@ -24,7 +25,7 @@ def teardown_module(module):
     interpreter.PIPELINE_CLASS = None
     interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
     _TestPipeline.PIPELINE_OPS['source'] = AVSourceElement
-    config_manager.stop()
+    config.reload()
 
 
 class _TestPipeline(interpreter.Pipeline):
@@ -35,11 +36,6 @@ class _TestPipeline(interpreter.Pipeline):
         self.on_change_called = False
         self.restart_called = False
         log.debug("_TestPipeline.__init__")
-
-    def on_config_change(self, event):
-        super().on_config_change(event)
-        self.on_change_called = True
-        log.debug("_TestPipeline.on_config_change")
 
     def restart(self):
         super().restart()
@@ -90,7 +86,7 @@ def _one_pipeline_setup(pipelines_config=None, set_source_el=True):
     if set_source_el:
         log.info("set source=_TestSourceElement")
         interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
-    return interpreter.get_pipelines(pipelines_config=pipelines_config)
+    return interpreter.get_pipelines(pipelines_config=DynaconfDict(pipelines_config))
 
 
 def test_get_pipelines_none():
@@ -116,14 +112,14 @@ def test_get_pipelines_two():
     # override source op with a mock test class
     interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
     p = interpreter.get_pipelines(
-        pipelines_config=config_manager.Config({
+        pipelines_config={
             'pipeline_one': [
                 {'source': {'uri': 'test'}}
             ],
             'pipeline_two': [
                 {'source': {'uri': 'test2'}}
             ]
-        })
+        }
     )
     assert isinstance(p[0], interpreter.Pipeline)
     assert p[0].name == 'pipeline_one'
@@ -164,7 +160,8 @@ def test_pipeline_stop():
 
 def test_pipeline_source_config():
     """Test the source ref is resolved"""
-    config_manager.set({
+
+    config.update({
         "sources": {
             "source1": {
                 "uri": "test",
@@ -178,7 +175,8 @@ def test_pipeline_source_config():
             ]
         }
     })
-    p = _one_pipeline_setup(config_manager.get_pipelines())
+
+    p = _one_pipeline_setup(pipelines_config=config.pipelines)
     p[0].load_elements()
 
     log.debug(p[0]._pipe_elements[0])
@@ -188,9 +186,7 @@ def test_pipeline_source_config():
 def test_pipeline_ai_model_config():
     """Test the source ref is resolved"""
 
-    config_manager.stop()
-
-    config_manager.set({
+    config.update({
         "ai_models": {
             "test": {
                 "labels": "ai_models/coco_labels.txt",
@@ -209,7 +205,8 @@ def test_pipeline_ai_model_config():
             ]
         }
     })
-    p = _one_pipeline_setup(config_manager.get_pipelines())
+
+    p = _one_pipeline_setup(pipelines_config=config.pipelines)
     p[0].load_elements()
 
     log.debug(p[0]._pipe_elements[1])

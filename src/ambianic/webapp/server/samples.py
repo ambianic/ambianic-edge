@@ -7,6 +7,8 @@ import os
 import json
 import yaml
 
+from ambianic import DEFAULT_DATA_DIR
+
 log = logging.getLogger()
 
 SAMPLES = [
@@ -94,7 +96,7 @@ def get_samples(before_datetime=None, page=1):
     log.debug('Fetching samples page %d. Page size %d. '
               'Sample index range [%d:%d]. ',
               page, page_size, page_start_position, page_end_position)
-    p = Path('./data/detections/front-door/faces/')
+    p = Path(os.path.join(DEFAULT_DATA_DIR, 'detections/front-door/faces'))
     log.debug('Samples path: %s', p.resolve())
     files = list(p.glob("*-json.txt"))
     log.debug('Fetched %d file names.', len(files))

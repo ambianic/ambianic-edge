@@ -1,14 +1,12 @@
 import os
-from dynaconf import Dynaconf
+from ambianic import config_util
+
 DEFAULT_WORK_DIR = '/workspace'
+DEFAULT_DATA_DIR = './data'
 
 server_instance = None
 
-config = Dynaconf(
-    settings_files=['config.yaml', 'secrets.yaml'],
-    environments=False,
-)
-
+config = config_util.get_default_config()
 
 def get_work_dir():
     """Retrieve the ambianic working directory"""

@@ -10,7 +10,7 @@ from flask.logging import default_handler
 from requests import get
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
-from ambianic import config
+from ambianic import config, DEFAULT_DATA_DIR
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic.webapp.server import samples, config_sources
 
@@ -18,8 +18,6 @@ log = logging.getLogger(__name__)
 
 # configuration
 DEBUG = True
-DEFAULT_DATA_DIR = './data'
-
 
 class FlaskJob(ManagedService):
     """Flask based managed web service."""
@@ -248,7 +246,7 @@ def create_app(data_dir=None):
 
     @app.route('/api/data/<path:path>')
     def data_file(path):
-        data_path = Path('./data').resolve()
+        data_path = Path(DEFAULT_DATA_DIR).resolve()
         log.info('Serving static data file from: %r', data_path / path)
         return flask.send_from_directory(data_path, path)
 
