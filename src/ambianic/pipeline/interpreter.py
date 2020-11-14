@@ -87,8 +87,11 @@ class PipelineServer(ManagedService):
     def stop(self):
         if self.pipeline_server_job:
             log.info('Pipeline server job stopping...')
-            self.pipeline_server_job.stop()
-            self.pipeline_server_job.join()
+            try:
+                self.pipeline_server_job.stop()
+                self.pipeline_server_job.join()
+            except RuntimeError as err:
+                log.warning("Failed stopping: %s" % err)
             self.pipeline_server_job = None
             log.info('Pipeline server job stopped.')
 

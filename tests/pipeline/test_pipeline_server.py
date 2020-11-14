@@ -22,7 +22,7 @@ def test_pipeline_server_start_stop():
     config.update({
         "sources": {
             "test": {
-                "uri": os.path.join(
+                "uri": "file://" + os.path.join(
                     _dir,
                     "avsource/test2-cam-person1.mkv"
                 )
