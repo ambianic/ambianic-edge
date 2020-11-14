@@ -86,7 +86,9 @@ def _one_pipeline_setup(pipelines_config=None, set_source_el=True):
     if set_source_el:
         log.info("set source=_TestSourceElement")
         interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
-    return interpreter.get_pipelines(pipelines_config=DynaconfDict(pipelines_config))
+    return interpreter.get_pipelines(
+        pipelines_config=DynaconfDict(pipelines_config)
+    )
 
 
 def test_get_pipelines_none():

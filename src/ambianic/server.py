@@ -64,7 +64,10 @@ class AmbianicServer:
 
         for filepath in config_paths:
             if not os.path.exists(filepath):
-                log.warning("File %s not found, it will not be watched for changes." % os.path.basename(filepath))
+                log.warning(
+                    "File %s not found, it will not be watched for changes." 
+                        % os.path.basename(filepath)
+                )
                 continue
             self.config_observer.schedule(
                 self.on_config_change,

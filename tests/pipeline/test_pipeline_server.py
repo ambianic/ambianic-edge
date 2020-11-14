@@ -18,7 +18,7 @@ log.setLevel(logging.DEBUG)
 def test_pipeline_server_start_stop():
 
     _dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     config.update({
         "sources": {
             "test": {
