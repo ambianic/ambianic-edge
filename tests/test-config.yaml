@@ -19,7 +19,7 @@ face_detect_dir: ./data/faces
 # Cameras and other input data sources
 # Using Home Assistant conventions to ease upcoming integration
 sources:
-  front_door_camera: 
+  front_door_camera:
     uri: null
     type: video
 
