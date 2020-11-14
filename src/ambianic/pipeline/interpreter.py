@@ -3,7 +3,6 @@ import logging
 from .avsource.av_element import AVSourceElement
 import time
 import threading
-import copy
 
 from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.object_detect import ObjectDetector

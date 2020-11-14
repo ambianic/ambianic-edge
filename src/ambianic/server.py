@@ -5,12 +5,11 @@ import os
 import pathlib
 import time
 from watchdog.observers import Observer
-from watchdog.events import LoggingEventHandler
 
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic import logger, config, config_util
+from ambianic import logger, config
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
