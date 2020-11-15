@@ -3,16 +3,15 @@ import logging
 from .avsource.av_element import AVSourceElement
 import time
 import threading
-import copy
 
+from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
-from ambianic import config_mgm, config_manager
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
-
+from ambianic import config
 
 log = logging.getLogger(__name__)
 
@@ -67,23 +66,6 @@ class PipelineServer(ManagedService):
     def __init__(self, config):
         self.config = config
         self.pipeline_server_job = None
-        self._restarting = threading.Event()
-
-    def trigger_event(self, event: config_mgm.ConfigChangedEvent):
-        """Trigger change event on pipelines not running. 
-        Pipelines already runnig are already notified by rective configurations
-
-        """
-        if self.pipeline_server_job is None:
-            return
-
-        if self._restarting.is_set():
-            return
-
-        self._restarting.set()
-        self.stop()
-        self.start()
-        self._restarting.clear()
 
     def start(self, **kwargs):
         log.info('PipelineServer server job starting...')
@@ -105,8 +87,11 @@ class PipelineServer(ManagedService):
     def stop(self):
         if self.pipeline_server_job:
             log.info('Pipeline server job stopping...')
-            self.pipeline_server_job.stop()
-            self.pipeline_server_job.join()
+            try:
+                self.pipeline_server_job.stop()
+                self.pipeline_server_job.join()
+            except RuntimeError as err:
+                log.warning("Failed stopping: %s" % err)
             self.pipeline_server_job = None
             log.info('Pipeline server job stopped.')
 
@@ -155,9 +140,7 @@ class PipelineServerJob(ManagedService):
             if pipelines_config:
                 # get main data dir config and pass
                 # on to pipelines to use
-                data_dir = self._config.get('data_dir', None)
-                if not data_dir:
-                    data_dir = './data'
+                data_dir = self._config.get('data_dir', DEFAULT_DATA_DIR)
                 self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
@@ -320,15 +303,7 @@ class Pipeline(ManagedService):
             "Pipeline config must begin with a 'source' element instead of {}"\
             .format(source_element_key)
 
-        for _element_config in self.config:
-
-            # copy the dictionary to not modify the configuration reference
-            if isinstance(_element_config, (config_mgm.ConfigList, config_mgm.ConfigDict)):
-                element_def = _element_config.to_values()
-            else:
-                # if it is a dict (eg. in tests)
-                element_def = copy.deepcopy(_element_config)
-
+        for element_def in self.config:
             log.info('Pipeline %s loading next element: %s',
                      self.name, element_def)
 
@@ -394,7 +369,7 @@ class Pipeline(ManagedService):
         if ai_model_id is None:
             return True
 
-        ai_model = config_manager.get_ai_model(ai_model_id)
+        ai_model = config.ai_models[ai_model_id]
         if ai_model is None:
             log.warning(
                 "AI model id %s not found, cannot start pipeline %s",
@@ -404,7 +379,7 @@ class Pipeline(ManagedService):
             return False
 
         # merge the model config but keep the pipe element specific one
-        for key, val in ai_model.to_values().items():
+        for key, val in ai_model.items():
             if key not in ai_element:
                 ai_element[key] = val
 
@@ -429,7 +404,7 @@ class Pipeline(ManagedService):
             return True
 
         # track the source_id
-        source = config_manager.get_source(source_id)
+        source = config.sources.get(source_id, None)
         if source is None:
             log.warning(
                 "Source id %s not found, cannot start pipeline %s",
@@ -438,7 +413,7 @@ class Pipeline(ManagedService):
             )
             return False
 
-        element_def["source"] = source.to_values()
+        element_def["source"] = source
         element_def["source"]["source_id"] = source_id
 
         return True

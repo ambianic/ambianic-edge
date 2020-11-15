@@ -1,7 +1,7 @@
 
 import pytest
 import ambianic
-from ambianic import __main__
+from ambianic import __main__, config
 from ambianic.server import AmbianicServer
 from ambianic.util import ServiceExit, ManagedService
 from ambianic.pipeline.interpreter import PipelineServer
@@ -57,8 +57,9 @@ def _stop_mock_server(server=None, thread=None):
 
 
 def test_no_pipelines():
-    ambianic.server.CONFIG_FILE = 'test-config-no-pipelines.yaml'
     _dir = os.path.dirname(os.path.abspath(__file__))
+    config.clean()
+    config.load_file(path=os.path.join(_dir, 'test-config-no-pipelines.yaml'))
     hb_flag = threading.Event()
     srv, t = _start_mock_server(work_dir=_dir, heartbeat_flag=hb_flag)
     hb_flag.wait(timeout=3)

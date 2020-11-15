@@ -4,7 +4,7 @@
 version: '1.3.29'
 
 # path to the data directory
-data_dir: &data_dir ./data
+data_dir: ./data
 
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:

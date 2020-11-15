@@ -4,12 +4,12 @@ import logging.handlers
 import os
 import pathlib
 import time
+from watchdog.observers import Observer
 
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic.config_mgm import ConfigChangedEvent
-from ambianic import config_manager, logger
+from ambianic import logger, config
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
@@ -21,46 +21,6 @@ ROOT_SERVERS = {
     'pipelines': PipelineServer,
     'web': FlaskServer,
 }
-
-def _configure(env_work_dir=None):
-    """Load configuration settings.
-
-    :returns config dict if configuration was loaded without issues.
-            None or a specific exception otherwise.
-    """
-    assert env_work_dir, 'Working directory required.'
-    assert os.path.exists(env_work_dir), \
-        'working directory invalid: {}'.format(env_work_dir)
-
-    config_manager.stop()
-
-    config = config_manager.load(env_work_dir)
-    if config is None:
-        return None
-
-    def logging_config_handler(event: ConfigChangedEvent):
-        # configure logging
-        log.info("Reconfiguring logging")
-        logger.configure(config.get("logging"))
-
-    def timeline_config_handler(event: ConfigChangedEvent):
-        # configure pipeline timeline event log
-        log.info("Reconfiguring pipeline timeline event log")
-        timeline.configure_timeline(config.get("timeline"))
-
-    # set callback to react to specific configuration changes
-    if config.get("logging", None) is not None:
-        config.get("logging").add_callback(logging_config_handler)
-
-    if config.get("timeline", None) is not None:
-        config.get("timeline").add_callback(timeline_config_handler)
-
-    # initialize logging
-    logging_config_handler(None)
-    timeline_config_handler(None)
-
-    return config
-
 
 class AmbianicServer:
     """Ambianic main server."""
@@ -75,17 +35,52 @@ class AmbianicServer:
 
         """
         assert work_dir
+
         self._env_work_dir = work_dir
+
         # array of managed specialized servers
         self._servers = {}
         self._service_exit_requested = False
         self._latest_heartbeat = time.monotonic()
 
+        self.config_observer = Observer()
+        self.watching_config = False
+
+    def stop_watch_config(self):
+        if self.watching_config:
+            self.config_observer.stop()
+            self.config_observer.join()
+
+    def start_watch_config(self):
+
+        if self.watching_config:
+            self.stop_watch_config()
+
+        config_paths = [
+            os.path.join(self._env_work_dir, "config.yaml"),
+            # os.path.join(self._env_work_dir, "secrets.yaml"),
+        ]
+
+        for filepath in config_paths:
+            if not os.path.exists(filepath):
+                log.warning(
+                    "File %s not found, it will not be watched for changes." %
+                    os.path.basename(filepath)
+                )
+                continue
+            self.config_observer.schedule(
+                self.on_config_change,
+                filepath,
+                recursive=False
+            )
+        self.config_observer.start()
+        self.watching_config = True
+
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
         for srv in servers.values():
             srv.stop()
-        config_manager.stop()
+        self.stop_watch_config()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
@@ -119,36 +114,20 @@ class AmbianicServer:
         if self._service_exit_requested:
             raise ServiceExit
 
-    def on_config_change(self, event: ConfigChangedEvent):
-
-        root = event.get_root()
-
-        # track changes on root elements
-        if len(event.get_paths()) == 1 and (event.get_paths()[0] in ["sources", "ai_models", "pipelines"]):
-            log.info("config.%s changed, restarting pipelines",
-                     event.get_paths()[0])
-            self._servers['pipelines'].trigger_event(event)
-
-        if not root or not root.get_context():
-            return
-
-        log.info("Config change: %s", event)
-
-        section_name = root.get_context().get_name()
-
-        if section_name in ["data_dir"]:
-            self.stop()
-            self.start()
+    def on_config_change(self):
+        log.info("Configuration file changed, restarting")
+        self.stop()
+        self.start()
 
     def start(self):
         """Programmatic start of the main service."""
-        print("Starting server...")
-        config = _configure(self._env_work_dir)
-        if not config:
-            log.info('No startup configuration provided. '
-                     'Proceeding with defaults.')
-        else:
-            config.add_callback(self.on_config_change)
+
+        assert os.path.exists(self._env_work_dir)
+
+        self.start_watch_config()
+
+        logger.configure(config.get("logging"))
+        timeline.configure_timeline(config.get("timeline"))
 
         log.info('Starting Ambianic server...')
 
@@ -180,6 +159,5 @@ class AmbianicServer:
 
     def stop(self):
         """Programmatic stop of the main service."""
-        print("Stopping server...")
         log.info("Stopping server...")
         self._service_exit_requested = True

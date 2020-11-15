@@ -6,6 +6,7 @@ import json
 import uuid
 from typing import Iterable
 
+from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class SaveDetectionSamples(PipeElement):
         if self.context:
             self._sys_data_dir = self.context.data_dir
         else:
-            self._sys_data_dir = './data'
+            self._sys_data_dir = DEFAULT_DATA_DIR
         self._output_directory = pathlib.Path(self._sys_data_dir)
         assert self._output_directory, \
             'Pipe element %s: requires argument output_directory:' \

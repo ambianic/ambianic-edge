@@ -3,19 +3,14 @@ import json
 import tempfile
 import pytest
 from ambianic.webapp import flaskr
-from ambianic import config_manager
+from ambianic import config
 import logging
 
 log = logging.getLogger(__name__)
 
 
 def reset_config():
-    config_manager.stop()
-    config_manager.set({
-        "data_dir": "./data",
-        "sources": {}
-    })
-
+    config.reload()
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""

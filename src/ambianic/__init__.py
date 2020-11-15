@@ -1,12 +1,12 @@
-
 import os
-from ambianic.config_mgm import ConfigurationManager
+from ambianic import config_util
 
 DEFAULT_WORK_DIR = '/workspace'
+DEFAULT_DATA_DIR = './data'
 
-config_manager = ConfigurationManager(config={})
 server_instance = None
 
+config = config_util.get_default_config()
 
 def get_work_dir():
     """Retrieve the ambianic working directory"""
