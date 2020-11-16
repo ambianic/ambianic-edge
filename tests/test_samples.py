@@ -69,6 +69,21 @@ def test_get_timelines_before_datetime():
     )
     assert len(res) == 5
 
+def test_bad_yaml():
+    data_dir = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "timeline")
+    file_path = os.path.join(data_dir, "timeline-event-log.yaml")
+    with open(file_path, 'w+') as fw:
+        fw.write('@bad yaml!')
+
+    res = samples.get_timeline(
+        before_datetime="2020-05-10T19:05:45.577145",
+        page=1,
+        data_dir=data_dir
+    )
+
+    assert len(res) == 5
+    assert not os.path.exists(file_path)
 
 def test_get_timelines():
     data_dir = os.path.join(os.path.dirname(
