@@ -112,6 +112,7 @@ def get_samples(before_datetime=None, page=1):
     # log.debug('File names follow:\n %s', "\n".join(lines))
     return samples
 
+
 def remove_timeline(file_path):
     try:
         os.remove(file_path)
@@ -172,11 +173,14 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
     # load the event history, older first
     for file_path in files:
         with file_path.open() as pf:
-            
+
             try:
                 timeline_events = yaml.safe_load(pf)
                 timeline_events += events_queue
-            except (yaml.reader.ReaderError, yaml.scanner.ScannerError):
+            except (
+                yaml.reader.ReaderError, 
+                yaml.scanner.ScannerError,
+            ):
                 log.exception("Detected unreadable timeline, removing %s" % file_path)
                 remove_timeline(file_path)
                 continue
