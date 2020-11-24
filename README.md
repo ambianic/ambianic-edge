@@ -41,11 +41,11 @@ All constructive feedback is most welcome!
 
 # Product design highlights
 
-- Less than 15 minutes setup time
-- Less than $75 in hardware costs
+- [x] Less than $75 in hardware costs. Get [Ambianic Box](https://github.com/ambianic/ambianic-box).
   + Reference hardware platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
-- No coding required to get started
-- Decomposable and hackable
+- [x] Less than 15 minutes setup time. Get [RPI Image](https://github.com/ambianic/ambianic-rpi-image).
+- [x] No coding required to get started.
+- [x] Decomposable and hackable
 
 # How to run in development mode
 If you are interested to try the development version, follow these steps:
