@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.8.6](https://github.com/ambianic/ambianic-edge/compare/v1.8.5...v1.8.6) (2020-11-25)
+
+
+### Bug Fixes
+
+* ca reinstall ([fffc8fa](https://github.com/ambianic/ambianic-edge/commit/fffc8faecbf9451005fa5fde16c64c475fdbc7eb))
+
 ## [1.8.5](https://github.com/ambianic/ambianic-edge/compare/v1.8.4...v1.8.5) (2020-10-31)
 
 
