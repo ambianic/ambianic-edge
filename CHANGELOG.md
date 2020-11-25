@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.8.7](https://github.com/ambianic/ambianic-edge/compare/v1.8.6...v1.8.7) (2020-11-25)
+
+
+### Bug Fixes
+
+* ca still an issue with latest rpi on docker ([371d1db](https://github.com/ambianic/ambianic-edge/commit/371d1db300bfbb641fabf8059aa37cf922d57472))
+
 ## [1.8.6](https://github.com/ambianic/ambianic-edge/compare/v1.8.5...v1.8.6) (2020-11-25)
 
 
