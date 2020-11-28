@@ -18,7 +18,7 @@
 [Ambianic.ai](https://ambianic.ai) is an [award winning](https://blog.ambianic.ai/2020/11/05/awards.html) Open Source Ambient Intelligence platform for Home and Business Automation.
 
 It has two main components:
-- [Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations.
+- [Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations. We recommend deploying Ambianic Edge in an [Ambianic Box](https://github.com/ambianic/ambianic-box) enclosure.
 - [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai).
 
 Following is a conceptual flow diagram:
