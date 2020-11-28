@@ -15,11 +15,11 @@
 
 # Project mission
   
-[Ambianic.ai](https://ambianic.ai) is an Open Source Ambient Intelligence platform for Home and Business Automation
+[Ambianic.ai](https://ambianic.ai) is an [award winning](https://blog.ambianic.ai/2020/11/05/awards.html) Open Source Ambient Intelligence platform for Home and Business Automation.
 
-[Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations.
-
-[Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
+It has two main components:
+- [Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations.
+- [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai).
 
 Following is a conceptual flow diagram:
 
@@ -47,10 +47,8 @@ All constructive feedback is most welcome!
 - [x] Decomposable and hackable for DYI and Open Source developers. [Setup Your Dev Environment](https://docs.ambianic.ai/developers/development-environment/)
 
 # How to run in development mode
-If you are interested to try the development version, follow these steps:
-1. Clone this git repository.
-2. `./ambianic-start.sh`
-3. Study `config.yaml` and go from there.
+
+If you are interested to try the development version, follow [this guide](https://docs.ambianic.ai/developers/development-environment/).
 
 # Documentation
 
