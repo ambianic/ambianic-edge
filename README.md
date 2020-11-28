@@ -35,7 +35,7 @@ A deep dive technical discussion of the project architecture is available in thi
 
 # Project Status
 
-Ambianic Edge is in now in public Beta. Here is a [5 Minutes Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
+Ambianic Edge is in now generally available for use in the real world. Here is a [Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
 
 All constructive feedback is most welcome!
 
@@ -44,8 +44,8 @@ All constructive feedback is most welcome!
 - [x] Less than $75 in hardware costs. Get [Ambianic Box](https://github.com/ambianic/ambianic-box).
   + Reference hardware platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
 - [x] Less than 15 minutes setup time. Get [RPI Image](https://github.com/ambianic/ambianic-rpi-image).
-- [x] No coding required to get started.
-- [x] Decomposable and hackable
+- [x] No coding required to get started. Just follow the [Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
+- [x] Decomposable and hackable for DYI and Open Source developers. [Setup Your Dev Environment](https://docs.ambianic.ai/developers/development-environment/)
 
 # How to run in development mode
 If you are interested to try the development version, follow these steps:
