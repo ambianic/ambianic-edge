@@ -22,7 +22,7 @@ FROM gitpod/workspace-full
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["./build/*", "./"]
-RUN ls -al && sudo /bin/bash ./install_requirements.sh && echo "done"
+RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh && echo "done"
 
 # RUN pwd && ls -al | more && sleep 30
 # sudo /bin/bash ./build/install_requirements.sh
