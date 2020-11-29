@@ -1,5 +1,18 @@
 # Semantic Versioning Changelog
 
+# [1.9.0](https://github.com/ambianic/ambianic-edge/compare/v1.8.7...v1.9.0) (2020-11-29)
+
+
+### Bug Fixes
+
+* peer reconnect error; pull new peerjs-python ([61ea30b](https://github.com/ambianic/ambianic-edge/commit/61ea30b322d97e1fb7cdf12593d203fa08d24817))
+
+
+### Features
+
+* fully automate dev setup with Gitpod and introduce ai label filter ([a1c0887](https://github.com/ambianic/ambianic-edge/commit/a1c088782c2529856389cf905dd4e88c6892556c))
+* introduce labels as a model inference filter ([a1af6ae](https://github.com/ambianic/ambianic-edge/commit/a1af6aea5c8bed5f294ef80edaaa91d3baae118e))
+
 ## [1.8.7](https://github.com/ambianic/ambianic-edge/compare/v1.8.6...v1.8.7) (2020-11-25)
 
 
