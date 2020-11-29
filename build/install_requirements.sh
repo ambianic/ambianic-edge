@@ -95,7 +95,7 @@ apt-get install -y curl
 # wget https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz -O edgetpu_api.tar.gz --trust-server-names
 curl -k -L -o /tmp/edgetpu_api.tar.gz https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz
 
-tar xzf /tmp/edgetpu_api.tar.gz -C /tmp
+tar xzf /tmp/edgetpu_api.tar.gz -C /tmp --no-same-owner
 
 echo "Effective CPU architecture: $architecture"
 export architecture
