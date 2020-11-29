@@ -1,14 +1,16 @@
+image:
+  file: .gitpod.Dockerfile
 tasks:
   - init: |
-        echo "Gitpod init. Setting up ambianic-edge dev environment."
-        /bin/bash ./build/install_requirements.sh
-        # verbose mode, exit on error
-        set -ex
-        python3 -m pip install --upgrade pip
-        pip3 install -U pytest # unit test tool
-        pip3 install -U codecov # code coverage tool
-        pip3 install -U pytest-cov # coverage plugin for pytest
-        pip3 install -U pylint # python linter
-        BASEDIR=$(dirname $0)
-        pip3 install -e ./src
+      echo "Gitpod init. Setting up ambianic-edge dev environment."
+      /bin/bash ./build/install_requirements.sh
+      # verbose mode, exit on error
+      set -ex
+      python3 -m pip install --upgrade pip
+      pip3 install -U pytest # unit test tool
+      pip3 install -U codecov # code coverage tool
+      pip3 install -U pytest-cov # coverage plugin for pytest
+      pip3 install -U pylint # python linter
+      BASEDIR=$(dirname $0)
+      pip3 install -e ./src
     command: echo "Starting ambianic-edge project in gitpod"
