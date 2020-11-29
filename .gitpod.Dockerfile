@@ -6,4 +6,6 @@ FROM gitpod/workspace-full
 #
 # More information: https://www.gitpod.io/docs/config-docker/
 
-RUN sudo /bin/bash ./build/install_requirements.sh
+RUN ls -al && pwd 
+
+# sudo /bin/bash ./build/install_requirements.sh
