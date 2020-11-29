@@ -80,7 +80,7 @@ sudo pip3 install -r requirements.txt
 if $(arch | grep -q 86)
 then
   echo "Installing tflite for x86 CPU"
-  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
+  sudo pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_aarch64.whl
 elif $(arch | grep -q arm)
 then
   echo "Installing tflite for ARM CPU"
