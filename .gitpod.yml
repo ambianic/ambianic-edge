@@ -14,4 +14,4 @@ tasks:
         # where codecov can find the generated reports
         cd $BASEDIR/../
         echo PWD=$PWD
-    command: 'echo "TODO: Replace with command to start project"'
+    command: echo "Starting ambianic-edge project in gitpod"
