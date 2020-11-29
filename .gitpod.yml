@@ -3,7 +3,6 @@ image:
 tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
-      /bin/bash ./build/install_requirements.sh
       # verbose mode, exit on error
       set -ex
       python3 -m pip install --upgrade pip
