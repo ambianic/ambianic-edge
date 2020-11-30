@@ -33,4 +33,3 @@ RUN   python3 -m pip install --upgrade pip && \
 
 # setup bashrc environment for gitpod terminal commands
 RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc
-
