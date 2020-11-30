@@ -24,8 +24,15 @@ FROM gitpod/workspace-full
 COPY ["./build/*", "./"]
 RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
-# setup bashrc environment for gitpod terminal commands
-RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages/" >> $HOME/.bashrc
+RUN \
+      echo "Gitpod init. Setting up ambianic-edge dev environment." && \
+      # verbose mode, exit on error \
+      python3 -m pip install --upgrade pip && \
+      pip3 install -U pytest # unit test tool && \
+      pip3 install -U codecov # code coverage tool && \
+      pip3 install -U pytest-cov # coverage plugin for pytest && \
+      pip3 install -U pylint # python linter && \
 
-# RUN pwd && ls -al | more && sleep 30
-# sudo /bin/bash ./build/install_requirements.sh
+# setup bashrc environment for gitpod terminal commands
+RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc
+
