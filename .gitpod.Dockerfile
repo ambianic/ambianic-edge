@@ -30,7 +30,7 @@ FROM gitpod/workspace-full
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["./build/*", "./"]
-RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
+RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh # 
 
 # install gtipod environment dev packages for app testing
 RUN   python3 -m pip install --upgrade pip && \
