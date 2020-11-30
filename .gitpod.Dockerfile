@@ -26,9 +26,10 @@ RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
 # install gtipod environment dev packages
 RUN   python3 -m pip install --upgrade pip && \
-      sudo apt install python-is-python3 && \
       pip3 install -U pytest && \
       pip3 install -U codecov && \
       pip3 install -U pytest-cov && \
       pip3 install -U pylint && \
-      echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc
+      echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc && \
+      sudo ln -s /usr/bin/python3 /usr/bin/python
+      
