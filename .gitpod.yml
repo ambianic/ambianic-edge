@@ -4,5 +4,5 @@ tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
       pip3 install -e ./src
-      # pyenv global system
+      pyenv global system
     command: echo "Starting ambianic-edge in gitpod"
