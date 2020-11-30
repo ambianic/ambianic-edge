@@ -6,7 +6,7 @@ tasks:
       # verbose mode, exit on error
       set -ex
       # add to python3 path packages installed in base docker image
-      export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages
+      export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages >> $HOME/.bashrc
       python3 -m pip install --upgrade pip
       pip3 install -U pytest # unit test tool
       pip3 install -U codecov # code coverage tool
