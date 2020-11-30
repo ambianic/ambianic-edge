@@ -20,10 +20,12 @@ FROM gitpod/workspace-full
 # More information: https://www.gitpod.io/docs/config-docker/
 
 
-# Disable pyenv, which gitpod installs by default
+# Remove pyenv, which gitpod installs by default
 # but it doesn't play well with system level dependencies like gstreamer python wrappers and tflite
 # comment out lines in init shell script that enable pyenv
-RUN sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python
+RUN rm -rf $(pyenv root) && \
+  sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python && \
+  sudo apt-get remove -y python3-pip
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
