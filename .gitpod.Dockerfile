@@ -22,7 +22,10 @@ FROM gitpod/workspace-full
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["./build/*", "./"]
-RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh && echo "done."
+RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
+
+# setup bashrc environment for gitpod terminal commands
+RUN echo "PYTHONPATH=\$PYTHONPATH:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages/" >> $HOME/.bashrc
 
 # RUN pwd && ls -al | more && sleep 30
 # sudo /bin/bash ./build/install_requirements.sh
