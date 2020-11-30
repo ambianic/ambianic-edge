@@ -24,12 +24,9 @@ FROM gitpod/workspace-full
 COPY ["./build/*", "./"]
 RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
-# helps resolve pyenv problems
-# see https://github.com/pyenv/pyenv/issues/1613
-sudo apt install python-is-python3
-
 # install gtipod environment dev packages
 RUN   python3 -m pip install --upgrade pip && \
+      sudo apt install python-is-python3 && \
       pip3 install -U pytest && \
       pip3 install -U codecov && \
       pip3 install -U pytest-cov && \
