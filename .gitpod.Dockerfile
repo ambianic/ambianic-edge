@@ -39,6 +39,8 @@ RUN   python3 -m pip install --upgrade pip && \
       sudo pip3 install -U codecov && \
       sudo pip3 install -U pytest-cov && \
       sudo pip3 install -U pylint && \
-      sudo ln -s /usr/bin/python3 /usr/bin/python && \
-      echo "pyenv global system" >> ~/.bashrc.d/60-python
+      sudo ln -s /usr/bin/python3 /usr/bin/python
+      
+#      && \
+#      echo "pyenv global system" >> ~/.bashrc.d/60-python
       
