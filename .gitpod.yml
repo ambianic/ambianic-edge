@@ -5,8 +5,6 @@ tasks:
       echo "Gitpod init. Setting up ambianic-edge dev environment."
       # verbose mode, exit on error
       set -ex
-      # add to python3 path packages installed in base docker image
-      export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages/ >> $HOME/.bashrc
       python3 -m pip install --upgrade pip
       pip3 install -U pytest # unit test tool
       pip3 install -U codecov # code coverage tool
@@ -14,4 +12,4 @@ tasks:
       pip3 install -U pylint # python linter
       BASEDIR=$(dirname $0)
       pip3 install -e ./src
-    command: echo "Starting ambianic-edge project in gitpod"
+    command: echo "Starting ambianic-edge in gitpod"
