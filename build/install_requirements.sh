@@ -26,7 +26,7 @@ echo "Effective CPU architecture: $architecture"
 apt-get update -y && apt-get install -y sudo
 
 # check if python3 is installed
-if $(python3 --version)
+if [ python3 --version ]
 then
   echo "python3 is already installed."
 else
