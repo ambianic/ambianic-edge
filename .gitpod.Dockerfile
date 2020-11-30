@@ -29,7 +29,7 @@ RUN   python3 -m pip install --upgrade pip && \
       pip3 install -U pytest # unit test tool && \
       pip3 install -U codecov # code coverage tool && \
       pip3 install -U pytest-cov # coverage plugin for pytest && \
-      pip3 install -U pylint # python linter && \
+      pip3 install -U pylint # python linter
 
 # setup bashrc environment for gitpod terminal commands
 RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc
