@@ -24,12 +24,10 @@ FROM gitpod/workspace-full
 COPY ["./build/*", "./"]
 RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
-# install gtipod environment dev packages
+# install gtipod environment dev packages for app testing
 RUN   python3 -m pip install --upgrade pip && \
       pip3 install -U pytest && \
       pip3 install -U codecov && \
       pip3 install -U pytest-cov && \
-      pip3 install -U pylint && \
-      echo "export PYTHONPATH=\$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3.8/dist-packages:" >> $HOME/.bashrc && \
-      sudo ln -s /usr/bin/python3 /usr/bin/python
+      pip3 install -U pylint
       
