@@ -28,7 +28,11 @@ apt-get update -y && apt-get install -y sudo
 # check if python3 is installed
 if ! type "$python3" > /dev/null; then
   # install python3 and pip3 which are not available by default on slim buster
+  echo "python3 is not available from the parent image. Installing python3 now."
   sudo apt-get install -y python3 && apt-get install -y python3-pip
+else
+  echo "python3 is available from the parent image. No need to install it."
+  python3 --version
 fi
 
 # Install gstreamer
@@ -70,9 +74,9 @@ then
 fi
 
 # install python dependencies
-sudo python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade pip
 pip3 --version
-sudo pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
