@@ -3,8 +3,8 @@ image:
 tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
-      pip3 install -e ./src
-      pyenv global system
+      # pip3 install -e ./src
+      # pyenv global system
     command: |
       echo "Started ambianic-edge development environment."
       echo "Run ambianic-edge testsuite via"
