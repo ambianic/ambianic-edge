@@ -23,7 +23,7 @@ FROM gitpod/workspace-full
 # Disable pyenv, which gitpod installs by default
 # but it doesn't play well with system level dependencies like gstreamer python wrappers and tflite
 # comment out lines in init shell script that enable pyenv
-RUN sudo sed -i '/ pyenv /s/^/#/' ~/.bashrc.d/60-python
+RUN sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
