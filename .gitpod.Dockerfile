@@ -27,9 +27,6 @@ FROM gitpod/workspace-full
 #  sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python && \
 #  sudo apt-get remove -y python3-pip
 
-# upgrade setuptools
-
-
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["./build/*", "./"]
