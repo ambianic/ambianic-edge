@@ -25,8 +25,6 @@ echo "Effective CPU architecture: $architecture"
 # update apt-get and install sudo
 apt-get update -y && apt-get install -y sudo
 
-python --version
-python3 --version
 # check if python3 is installed
 if ! type "$python3" > /dev/null; then
   # install python3 and pip3 which are not available by default on slim buster
