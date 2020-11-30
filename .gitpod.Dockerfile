@@ -29,5 +29,6 @@ RUN   python3 -m pip install --upgrade pip && \
       pip3 install -U pytest && \
       pip3 install -U codecov && \
       pip3 install -U pytest-cov && \
-      pip3 install -U pylint
+      pip3 install -U pylint && \
+      sudo ln -s /usr/bin/python3 /usr/bin/python
       
