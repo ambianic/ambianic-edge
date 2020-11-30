@@ -35,9 +35,9 @@ RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 # install gtipod environment dev packages for app testing
 RUN   python3 -m pip install --upgrade pip && \
       python3 -m pip install --upgrade --upgrade setuptools && \
-      pip3 install -U pytest && \
-      pip3 install -U codecov && \
-      pip3 install -U pytest-cov && \
-      pip3 install -U pylint && \
+      sudo pip3 install -U pytest && \
+      sudo pip3 install -U codecov && \
+      sudo pip3 install -U pytest-cov && \
+      sudo pip3 install -U pylint && \
       sudo ln -s /usr/bin/python3 /usr/bin/python
       
