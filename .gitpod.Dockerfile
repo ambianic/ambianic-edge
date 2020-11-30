@@ -24,9 +24,8 @@ FROM gitpod/workspace-full
 COPY ["./build/*", "./"]
 RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
-RUN \
-      echo "Gitpod init. Setting up ambianic-edge dev environment." && \
-      python3 -m pip install --upgrade pip && \
+# install gtipod environment dev packages
+RUN   python3 -m pip install --upgrade pip && \
       pip3 install -U pytest # unit test tool && \
       pip3 install -U codecov # code coverage tool && \
       pip3 install -U pytest-cov # coverage plugin for pytest && \
