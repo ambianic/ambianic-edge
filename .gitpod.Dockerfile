@@ -23,9 +23,12 @@ FROM gitpod/workspace-full
 # Remove pyenv, which gitpod installs by default
 # but it doesn't play well with system level dependencies like gstreamer python wrappers and tflite
 # comment out lines in init shell script that enable pyenv
-RUN rm -rf $(pyenv root) && \
-  sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python && \
-  sudo apt-get remove -y python3-pip
+# RUN rm -rf $(pyenv root) && \
+#  sudo sed -i '/pyenv /s/^/#/' /home/gitpod/.bashrc.d/60-python && \
+#  sudo apt-get remove -y python3-pip
+
+# upgrade setuptools
+
 
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
@@ -34,6 +37,7 @@ RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
 # install gtipod environment dev packages for app testing
 RUN   python3 -m pip install --upgrade pip && \
+      python3 -m pip install --upgrade --upgrade setuptools && \
       pip3 install -U pytest && \
       pip3 install -U codecov && \
       pip3 install -U pytest-cov && \
