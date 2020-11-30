@@ -7,5 +7,5 @@ tasks:
       pyenv global system
     command: |
       echo "Started ambianic-edge development environment."
-      echo "Run ambianic-edge testsuite via"
+      echo "To run the ambianic-edge testsuite use:"
       echo "./tests/run-tests.sh"
