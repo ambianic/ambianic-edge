@@ -26,7 +26,6 @@ RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh
 
 RUN \
       echo "Gitpod init. Setting up ambianic-edge dev environment." && \
-      # verbose mode, exit on error \
       python3 -m pip install --upgrade pip && \
       pip3 install -U pytest # unit test tool && \
       pip3 install -U codecov # code coverage tool && \
