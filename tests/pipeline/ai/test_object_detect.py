@@ -204,3 +204,19 @@ def test_one_person_no_face():
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
+
+
+def test_one_label_filter():
+    """Expect to detect one person and no other objects."""
+
+def test_two_labels_filter():
+    """Expect to detect one person and one couch."""
+
+def test_no_labels_filter():
+    """Expect to detect one person and one couch."""
+
+def test_bad_label_filter():
+    """Expect to detect nothing and get an error because the label is not in the training label set."""
+
+def test_one_label_not_in_picture():
+    """Expect to detect nothing because there is no object with the given label in the picture."""
