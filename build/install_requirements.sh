@@ -25,8 +25,15 @@ echo "Effective CPU architecture: $architecture"
 # update apt-get and install sudo
 apt-get update -y && apt-get install -y sudo
 
-# install python3 which is not available by default on slim buster
-sudo apt-get install -y python3 && apt-get install -y python3-pip
+# check if python3 is installed
+if python3 --version
+then
+  echo "python3 is already installed."
+else
+  # install python3 and pip3 which are not available by default on slim buster
+  echo "python3 is not available from the parent image. Installing python3 now."
+  sudo apt-get install -y python3 && apt-get install -y python3-pip
+fi
 
 # Install gstreamer
 sudo apt-get update
@@ -67,9 +74,9 @@ then
 fi
 
 # install python dependencies
+python3 -m pip install --upgrade pip
 pip3 --version
-sudo pip3 install -U pip
-sudo pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
@@ -80,7 +87,12 @@ sudo pip3 install -r requirements.txt
 if $(arch | grep -q 86)
 then
   echo "Installing tflite for x86 CPU"
-  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
+  if python3 --version | grep -q 3.8
+  then
+    sudo pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_x86_64.whl
+  else
+    sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
+  fi
 elif $(arch | grep -q arm)
 then
   echo "Installing tflite for ARM CPU"
@@ -95,7 +107,7 @@ apt-get install -y curl
 # wget https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz -O edgetpu_api.tar.gz --trust-server-names
 curl -k -L -o /tmp/edgetpu_api.tar.gz https://dl.google.com/coral/edgetpu_api/edgetpu_api_latest.tar.gz
 
-tar xzf /tmp/edgetpu_api.tar.gz -C /tmp
+tar xzf /tmp/edgetpu_api.tar.gz -C /tmp --no-same-owner
 
 echo "Effective CPU architecture: $architecture"
 export architecture

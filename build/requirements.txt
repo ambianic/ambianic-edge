@@ -26,7 +26,7 @@ oauthlib>=2.1.0
 Pillow>=5.4.1
 pyOpenSSL>=19.0.0
 PyYAML>=5.1.2
-requests>=2.21.0
+requests>=2.25
 requests-oauthlib>=1.0.0
 responses>=0.9.0
 simplegeneric>=0.8.1
@@ -36,4 +36,3 @@ Werkzeug>=0.15.3
 concurrent-log-handler>=0.9
 watchdog>=0.10
 dynaconf>=3.1
-  

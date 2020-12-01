@@ -1,3 +1,5 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ambianic/ambianic-edge)
+
 [![Build Status](https://travis-ci.org/ambianic/ambianic-edge.svg?branch=master)](https://travis-ci.org/ambianic/ambianic-edge) 
 [![codecov](https://codecov.io/gh/ambianic/ambianic-edge/branch/master/graph/badge.svg?token=JJlxaW5flS)](https://codecov.io/gh/ambianic/ambianic-edge)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-core?ref=badge_shield) 
@@ -15,11 +17,11 @@
 
 # Project mission
   
-[Ambianic.ai](https://ambianic.ai) is an Open Source Ambient Intelligence platform for Home and Business Automation
+[Ambianic.ai](https://ambianic.ai) is an [award winning](https://blog.ambianic.ai/2020/11/05/awards.html) Open Source Ambient Intelligence platform for Home and Business Automation.
 
-[Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations.
-
-[Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai)
+It has two main components:
+- [Ambianic Edge](https://github.com/ambianic/ambianic-edge) runs on edge devices such as Raspberry Pi. It monitors sensors, cameras and other inputs, passes them through AI inference and makes actionable observations. We recommend deploying Ambianic Edge in an [Ambianic Box](https://github.com/ambianic/ambianic-box) enclosure.
+- [Ambianic UI](https://github.com/ambianic/ambianic-ui) is the user interface to Ambianic Edge deployments. Latest live version available at [ui.ambianic.ai](https://ui.ambianic.ai).
 
 Following is a conceptual flow diagram:
 
@@ -35,23 +37,20 @@ A deep dive technical discussion of the project architecture is available in thi
 
 # Project Status
 
-Ambianic Edge is in now in public Beta. Here is a [5 Minutes Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
+Ambianic Edge is in now generally available for use in the real world. Here is a [Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
 
 All constructive feedback is most welcome!
 
 # Product design highlights
 
-- [x] Less than $75 in hardware costs. Get [Ambianic Box](https://github.com/ambianic/ambianic-box).
-  + Reference hardware platform: Raspberry Pi 4 B, 4GB RAM, 32GB SDRAM
+- [x] Less than $55 in hardware costs. Get [Ambianic Box](https://github.com/ambianic/ambianic-box).
 - [x] Less than 15 minutes setup time. Get [RPI Image](https://github.com/ambianic/ambianic-rpi-image).
-- [x] No coding required to get started.
-- [x] Decomposable and hackable
+- [x] No coding required to get started. Just follow the [Quick Start Guide](https://docs.ambianic.ai/users/quickstart/).
+- [x] Decomposable and hackable for DYI and Open Source developers. [Setup Your Dev Environment](https://docs.ambianic.ai/developers/development-environment/)
 
 # How to run in development mode
-If you are interested to try the development version, follow these steps:
-1. Clone this git repository.
-2. `./ambianic-start.sh`
-3. Study `config.yaml` and go from there.
+
+If you are interested to try the development version, follow [this guide](https://docs.ambianic.ai/developers/development-environment/).
 
 # Documentation
 
@@ -77,4 +76,3 @@ This project has been inspired by the prior work of many bright people. Special 
 * [Robin Cole](https://github.com/robmarkcole) for his invaluable insights and code on home automation AI with Home Assistant
 * [Blake Blackshear](https://github.com/blakeblackshear) for his work on Frigate and vision for the home automation AI space
   
-
