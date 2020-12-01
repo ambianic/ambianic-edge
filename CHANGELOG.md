@@ -1,5 +1,17 @@
 # Semantic Versioning Changelog
 
+# [1.10.0](https://github.com/ambianic/ambianic-edge/compare/v1.9.0...v1.10.0) (2020-12-01)
+
+
+### Bug Fixes
+
+* gitpod init ([7d3e70b](https://github.com/ambianic/ambianic-edge/commit/7d3e70bb1ba8540785372497c7d455183b2122ae))
+
+
+### Features
+
+* gitpod enabled - one click to open a continuous dev env ([2f7c286](https://github.com/ambianic/ambianic-edge/commit/2f7c2869ee8d60f8aa4a0110cadb2ffe27b99dfb))
+
 # [1.9.0](https://github.com/ambianic/ambianic-edge/compare/v1.8.7...v1.9.0) (2020-11-29)
 
 
