@@ -70,7 +70,7 @@ pipelines:
        ai_model: image_detection
        # Watch for any of the labels listed below. The labels must be from the model trained label set.
        # If no labels are listed, then watch for all model trained labels.
-       labels:
+       label_filter:
         - person
        confidence_threshold: 0.8
     - save_detections: # save samples from the inference results

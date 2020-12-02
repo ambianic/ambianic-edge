@@ -18,6 +18,7 @@ class TFImageDetection(PipeElement):
     def __init__(self,
                  model=None,
                  labels=None,
+                 label_filter=None,
                  confidence_threshold=0.6,
                  top_k=3,
                  **kwargs
@@ -41,6 +42,7 @@ class TFImageDetection(PipeElement):
             confidence_threshold=confidence_threshold,
             top_k=top_k)
         self._labels = self.load_labels(self._tfengine.labels_path)
+        self._label_filter = label_filter
         self.last_time = time.monotonic()
 
     def load_labels(self, label_path=None):
@@ -267,23 +269,25 @@ class TFImageDetection(PipeElement):
                 # when the confidence is low
                 if (li < len(self._labels)):
                     label = self._labels[li]
-                    box = boxes[0, i, :]
-                    # refit detections into original image size
-                    # without overflowing outside image borders
-                    x0 = box[1] / w_factor
-                    y0 = box[0] / h_factor
-                    x1 = min(box[3] / w_factor, 1)
-                    y1 = min(box[2] / h_factor, 1)
-                    log.debug('thumbnail image size: %r , '
-                              'tensor image size: %r',
-                              thumbnail.size,
-                              new_im.size)
-                    log.debug('resizing detection box (x0, y0, x1, y1) '
-                              'from: %r to %r',
-                              (box[1], box[0], box[3], box[2]),
-                              (x0, y0, x1, y1))
-                    inference_result.append((
-                        label,
-                        confidence,
-                        (x0, y0, x1, y1)))
+                    # If a label filter is specified, apply it.
+                    if (not self._label_filter or label in self._label_filter):
+                        box = boxes[0, i, :]
+                        # refit detections into original image size
+                        # without overflowing outside image borders
+                        x0 = box[1] / w_factor
+                        y0 = box[0] / h_factor
+                        x1 = min(box[3] / w_factor, 1)
+                        y1 = min(box[2] / h_factor, 1)
+                        log.debug('thumbnail image size: %r , '
+                                'tensor image size: %r',
+                                thumbnail.size,
+                                new_im.size)
+                        log.debug('resizing detection box (x0, y0, x1, y1) '
+                                'from: %r to %r',
+                                (box[1], box[0], box[3], box[2]),
+                                (x0, y0, x1, y1))
+                        inference_result.append((
+                            label,
+                            confidence,
+                            (x0, y0, x1, y1)))
         return thumbnail, new_im, inference_result
