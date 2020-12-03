@@ -209,7 +209,7 @@ def test_one_person_no_face():
 def test_one_label_filter():
     """Expect to detect one person and no other objects."""
     config = _object_detect_config()
-    config['confidence_threshold'] = 0.8
+    config['confidence_threshold'] = 0.7
     config['label_filter'] = ['person']
     result = None
 
