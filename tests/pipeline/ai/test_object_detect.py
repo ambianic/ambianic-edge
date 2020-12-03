@@ -210,7 +210,7 @@ def test_one_label_filter():
     """Expect to detect one person and no other objects."""
     config = _object_detect_config()
     confidence_threshold = 0.7
-    config['confidence_threshold'] =c onfidence_threshold
+    config['confidence_threshold'] = confidence_threshold
     config['label_filter'] = ['person']
     result = None
 
