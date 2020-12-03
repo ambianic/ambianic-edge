@@ -209,7 +209,8 @@ def test_one_person_no_face():
 def test_one_label_filter():
     """Expect to detect one person and no other objects."""
     config = _object_detect_config()
-    config['confidence_threshold'] = 0.7
+    confidence_threshold = 0.7
+    config['confidence_threshold'] =c onfidence_threshold
     config['label_filter'] = ['person']
     result = None
 
@@ -226,7 +227,7 @@ def test_one_label_filter():
     assert len(result) == 1
     category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
-    assert confidence > 0.8
+    assert confidence > confidence_threshold
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
 
