@@ -1,26 +1,9 @@
-# Copyright 2019 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+import collections
+import math
 from ambianic.pipeline.ai.inference import TFInferenceEngine
-# from edgetpu.basic.basic_engine import BasicEngine
-# from pkg_resources import parse_version
-# from edgetpu import __version__ as edgetpu_version
-#assert parse_version(edgetpu_version) >= parse_version('2.11.1'), \
-#        'This demo requires Edge TPU version >= 2.11.1'
-
 import logging
 import numpy as np
+from PIL import Image
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +26,6 @@ KEYPOINTS = (
   'left ankle',
   'right ankle'
 )
-
 
 class Keypoint:
     __slots__ = ['k', 'yx', 'score']
@@ -71,8 +53,7 @@ class Pose:
 
 class PoseEngine(TFInferenceEngine):
     """Engine used for pose tasks."""
-
-    def __init__(self, model=None, mirror=False):
+    def __init__(self, model, **kwargs):
         """Creates a PoseEngine with given model.
         Args:
             model: dict
@@ -88,8 +69,8 @@ class PoseEngine(TFInferenceEngine):
           ValueError: An error occurred when model output is invalid.
         """
         assert model is not None
-        super().__init__(self, model)
-        self._mirror = mirror
+        super().__init__(model, **kwargs)
+        
 
         self._input_tensor_shape = self.get_input_tensor_shape()
         if (self._input_tensor_shape.size != 4 or
@@ -101,13 +82,6 @@ class PoseEngine(TFInferenceEngine):
         _, self.image_height, self.image_width, self.image_depth = \
                                                 self.get_input_tensor_shape()
 
-        # The API returns all the output tensors flattened and concatenated. We
-        # have to figure out the boundaries from the tensor shapes & sizes.
-        offset = 0
-        self._output_offsets = [0]
-        for size in self.get_all_output_tensors_sizes():
-            offset += size
-            self._output_offsets.append(int(offset))
 
     def get_input_tensor_shape(self):
         """Get the shape of the input tensor structure.
@@ -123,7 +97,6 @@ class PoseEngine(TFInferenceEngine):
         """
         return self.input_details[0]['shape']
 
-
     def get_all_output_tensors_sizes(self):
         """Gets the size of each output tensor.
         A model may output several tensors, but the return from :func:`run_inference`
@@ -136,10 +109,36 @@ class PoseEngine(TFInferenceEngine):
         """
         log.INFO('PoseNet model output tensor details: ', self.output_details)
         output_tensor_sizes = [0]
-        # for output_tensor_detail in tfe.output_details:
-        #     self.output_tensor_sizes.append(output_tensor_detail[?])
-        #return self._engine.get_all_output_tensors_sizes()
         raise NotImplementedError()
+
+    def parse_output(self, heatmap_data, offset_data, threshold):
+        joint_num = heatmap_data.shape[-1]
+        pose_kps = np.zeros((joint_num, 4), np.float32)
+
+        for i in range(heatmap_data.shape[-1]):
+
+            joint_heatmap = heatmap_data[...,i]
+            max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
+            remap_pos = np.array(max_val_pos/8*257, dtype=np.int32)
+            pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1], i])
+            pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1], i+joint_num])
+            max_prob = np.max(joint_heatmap)
+            pose_kps[i, 3] = max_prob
+            if max_prob > threshold:
+                if pose_kps[i, 0] < 257 and pose_kps[i, 1] < 257:
+                    pose_kps[i, 2] = 1
+
+        return pose_kps
+
+    
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def run_inference(self, img=None):
+        self._tf_interpreter.set_tensor(self.input_details[0]['index'], img)
+        self._tf_interpreter.invoke()
+        return self._tf_interpreter.get_tensor(self.output_details[0]['index'])
 
     def DetectPosesInImage(self, img):
         """
@@ -150,44 +149,52 @@ class PoseEngine(TFInferenceEngine):
         Args:
           img: numpy array containing image
         """
+        src_templ_height, src_tepml_width = img.size 
+        template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
 
-        # Extend or crop the input to match the input shape of the network.
-        if (img.shape[0] < self.image_height) or \
-           (img.shape[1] < self.image_width):
-            img = np.pad(img, [[0, max(0, self.image_height - img.shape[0])],
-                               [0, max(0, self.image_width - img.shape[1])], 
-                               [0, 0]], mode='constant')
-        img = img[0:self.image_height, 0:self.image_width]
-        assert (img.shape == tuple(self._input_tensor_shape[1:]))
+        templ_ratio_width = src_tepml_width/self.image_width
+        templ_ratio_height = src_templ_height/self.image_height
+       
+        template_input = np.expand_dims(template_image.copy(), axis=0)
+        floating_model = self.input_details[0]['dtype'] == np.float32
 
-        # Run the inference (API expects the data to be flattened).
-        return self.ParseOutput(self.run_inference(img.flatten()))
+        if floating_model:
+            template_input = (np.float32(template_input) - 127.5) / 127.5
 
-    def run_inference(self, img=None):
-        raise NotImplementedError()
+        self._tf_interpreter.set_tensor(self.input_details[0]['index'], template_input)
+        self._tf_interpreter.invoke()
 
-    def ParseOutput(self, output):
-        inference_time, output = output
-        outputs = [output[i:j] for i, j in zip(self._output_offsets, \
-                                               self._output_offsets[1:])]
+        template_output_data = self._tf_interpreter.get_tensor(self.output_details[0]['index'])
+        template_offset_data = self._tf_interpreter.get_tensor(self.output_details[1]['index'])
 
-        keypoints = outputs[0].reshape(-1, len(KEYPOINTS), 2)
-        keypoint_scores = outputs[1].reshape(-1, len(KEYPOINTS))
-        pose_scores = outputs[2]
-        nposes = int(outputs[3][0])
-        assert nposes < outputs[0].shape[0]
+        template_heatmaps = np.squeeze(template_output_data)
+        template_offsets = np.squeeze(template_offset_data)
+        
+        template_show = np.squeeze((template_input.copy()*127.5+127.5)/255.0)
+        template_show = np.array(template_show*255,np.uint8)
+        template_kps = self.parse_output(template_heatmaps,template_offsets,0.3)
+        
+        kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
 
-        # Convert the poses to a friendlier format 
-        # of keypoints with associated scores.
         poses = []
-        for pose_i in range(nposes):
-            keypoint_dict = {}
-            for point_i, point in enumerate(keypoints[pose_i]):
-                keypoint = Keypoint(KEYPOINTS[point_i], point,
-                                    keypoint_scores[pose_i, point_i])
-                if self._mirror: 
-                    keypoint.yx[1] = self.image_width - keypoint.yx[1]
-                keypoint_dict[KEYPOINTS[point_i]] = keypoint
-            poses.append(Pose(keypoint_dict, pose_scores[pose_i]))
 
-        return poses, inference_time
+        keypoint_dict = {}
+        cnt = 0
+        for point_i, point in enumerate(kps):
+                
+            x, y = int(round(kps[point_i, 0]*ratio[0])), int(round(kps[point_i, 1]*ratio[1]))
+            prob = self.sigmoid(kps[point_i, 3])
+        
+            if prob > 0.60:
+                cnt += 1
+            keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)
+            
+            keypoint_dict[KEYPOINTS[point_i]] = keypoint
+
+        
+        pose_scores = cnt/17
+        poses.append(Pose(keypoint_dict, pose_scores))
+
+        return poses
+	
+

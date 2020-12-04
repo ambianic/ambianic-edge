@@ -3,10 +3,11 @@ import logging
 import time
 
 from ambianic.pipeline.ai.image_detection import TFImageDetection
-from ambianic.pipeline.ai.pose_engine import PoseEngine
+from ambianic.pipeline.ai.pose_engine_CPU import PoseEngine
 from ambianic.util import stacktrace
 
 import numpy as np
+import math
 
 log = logging.getLogger(__name__)
 
@@ -31,17 +32,11 @@ class FallDetector(TFImageDetection):
             labels: ai_models/pose_labels.txt
         }
         """
-        
+        super().__init__(model, **kwargs)
         self._prev_vals = []
-        self._prev_infer_time = time.monotonic()
-        self._pose_engine = PoseEngine(model)
-        # This value represents the proportion of full-body distance a person's
-        # top body part would need to drop in one second to constitute a fall
-        # 
-        # This value would need to be tuned experimentally
-        # or replaced by a DNN classification model 
-        # trained how to detect falls given a before and after image.
-        self._fall_factor = 1.5
+        self._pose_engine = PoseEngine(model, **kwargs)
+        
+        self._fall_factor = 20
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -52,17 +47,15 @@ class FallDetector(TFImageDetection):
         else:
             try:
                 image = sample['image']
-                thumbnail, tensor_image, inference_result = \
-                    self.fall_detect(image=image)
-                log.debug('Fall detection inference_result: %r',
-                          inference_result)
+                
+                inference_result = self.fall_detect(image=image)
+                
                 inf_meta = {
                     'display': 'Fall Detection',
                 }
                 # pass on the results to the next connected pipe element
                 processed_sample = {
                     'image': image,
-                    'thumbnail': thumbnail,
                     'inference_result': inference_result,
                     'inference_meta': inf_meta
                     }
@@ -75,59 +68,53 @@ class FallDetector(TFImageDetection):
                           )
                 log.warning(stacktrace())
 
+    def calculate_angle(self, p):
+        x1, y1 = p[0][0][0], p[0][0][1]
+        x2, y2 = p[0][1][0], p[0][1][1]
+        x3, y3 = p[1][0][0], p[1][0][1]
+        x4, y4 = p[1][1][0], p[1][1][1]
+        
+        m1 = (y1-y2)/(x1-x2)
+        m2 = (y3-y4)/(x3-x4)
+        
+        theta1 = math.degrees(math.atan(m1))
+        theta2 = math.degrees(math.atan(m2))
+            
+        theta = abs(theta1-theta2)
+        return theta
+
     def fall_detect(self, image=None):
         assert image
-        start_time = time.monotonic()
         log.debug("Calling TF engine for inference")
-
-        # Width and height input values used in PoseNet tutorial
-        width, height = 641, 481
-
-        # thumbnail is a proportionately resized image
-        thumbnail = self.thumbnail(image=image, desired_size=(width, height))
-
-        # convert thumbnail into an image with the exact size
-        # as the input tensor
-        # preserving proportions by padding as needed
-        new_im = self.resize(image=thumbnail, desired_size=(width, height))
-
-        w_factor = thumbnail.size[0] / new_im.size[0]
-        h_factor = thumbnail.size[1] / new_im.size[1]
-
+        
         # Detection using tensorflow posenet module
-        poses, inference_time = self._pose_engine.DetectPosesInImage(\
-                                                  np.uint8(new_im))
-
-        # Obtain time difference between consecutive frames
-        time_diff = time.monotonic() - self._prev_infer_time
-        self._prev_infer_time = time.monotonic()
-
+        poses = self._pose_engine.DetectPosesInImage(image)
+        
         inference_result = []
-        pose_vals_list = []
+        pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
+
         for i, pose in enumerate(poses):
             if pose.score < 0.5:
                 continue
-            y0 = min(pose.keypoints.items(), lambda item: item[1].yx[0])
-            x0 = min(pose.keypoints.items(), lambda item: item[1].yx[1])
-            y1 = max(pose.keypoints.items(), lambda item: item[1].yx[0])
-            x1 = min(pose.keypoints.items(), lambda item: item[1].yx[1])
-            # Record pose values for comparison
-            pose_vals_list.append((y0, y1))
-            # Compare poses to the corresponding pose in the last frame
-            # This could cause errors if pose detections change between frames
-            try:
-                # Algorithm for fall detection is based on high and low y vals
-                if y0 >= self._prev_vals[i][0] - self._fall_factor * \
-            time_diff * (self._prev_vals[i][0] - self._prev_vals[i][1]):
+            
+            for label, keypoint in pose.keypoints.items():
+                if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
+                    pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
+                elif label == 'right shoulder' or label == 'right hip':
+                    pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
 
-                    inference_result.append((
-                        'FALL',
-                        pose.score,
-                        (x0 / w_factor, y0 / h_factor, \
-                         x1 / w_factor, y1 / h_factor)))
-            except(ValueError):
+            if not self._prev_vals:
                 res = False
+            else:
+                temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
+                left_angle = self.calculate_angle(temp_left_point)
+
+                temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
+                rigth_angle = self.calculate_angle(temp_right_point)
+
+                if left_angle > self._fall_factor or rigth_angle > self._fall_factor:
+                    inference_result.append(('FALL', pose.score))
 
         self._prev_vals = pose_vals_list
 
-        return thumbnail, new_im, inference_result
+        return inference_result
