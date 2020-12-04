@@ -30,7 +30,6 @@ def _fall_detect_config():
     return config
 
 
-
 def _get_image(file_name=None):
     assert file_name
     _dir = os.path.dirname(os.path.abspath(__file__))
@@ -66,8 +65,6 @@ def test_model_inputs():
     assert colors == 3
 
 
-
-
 def test_one_person():
     """Expect to detect a fall."""
     config = _fall_detect_config()
@@ -93,7 +90,6 @@ def test_one_person():
     category, confidence = result[0]
     assert category == 'FALL'
     assert confidence > 0.7
-    
 
 
 def test_background_image():
