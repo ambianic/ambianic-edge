@@ -3,7 +3,7 @@ import logging
 import time
 
 from ambianic.pipeline.ai.image_detection import TFImageDetection
-from ambianic.pipeline.ai.pose_engine_CPU import PoseEngine
+from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
 
 import numpy as np
