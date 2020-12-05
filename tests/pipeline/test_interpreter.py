@@ -202,7 +202,8 @@ def test_pipeline_ai_model_config():
                 {"source": {"uri": "test"}},
                 {"detect_objects": {
                     "ai_model": "test",
-                    "confidence_threshold": 0.0
+                    "confidence_threshold": 0.0,
+                    "label_filter": ['person', 'car']
                 }}
             ]
         }
@@ -214,3 +215,4 @@ def test_pipeline_ai_model_config():
     log.debug(p[0]._pipe_elements[1])
     assert len(p[0]._pipe_elements) == 2
     assert p[0]._pipe_elements[1]._tfengine._confidence_threshold == 0.0
+    assert p[0]._pipe_elements[1]._label_filter == ['person', 'car']

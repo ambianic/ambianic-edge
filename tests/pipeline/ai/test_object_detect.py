@@ -208,15 +208,120 @@ def test_one_person_no_face():
 
 def test_one_label_filter():
     """Expect to detect one person and no other objects."""
+    config = _object_detect_config()
+    confidence_threshold = 0.7
+    config['confidence_threshold'] = confidence_threshold
+    config['label_filter'] = ['person']
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-couch.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 1
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > confidence_threshold
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
 
 def test_two_labels_filter():
     """Expect to detect one person and one couch."""
+    config = _object_detect_config()
+    config['confidence_threshold'] = 0.6
+    config['label_filter'] = ['person', 'couch']
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-couch.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 2
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.7
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    category, confidence, (x0, y0, x1, y1) = result[1]
+    assert category == 'couch'
+    assert confidence > 0.6
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
 
 def test_no_labels_filter():
-    """Expect to detect one person and one couch."""
+    """Expect to detect all labeled objects - one person and one couch."""
+    config = _object_detect_config()
+    config['confidence_threshold'] = 0.6
+    # No label_filter set, which is the same as None
+    # config['label_filter'] = None
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-couch.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert result
+    assert len(result) == 2
+    category, confidence, (x0, y0, x1, y1) = result[0]
+    assert category == 'person'
+    assert confidence > 0.7
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
+    category, confidence, (x0, y0, x1, y1) = result[1]
+    assert category == 'couch'
+    assert confidence > 0.6
+    assert x0 > 0 and x0 < x1
+    assert y0 > 0 and y0 < y1
 
 def test_bad_label_filter():
-    """Expect to detect nothing and get an error because the label is not in the training label set."""
+    """Expect to detect nothing because the label is not in the training label set."""
+    config = _object_detect_config()
+    config['confidence_threshold'] = 0.6
+    config['label_filter'] = ['SomeR@ndomJunk']
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-couch.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert not result
 
 def test_one_label_not_in_picture():
     """Expect to detect nothing because there is no object with the given label in the picture."""
+    config = _object_detect_config()
+    config['confidence_threshold'] = 0.6
+    config['label_filter'] = ['car']
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+
+        result = inference_result
+    object_detector = ObjectDetector(**config)
+    output = _OutPipeElement(sample_callback=sample_callback)
+    object_detector.connect_to_next_element(output)
+    img = _get_image(file_name='person-couch.jpg')
+    object_detector.receive_next_sample(image=img)
+    assert not result
