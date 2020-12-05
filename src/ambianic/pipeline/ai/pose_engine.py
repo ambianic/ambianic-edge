@@ -192,5 +192,3 @@ class PoseEngine(TFInferenceEngine):
         poses.append(Pose(keypoint_dict, pose_scores))
 
         return poses
-	
-
