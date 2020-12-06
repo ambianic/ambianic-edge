@@ -77,7 +77,6 @@ def test_one_person():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
     fall_detector.connect_to_next_element(output)
 
     img_1 = _get_image(file_name='fall_img_1.png')
@@ -138,7 +137,7 @@ def test_bad_sample_good_sample():
     object_detector.receive_next_sample(image=None)
     assert result == 'nothing passed to me'
 
-    # good sample    
+    # good sample
     fall_detector = FallDetector(**config)
     fall_detector.connect_to_next_element(output)
 
@@ -152,4 +151,3 @@ def test_bad_sample_good_sample():
     category, confidence = result[0]
     assert category == 'FALL'
     assert confidence > 0.7
-    
