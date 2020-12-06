@@ -1,5 +1,3 @@
-import collections
-import math
 from ambianic.pipeline.ai.inference import TFInferenceEngine
 import logging
 import numpy as np
@@ -168,8 +166,6 @@ class PoseEngine(TFInferenceEngine):
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)
         
-        template_show = np.squeeze((template_input.copy()*127.5+127.5)/255.0)
-        template_show = np.array(template_show*255,np.uint8)
         template_kps = self.parse_output(template_heatmaps,template_offsets,0.3)
         
         kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
