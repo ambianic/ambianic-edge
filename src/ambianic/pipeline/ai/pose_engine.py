@@ -94,20 +94,6 @@ class PoseEngine(TFInferenceEngine):
         """
         return self.input_details[0]['shape']
 
-    def get_all_output_tensors_sizes(self):
-        """Gets the size of each output tensor.
-        A model may output several tensors, but the return from :func:`run_inference`
-        and :func:`get_raw_output` concatenates them together into a 1-D array.
-        So this function provides the size for each original output tensor, allowing
-        you to calculate the offset for each tensor within the concatenated array.
-        Returns:
-        An array (:obj:`numpy.ndarray`) with the length of each output tensor
-        (this assumes that all output tensors are 1-D).
-        """
-        log.INFO('PoseNet model output tensor details: ', self.output_details)
-        output_tensor_sizes = [0]
-        raise NotImplementedError()
-
     def parse_output(self, heatmap_data, offset_data, threshold):
         joint_num = heatmap_data.shape[-1]
         pose_kps = np.zeros((joint_num, 4), np.float32)
@@ -130,11 +116,6 @@ class PoseEngine(TFInferenceEngine):
     
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
-
-    def run_inference(self, img=None):
-        self._tf_interpreter.set_tensor(self.input_details[0]['index'], img)
-        self._tf_interpreter.invoke()
-        return self._tf_interpreter.get_tensor(self.output_details[0]['index'])
 
     def DetectPosesInImage(self, img):
         """
