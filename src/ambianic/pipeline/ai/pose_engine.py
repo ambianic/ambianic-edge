@@ -70,12 +70,6 @@ class PoseEngine(TFInferenceEngine):
         super().__init__(model, **kwargs)
         
         self._input_tensor_shape = self.get_input_tensor_shape()
-        if (self._input_tensor_shape.size != 4 or
-                self._input_tensor_shape[3] != 3 or
-                self._input_tensor_shape[0] != 1):
-            raise ValueError(
-                ('Image model should have input shape [1, height, width, 3]!'
-                 ' This model has {}.'.format(self._input_tensor_shape)))
         _, self.image_height, self.image_width, self.image_depth = \
                                                 self.get_input_tensor_shape()
 
