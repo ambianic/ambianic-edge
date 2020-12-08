@@ -150,8 +150,7 @@ class PoseEngine(TFInferenceEngine):
         keypoint_dict = {}
         cnt = 0
         for point_i, point in enumerate(kps):
-                
-            x, y = int(round(kps[point_i, 0]*ratio[0])), int(round(kps[point_i, 1]*ratio[1]))
+            x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
             prob = self.sigmoid(kps[point_i, 3])
         
             if prob > 0.60:
