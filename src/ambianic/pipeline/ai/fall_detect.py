@@ -28,7 +28,7 @@ class FallDetector(TFImageDetection):
         super().__init__(model, **kwargs)
         self._prev_vals = []
         self._pose_engine = PoseEngine(model, **kwargs)
-        self._fall_factor = 20
+        self._fall_factor = 60
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -90,7 +90,7 @@ class FallDetector(TFImageDetection):
             for label, keypoint in pose.keypoints.items():
                 if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
                     pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
-                elif label == 'right shoulder' or label == 'right hip':
+                elif (label == 'right shoulder' or label == 'right hip') and (keypoint.score > 0.5):
                     pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
 
             if not self._prev_vals:
@@ -102,7 +102,7 @@ class FallDetector(TFImageDetection):
                 temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
                 rigth_angle = self.calculate_angle(temp_right_point)
 
-                if left_angle > self._fall_factor or rigth_angle > self._fall_factor:
+                if left_angle >= self._fall_factor or rigth_angle >= self._fall_factor:
                     inference_result.append(('FALL', pose.score))
 
         self._prev_vals = pose_vals_list
