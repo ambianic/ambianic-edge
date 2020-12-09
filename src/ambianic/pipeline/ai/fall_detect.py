@@ -117,13 +117,13 @@ class FallDetector(TFImageDetection):
                     try:
                         temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
                         left_angle = self.calculate_angle(temp_left_point)
-                    except:
+                    except IndexError:
                         left_angle = 0
 
                     try:
                         temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
                         right_angle = self.calculate_angle(temp_right_point)
-                    except:
+                    except IndexError:
                         right_angle = 0
 
                     if left_angle > self._fall_factor or right_angle > self._fall_factor:
