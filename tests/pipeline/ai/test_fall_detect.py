@@ -65,8 +65,8 @@ def test_model_inputs():
     assert colors == 3
 
 
-def test_one_person():
-    """Expect to detect a fall."""
+def test_fall_detection_case_1():
+    """Expected to not detect a fall as key-points are not detected."""
     config = _fall_detect_config()
     result = None
 
@@ -80,6 +80,28 @@ def test_one_person():
     fall_detector.connect_to_next_element(output)
 
     img_1 = _get_image(file_name='fall_img_1.png')
+    img_2 = _get_image(file_name='fall_img_3.png')
+    fall_detector.receive_next_sample(image=img_1)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+    
+def test_fall_detection_case_2():
+    """Expected to detect a fall as key-points are detected."""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+    
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.receive_next_sample(image=img_2)
@@ -89,6 +111,32 @@ def test_one_person():
     category, confidence = result[0]
     assert category == 'FALL'
     assert confidence > 0.7
+    
+def test_fall_detection_case_3():
+    """Expected to detect a fall as key-points are detected by rotating the image."""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+    
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_1.png')
+    img_2 = _get_image(file_name='fall_img_5.png')
+    fall_detector.receive_next_sample(image=img_1)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert result
+    assert len(result) == 1
+    category, confidence = result[0]
+    assert category == 'FALL'
+    assert confidence > 0.25
 
 
 def test_background_image():
