@@ -72,39 +72,63 @@ class FallDetector(TFImageDetection):
             
         theta = abs(theta1-theta2)
         return theta
+    
+    def find_keypoints(self, image):
+
+        image_ori = image.copy()
+        rotation = [90, -90]
+        
+        while True:
+            poses = self._pose_engine.DetectPosesInImage(image)
+            for pose in poses:
+                if pose.score < 0.25:
+                    if rotation:
+                        angle = rotation.pop()
+                        image = image_ori.rotate(angle, expand=True)
+                    else:
+                        return None
+                else:
+                    return poses
+
 
     def fall_detect(self, image=None):
         assert image
         log.debug("Calling TF engine for inference")
         
         # Detection using tensorflow posenet module
-        poses = self._pose_engine.DetectPosesInImage(image)
+        poses = self.find_keypoints(image)
         
-        inference_result = []
-        pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
+        if not poses:
+            log.debug("No Key-points are found")
+        else:
+            inference_result = []
+            pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
 
-        for i, pose in enumerate(poses):
-            if pose.score < 0.5:
-                continue
-            
-            for label, keypoint in pose.keypoints.items():
-                if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
-                    pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
-                elif (label == 'right shoulder' or label == 'right hip') and (keypoint.score > 0.5):
-                    pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
+            for pose in poses:
+                for label, keypoint in pose.keypoints.items():
+                    if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
+                        pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
+                    elif label == 'right shoulder' or label == 'right hip':
+                        pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
 
-            if not self._prev_vals:
-                res = False
-            else:
-                temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
-                left_angle = self.calculate_angle(temp_left_point)
+                if not self._prev_vals:
+                    res = False
+                else:
+                    try:
+                        temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
+                        left_angle = self.calculate_angle(temp_left_point)
+                    except:
+                        left_angle = 0
 
-                temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
-                rigth_angle = self.calculate_angle(temp_right_point)
+                    try:
+                        temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
+                        right_angle = self.calculate_angle(temp_right_point)
+                    except:
+                        right_angle = 0
 
-                if left_angle >= self._fall_factor or rigth_angle >= self._fall_factor:
-                    inference_result.append(('FALL', pose.score))
+                    if left_angle > self._fall_factor or right_angle > self._fall_factor:
+                        inference_result.append(('FALL', pose.score))
 
-        self._prev_vals = pose_vals_list
+            self._prev_vals = pose_vals_list
 
-        return inference_result
+            return inference_result
