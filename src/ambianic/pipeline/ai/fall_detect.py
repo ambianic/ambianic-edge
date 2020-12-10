@@ -80,6 +80,10 @@ class FallDetector(TFImageDetection):
         
         while True:
             poses = self._pose_engine.DetectPosesInImage(image)
+
+            if not poses:
+                return None
+            
             for pose in poses:
                 if pose.score < 0.25:
                     if rotation:
