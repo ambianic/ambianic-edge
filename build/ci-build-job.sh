@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set bash debug parameters
+# set bash debug parameters 
 set -exu
 
 echo "Building for CPU architecture: ${ARCH}"
