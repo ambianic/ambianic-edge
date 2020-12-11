@@ -1,5 +1,21 @@
 # Semantic Versioning Changelog
 
+# [1.11.0](https://github.com/ambianic/ambianic-edge/compare/v1.10.0...v1.11.0) (2020-12-08)
+
+
+### Bug Fixes
+
+* adjust confidence threshold ([79b4c6f](https://github.com/ambianic/ambianic-edge/commit/79b4c6f9535476f57ba65886c7a1e8e633bdb9c9))
+* adjust detection confidence threshold ([f8c76af](https://github.com/ambianic/ambianic-edge/commit/f8c76af0f007f3ed7930b8a800360526eabb42fe))
+* lower confidence threshold for arm tflite ([4ecd6dc](https://github.com/ambianic/ambianic-edge/commit/4ecd6dcccb46849097b0e464c3b389180d4ab15f))
+* test syntax typo ([98b7299](https://github.com/ambianic/ambianic-edge/commit/98b7299ddf37e7e43012b8146bc270bef5b71087))
+
+
+### Features
+
+* add label filter config option for object detection ([c44230b](https://github.com/ambianic/ambianic-edge/commit/c44230b8a9a1099154b7a611737506b6598c6331))
+* add label filter config option for object detection ([44bfcb1](https://github.com/ambianic/ambianic-edge/commit/44bfcb119afc5410b8979e86bb28255e75904713))
+
 # [1.10.0](https://github.com/ambianic/ambianic-edge/compare/v1.9.0...v1.10.0) (2020-12-01)
 
 
