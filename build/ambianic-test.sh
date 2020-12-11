@@ -14,7 +14,7 @@ fi
 MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 MY_DIR=$(dirname "${MY_PATH}")
 
-docker run -it --rm \
+docker run --rm \
   --name ambianic-dev \
   --mount type=bind,source="$MY_DIR/../",target=/workspace \
   --net=host \
