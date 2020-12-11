@@ -5,12 +5,12 @@ set -exu
 
 # Prepare docker engine enviroment
 sudo apt-get update -y
-sudo apt-get install --only-upgrade docker-ce -y
+# sudo apt-get install --only-upgrade docker-ce -y
+sudo curl -fsSL get.docker.com | CHANNEL=stable sh
 echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
 export DOCKER_CLI_EXPERIMENTAL=enabled
 sudo service docker restart
 docker --version
-
 
 # Raspberry PI section
 # prepare qemu
