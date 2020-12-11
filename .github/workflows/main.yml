@@ -7,12 +7,9 @@ on:
     branches: [ master ]
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
+  build_x86:
     # Skip build if the commit message includes the string '[skip ci]'
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
-  build_x86:
-    needs: prepare
     runs-on: ubuntu-latest
     env: 
       ARCH: "linux/amd64"
@@ -23,7 +20,8 @@ jobs:
         run: |
           sudo ./build/ci-build-job.sh
   build_arm:
-    needs: prepare
+    # Skip build if the commit message includes the string '[skip ci]'
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     env:
       ARCH: "linux/arm/v7"
