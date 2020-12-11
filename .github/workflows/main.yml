@@ -23,7 +23,7 @@ jobs:
           echo GITHUB_WORKSPACE=${GITHUB_WORKSPACE}
           sudo ${GITHUB_WORKSPACE}/build/ci-build-job.sh
   build_arm:
-    # Skip build if the commit message includes the string '[skip ci]'
+    # Skip build if the commit message includes the string '[skip ci]' 
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     env:
