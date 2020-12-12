@@ -6,7 +6,7 @@ set -exu
 echo "Building for CPU architecture: ${ARCH}"
 
 # Prepare docker engine enviroment
-sudo apt-get update -y
+# sudo apt-get update -y
 # sudo apt-get install --only-upgrade docker-ce -y
 # docker is already installed on the github action base image
 # sudo curl -fsSL get.docker.com | CHANNEL=stable sh
