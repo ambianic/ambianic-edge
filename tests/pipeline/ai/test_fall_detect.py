@@ -66,13 +66,13 @@ def test_model_inputs():
 
 
 def test_fall_detection_thumbnail_present():
-    """Expected to receive thumnail in result if image is not None."""
+    """Expected to receive thumnail in result if image is provided and poses are detected."""
     config = _fall_detect_config()
     result = None
 
     def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None
+        result = image is not None and thumbnail is not None and inference_result is not None
 
     fall_detector = FallDetector(**config)
 
@@ -185,15 +185,15 @@ def test_background_image():
     config = _fall_detect_config()
     result = None
 
-    def sample_callback(image=None, inference_result=None, **kwargs):
+    def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = inference_result
+        result = image is not None and thumbnail is not None and inference_result is None
     fall_detector = FallDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
-    assert not result
+    assert result is True
 
 
 def test_no_sample():
