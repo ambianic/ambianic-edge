@@ -56,8 +56,25 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v1
     - name: Semantic Release
-      run: npx semantic-release
+      id: semrel
+      uses: cycjimmy/semantic-release-action@v2
+      with:
+        extra_plugins: |
+          @semantic-release/changelog
+          @semantic-release/git
+          @semantic-release/exec
+        branches: |
+          [
+            'main',
+          ]
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Log new release info
+        if: steps.semrel.outputs.new_release_published == 'true'
+        run: |
+          echo ${{ steps.semrel.outputs.new_release_version }}
+          echo ${{ steps.semrel.outputs.new_release_major_version }}
+          echo ${{ steps.semrel.outputs.new_release_minor_version }}
+          echo ${{ steps.semrel.outputs.new_release_patch_version }}
