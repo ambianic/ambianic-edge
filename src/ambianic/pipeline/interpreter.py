@@ -7,6 +7,7 @@ import threading
 from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.ai.face_detect import FaceDetector
+from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
 from ambianic.pipeline import timeline
@@ -266,6 +267,7 @@ class Pipeline(ManagedService):
         'detect_objects': ObjectDetector,
         'save_detections': SaveDetectionSamples,
         'detect_faces': FaceDetector,
+        'detect_falls': FallDetector,
     }
 
     def _on_unknown_pipe_element(self, name=None):

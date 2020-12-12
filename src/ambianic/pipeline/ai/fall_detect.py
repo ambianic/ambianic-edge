@@ -22,7 +22,6 @@ class FallDetector(TFImageDetection):
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
             'edgetpu': 
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
-            labels: ai_models/pose_labels.txt
         }
         """
         super().__init__(model, **kwargs)

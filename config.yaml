@@ -1,7 +1,7 @@
 ######################################
 #  Ambianic main configuration file  #
 ######################################
-version: '1.3.29'
+version: '2020.12.11'
 
 # path to the data directory
 data_dir: ./data
@@ -10,7 +10,7 @@ data_dir: ./data
 logging:
   file: ./data/ambianic-log.txt
   level: INFO
-  # use file or console to specify level on the handlers
+  # use file or console to specify corresponding log output level
   # file: INFO
   # console: WARN
 
@@ -59,42 +59,28 @@ ai_models:
       edgetpu: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
     labels: ai_models/coco_labels.txt
     top_k: 2
+  fall_detection:
+    model:
+      tflite: ai_models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite
+      edgetpu: ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite
+    labels: ai_models/pose_labels.txt
 
 
 # A named pipeline defines an ordered sequence of operations
 # such as reading from a data source, AI model inference, saving samples and others.
 pipelines:
-  front_door_watch:
-    - source: picamera
-    - detect_objects: # run ai inference on the input data
-       ai_model: image_detection
-       # Watch for any of the labels listed below. The labels must be from the model trained label set.
-       # If no labels are listed, then watch for all model trained labels.
-       label_filter:
-        - person
-       confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
-       positive_interval: 5 # how often (in seconds) to save samples with ANY results above the confidence threshold
-       idle_interval: 21600 # how often (in seconds) to save samples with NO results above the confidence threshold
-    - detect_faces: # run ai inference on the samples from the previous element output
-       ai_model: face_detection
-       confidence_threshold: 0.8
-    - save_detections: # save samples from the inference results
-       positive_interval: 2
-       idle_interval: 6000
-
-  # sequence of piped operations for use in daytime front door watch
- # entry_area_watch:
- #   - source: entry_area_cam
- #   - detect_objects: # run ai inference on the input data
- #       ai_model: image_detection
- #       confidence_threshold: 0.8
- #   - save_detections: # save samples from the inference results
- #       positive_interval: 5 # how often (in seconds) to save samples with ANY results above the confidence thresho$
- #       idle_interval: 21600 # how often (in seconds) to save samples with NO results above the confidence threshold
- #   - detect_faces: # run ai inference on the samples from the previous element output
- #       ai_model: face_detection
- #       confidence_threshold: 0.8
- #   - save_detections: # save samples from the inference results
- #       positive_interval: 2
- #       idle_interval: 6000
+   # Pipeline names could be descriptive, e.g. front_door_watch or entry_room_watch.
+   area_watch:
+     - source: picamera
+     - detect_objects: # run ai inference on the input data
+        ai_model: image_detection
+        confidence_threshold: 0.6
+     - save_detections: # save samples from the inference results
+        positive_interval: 60 # how often (in seconds) to save samples with ANY results above the confidence threshold
+        idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
+     - detect_falls: # look for falls
+        ai_model: fall_detection
+        confidence_threshold: 0.6
+     - save_detections: # save samples from the inference results
+        positive_interval: 10
+        idle_interval: 600
