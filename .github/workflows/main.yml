@@ -12,9 +12,9 @@ jobs:
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2    
+      - uses: actions/checkout@v2
       - name: Run build script
-        env: 
+        env:
           ARCH: "linux/amd64"
           TAG_SUFFIX: "amd64"
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -31,7 +31,7 @@ jobs:
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2    
+      - uses: actions/checkout@v2
       - name: Run build script
         env:
           ARCH: "linux/arm/v7"
