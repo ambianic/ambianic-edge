@@ -1,5 +1,15 @@
 # Semantic Versioning Changelog
 
+## [1.12.2](https://github.com/ambianic/ambianic-edge/compare/v1.12.1...v1.12.2) (2020-12-12)
+
+
+### Bug Fixes
+
+* changelog ([9b41eda](https://github.com/ambianic/ambianic-edge/commit/9b41eda7624acd5ff4a8aa8044ea4284469f4432))
+* changelog ([9254be0](https://github.com/ambianic/ambianic-edge/commit/9254be05e50de0d036eba2b250901c076a4a3f02))
+* store element ([4d14e4d](https://github.com/ambianic/ambianic-edge/commit/4d14e4d84378bd608d36007631fba6ba0c63cda4))
+* store element ([d1a28c1](https://github.com/ambianic/ambianic-edge/commit/d1a28c15ebbe6d99752213b0b8d7cb371e25db03))
+
 ## [1.12.1](https://github.com/ambianic/ambianic-edge/compare/v1.12.0...v1.12.1) (2020-12-12)
 
 
