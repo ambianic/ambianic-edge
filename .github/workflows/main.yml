@@ -17,6 +17,8 @@ jobs:
         env: 
           ARCH: "linux/amd64"
           TAG_SUFFIX: "amd64"
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
         run: |
           pwd
           ls -al
@@ -34,9 +36,11 @@ jobs:
         env:
           ARCH: "linux/arm/v7"
           TAG_SUFFIX: "arm32v7"
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
         run: |
           echo "ARCH=${ARCH}"
-          ./build/ci-build-job.sh
+          ${GITHUB_WORKSPACE}/build/ci-build-job.sh
   release:
     needs: [build_x86, build_arm]
     if: github.event_name == 'push' && false
