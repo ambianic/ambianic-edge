@@ -68,7 +68,7 @@ jobs:
             'main',
           ]
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Log new release info
