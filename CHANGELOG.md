@@ -1,5 +1,15 @@
 # Semantic Versioning Changelog
 
+## [1.12.1](https://github.com/ambianic/ambianic-edge/compare/v1.12.0...v1.12.1) (2020-12-12)
+
+
+### Bug Fixes
+
+* merge branch 'master' of https://github.com/ambianic/ambianic-edge ([6dde02c](https://github.com/ambianic/ambianic-edge/commit/6dde02c05d10f621854635e9ab12ce9663cd207a))
+* merge branch 'master' of https://github.com/ivelin/ambianic-edge ([b002b73](https://github.com/ambianic/ambianic-edge/commit/b002b73ce28695d6438b2972b509dc0566ebc94d))
+* pose engine ([e7a336d](https://github.com/ambianic/ambianic-edge/commit/e7a336dd179008f3c27f435844170bcc7dc71529))
+* pose engine ([48cf435](https://github.com/ambianic/ambianic-edge/commit/48cf435d87ad9b524b95f7e04426511a5f02f257))
+
 # [1.12.0](https://github.com/ambianic/ambianic-edge/compare/v1.11.0...v1.12.0) (2020-12-12)
 
 
