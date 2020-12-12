@@ -9,7 +9,7 @@ from watchdog.observers import Observer
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic import logger, config
+from ambianic import logger, config, get_config_file, load_config
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
@@ -37,49 +37,54 @@ class AmbianicServer:
         assert work_dir
 
         self._env_work_dir = work_dir
+        self.init()
 
+    def init(self):
         # array of managed specialized servers
         self._servers = {}
         self._service_exit_requested = False
+        self._service_restart_requested = False
         self._latest_heartbeat = time.monotonic()
-
-        self.config_observer = Observer()
+        self.config_observer = None
         self.watching_config = False
 
     def stop_watch_config(self):
         if self.watching_config:
             self.config_observer.stop()
             self.config_observer.join()
+        self.watching_config = False
+        self.config_observer = None
 
     def start_watch_config(self):
-
         if self.watching_config:
             self.stop_watch_config()
-
+        self.config_observer = Observer()
         config_paths = [
-            os.path.join(self._env_work_dir, "config.yaml"),
+            get_config_file(),
             # os.path.join(self._env_work_dir, "secrets.yaml"),
         ]
-
         for filepath in config_paths:
             if not os.path.exists(filepath):
                 log.warning(
                     "File %s not found, it will not be watched for changes." %
-                    os.path.basename(filepath)
+                    filepath
                 )
                 continue
             self.config_observer.schedule(
-                self.on_config_change,
+                self,
                 filepath,
                 recursive=False
             )
+
         self.config_observer.start()
         self.watching_config = True
 
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
-        for srv in servers.values():
+        for name, srv in servers.items():
             srv.stop()
+            srv = None
+            servers[name] = None
         self.stop_watch_config()
 
     def _healthcheck(self, servers):
@@ -114,10 +119,14 @@ class AmbianicServer:
         if self._service_exit_requested:
             raise ServiceExit
 
-    def on_config_change(self):
-        log.info("Configuration file changed, restarting")
+    def dispatch(self, event):
+        """Callback called when a config file changes"""
+        log.info("Configuration file changed, stopping Ambianic server")
+        self.restart()
+
+    def restart(self):
+        self._service_restart_requested = True
         self.stop()
-        self.start()
 
     def start(self):
         """Programmatic start of the main service."""
@@ -148,11 +157,17 @@ class AmbianicServer:
                 time.sleep(0.5)
                 self._healthcheck(servers)
                 self._heartbeat()
-
         except ServiceExit:
+
             log.info('Service exit requested.')
             log.debug('Cleaning up before exit...')
             self._stop_servers(servers)
+
+            if self._service_restart_requested:
+                self._service_restart_requested = False
+                self.init()
+                load_config(get_config_file())
+                return self.start()
 
         log.info('Exiting Ambianic server.')
         return True
