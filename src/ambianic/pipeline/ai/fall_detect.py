@@ -63,12 +63,9 @@ class FallDetector(TFImageDetection):
         x2, y2 = p[0][1][0], p[0][1][1]
         x3, y3 = p[1][0][0], p[1][0][1]
         x4, y4 = p[1][1][0], p[1][1][1]
-        
-        m1 = (y1-y2)/(x1-x2)
-        m2 = (y3-y4)/(x3-x4)
-        
-        theta1 = math.degrees(math.atan(m1))
-        theta2 = math.degrees(math.atan(m2))
+
+        theta1 = math.degrees(math.atan2(y2-y1, x1-x2))
+        theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
             
         theta = abs(theta1-theta2)
         return theta
