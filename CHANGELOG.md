@@ -1,5 +1,14 @@
 # Semantic Versioning Changelog
 
+## [1.12.4](https://github.com/ambianic/ambianic-edge/compare/v1.12.3...v1.12.4) (2020-12-12)
+
+
+### Bug Fixes
+
+* fall detection edge case ([3761e93](https://github.com/ambianic/ambianic-edge/commit/3761e933ad99aae9339c01033159c44868ad6a0e)), closes [#255](https://github.com/ambianic/ambianic-edge/issues/255)
+* fall detection edge case ([7ae2adf](https://github.com/ambianic/ambianic-edge/commit/7ae2adf5aee1ff0a769db846bd36ddec0b8cc914))
+* fall detection edge case ([b2b35e5](https://github.com/ambianic/ambianic-edge/commit/b2b35e5fda8d0046f341b4320dcfc1e8a9062160))
+
 ## [1.12.3](https://github.com/ambianic/ambianic-edge/compare/v1.12.2...v1.12.3) (2020-12-12)
 
 
