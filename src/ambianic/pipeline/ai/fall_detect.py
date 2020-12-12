@@ -4,6 +4,8 @@ from ambianic.pipeline.ai.image_detection import TFImageDetection
 from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
 import math
+import time
+
 log = logging.getLogger(__name__)
 
 
@@ -75,7 +77,7 @@ class FallDetector(TFImageDetection):
         rotation = [90, -90]
         
         while True:
-            poses = self._pose_engine.DetectPosesInImage(image)
+            poses, thumbnail = self._pose_engine.DetectPosesInImage(image)
 
             if not poses:
                 return None
@@ -86,17 +88,18 @@ class FallDetector(TFImageDetection):
                         angle = rotation.pop()
                         image = image_ori.rotate(angle, expand=True)
                     else:
-                        return None
+                        return None, thumbnail
                 else:
-                    return poses
+                    return poses, thumbnail
 
 
     def fall_detect(self, image=None):
         assert image
         log.debug("Calling TF engine for inference")
-        
+        start_time = time.monotonic()
+
         # Detection using tensorflow posenet module
-        poses = self.find_keypoints(image)
+        poses, thumbnail = self.find_keypoints(image)
         
         if not poses:
             log.debug("No Key-points are found")
@@ -131,4 +134,5 @@ class FallDetector(TFImageDetection):
 
             self._prev_vals = pose_vals_list
 
+            self.log_stats(start_time=start_time)
             return inference_result

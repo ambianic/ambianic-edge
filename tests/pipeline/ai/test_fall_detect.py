@@ -1,8 +1,8 @@
 """Test fall detection pipe element."""
-import os
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline import PipeElement
+import os
 from PIL import Image
 
 
