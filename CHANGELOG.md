@@ -1,5 +1,44 @@
 # Semantic Versioning Changelog
 
+# [1.12.0](https://github.com/ambianic/ambianic-edge/compare/v1.11.0...v1.12.0) (2020-12-12)
+
+
+### Bug Fixes
+
+* build script cleanup ([4b6b47f](https://github.com/ambianic/ambianic-edge/commit/4b6b47f3bf828b82b952f629079f5b6cbb633f4e))
+* ci ([f0dcc7e](https://github.com/ambianic/ambianic-edge/commit/f0dcc7ed0a67e6525b7db49aa880a960284fcabe))
+* ci ([cde2818](https://github.com/ambianic/ambianic-edge/commit/cde281870d4fa4ab1c5176d72862114e4313d1da))
+* ci ([02ca221](https://github.com/ambianic/ambianic-edge/commit/02ca2213c7d50bc91f01b4c3aeb1c11121f3ee4c))
+* ci ([653d531](https://github.com/ambianic/ambianic-edge/commit/653d531395f974df455d6fa89338648f30000bf5))
+* ci ([979ce4a](https://github.com/ambianic/ambianic-edge/commit/979ce4a247553188b22023b7b0094586e919e461))
+* ci ([797aebd](https://github.com/ambianic/ambianic-edge/commit/797aebd4530025e61fbb45db787b164a14b0a60a))
+* ci ([3ba8e5b](https://github.com/ambianic/ambianic-edge/commit/3ba8e5b6aeb90d5e82b82aeb1dab242b966f6f9c))
+* ci script ([528b6cf](https://github.com/ambianic/ambianic-edge/commit/528b6cf1e4aabca7f02c453df687c63f0b3d0e04))
+* ci script prepare stage ([c2b840b](https://github.com/ambianic/ambianic-edge/commit/c2b840b4cbd2ba3bbefd39487c7cac5944f5e9b4))
+* docker install ([eedb492](https://github.com/ambianic/ambianic-edge/commit/eedb4928fbbae514b97bb94a44de75f9d658c863))
+* docker login ([80595d8](https://github.com/ambianic/ambianic-edge/commit/80595d8deb92fb1ad4e114e26bd2fd86804b6a56))
+* docker login ([ea4964f](https://github.com/ambianic/ambianic-edge/commit/ea4964f37d9a98ac7aa27de781b6cae0c4df9935))
+* fall detection-Improved angle calculation; closes [#237](https://github.com/ambianic/ambianic-edge/issues/237) ([2bb910d](https://github.com/ambianic/ambianic-edge/commit/2bb910d7f40a18f0b7126981509b65fae4673e0e))
+* path ([cbf4b21](https://github.com/ambianic/ambianic-edge/commit/cbf4b2112e9de8764daba926021a77898e17bc65))
+* release ([449f634](https://github.com/ambianic/ambianic-edge/commit/449f634f187c721243111aa741413f6f0e29820c))
+* release ([1035bc2](https://github.com/ambianic/ambianic-edge/commit/1035bc2cabaecc7af4e36077ea29915073e8b15d))
+* release ([09ba648](https://github.com/ambianic/ambianic-edge/commit/09ba6483939f890015a6e37ee1cc0ef818921ded))
+* release ([81f6b88](https://github.com/ambianic/ambianic-edge/commit/81f6b880425d1fe2ed4326bc9ed80892f557945c))
+* release ([091c0b9](https://github.com/ambianic/ambianic-edge/commit/091c0b966df2f98d580880b592378e259b7b45e2))
+* release ([45486a0](https://github.com/ambianic/ambianic-edge/commit/45486a00089354299c44899a7294093e7df141eb))
+* release ([c95ceab](https://github.com/ambianic/ambianic-edge/commit/c95ceab6d66594e9b401b12c0bad74af656071d4))
+* release ([fbb0bb1](https://github.com/ambianic/ambianic-edge/commit/fbb0bb1f8932e6418619cfdc57a6f4f13de70a21))
+* release job ([aea8437](https://github.com/ambianic/ambianic-edge/commit/aea84370fca3d647cc6245d665311eda47ab06bb))
+* release stage ([0d97637](https://github.com/ambianic/ambianic-edge/commit/0d97637384a0524ef39ffd7addcc0dd26ce1cc56))
+* sh exec mode ([b7de192](https://github.com/ambianic/ambianic-edge/commit/b7de19282db99b1ff6f4e0bab7da303090d479ad))
+* update default config ([463c44f](https://github.com/ambianic/ambianic-edge/commit/463c44f9c59dc10f5f51db3760e97f1f1ce2ddb4))
+
+
+### Features
+
+* add fall detection in default config.yaml pipeline ([2d96bb3](https://github.com/ambianic/ambianic-edge/commit/2d96bb3e0c41fc886c80976ebd7a985ea207faf4))
+* fall detection using posenet model ([9cb0990](https://github.com/ambianic/ambianic-edge/commit/9cb099074f91bc7dfa4f32e69f673c21fb3d597a)), closes [#232](https://github.com/ambianic/ambianic-edge/issues/232)
+
 # [1.11.0](https://github.com/ambianic/ambianic-edge/compare/v1.10.0...v1.11.0) (2020-12-08)
 
 
