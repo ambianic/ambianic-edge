@@ -154,6 +154,57 @@ def test_store_negative_detection():
         assert not json_inf_res
 
 
+def test_store_negative_detection_no_inference():
+    """Expect store to save the image from an inference without any detection."""
+    out_dir = os.path.dirname(os.path.abspath(__file__))
+    out_dir = os.path.join(
+        out_dir,
+        'tmp/'
+        )
+    out_dir = os.path.abspath(out_dir)
+    out_dir = os.path.abspath(out_dir)
+    context = PipelineContext(unique_pipeline_name='test pipeline')
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context,
+                                      event_log=logging.getLogger())
+    img = Image.new('RGB', (60, 30), color='red')
+    detections = None
+    processed_samples = list(store.process_sample(image=img,
+                                                  thumbnail=img,
+                                                  inference_result=detections))
+    assert len(processed_samples) == 1
+    print(processed_samples)
+    img_out = processed_samples[0]['image']
+    assert img_out == img
+    inf = processed_samples[0]['inference_result']
+    print(inf)
+    assert not inf
+    assert store._save_sample_called
+    assert store._inf_result == detections
+    assert store._img_path
+    img_dir = os.path.dirname(os.path.abspath(store._img_path / "../../"))
+    assert img_dir == out_dir
+    out_img = Image.open(store._img_path)
+    print(img_dir)
+    print(store._img_path)
+    assert out_img.mode == 'RGB'
+    assert out_img.size[0] == 60
+    assert out_img.size[1] == 30
+    json_dir = os.path.dirname(os.path.abspath(store._json_path / "../../"))
+    assert json_dir == out_dir
+    print(json_dir)
+    print(store._json_path)
+    with open(store._json_path) as f:
+        json_inf = json.load(f)
+        print(json_inf)
+        img_fname = json_inf['image_file_name']
+        rel_dir = json_inf['rel_dir']
+        img_fpath = os.path.join(out_dir, rel_dir, img_fname)
+        assert img_fpath == str(store._img_path)
+        json_inf_res = json_inf['inference_result']
+        assert not json_inf_res
+
+
 class _TestSaveDetectionSamples2(SaveDetectionSamples):
 
     _save_sample_called = False
