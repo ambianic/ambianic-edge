@@ -3,19 +3,19 @@ from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
 from typing import Union
 
-DEFAULT_WORK_DIR : str = '/workspace'
-DEFAULT_DATA_DIR : str = './data'
+DEFAULT_WORK_DIR:str = '/workspace'
+DEFAULT_DATA_DIR:str = './data'
 
-DEFAULT_CONFIG_FILE : str = 'config.yaml'
-DEFAULT_SECRETS_FILE : str = 'secrets.yaml'
+DEFAULT_CONFIG_FILE:str = 'config.yaml'
+DEFAULT_SECRETS_FILE:str = 'secrets.yaml'
 
-__CONFIG_FILE : str = None
-__SECRETS_FILE : str = None
+__CONFIG_FILE:str = None
+__SECRETS_FILE:str = None
 
-def get_config_file():
+def get_config_file() -> str:
     return __CONFIG_FILE
 
-def get_secrets_file():
+def get_secrets_file() -> str:
     if __SECRETS_FILE:
         return __SECRETS_FILE
     return os.path.join(get_work_dir(), DEFAULT_SECRETS_FILE)
@@ -44,7 +44,7 @@ def __init_config() -> Dynaconf:
     __merge_secrets(config)
     return config
 
-def load_config(filename : str, clean : bool = False) -> Dynaconf:
+def load_config(filename:str, clean:bool = False) -> Dynaconf:
     if clean:
         config.clean()
     if filename:
@@ -65,5 +65,4 @@ def get_work_dir() -> str:
 server_instance = None
 
 __CONFIG_FILE = os.path.join(get_work_dir(), DEFAULT_CONFIG_FILE)
-config : Dynaconf = __init_config()
-
+config:Dynaconf = __init_config()

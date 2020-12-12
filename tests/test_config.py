@@ -110,4 +110,3 @@ def test_secrets():
     ambianic.__SECRETS_FILE = default_secret
     assert cfg.get("question") == 42
     assert cfg.deeeper.question.on.life == 42
-
