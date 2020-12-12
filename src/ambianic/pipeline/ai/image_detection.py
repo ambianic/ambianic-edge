@@ -65,7 +65,8 @@ class TFImageDetection(PipeElement):
             lines = (p.match(line).groups() for line in f.readlines())
             return {int(num): text.strip() for num, text in lines}
 
-    def thumbnail(self, image=None, desired_size=None):
+    @staticmethod
+    def thumbnail(image=None, desired_size=None):
         """Resizes original image as close as possible to desired size.
 
         Preserves aspect ratio of original image.
@@ -110,7 +111,8 @@ class TFImageDetection(PipeElement):
         log.debug('thmubnail image size = %r', thumb.size)
         return thumb
 
-    def resize(self, image=None, desired_size=None):
+    @staticmethod
+    def resize(image=None, desired_size=None):
         """Pad original image to exact size expected by input tensor.
 
         Preserve aspect ratio to avoid confusing the AI model with
@@ -148,7 +150,42 @@ class TFImageDetection(PipeElement):
         assert new_im.size == desired_size
         return new_im
 
-    def _log_stats(self, start_time=None):
+    @staticmethod
+    def resize_to_input_tensor(image=None, desired_size=None):
+        """Resize and pad original image to exact size expected by input tensor.
+
+        Preserve aspect ratio to avoid confusing the AI model with
+        distortions that it was not trained on. Pad the resulting image
+        with solid black color pixels to fill the desired size.
+
+        Do not modify anything else in the original image.
+
+        :Parameters:
+        ----------
+        image : PIL.Image
+            Input Image
+
+        desired_size : (width, height)
+            Exact input tensor size expected by the AI model.
+
+        :Returns:
+        -------
+        PIL.Image
+            Resized image fitting exactly the AI model input tensor.
+
+        """
+        assert image
+        assert desired_size
+        # thumbnail is a proportionately resized image
+        thumbnail = TFImageDetection.thumbnail(image=image, desired_size=desired_size)
+        # convert thumbnail into an image with the exact size
+        # as the input tensor
+        # preserving proportions by padding as needed
+        new_im = TFImageDetection.resize(image=thumbnail, desired_size=desired_size)
+        return new_im
+
+
+    def log_stats(self, start_time=None):
         assert start_time
         log.debug("TF engine returned inference results")
         end_time = time.monotonic()
@@ -158,8 +195,9 @@ class TFImageDetection(PipeElement):
             pipeline_name = self.context.unique_pipeline_name
         else:
             pipeline_name = 'unknown'
-        inf_info = 'Inference time %.2f ms, %.2f fps in pipeline %s'
-        log.info(inf_info, inf_time, fps, pipeline_name)
+        inference_type = type(self).__name__
+        inf_info = '%s inference time %.2f ms, %.2f fps in pipeline %s'
+        log.info(inf_info, inference_type, inf_time, fps, pipeline_name)
         self.last_time = end_time
 
     def detect(self, image=None):
@@ -189,13 +227,13 @@ class TFImageDetection(PipeElement):
         height = tfe.input_details[0]['shape'][1]
         width = tfe.input_details[0]['shape'][2]
 
+        desired_size = (width, height)
         # thumbnail is a proportionately resized image
-        thumbnail = self.thumbnail(image=image, desired_size=(width, height))
-
+        thumbnail = TFImageDetection.thumbnail(image=image, desired_size=desired_size)
         # convert thumbnail into an image with the exact size
         # as the input tensor
         # preserving proportions by padding as needed
-        new_im = self.resize(image=thumbnail, desired_size=(width, height))
+        new_im = TFImageDetection.resize(image=thumbnail, desired_size=desired_size)
 
         # calculate what fraction of the new image is the thumbnail size
         # we will use these factors to adjust detection box coordinates
@@ -227,7 +265,7 @@ class TFImageDetection(PipeElement):
         # with the configured model
         tfe.infer()
 
-        self._log_stats(start_time=start_time)
+        self.log_stats(start_time=start_time)
 
         # log.debug('output_details: %r', tfe.output_details)
         # od = tfe.output_details[0]['index']

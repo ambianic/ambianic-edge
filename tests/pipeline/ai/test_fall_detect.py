@@ -1,8 +1,8 @@
 """Test fall detection pipe element."""
-import os
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline import PipeElement
+import os
 from PIL import Image
 
 
@@ -63,6 +63,26 @@ def test_model_inputs():
     assert width == 257
     colors = tfe.input_details[0]['shape'][3]
     assert colors == 3
+
+
+def test_fall_detection_thumbnail_present():
+    """Expected to receive thumnail in result if image is not None."""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = image is not None and thumbnail is not None
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_1.png')
+    fall_detector.receive_next_sample(image=img_1)
+
+    assert result is True
 
 
 def test_fall_detection_case_1():
@@ -179,7 +199,7 @@ def test_background_image():
 def test_no_sample():
     """Expect element to pass empty sample to next element."""
     config = _fall_detect_config()
-    result = 'Something'
+    result = False
 
     def sample_callback(image=None, inference_result=None, **kwargs):
         nonlocal result

@@ -1,4 +1,5 @@
 from ambianic.pipeline.ai.inference import TFInferenceEngine
+from ambianic.pipeline.ai.image_detection import TFImageDetection
 import logging
 import numpy as np
 from PIL import Image
@@ -105,14 +106,24 @@ class PoseEngine:
     def DetectPosesInImage(self, img):
         """
         Detects poses in a given image.
-        For ideal results make sure the image fed to this function is 
-        close to the expected input size - it is the caller's 
-        responsibility to resize the image accordingly.
-        Args:
-          img: numpy array containing image
+
+        :Parameters:
+        ----------
+        img : PIL.Image
+            Input Image for AI model detection.
+
+        :Returns:
+        -------
+        poses:
+            A list of Pose objects with keypoints and confidence scores
+        PIL.Image
+            Resized image fitting the AI model input tensor.
         """
+
         src_templ_height, src_tepml_width = img.size 
-        template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        tensor_input_size = (self.image_width, self.image_height)
+        template_image = TFImageDetection.resize_to_input_tensor(image=img, desired_size=tensor_input_size)
+        # template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
 
         templ_ratio_width = src_tepml_width/self.image_width
         templ_ratio_height = src_templ_height/self.image_height
@@ -152,4 +163,4 @@ class PoseEngine:
         pose_scores = cnt/17
         poses.append(Pose(keypoint_dict, pose_scores))
 
-        return poses
+        return poses, template_image

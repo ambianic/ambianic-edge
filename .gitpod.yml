@@ -8,4 +8,4 @@ tasks:
       pyenv global system
       echo "Started ambianic-edge development environment."
       echo "To run the ambianic-edge testsuite use:"
-      echo "./tests/run-tests.sh"
+      echo "python3 -m pytest --cov=ambianic --cov-report=term tests/"
