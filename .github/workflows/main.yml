@@ -110,7 +110,7 @@ jobs:
           @semantic-release/exec
         branches: |
           [
-            'main',
+            'master',
           ]
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
