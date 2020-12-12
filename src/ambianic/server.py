@@ -9,7 +9,7 @@ from watchdog.observers import Observer
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic import logger, config, get_config_file, load_config
+from ambianic import logger, config, get_config_file, get_secrets_file, load_config
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class AmbianicServer:
         self.config_observer = Observer()
         config_paths = [
             get_config_file(),
-            # os.path.join(self._env_work_dir, "secrets.yaml"),
+            get_secrets_file(),
         ]
         for filepath in config_paths:
             if not os.path.exists(filepath):

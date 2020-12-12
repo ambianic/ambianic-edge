@@ -153,7 +153,7 @@ def test_config_change():
     srv, t = _start_mock_server(work_dir=_dir, heartbeat_flag=hb_flag)
     hb_flag.wait(timeout=3)
     Path(config_file).touch()
-    time.sleep(3)
+    time.sleep(1)
     assert hb_flag.is_set()
     assert srv.config_changed
     _stop_mock_server(server=srv, thread=t)

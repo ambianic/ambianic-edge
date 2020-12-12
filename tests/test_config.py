@@ -5,7 +5,7 @@ import os
 from time import sleep
 import ambianic
 from ambianic.server import AmbianicServer
-from ambianic import server, config, logger
+from ambianic import server, config, logger, load_config
 import yaml
 import pytest
 
@@ -99,6 +99,15 @@ def test_log_config_bad_level2():
     assert effective_level == logger.DEFAULT_FILE_LOG_LEVEL
 
 def test_no_pipelines():
-    config.clean()
-    config.load_file(path=os.path.join(_dir, 'test-config-no-pipelines.yaml'))
+    load_config(os.path.join(_dir, 'test-config-no-pipelines.yaml'), True)
     assert config.get("pipelines", None) is None
+
+
+def test_secrets():
+    default_secret = ambianic.__SECRETS_FILE
+    ambianic.__SECRETS_FILE = os.path.join(_dir, "secrets.yaml")
+    cfg = load_config(os.path.join(_dir, 'test-config-secrets.yaml'), True)
+    ambianic.__SECRETS_FILE = default_secret
+    assert cfg.get("question") == 42
+    assert cfg.deeeper.question.on.life == 42
+
