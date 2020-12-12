@@ -40,13 +40,14 @@ class FallDetector(TFImageDetection):
         else:
             try:
                 image = sample['image']
-                inference_result = self.fall_detect(image=image)
+                inference_result, thumbnail = self.fall_detect(image=image)
                 inf_meta = {
                     'display': 'Fall Detection',
                 }
                 # pass on the results to the next connected pipe element
                 processed_sample = {
                     'image': image,
+                    'thumbnail': thumbnail,
                     'inference_result': inference_result,
                     'inference_meta': inf_meta
                     }
@@ -135,4 +136,4 @@ class FallDetector(TFImageDetection):
             self._prev_vals = pose_vals_list
 
             self.log_stats(start_time=start_time)
-            return inference_result
+            return inference_result, thumbnail
