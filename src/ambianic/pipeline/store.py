@@ -80,22 +80,23 @@ class SaveDetectionSamples(PipeElement):
         json_file = time_prefix.format(suffix='inference', fext='json')
         json_path = self._output_directory / json_file
         inf_json = []
-        for label, confidence, box in inference_result:
-            log.info('label: %s , confidence: %.0f, box: %s',
-                     label,
-                     confidence,
-                     box)
-            one_inf = {
-                'label': label,
-                'confidence': float(confidence),
-                'box': {
-                    'xmin': float(box[0]),
-                    'ymin': float(box[1]),
-                    'xmax': float(box[2]),
-                    'ymax': float(box[3]),
+        if inference_result:
+            for label, confidence, box in inference_result:
+                log.info('label: %s , confidence: %.0f, box: %s',
+                        label,
+                        confidence,
+                        box)
+                one_inf = {
+                    'label': label,
+                    'confidence': float(confidence),
+                    'box': {
+                        'xmin': float(box[0]),
+                        'ymin': float(box[1]),
+                        'xmax': float(box[2]),
+                        'ymax': float(box[3]),
+                    }
                 }
-            }
-            inf_json.append(one_inf)
+                inf_json.append(one_inf)
         save_json = {
             'id': uuid.uuid4().hex,
             'datetime': inf_time.isoformat(),

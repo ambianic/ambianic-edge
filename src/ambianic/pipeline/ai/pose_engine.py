@@ -49,25 +49,13 @@ class Pose:
         return 'Pose({}, {})'.format(self.keypoints, self.score)
 
 
-class PoseEngine(TFInferenceEngine):
+class PoseEngine:
     """Engine used for pose tasks."""
-    def __init__(self, model, **kwargs):
-        """Creates a PoseEngine with given model.
-        Args:
-            model: dict
-            {
-                'tflite': 
-                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
-                'edgetpu': 
-                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
-                labels: ai_models/pose_labels.txt
-            }
-            mirror: Flip keypoints horizontally
-        Raises:
-          ValueError: An error occurred when model output is invalid.
+    def __init__(self, tfengine=None):
+        """Creates a PoseEngine wrapper around an initialized tfengine.
         """
-        assert model is not None
-        super().__init__(model, **kwargs)
+        assert tfengine is not None
+        self._tfengine = tfengine
         
         self._input_tensor_shape = self.get_input_tensor_shape()
         _, self.image_height, self.image_width, self.image_depth = \
@@ -86,7 +74,7 @@ class PoseEngine(TFInferenceEngine):
         A 1-D array (:obj:`numpy.ndarray`) representing the required input tensor
         shape.
         """
-        return self.input_details[0]['shape']
+        return self._tfengine.input_details[0]['shape']
 
     def parse_output(self, heatmap_data, offset_data, threshold):
         joint_num = heatmap_data.shape[-1]
@@ -111,6 +99,9 @@ class PoseEngine(TFInferenceEngine):
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
+    def tf_interpreter(self):
+        return self._tfengine._tf_interpreter
+
     def DetectPosesInImage(self, img):
         """
         Detects poses in a given image.
@@ -127,16 +118,16 @@ class PoseEngine(TFInferenceEngine):
         templ_ratio_height = src_templ_height/self.image_height
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
-        floating_model = self.input_details[0]['dtype'] == np.float32
+        floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
 
         if floating_model:
             template_input = (np.float32(template_input) - 127.5) / 127.5
 
-        self._tf_interpreter.set_tensor(self.input_details[0]['index'], template_input)
-        self._tf_interpreter.invoke()
+        self.tf_interpreter().set_tensor(self._tfengine.input_details[0]['index'], template_input)
+        self.tf_interpreter().invoke()
 
-        template_output_data = self._tf_interpreter.get_tensor(self.output_details[0]['index'])
-        template_offset_data = self._tf_interpreter.get_tensor(self.output_details[1]['index'])
+        template_output_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[0]['index'])
+        template_offset_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[1]['index'])
 
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)

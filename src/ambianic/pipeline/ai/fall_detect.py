@@ -26,7 +26,7 @@ class FallDetector(TFImageDetection):
         """
         super().__init__(model, **kwargs)
         self._prev_vals = []
-        self._pose_engine = PoseEngine(model, **kwargs)
+        self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
 
     def process_sample(self, **sample):
