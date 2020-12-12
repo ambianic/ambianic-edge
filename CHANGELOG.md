@@ -1,5 +1,54 @@
 # Semantic Versioning Changelog
 
+# [1.9.0](https://github.com/ivelin/ambianic-edge/compare/v1.8.7...v1.9.0) (2020-12-12)
+
+
+### Bug Fixes
+
+* adjust confidence threshold ([79b4c6f](https://github.com/ivelin/ambianic-edge/commit/79b4c6f9535476f57ba65886c7a1e8e633bdb9c9))
+* adjust detection confidence threshold ([f8c76af](https://github.com/ivelin/ambianic-edge/commit/f8c76af0f007f3ed7930b8a800360526eabb42fe))
+* build script cleanup ([4b6b47f](https://github.com/ivelin/ambianic-edge/commit/4b6b47f3bf828b82b952f629079f5b6cbb633f4e))
+* ci ([f0dcc7e](https://github.com/ivelin/ambianic-edge/commit/f0dcc7ed0a67e6525b7db49aa880a960284fcabe))
+* ci ([cde2818](https://github.com/ivelin/ambianic-edge/commit/cde281870d4fa4ab1c5176d72862114e4313d1da))
+* ci ([02ca221](https://github.com/ivelin/ambianic-edge/commit/02ca2213c7d50bc91f01b4c3aeb1c11121f3ee4c))
+* ci ([653d531](https://github.com/ivelin/ambianic-edge/commit/653d531395f974df455d6fa89338648f30000bf5))
+* ci ([979ce4a](https://github.com/ivelin/ambianic-edge/commit/979ce4a247553188b22023b7b0094586e919e461))
+* ci ([797aebd](https://github.com/ivelin/ambianic-edge/commit/797aebd4530025e61fbb45db787b164a14b0a60a))
+* ci ([3ba8e5b](https://github.com/ivelin/ambianic-edge/commit/3ba8e5b6aeb90d5e82b82aeb1dab242b966f6f9c))
+* ci script ([528b6cf](https://github.com/ivelin/ambianic-edge/commit/528b6cf1e4aabca7f02c453df687c63f0b3d0e04))
+* ci script prepare stage ([c2b840b](https://github.com/ivelin/ambianic-edge/commit/c2b840b4cbd2ba3bbefd39487c7cac5944f5e9b4))
+* docker install ([eedb492](https://github.com/ivelin/ambianic-edge/commit/eedb4928fbbae514b97bb94a44de75f9d658c863))
+* docker login ([80595d8](https://github.com/ivelin/ambianic-edge/commit/80595d8deb92fb1ad4e114e26bd2fd86804b6a56))
+* docker login ([ea4964f](https://github.com/ivelin/ambianic-edge/commit/ea4964f37d9a98ac7aa27de781b6cae0c4df9935))
+* fall detection-Improved angle calculation; closes [#237](https://github.com/ivelin/ambianic-edge/issues/237) ([2bb910d](https://github.com/ivelin/ambianic-edge/commit/2bb910d7f40a18f0b7126981509b65fae4673e0e))
+* gitpod init ([7d3e70b](https://github.com/ivelin/ambianic-edge/commit/7d3e70bb1ba8540785372497c7d455183b2122ae))
+* lower confidence threshold for arm tflite ([4ecd6dc](https://github.com/ivelin/ambianic-edge/commit/4ecd6dcccb46849097b0e464c3b389180d4ab15f))
+* path ([cbf4b21](https://github.com/ivelin/ambianic-edge/commit/cbf4b2112e9de8764daba926021a77898e17bc65))
+* peer reconnect error; pull new peerjs-python ([61ea30b](https://github.com/ivelin/ambianic-edge/commit/61ea30b322d97e1fb7cdf12593d203fa08d24817))
+* release ([449f634](https://github.com/ivelin/ambianic-edge/commit/449f634f187c721243111aa741413f6f0e29820c))
+* release ([1035bc2](https://github.com/ivelin/ambianic-edge/commit/1035bc2cabaecc7af4e36077ea29915073e8b15d))
+* release ([09ba648](https://github.com/ivelin/ambianic-edge/commit/09ba6483939f890015a6e37ee1cc0ef818921ded))
+* release ([81f6b88](https://github.com/ivelin/ambianic-edge/commit/81f6b880425d1fe2ed4326bc9ed80892f557945c))
+* release ([091c0b9](https://github.com/ivelin/ambianic-edge/commit/091c0b966df2f98d580880b592378e259b7b45e2))
+* release ([45486a0](https://github.com/ivelin/ambianic-edge/commit/45486a00089354299c44899a7294093e7df141eb))
+* release ([c95ceab](https://github.com/ivelin/ambianic-edge/commit/c95ceab6d66594e9b401b12c0bad74af656071d4))
+* release ([fbb0bb1](https://github.com/ivelin/ambianic-edge/commit/fbb0bb1f8932e6418619cfdc57a6f4f13de70a21))
+* release job ([aea8437](https://github.com/ivelin/ambianic-edge/commit/aea84370fca3d647cc6245d665311eda47ab06bb))
+* release stage ([0d97637](https://github.com/ivelin/ambianic-edge/commit/0d97637384a0524ef39ffd7addcc0dd26ce1cc56))
+* sh exec mode ([b7de192](https://github.com/ivelin/ambianic-edge/commit/b7de19282db99b1ff6f4e0bab7da303090d479ad))
+* test syntax typo ([98b7299](https://github.com/ivelin/ambianic-edge/commit/98b7299ddf37e7e43012b8146bc270bef5b71087))
+
+
+### Features
+
+* add fall detection in default config.yaml pipeline ([2d96bb3](https://github.com/ivelin/ambianic-edge/commit/2d96bb3e0c41fc886c80976ebd7a985ea207faf4))
+* add label filter config option for object detection ([c44230b](https://github.com/ivelin/ambianic-edge/commit/c44230b8a9a1099154b7a611737506b6598c6331))
+* add label filter config option for object detection ([44bfcb1](https://github.com/ivelin/ambianic-edge/commit/44bfcb119afc5410b8979e86bb28255e75904713))
+* fall detection using posenet model ([9cb0990](https://github.com/ivelin/ambianic-edge/commit/9cb099074f91bc7dfa4f32e69f673c21fb3d597a)), closes [#232](https://github.com/ivelin/ambianic-edge/issues/232)
+* fully automate dev setup with Gitpod and introduce ai label filter ([a1c0887](https://github.com/ivelin/ambianic-edge/commit/a1c088782c2529856389cf905dd4e88c6892556c))
+* gitpod enabled - one click to open a continuous dev env ([2f7c286](https://github.com/ivelin/ambianic-edge/commit/2f7c2869ee8d60f8aa4a0110cadb2ffe27b99dfb))
+* introduce labels as a model inference filter ([a1af6ae](https://github.com/ivelin/ambianic-edge/commit/a1af6aea5c8bed5f294ef80edaaa91d3baae118e))
+
 # [1.11.0](https://github.com/ambianic/ambianic-edge/compare/v1.10.0...v1.11.0) (2020-12-08)
 
 
