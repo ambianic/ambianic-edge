@@ -49,7 +49,7 @@ jobs:
           ${GITHUB_WORKSPACE}/build/ci-build-job.sh
   release:
     needs: [build_x86, build_arm]
-    if: github.event_name == 'push' && false
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
