@@ -104,6 +104,7 @@ class FallDetector(TFImageDetection):
         
         if not poses:
             log.debug("No Key-points are found")
+            return None, thumbnail
         else:
             inference_result = []
             pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
