@@ -34,7 +34,8 @@ echo "PROD_TAG=$PROD_TAG"
 pwd
 ls -al
 
-docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+# dockerhub login is now done safer via github action
+# docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 docker push "ambianic/ambianic-edge:${DEV_TAG}"
 docker manifest create "ambianic/ambianic-edge:dev" "ambianic/ambianic-edge:dev-amd64" "ambianic/ambianic-edge:dev-arm32v7"
 docker manifest annotate "ambianic/ambianic-edge:dev" "ambianic/ambianic-edge:dev-arm32v7" --os=linux --arch=arm --variant=v7
