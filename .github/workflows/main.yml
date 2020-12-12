@@ -22,8 +22,6 @@ jobs:
         env:
           ARCH: "linux/amd64"
           TAG_SUFFIX: "amd64"
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
         run: |
           pwd
           ls -al
