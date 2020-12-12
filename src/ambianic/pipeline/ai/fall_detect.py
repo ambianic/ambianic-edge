@@ -102,13 +102,12 @@ class FallDetector(TFImageDetection):
         # Detection using tensorflow posenet module
         poses, thumbnail = self.find_keypoints(image)
         
+        inference_result = None
         if not poses:
             log.debug("No Key-points are found")
-            return None, thumbnail
         else:
-            inference_result = []
             pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
-
+            inference_result = []
             for pose in poses:
                 for label, keypoint in pose.keypoints.items():
                     if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
@@ -137,4 +136,4 @@ class FallDetector(TFImageDetection):
             self._prev_vals = pose_vals_list
 
             self.log_stats(start_time=start_time)
-            return inference_result, thumbnail
+        return inference_result, thumbnail
