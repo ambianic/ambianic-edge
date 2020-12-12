@@ -1,5 +1,14 @@
 # Semantic Versioning Changelog
 
+## [1.9.4](https://github.com/ivelin/ambianic-edge/compare/v1.9.3...v1.9.4) (2020-12-12)
+
+
+### Bug Fixes
+
+* fall detection ([b30b2ce](https://github.com/ivelin/ambianic-edge/commit/b30b2ce2f5e812dc8cc7f2ddaab25f73bde20d99))
+* pose engine ([e7a336d](https://github.com/ivelin/ambianic-edge/commit/e7a336dd179008f3c27f435844170bcc7dc71529))
+* store element ([4d14e4d](https://github.com/ivelin/ambianic-edge/commit/4d14e4d84378bd608d36007631fba6ba0c63cda4))
+
 ## [1.12.2](https://github.com/ambianic/ambianic-edge/compare/v1.12.1...v1.12.2) (2020-12-12)
 
 
