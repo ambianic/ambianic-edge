@@ -13,7 +13,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "./build/prepare-release.sh ${nextRelease.version}"
+                "prepareCmd": "./build/prepare-semantic-release.sh ${nextRelease.version}"
             }
         ],
         [

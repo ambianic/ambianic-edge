@@ -27,7 +27,6 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 sudo service docker restart
 docker --version
 
-docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 docker pull "ambianic/ambianic-edge:latest"
 
 # create versioned image tags
