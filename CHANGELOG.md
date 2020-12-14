@@ -1,5 +1,17 @@
 # Semantic Versioning Changelog
 
+## [1.12.5](https://github.com/ambianic/ambianic-edge/compare/v1.12.4...v1.12.5) (2020-12-14)
+
+
+### Bug Fixes
+
+* fall detection ([b33cbd4](https://github.com/ambianic/ambianic-edge/commit/b33cbd49ecc71c8d7f5e9b380affac24f5a79357)), closes [#263](https://github.com/ambianic/ambianic-edge/issues/263)
+* fall detection ([433461f](https://github.com/ambianic/ambianic-edge/commit/433461f9bc609efade912e48c0d0ab426c42fd12))
+* fall detection ([9edcf41](https://github.com/ambianic/ambianic-edge/commit/9edcf41763e006a0cea21d72900f26014446d124))
+* fall detection ([dd0a93c](https://github.com/ambianic/ambianic-edge/commit/dd0a93cf480eb923a6a6fc5097abab8e5e778fb6))
+* fall detection tests ([cb11daf](https://github.com/ambianic/ambianic-edge/commit/cb11dafdb36f7a14219dd3589eeddbd8dd1a9323)), closes [#266](https://github.com/ambianic/ambianic-edge/issues/266)
+* fall detection tests ([bca61f2](https://github.com/ambianic/ambianic-edge/commit/bca61f2287f2994d7caea8e2943f4943386cbe46))
+
 ## [1.12.4](https://github.com/ambianic/ambianic-edge/compare/v1.12.3...v1.12.4) (2020-12-12)
 
 
