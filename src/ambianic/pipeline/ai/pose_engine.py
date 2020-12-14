@@ -96,13 +96,13 @@ class PoseEngine(TFInferenceEngine):
 
             joint_heatmap = heatmap_data[...,i]
             max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
-            remap_pos = np.array(max_val_pos/8*257, dtype=np.int32)
+            remap_pos = np.array(max_val_pos/8*self.image_height, dtype=np.int32)
             pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1], i])
             pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1], i+joint_num])
             max_prob = np.max(joint_heatmap)
             pose_kps[i, 3] = max_prob
             if max_prob > threshold:
-                if pose_kps[i, 0] < 257 and pose_kps[i, 1] < 257:
+                if pose_kps[i, 0] < self.image_height and pose_kps[i, 1] < self.image_width:
                     pose_kps[i, 2] = 1
 
         return pose_kps
