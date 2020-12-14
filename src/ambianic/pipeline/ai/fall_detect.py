@@ -4,6 +4,8 @@ from ambianic.pipeline.ai.image_detection import TFImageDetection
 from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
 import math
+import time
+
 log = logging.getLogger(__name__)
 
 
@@ -38,13 +40,14 @@ class FallDetector(TFImageDetection):
         else:
             try:
                 image = sample['image']
-                inference_result = self.fall_detect(image=image)
+                inference_result, thumbnail = self.fall_detect(image=image)
                 inf_meta = {
                     'display': 'Fall Detection',
                 }
                 # pass on the results to the next connected pipe element
                 processed_sample = {
                     'image': image,
+                    'thumbnail': thumbnail,
                     'inference_result': inference_result,
                     'inference_meta': inf_meta
                     }
@@ -75,7 +78,7 @@ class FallDetector(TFImageDetection):
         rotation = [90, -90]
         
         while True:
-            poses = self._pose_engine.DetectPosesInImage(image)
+            poses, thumbnail = self._pose_engine.DetectPosesInImage(image)
 
             if not poses:
                 return None
@@ -86,24 +89,25 @@ class FallDetector(TFImageDetection):
                         angle = rotation.pop()
                         image = image_ori.rotate(angle, expand=True)
                     else:
-                        return None
+                        return None, thumbnail
                 else:
-                    return poses
+                    return poses, thumbnail
 
 
     def fall_detect(self, image=None):
         assert image
         log.debug("Calling TF engine for inference")
-        
+        start_time = time.monotonic()
+
         # Detection using tensorflow posenet module
-        poses = self.find_keypoints(image)
+        poses, thumbnail = self.find_keypoints(image)
         
+        inference_result = None
         if not poses:
             log.debug("No Key-points are found")
         else:
-            inference_result = []
             pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
-
+            inference_result = []
             for pose in poses:
                 for label, keypoint in pose.keypoints.items():
                     if (label == 'left shoulder' or label == 'left hip') and (keypoint.score > 0.5):
@@ -131,4 +135,5 @@ class FallDetector(TFImageDetection):
 
             self._prev_vals = pose_vals_list
 
-            return inference_result
+            self.log_stats(start_time=start_time)
+        return inference_result, thumbnail

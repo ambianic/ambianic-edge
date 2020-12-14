@@ -1,5 +1,32 @@
 # Semantic Versioning Changelog
 
+## [1.12.4](https://github.com/ambianic/ambianic-edge/compare/v1.12.3...v1.12.4) (2020-12-12)
+
+
+### Bug Fixes
+
+* fall detection edge case ([3761e93](https://github.com/ambianic/ambianic-edge/commit/3761e933ad99aae9339c01033159c44868ad6a0e)), closes [#255](https://github.com/ambianic/ambianic-edge/issues/255)
+* fall detection edge case ([7ae2adf](https://github.com/ambianic/ambianic-edge/commit/7ae2adf5aee1ff0a769db846bd36ddec0b8cc914))
+* fall detection edge case ([b2b35e5](https://github.com/ambianic/ambianic-edge/commit/b2b35e5fda8d0046f341b4320dcfc1e8a9062160))
+
+## [1.12.3](https://github.com/ambianic/ambianic-edge/compare/v1.12.2...v1.12.3) (2020-12-12)
+
+
+### Bug Fixes
+
+* fall detect results ([7d1f0ce](https://github.com/ambianic/ambianic-edge/commit/7d1f0ce01ccbb720bc9d83c837bdf52edd1c0d18))
+* fall detection ([7f0ed7b](https://github.com/ambianic/ambianic-edge/commit/7f0ed7b015d20cb860f1b9734979e31b884d8b3c))
+* fall detection ([b30b2ce](https://github.com/ambianic/ambianic-edge/commit/b30b2ce2f5e812dc8cc7f2ddaab25f73bde20d99))
+
+## [1.9.4](https://github.com/ivelin/ambianic-edge/compare/v1.9.3...v1.9.4) (2020-12-12)
+
+
+### Bug Fixes
+
+* fall detection ([b30b2ce](https://github.com/ivelin/ambianic-edge/commit/b30b2ce2f5e812dc8cc7f2ddaab25f73bde20d99))
+* pose engine ([e7a336d](https://github.com/ivelin/ambianic-edge/commit/e7a336dd179008f3c27f435844170bcc7dc71529))
+* store element ([4d14e4d](https://github.com/ivelin/ambianic-edge/commit/4d14e4d84378bd608d36007631fba6ba0c63cda4))
+
 ## [1.12.2](https://github.com/ambianic/ambianic-edge/compare/v1.12.1...v1.12.2) (2020-12-12)
 
 
@@ -15,10 +42,9 @@
 
 ### Bug Fixes
 
-* merge branch 'master' of https://github.com/ambianic/ambianic-edge ([6dde02c](https://github.com/ambianic/ambianic-edge/commit/6dde02c05d10f621854635e9ab12ce9663cd207a))
-* merge branch 'master' of https://github.com/ivelin/ambianic-edge ([b002b73](https://github.com/ambianic/ambianic-edge/commit/b002b73ce28695d6438b2972b509dc0566ebc94d))
-* pose engine ([e7a336d](https://github.com/ambianic/ambianic-edge/commit/e7a336dd179008f3c27f435844170bcc7dc71529))
-* pose engine ([48cf435](https://github.com/ambianic/ambianic-edge/commit/48cf435d87ad9b524b95f7e04426511a5f02f257))
+* changelog ([9b41eda](https://github.com/ivelin/ambianic-edge/commit/9b41eda7624acd5ff4a8aa8044ea4284469f4432))
+* changelog ([9254be0](https://github.com/ivelin/ambianic-edge/commit/9254be05e50de0d036eba2b250901c076a4a3f02))
+* store element ([d1a28c1](https://github.com/ivelin/ambianic-edge/commit/d1a28c15ebbe6d99752213b0b8d7cb371e25db03))
 
 # [1.12.0](https://github.com/ambianic/ambianic-edge/compare/v1.11.0...v1.12.0) (2020-12-12)
 
