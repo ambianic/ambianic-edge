@@ -132,7 +132,7 @@ class FallDetector(TFImageDetection):
         # We require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
         # for fall detection purpose.
-        min_time_between_frames = 2
+        min_time_between_frames = 1
         # We require the time distance between two video frames not to exceed a certain limit in seconds.
         # Otherwise there could be data noise which could lead false positive detections.
         max_time_between_frames = 10
