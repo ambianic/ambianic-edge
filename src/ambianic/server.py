@@ -50,6 +50,7 @@ class AmbianicServer:
 
     def stop_watch_config(self):
         if self.watching_config:
+            self.config_observer.unschedule_all()
             self.config_observer.stop()
             self.config_observer.join()
         self.watching_config = False
@@ -66,10 +67,13 @@ class AmbianicServer:
         for filepath in config_paths:
             if not os.path.exists(filepath):
                 log.warning(
-                    "File %s not found, it will not be watched for changes." %
+                    "File %s not found, skip changes watch" %
                     filepath
                 )
                 continue
+            log.info(
+                    "Watching %s for changes" % filepath
+                )
             self.config_observer.schedule(
                 self,
                 filepath,
