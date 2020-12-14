@@ -1,8 +1,9 @@
 from ambianic.pipeline.ai.inference import TFInferenceEngine
 from ambianic.pipeline.ai.image_detection import TFImageDetection
 import logging
+import time
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 log = logging.getLogger(__name__)
 
@@ -122,11 +123,18 @@ class PoseEngine:
 
         src_templ_height, src_tepml_width = img.size 
         tensor_input_size = (self.image_width, self.image_height)
-        template_image = TFImageDetection.resize_to_input_tensor(image=img, desired_size=tensor_input_size)
-        # template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
 
-        templ_ratio_width = src_tepml_width/self.image_width
-        templ_ratio_height = src_templ_height/self.image_height
+        # thumbnail is a proportionately resized image
+        thumbnail = TFImageDetection.thumbnail(image=img, desired_size=tensor_input_size)
+        # convert thumbnail into an image with the exact size
+        # as the input tensor preserving proportions by padding with a solid color as needed
+        template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
+
+        templ_ratio_width = 1
+        templ_ratio_height = 1
+
+#        templ_ratio_width = src_tepml_width/self.image_width
+#        templ_ratio_height = src_templ_height/self.image_height
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
@@ -159,8 +167,13 @@ class PoseEngine:
                 cnt += 1
             keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
+            # draw on image and save it for debugging
+            draw = ImageDraw.Draw(template_image)
+            draw.line(((0,0), (x, y)), fill='red')
         
         pose_scores = cnt/17
         poses.append(Pose(keypoint_dict, pose_scores))
-
-        return poses, template_image
+        # DEBUG: save template_image for debugging
+        # DEBUG: timestr = int(time.monotonic()*1000)
+        # DEBUG: template_image.save(f'tmp-template-image-time-{timestr}-keypoints-{cnt}.jpg', format='JPEG')
+        return poses, thumbnail

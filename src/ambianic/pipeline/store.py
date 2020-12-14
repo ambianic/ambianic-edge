@@ -81,7 +81,8 @@ class SaveDetectionSamples(PipeElement):
         json_path = self._output_directory / json_file
         inf_json = []
         if inference_result:
-            for label, confidence, box in inference_result:
+            for inf in inference_result:
+                label, confidence, box = inf[0:3]
                 log.info('label: %s , confidence: %.0f, box: %s',
                         label,
                         confidence,
