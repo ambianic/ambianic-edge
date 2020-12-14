@@ -103,7 +103,8 @@ def test_fall_detection_case_1():
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_3.png')
     fall_detector.receive_next_sample(image=img_1)
-    time.sleep( 2 )
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
@@ -126,6 +127,8 @@ def test_fall_detection_case_2_1():
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
+    # set min time to a sufficiently big number to ensure test passes on slow environments
+    fall_detector.min_time_between_frames = 5
     fall_detector.receive_next_sample(image=img_2)
 
     assert result is None
@@ -148,7 +151,8 @@ def test_fall_detection_case_2_2():
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
-    time.sleep( 2 )
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     fall_detector.receive_next_sample(image=img_2)
 
     assert result
@@ -176,7 +180,9 @@ def test_fall_detection_case_3():
     img_1 = _get_image(file_name='fall_img_11.png')
     img_2 = _get_image(file_name='fall_img_12.png')
     fall_detector.receive_next_sample(image=img_1)
-    time.sleep( 2 )
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     fall_detector.receive_next_sample(image=img_2)
 
     assert result
@@ -204,7 +210,8 @@ def test_fall_detection_case_4():
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_4.png')
     fall_detector.receive_next_sample(image=img_1)
-    time.sleep( 2 )
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
@@ -222,7 +229,8 @@ def test_background_image():
     fall_detector.connect_to_next_element(output)
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
-    time.sleep( 2 )
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
     assert result is True
@@ -265,7 +273,8 @@ def test_bad_sample_good_sample():
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
-    time.sleep( 2 )
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep( fall_detector.min_time_between_frames )
     fall_detector.receive_next_sample(image=img_2)
 
     assert result

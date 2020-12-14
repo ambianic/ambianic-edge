@@ -36,6 +36,15 @@ class FallDetector(TFImageDetection):
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
 
+        # Require a minimum amount of time between two video frames in seconds.
+        # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
+        # for fall detection purpose.
+        self.min_time_between_frames = 1
+        # Require the time distance between two video frames not to exceed a certain limit in seconds.
+        # Otherwise there could be data noise which could lead false positive detections.
+        self.max_time_between_frames = 10
+
+
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -129,18 +138,10 @@ class FallDetector(TFImageDetection):
         log.info("Calling TF engine for inference")
         start_time = time.monotonic()
 
-        # We require a minimum amount of time between two video frames in seconds.
-        # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
-        # for fall detection purpose.
-        min_time_between_frames = 1
-        # We require the time distance between two video frames not to exceed a certain limit in seconds.
-        # Otherwise there could be data noise which could lead false positive detections.
-        max_time_between_frames = 10
-
         now = time.monotonic()
         lapse = now - self._prev_time
-        if self._prev_vals and lapse < min_time_between_frames:
-            log.info("This frame is too close to the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, min_time_between_frames)
+        if self._prev_vals and lapse < self.min_time_between_frames:
+            log.info("This frame is too close to the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
             return None, self._prev_thumbnail
         else:
             # Detection using tensorflow posenet module
@@ -166,7 +167,7 @@ class FallDetector(TFImageDetection):
                 # DEBUG: timestr = int(time.monotonic()*1000)
                 # DEBUG: thumbnail.save(f'tmp-thumbnail-body-line-time-{timestr}.jpg', format='JPEG')
 
-                if not self._prev_vals or lapse > max_time_between_frames:
+                if not self._prev_vals or lapse > self.max_time_between_frames:
                     log.info("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
                 else:
                     left_angle = 0
