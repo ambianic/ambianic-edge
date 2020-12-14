@@ -126,9 +126,13 @@ def test_fall_detection_case_2_1():
 
     img_1 = _get_image(file_name='fall_img_1.png')
     img_2 = _get_image(file_name='fall_img_2.png')
+    start_time = time.monotonic()
     fall_detector.receive_next_sample(image=img_1)
+    end_time = time.monotonic()
+    safe_min = end_time-start_time+1
     # set min time to a sufficiently big number to ensure test passes on slow environments
-    fall_detector.min_time_between_frames = 5
+    # the goal is to simulate two frames that are too close in time to be considered for a fall detection sequence
+    fall_detector.min_time_between_frames = safe_min
     fall_detector.receive_next_sample(image=img_2)
 
     assert result is None
