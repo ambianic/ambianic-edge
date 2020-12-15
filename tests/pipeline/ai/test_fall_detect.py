@@ -25,7 +25,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.8,
+        'confidence_threshold': 0.2,
     }
     return config
 
@@ -127,8 +127,8 @@ def test_fall_detection_case_3():
     
     fall_detector.connect_to_next_element(output)
 
-    img_1 = _get_image(file_name='fall_img_1.png')
-    img_2 = _get_image(file_name='fall_img_5.png')
+    img_1 = _get_image(file_name='fall_testcase3_img_1.png')
+    img_2 = _get_image(file_name='fall_testcase3_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.receive_next_sample(image=img_2)
 
@@ -136,7 +136,7 @@ def test_fall_detection_case_3():
     assert len(result) == 1
     category, confidence = result[0]
     assert category == 'FALL'
-    assert confidence > 0.25
+    assert confidence > 0.5
 
 def test_fall_detection_case_4():
     """No Fall"""

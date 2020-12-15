@@ -111,7 +111,7 @@ class PoseEngine(TFInferenceEngine):
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def DetectPosesInImage(self, img):
+    def DetectPosesInImage(self, template_image):
         """
         Detects poses in a given image.
         For ideal results make sure the image fed to this function is 
@@ -120,11 +120,11 @@ class PoseEngine(TFInferenceEngine):
         Args:
           img: numpy array containing image
         """
-        src_templ_height, src_tepml_width = img.size 
-        template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        # src_templ_height, src_tepml_width = img.size 
+        # template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
 
-        templ_ratio_width = src_tepml_width/self.image_width
-        templ_ratio_height = src_templ_height/self.image_height
+        # templ_ratio_width = src_tepml_width/self.image_width
+        # templ_ratio_height = src_templ_height/self.image_height
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self.input_details[0]['dtype'] == np.float32
@@ -141,16 +141,16 @@ class PoseEngine(TFInferenceEngine):
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)
         
-        template_kps = self.parse_output(template_heatmaps,template_offsets,0.3)
+        kps = self.parse_output(template_heatmaps,template_offsets,0.3)
         
-        kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
-
         poses = []
 
         keypoint_dict = {}
         cnt = 0
-        for point_i, point in enumerate(kps):
-            x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
+        #for point_i, point in enumerate(kps):
+        for point_i in range(kps.shape[0]):
+            #x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
+            x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         
             if prob > 0.60:

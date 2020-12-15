@@ -29,6 +29,7 @@ class FallDetector(TFImageDetection):
         self._prev_vals = []
         self._pose_engine = PoseEngine(model, **kwargs)
         self._fall_factor = 60
+        self.pose_confidence_threshold = kwargs['confidence_threshold']
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -72,6 +73,12 @@ class FallDetector(TFImageDetection):
     
     def find_keypoints(self, image):
 
+        width = self._pose_engine.image_width
+        height = self._pose_engine.image_height
+
+        thumbnail = self.thumbnail(image=image, desired_size=(width, height))
+        image = self.resize(image=thumbnail, desired_size=(width, height))
+
         image_ori = image.copy()
         rotation = [90, -90]
         
@@ -82,7 +89,7 @@ class FallDetector(TFImageDetection):
                 return None
             
             for pose in poses:
-                if pose.score < 0.25:
+                if pose.score < self.pose_confidence_threshold:
                     if rotation:
                         angle = rotation.pop()
                         image = image_ori.rotate(angle, expand=True)
