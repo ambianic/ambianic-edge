@@ -35,31 +35,25 @@ class AmbianicServer:
 
         """
         assert work_dir
-
         self._env_work_dir = work_dir
-        self.init()
-
-    def init(self):
         # array of managed specialized servers
         self._servers = {}
         self._service_exit_requested = False
         self._service_restart_requested = False
         self._latest_heartbeat = time.monotonic()
-        self.config_observer = None
-        self.watching_config = False
+        self._config_observer = None
 
     def stop_watch_config(self):
-        if self.watching_config:
-            self.config_observer.unschedule_all()
-            self.config_observer.stop()
-            self.config_observer.join()
-        self.watching_config = False
-        self.config_observer = None
+        if self._config_observer:
+            self._config_observer.unschedule_all()
+            self._config_observer.stop()
+            self._config_observer.join()
+        self._config_observer = None
 
     def start_watch_config(self):
-        if self.watching_config:
+        if self._config_observer:
             self.stop_watch_config()
-        self.config_observer = Observer()
+        self._config_observer = Observer()
         config_paths = [
             get_config_file(),
             get_secrets_file(),
@@ -74,14 +68,13 @@ class AmbianicServer:
             log.info(
                     "Watching %s for changes" % filepath
                 )
-            self.config_observer.schedule(
+            self._config_observer.schedule(
                 self,
                 filepath,
                 recursive=False
             )
 
-        self.config_observer.start()
-        self.watching_config = True
+        self._config_observer.start()
 
     def _stop_servers(self, servers):
         log.debug('Stopping servers...')
@@ -89,7 +82,6 @@ class AmbianicServer:
             srv.stop()
             srv = None
             servers[name] = None
-        self.stop_watch_config()
 
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
@@ -137,10 +129,13 @@ class AmbianicServer:
 
         assert os.path.exists(self._env_work_dir)
 
-        self.start_watch_config()
-
+        # reload configuration
+        load_config(get_config_file())
         logger.configure(config.get("logging"))
         timeline.configure_timeline(config.get("timeline"))
+
+        # watch configuration changes
+        self.start_watch_config()
 
         log.info('Starting Ambianic server...')
 
@@ -164,14 +159,19 @@ class AmbianicServer:
         except ServiceExit:
 
             log.info('Service exit requested.')
-            log.debug('Cleaning up before exit...')
-            self._stop_servers(servers)
 
-            if self._service_restart_requested:
-                self._service_restart_requested = False
-                self.init()
-                load_config(get_config_file())
-                return self.start()
+            # stop servers and cleanup references
+            self._stop_servers(servers)
+            self._servers = {}
+            self._service_exit_requested = False
+
+            # stop watching config  files
+            self.stop_watch_config()
+
+        if self._service_restart_requested:
+            self._service_restart_requested = False
+            log.info('Restarting Ambianic server.')
+            return self.start()
 
         log.info('Exiting Ambianic server.')
         return True
