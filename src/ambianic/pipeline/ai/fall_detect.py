@@ -92,7 +92,7 @@ class FallDetector(TFImageDetection):
     def find_keypoints(self, image):
 
         # this score value should be related to the configuration confidence_threshold parameter
-        min_score = self.pose_confidence_threshold #0.25
+        min_score = 0.25
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
@@ -101,7 +101,7 @@ class FallDetector(TFImageDetection):
         # if no pose detected with high confidence, 
         # try rotating the image +/- 90' to find a fallen person
         # currently only looking at pose[0] because we are focused on a lone person falls
-        while (not poses or poses[0].score < min_score) and rotations:
+        while (not poses or poses[0].score < self.pose_confidence_threshold) and rotations:
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
@@ -109,7 +109,7 @@ class FallDetector(TFImageDetection):
         if poses and poses[0]:
             pose = poses[0]
         # lets check if we found a good pose candidate
-        if (pose and pose.score >= min_score):
+        if (pose and pose.score >= self.pose_confidence_threshold):
             # if the image was rotated, we need to rotate back to the original image coordinates
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
