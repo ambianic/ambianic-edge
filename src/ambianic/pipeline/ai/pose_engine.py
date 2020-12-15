@@ -1,7 +1,9 @@
 from ambianic.pipeline.ai.inference import TFInferenceEngine
+from ambianic.pipeline.ai.image_detection import TFImageDetection
 import logging
+import time
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 log = logging.getLogger(__name__)
 
@@ -49,25 +51,13 @@ class Pose:
         return 'Pose({}, {})'.format(self.keypoints, self.score)
 
 
-class PoseEngine(TFInferenceEngine):
+class PoseEngine:
     """Engine used for pose tasks."""
-    def __init__(self, model, **kwargs):
-        """Creates a PoseEngine with given model.
-        Args:
-            model: dict
-            {
-                'tflite': 
-                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
-                'edgetpu': 
-                    'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
-                labels: ai_models/pose_labels.txt
-            }
-            mirror: Flip keypoints horizontally
-        Raises:
-          ValueError: An error occurred when model output is invalid.
+    def __init__(self, tfengine=None):
+        """Creates a PoseEngine wrapper around an initialized tfengine.
         """
-        assert model is not None
-        super().__init__(model, **kwargs)
+        assert tfengine is not None
+        self._tfengine = tfengine
         
         self._input_tensor_shape = self.get_input_tensor_shape()
         _, self.image_height, self.image_width, self.image_depth = \
@@ -86,7 +76,7 @@ class PoseEngine(TFInferenceEngine):
         A 1-D array (:obj:`numpy.ndarray`) representing the required input tensor
         shape.
         """
-        return self.input_details[0]['shape']
+        return self._tfengine.input_details[0]['shape']
 
     def parse_output(self, heatmap_data, offset_data, threshold):
         joint_num = heatmap_data.shape[-1]
@@ -111,45 +101,67 @@ class PoseEngine(TFInferenceEngine):
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def DetectPosesInImage(self, template_image):
+    def tf_interpreter(self):
+        return self._tfengine._tf_interpreter
+
+    def DetectPosesInImage(self, img):
         """
         Detects poses in a given image.
-        For ideal results make sure the image fed to this function is 
-        close to the expected input size - it is the caller's 
-        responsibility to resize the image accordingly.
-        Args:
-          img: numpy array containing image
-        """
-        # src_templ_height, src_tepml_width = img.size 
-        # template_image = img.resize((self.image_width, self.image_height), Image.ANTIALIAS)
 
-        # templ_ratio_width = src_tepml_width/self.image_width
-        # templ_ratio_height = src_templ_height/self.image_height
+        :Parameters:
+        ----------
+        img : PIL.Image
+            Input Image for AI model detection.
+
+        :Returns:
+        -------
+        poses:
+            A list of Pose objects with keypoints and confidence scores
+        PIL.Image
+            Resized image fitting the AI model input tensor.
+        """
+
+        src_templ_height, src_tepml_width = img.size 
+        tensor_input_size = (self.image_width, self.image_height)
+
+        # thumbnail is a proportionately resized image
+        thumbnail = TFImageDetection.thumbnail(image=img, desired_size=tensor_input_size)
+        # convert thumbnail into an image with the exact size
+        # as the input tensor preserving proportions by padding with a solid color as needed
+        template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
+
+#        templ_ratio_width = 1
+#        templ_ratio_height = 1
+
+#        templ_ratio_width = src_tepml_width/self.image_width
+#        templ_ratio_height = src_templ_height/self.image_height
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
-        floating_model = self.input_details[0]['dtype'] == np.float32
+        floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
 
         if floating_model:
             template_input = (np.float32(template_input) - 127.5) / 127.5
 
-        self._tf_interpreter.set_tensor(self.input_details[0]['index'], template_input)
-        self._tf_interpreter.invoke()
+        self.tf_interpreter().set_tensor(self._tfengine.input_details[0]['index'], template_input)
+        self.tf_interpreter().invoke()
 
-        template_output_data = self._tf_interpreter.get_tensor(self.output_details[0]['index'])
-        template_offset_data = self._tf_interpreter.get_tensor(self.output_details[1]['index'])
+        template_output_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[0]['index'])
+        template_offset_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[1]['index'])
 
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)
         
         kps = self.parse_output(template_heatmaps,template_offsets,0.3)
         
+#        kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
+
         poses = []
 
         keypoint_dict = {}
         cnt = 0
-        #for point_i, point in enumerate(kps):
-        for point_i in range(kps.shape[0]):
-            #x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
+#        for point_i, point in enumerate(kps):
+         for point_i in range(kps.shape[0]):
+#            x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
             x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         
@@ -157,8 +169,13 @@ class PoseEngine(TFInferenceEngine):
                 cnt += 1
             keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
+            # draw on image and save it for debugging
+            draw = ImageDraw.Draw(template_image)
+            draw.line(((0,0), (x, y)), fill='red')
         
         pose_scores = cnt/17
         poses.append(Pose(keypoint_dict, pose_scores))
-
-        return poses
+        # DEBUG: save template_image for debugging
+        # DEBUG: timestr = int(time.monotonic()*1000)
+        # DEBUG: template_image.save(f'tmp-template-image-time-{timestr}-keypoints-{cnt}.jpg', format='JPEG')
+        return poses, thumbnail
