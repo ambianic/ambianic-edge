@@ -10,9 +10,6 @@ data_dir: ./data
 logging:
   file: ./data/ambianic-log.txt
   level: INFO
-  # use file or console to specify corresponding log output level
-  # file: INFO
-  # console: WARN
 
 # Pipeline event timeline configuration
 timeline:
@@ -42,21 +39,20 @@ sources:
 ai_models:
   image_detection:
     model:
-      tflite: ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
-      edgetpu: ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
-    labels: ai_models/coco_labels.txt
+      tflite: /opt/ambianic-edge/ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite
+      edgetpu: /opt/ambianic-edge/ai_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite
+    labels: /opt/ambianic-edge/ai_models/coco_labels.txt
   face_detection:
     model:
-      tflite: ai_models/mobilenet_ssd_v2_face_quant_postprocess.tflite
-      edgetpu: ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
-    labels: ai_models/coco_labels.txt
+      tflite: /opt/ambianic-edge/ai_models/mobilenet_ssd_v2_face_quant_postprocess.tflite
+      edgetpu: /opt/ambianic-edge/ai_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
+    labels: /opt/ambianic-edge/ai_models/coco_labels.txt
     top_k: 2
   fall_detection:
     model:
-      tflite: ai_models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite
-      edgetpu: ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite
-    labels: ai_models/pose_labels.txt
-
+      tflite: /opt/ambianic-edge/ai_models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite
+      edgetpu: /opt/ambianic-edge/ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite
+    labels: /opt/ambianic-edge/ai_models/pose_labels.txt
 
 # A named pipeline defines an ordered sequence of operations
 # such as reading from a data source, AI model inference, saving samples and others.
@@ -67,12 +63,19 @@ pipelines:
      - detect_objects: # run ai inference on the input data
         ai_model: image_detection
         confidence_threshold: 0.6
+        # Watch for any of the labels listed below. The labels must be from the model trained label set.
+        # If no labels are listed, then watch for all model trained labels.
+        label_filter:
+          - person
+          - car
      - save_detections: # save samples from the inference results
-        positive_interval: 60 # how often (in seconds) to save samples with ANY results above the confidence threshold
+        positive_interval: 300 # how often (in seconds) to save samples with ANY results above the confidence threshold
         idle_interval: 6000 # how often (in seconds) to save samples with NO results above the confidence threshold
      - detect_falls: # look for falls
         ai_model: fall_detection
         confidence_threshold: 0.6
      - save_detections: # save samples from the inference results
         positive_interval: 10
-        idle_interval: 600
+        idle_interval: 600000
+
+
