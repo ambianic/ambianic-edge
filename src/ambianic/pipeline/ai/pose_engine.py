@@ -130,8 +130,8 @@ class PoseEngine:
         # as the input tensor preserving proportions by padding with a solid color as needed
         template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
 
-#        templ_ratio_width = 1
-#        templ_ratio_height = 1
+        templ_ratio_width = 1
+        templ_ratio_height = 1
 
 #        templ_ratio_width = src_tepml_width/self.image_width
 #        templ_ratio_height = src_templ_height/self.image_height
