@@ -86,13 +86,13 @@ class PoseEngine:
 
             joint_heatmap = heatmap_data[...,i]
             max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
-            remap_pos = np.array(max_val_pos/8*257, dtype=np.int32)
+            remap_pos = np.array(max_val_pos/8*self.image_height, dtype=np.int32)
             pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1], i])
             pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1], i+joint_num])
             max_prob = np.max(joint_heatmap)
             pose_kps[i, 3] = max_prob
             if max_prob > threshold:
-                if pose_kps[i, 0] < 257 and pose_kps[i, 1] < 257:
+                if pose_kps[i, 0] < self.image_height and pose_kps[i, 1] < self.image_width:
                     pose_kps[i, 2] = 1
 
         return pose_kps
@@ -121,7 +121,7 @@ class PoseEngine:
             Resized image fitting the AI model input tensor.
         """
 
-        src_templ_height, src_tepml_width = img.size 
+        #src_templ_height, src_tepml_width = img.size 
         tensor_input_size = (self.image_width, self.image_height)
 
         # thumbnail is a proportionately resized image
@@ -130,8 +130,8 @@ class PoseEngine:
         # as the input tensor preserving proportions by padding with a solid color as needed
         template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
 
-        templ_ratio_width = 1
-        templ_ratio_height = 1
+        #templ_ratio_width = 1
+        #templ_ratio_height = 1
 
 #        templ_ratio_width = src_tepml_width/self.image_width
 #        templ_ratio_height = src_templ_height/self.image_height
@@ -151,16 +151,17 @@ class PoseEngine:
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)
         
-        template_kps = self.parse_output(template_heatmaps,template_offsets,0.3)
+        kps = self.parse_output(template_heatmaps,template_offsets,0.3)
         
-        kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
+        #kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
 
         poses = []
 
         keypoint_dict = {}
         cnt = 0
         for point_i, point in enumerate(kps):
-            x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
+            #x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
+            x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         
             if prob > 0.60:

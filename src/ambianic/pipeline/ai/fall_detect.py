@@ -35,6 +35,7 @@ class FallDetector(TFImageDetection):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
+        self.pose_confidence_threshold = kwargs['confidence_threshold']
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
@@ -91,7 +92,8 @@ class FallDetector(TFImageDetection):
     def find_keypoints(self, image):
 
         # this score value should be related to the configuration confidence_threshold parameter
-        min_score = 0.25
+        #min_score = 0.25
+        min_score = self.pose_confidence_threshold
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
