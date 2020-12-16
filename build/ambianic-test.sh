@@ -21,5 +21,4 @@ docker run --rm \
   --net=host \
   --entrypoint 'bash' \
   -e CODECOV_TOKEN \
-  ambianic/ambianic-edge:$TAG "/workspace/tests/run-tests.sh && codecov"
-
+  ambianic/ambianic-edge:$TAG /workspace/tests/run-tests.sh -u
