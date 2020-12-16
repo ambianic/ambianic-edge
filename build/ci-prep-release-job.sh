@@ -26,7 +26,6 @@ docker build -f Dev.Dockerfile --platform ${ARCH} -t "ambianic/ambianic-edge:${D
 docker tag ambianic/ambianic-edge:${DEV_TAG} "ambianic/ambianic-edge:dev"
 docker images
 cd ${GITHUB_WORKSPACE}/build
-./ambianic-test.sh
 
 # publish docker binaries and multi-arch manifest
 echo "ARCH=$ARCH"
