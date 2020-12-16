@@ -3,12 +3,16 @@
 set -ex
 
 # parse command line arguments
-while getopts u: flag
+while getopts ":u" flag
 do
     case "${flag}" in
         u) upload_codecov=true;;
     esac
 done
+
+if [ "$upload_codecov" = true ] ; then
+    echo 'Code coverage upload flag set. Will upload report to codecov.io'
+fi
 
 pip3 install -U pytest # unit test tool
 pip3 install -U codecov # code coverage tool
