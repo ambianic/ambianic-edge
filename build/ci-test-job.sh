@@ -53,4 +53,11 @@ docker run --rm \
 
 
 # upload code coverage
-bash <(curl -s https://codecov.io/bash)
+# Only upload for one architecture. All architectures should produce identical report.
+
+# detect effective CPU architecture
+if $(arch | grep -q 86)
+then
+    bash <(curl -s https://codecov.io/bash)
+fi
+
