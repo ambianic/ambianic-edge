@@ -31,13 +31,7 @@ cd ${GITHUB_WORKSPACE}/build
 # run tests
 
 # detect effective CPU architecture
-if $(arch | grep -q 86)
-then
-  TAG="dev"
-elif $(arch | grep -q arm)
-then
-  TAG="dev"
-fi
+TAG="dev"
 
 MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 MY_DIR=$(dirname "${MY_PATH}")
@@ -56,8 +50,7 @@ docker run --rm \
 # Only upload for one architecture. All architectures should produce identical report.
 
 # detect effective CPU architecture
-if $(arch | grep -q 86)
-then
+if [[ ${ARCH} == *"amd64"* ]]; then
     bash <(curl -s https://codecov.io/bash)
 fi
 
