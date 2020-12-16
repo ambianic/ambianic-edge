@@ -41,7 +41,8 @@ class TFInferenceEngine:
                  model=None,
                  labels=None,
                  confidence_threshold=0.8,
-                 top_k=10
+                 top_k=10,
+                 **kwargs
                  ):
         """Create an instance of Tensorflow inference engine.
 
