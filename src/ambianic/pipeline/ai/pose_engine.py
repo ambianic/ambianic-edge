@@ -121,7 +121,6 @@ class PoseEngine:
             Resized image fitting the AI model input tensor.
         """
 
-        #src_templ_height, src_tepml_width = img.size 
         tensor_input_size = (self.image_width, self.image_height)
 
         # thumbnail is a proportionately resized image
@@ -129,12 +128,6 @@ class PoseEngine:
         # convert thumbnail into an image with the exact size
         # as the input tensor preserving proportions by padding with a solid color as needed
         template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
-
-        #templ_ratio_width = 1
-        #templ_ratio_height = 1
-
-#        templ_ratio_width = src_tepml_width/self.image_width
-#        templ_ratio_height = src_templ_height/self.image_height
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
@@ -153,14 +146,11 @@ class PoseEngine:
         
         kps = self.parse_output(template_heatmaps,template_offsets,0.3)
         
-        #kps, ratio = template_kps, (templ_ratio_width, templ_ratio_height)
-
         poses = []
 
         keypoint_dict = {}
         cnt = 0
         for point_i, point in enumerate(kps):
-            #x, y = int(round(kps[point_i, 1]*ratio[1])), int(round(kps[point_i, 0]*ratio[0]))
             x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         

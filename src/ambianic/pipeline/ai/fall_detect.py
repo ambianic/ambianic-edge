@@ -92,7 +92,6 @@ class FallDetector(TFImageDetection):
     def find_keypoints(self, image):
 
         # this score value should be related to the configuration confidence_threshold parameter
-        #min_score = 0.25
         min_score = self.pose_confidence_threshold
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
