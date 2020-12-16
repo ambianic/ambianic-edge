@@ -1,5 +1,21 @@
 # Semantic Versioning Changelog
 
+## [1.12.6](https://github.com/ambianic/ambianic-edge/compare/v1.12.5...v1.12.6) (2020-12-16)
+
+
+### Bug Fixes
+
+* codecov ([d084899](https://github.com/ambianic/ambianic-edge/commit/d084899bddccf0b15a219cc7b5e207ecbeb1f6bf))
+* codecov report upload ([4108490](https://github.com/ambianic/ambianic-edge/commit/4108490ba670af40f74e7ed8b7257164ea8eb257))
+* codecov upload ([b061c33](https://github.com/ambianic/ambianic-edge/commit/b061c335ae0ca6a42ad2abfd03c7bea303c15e43))
+* codecov upload ([c322541](https://github.com/ambianic/ambianic-edge/commit/c3225415a661f4c78a0514deb0a9bed426bec91e))
+* codecov upload ([c8ab31b](https://github.com/ambianic/ambianic-edge/commit/c8ab31b8f8cd39e9bd65c9cd6ee7cf64b49949cf))
+* codecov upload from ci ([fbc1663](https://github.com/ambianic/ambianic-edge/commit/fbc1663e1ff887b47cce3da08aa3c722e5351a88)), closes [#268](https://github.com/ambianic/ambianic-edge/issues/268)
+* codecov upload from ci ([95dcff8](https://github.com/ambianic/ambianic-edge/commit/95dcff8f0be88157e4b45f84e78131a8badfd994))
+* configuration bug fixes ([9938820](https://github.com/ambianic/ambianic-edge/commit/99388200f7c85ec28e6a9b508148402d10568644)), closes [#251](https://github.com/ambianic/ambianic-edge/issues/251)
+* release script ([abcd853](https://github.com/ambianic/ambianic-edge/commit/abcd85312ec2fb8aca966641265f645f4d11c5d5)), closes [#271](https://github.com/ambianic/ambianic-edge/issues/271)
+* release script ([c863e39](https://github.com/ambianic/ambianic-edge/commit/c863e3943bee0f2445375d87f8c053043791595c))
+
 ## [1.12.5](https://github.com/ambianic/ambianic-edge/compare/v1.12.4...v1.12.5) (2020-12-14)
 
 
