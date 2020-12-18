@@ -60,7 +60,7 @@ class PoseEngine:
         self._tfengine = tfengine
         
         self._input_tensor_shape = self.get_input_tensor_shape()
-        _, self.image_height, self.image_width, self.image_depth = \
+        _, self._tensor_image_height, self._tensor_image_width, self._tensor_image_depth = \
                                                 self.get_input_tensor_shape()
 
 
@@ -86,13 +86,13 @@ class PoseEngine:
 
             joint_heatmap = heatmap_data[...,i]
             max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
-            remap_pos = np.array(max_val_pos/8*self.image_height, dtype=np.int32)
+            remap_pos = np.array(max_val_pos/8*self._tensor_image_height, dtype=np.int32)
             pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1], i])
             pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1], i+joint_num])
             max_prob = np.max(joint_heatmap)
             pose_kps[i, 3] = max_prob
             if max_prob > threshold:
-                if pose_kps[i, 0] < self.image_height and pose_kps[i, 1] < self.image_width:
+                if pose_kps[i, 0] < self._tensor_image_height and pose_kps[i, 1] < self._tensor_image_width:
                     pose_kps[i, 2] = 1
 
         return pose_kps
@@ -121,7 +121,7 @@ class PoseEngine:
             Resized image fitting the AI model input tensor.
         """
 
-        tensor_input_size = (self.image_width, self.image_height)
+        tensor_input_size = (self._tensor_image_width, self._tensor_image_height)
 
         # thumbnail is a proportionately resized image
         thumbnail = TFImageDetection.thumbnail(image=img, desired_size=tensor_input_size)
