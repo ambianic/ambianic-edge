@@ -121,13 +121,13 @@ class PoseEngine:
             Resized image fitting the AI model input tensor.
         """
 
-        tensor_input_size = (self._tensor_image_width, self._tensor_image_height)
+        _tensor_input_size = (self._tensor_image_width, self._tensor_image_height)
 
         # thumbnail is a proportionately resized image
-        thumbnail = TFImageDetection.thumbnail(image=img, desired_size=tensor_input_size)
+        thumbnail = TFImageDetection.thumbnail(image=img, desired_size=_tensor_input_size)
         # convert thumbnail into an image with the exact size
         # as the input tensor preserving proportions by padding with a solid color as needed
-        template_image = TFImageDetection.resize(image=thumbnail, desired_size=tensor_input_size)
+        template_image = TFImageDetection.resize(image=thumbnail, desired_size=_tensor_input_size)
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
