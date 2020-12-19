@@ -220,6 +220,7 @@ def test_fall_detection_case_4():
 
     assert not result
 
+
 def test_fall_detection_case_5():
     """Expected to not detect a fall even the angle criteria is met because image 2 is standing up rather than fall"""
     config = _fall_detect_config()
@@ -232,18 +233,18 @@ def test_fall_detection_case_5():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
+
     fall_detector.connect_to_next_element(output)
 
     img_1 = _get_image(file_name='fall_img_2.png')
     img_2 = _get_image(file_name='fall_img_1.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
-    
+
 
 def test_background_image():
     """Expect to not detect anything interesting in a background image."""
