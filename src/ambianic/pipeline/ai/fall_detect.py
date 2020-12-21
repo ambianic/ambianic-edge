@@ -79,31 +79,25 @@ class FallDetector(TFImageDetection):
 
 
     def calculate_angle(self, p):
-        x1, y1 = p[0][0][0], p[0][0][1]
-        x2, y2 = p[0][1][0], p[0][1][1]
-        x3, y3 = p[1][0][0], p[1][0][1]
-        x4, y4 = p[1][1][0], p[1][1][1]
+
+        angle = 0
+
+        body_line_detected = len(p[0]) == len(p[1]) == 2
+        if not body_line_detected:
+            return angle
+        
+        x1, y1 = p[0][0]
+        x2, y2 = p[0][1]
+    
+        x3, y3 = p[1][0]
+        x4, y4 = p[1][1]
 
         theta1 = math.degrees(math.atan2(y2-y1, x1-x2))
         theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
             
-        theta = abs(theta1-theta2)
-        return theta
+        angle = abs(theta1-theta2)
+        return angle
 
-    def calculate_angle_with_yaxis(self, p):
-        
-        body_line_detected = len(p) == 2
-
-        if not body_line_detected:
-            return None
-
-        x3, y3 = p[0][0], p[0][1]
-        x4, y4 = p[1][0], p[1][1]
-        theta1 = 90
-        theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
-
-        theta = abs(theta1-theta2)
-        return theta
 
     def is_body_line_motion_downward(self, left_angle_with_yaxis, rigth_angle_with_yaxis):
 
@@ -142,7 +136,7 @@ class FallDetector(TFImageDetection):
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
                 # ROTATE_90 rotates 90' counter clockwise from ^ to < orientation.
-                for label, keypoint in pose.keypoints.items():
+                for _, keypoint in pose.keypoints.items():
                     # keypoint.yx[0] is the x coordinate in an image
                     # keypoint.yx[0] is the y coordinate in an image, with 0,0 in the upper left corner (not lower left).
                     tmp_swap = keypoint.yx[0]
@@ -150,7 +144,7 @@ class FallDetector(TFImageDetection):
                     keypoint.yx[1] = tmp_swap
             elif  angle == Image.ROTATE_270: 
             # ROTATE_270 rotates 90' clockwise from ^ to > orientation.
-                for label, keypoint in pose.keypoints.items():
+                for _, keypoint in pose.keypoints.items():
                     tmp_swap = keypoint.yx[0]
                     keypoint.yx[0] = keypoint.yx[1]
                     keypoint.yx[1] = height-tmp_swap
@@ -187,8 +181,9 @@ class FallDetector(TFImageDetection):
                         pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
                 log.info("Pose detected [[left shoulder, left hip], [right shoulder, right hip]]: %r", pose_vals_list) 
 
-                left_angle_with_yaxis = self.calculate_angle_with_yaxis(pose_vals_list[0])
-                rigth_angle_with_yaxis = self.calculate_angle_with_yaxis(pose_vals_list[1])
+                y_axis_corr = [[0, 0], [0, self._pose_engine._tensor_image_height]]
+                left_angle_with_yaxis = self.calculate_angle([y_axis_corr, pose_vals_list[0]])
+                rigth_angle_with_yaxis = self.calculate_angle([y_axis_corr, pose_vals_list[1]])
 
                 # save an image with drawn lines for debugging
                 draw = ImageDraw.Draw(thumbnail)
@@ -203,19 +198,13 @@ class FallDetector(TFImageDetection):
                 elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
                     log.info("The body-line angle with vertical axis is decreasing from the previous frame.")
                 else:
-                    left_angle = 0
-                    left_body_line_detected = len(pose_vals_list[0]) == len(self._prev_vals[0]) == 2
-                    if left_body_line_detected:
-                        temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
-                        left_angle = self.calculate_angle(temp_left_point)
-                        log.info("Left shoulder-hip angle: %r", left_angle)
+                    temp_left_point = [self._prev_vals[0], pose_vals_list[0]]
+                    left_angle = self.calculate_angle(temp_left_point)
+                    log.info("Left shoulder-hip angle: %r", left_angle)
 
-                    right_angle = 0
-                    right_body_line_detected = len(pose_vals_list[1]) == len(self._prev_vals[1]) == 2
-                    if right_body_line_detected:
-                        temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
-                        right_angle = self.calculate_angle(temp_right_point)
-                        log.info("Right shoulder-hip angle: %r", left_angle)
+                    temp_right_point = [self._prev_vals[1], pose_vals_list[1]]
+                    right_angle = self.calculate_angle(temp_right_point)
+                    log.info("Right shoulder-hip angle: %r", left_angle)
 
                     angle_change = max(left_angle, right_angle)
                     if angle_change > self._fall_factor:
@@ -236,11 +225,3 @@ class FallDetector(TFImageDetection):
 
             log.info("thumbnail: %r", thumbnail) 
             return inference_result, thumbnail
-
-
-
-
-
-
-
-
