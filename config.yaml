@@ -11,6 +11,11 @@ logging:
   file: ./data/ambianic-log.txt
   level: INFO
 
+# Store notifications configuration
+notifications:
+  email: mailto://userid:pass@domain.com
+
+
 # Pipeline event timeline configuration
 timeline:
   event_log: ./data/timeline-event-log.yaml

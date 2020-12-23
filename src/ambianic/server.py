@@ -6,6 +6,7 @@ import pathlib
 import time
 from watchdog.observers import Observer
 
+from ambianic.notification import NotificationServer
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
@@ -19,6 +20,7 @@ MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     'pipelines': PipelineServer,
+    'notifications': NotificationServer,
     'web': FlaskServer,
 }
 

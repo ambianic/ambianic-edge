@@ -10,6 +10,17 @@ default:
   timeline:
     event_log: ./data/timeline-event-log.yaml
 
+  notifications:
+    providers: {}
+    template:
+      title: "[Ambianic.ai] {event} recognized"
+      body: >
+        {event} event has been recognized by the system.
+        Visit https://ui.ambianic.ai/ for more details.
+    labels:
+      fall_detection: Fall
+      object_detection: Object
+
   sources: {}
 
   ai_models:
