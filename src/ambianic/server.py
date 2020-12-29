@@ -6,7 +6,6 @@ import pathlib
 import time
 from watchdog.observers import Observer
 
-from ambianic.notification import NotificationServer
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
@@ -20,7 +19,6 @@ MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     'pipelines': PipelineServer,
-    'notifications': NotificationServer,
     'web': FlaskServer,
 }
 
@@ -88,7 +86,7 @@ class AmbianicServer:
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
         for s in servers.values():
-            latest_heartbeat, status = s.healthcheck()
+            latest_heartbeat, _ = s.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
             if lapse > 1:

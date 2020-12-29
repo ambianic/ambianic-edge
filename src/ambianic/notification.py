@@ -1,27 +1,48 @@
-from ambianic.util import ServiceExit, ThreadedJob, ManagedService
-import time
-import apprise
+"""Utilities to send notifications."""
+
 import logging
+import apprise
+import os
+import ambianic
 
 log = logging.getLogger(__name__)
 
+class Notification:
+    def __init__(self, event:str="notification", data:dict={}, providers:list=["all"]):
+        self.event: str = event
+        self.providers: list = providers
+        self.title: str = None
+        self.message: str = None
+        self.attach: list = []
+        self.data: dict = data
 
-class NotificationJob(ManagedService):
-    def __init__(self, config: dict):
-        # Create an Apprise instance
+    def add_attachments(self, *args):
+        self.attach.append(*args)
+
+    def to_dict(self) -> dict:
+        return dict(vars(self))
+
+class NotificationHandler:
+    def __init__(self, config: dict = None):
+        if config is None:
+            config = ambianic.config
         self.apobj = apprise.Apprise()
-        # Create an Config instance
         self.config = config.get("notifications", {})
         for name, cfg in config.get("providers", {}).items():
-            self.apobj.add(cfg, tag=name)
+            if not isinstance(cfg, list):
+                cfg = [cfg]
+            for provider in cfg:
+                if not self.apobj.add(provider, tag=name):
+                    log.warning("Failed to add notification provider: %s=%s" % (name, provider))
 
-    def notify(
+    def send(
         self,
         event: str, 
         providers: list = ["all"],
         title: str = None,
         message: str = None,
-        attach: list = []
+        attach: list = [],
+        data: dict = {},
     ):
 
         labels = self.config.get("labels", {})
@@ -33,44 +54,22 @@ class NotificationJob(ManagedService):
         if message is None:
             message = templates.get("message", "New {event} recognized")
 
+        attachments = []
+        for a in attach:
+            if not os.path.exists(a) or not os.path.isfile(a):
+                log.warning("Attachment is not a valid file %s")
+                continue
+            attachments.append(a)
+
         template_args = {
             "event_type": event,
             "event": labels.get(event, event),
-        }
-        title = title.safe_substitute(**template_args)
-        message = message.safe_substitute(**template_args)
+        } + data
+        for key, value in template_args.items():
+            title = title.replace("${%s}" % key, value)
+            message = message.replace("${%s}" % key, value)
 
         for provider in providers:
-            self.apobj.notify(message, title=title, tag=provider)
+            self.apobj.notify(message, title=title,
+                              tag=provider, attach=attachments)
             log.debug("Sent notification %s to %s" % (event, provider))
-
-class NotificationServer(ManagedService):
-    def __init__(self, config):
-        self.config = config
-        self.notification_job = None
-
-    def start(self, **kwargs):
-        log.info('Notification server job starting...')
-        f = NotificationJob(self.config)
-        self.notification_job = ThreadedJob(f)
-        self.notification_job.start()
-        log.info('NotificationFlask server job started')
-
-    def healthcheck(self):
-        # Note: Implement actual health check for Flask
-        # See if the /healthcheck URL returns a 200 quickly
-        return time.monotonic(), True
-
-    def heal(self):
-        """Heal the server.
-
-        TODO: Keep an eye for potential scenarios that cause this server to
-         become unresponsive.
-        """
-
-    def stop(self):
-        if self.notification_job:
-            log.info('Notification server job stopping...')
-            self.notification_job.stop()
-            self.notification_job.join()
-            log.info('Flask server job stopped.')
