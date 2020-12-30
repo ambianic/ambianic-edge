@@ -7,8 +7,9 @@ import ambianic
 
 log = logging.getLogger(__name__)
 
+
 class Notification:
-    def __init__(self, event:str="detection", data:dict={}, providers:list=["all"]):
+    def __init__(self, event:str = "detection", data:dict = {}, providers:list = ["all"]):
         self.event: str = event
         self.providers: list = providers
         self.title: str = None
@@ -22,6 +23,7 @@ class Notification:
     def to_dict(self) -> dict:
         return dict(vars(self))
 
+
 class NotificationHandler:
     def __init__(self, config: dict = None):
         if config is None:
@@ -34,7 +36,10 @@ class NotificationHandler:
                 cfg = [cfg]
             for provider in cfg:
                 if not self.apobj.add(provider, tag=name):
-                    log.warning("Failed to add notification provider: %s=%s" % (name, provider))
+                    log.warning(
+                        "Failed to add notification provider: %s=%s" 
+                            % (name, provider)
+                    )
 
     def send(self, notification: Notification):
 
@@ -78,7 +83,10 @@ class NotificationHandler:
                 attach=attachments,
             )
             if ok:
-                log.debug("Sent notification for %s to %s" % (notification.event, provider))
+                log.debug(
+                    "Sent notification for %s to %s" % 
+                    (notification.event, provider)
+                )
             else:
                 log.warning("Error sending notification for %s to %s" %
                           (notification.event, provider))

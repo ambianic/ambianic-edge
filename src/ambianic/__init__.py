@@ -27,11 +27,12 @@ def __merge_secrets(config:Union[Dynaconf, DynaBox], src_config:Dynaconf = None)
         if isinstance(val, dict):
             __merge_secrets(val, src_config)
             continue
-        # NOTE value must be an exact match to avoid interfering with other templates
+        # NOTE value must be an exact match to avoid interfering 
+        # with other templates
         if (
-                isinstance(val, str) and
+            isinstance(val, str) and
                 (val[0:2] == "${" and val[-1] == "}")
-            ):
+        ):
             ref_key = val[2:-1]
             ref_val = src_config.get(ref_key, None)
             if ref_val is not None:

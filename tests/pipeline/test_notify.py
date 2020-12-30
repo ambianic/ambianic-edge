@@ -12,6 +12,7 @@ from ambianic import DEFAULT_DATA_DIR, config
 from ambianic.pipeline.timeline import PipelineContext
 from ambianic.pipeline.store import SaveDetectionSamples
 
+
 class MockRequestHandler(BaseHTTPRequestHandler):
     def __init__(self, event, *args):
         self.event:Event = event
