@@ -32,8 +32,10 @@ class FallDetector(TFImageDetection):
         self._prev_vals = []
         self._prev_time = time.monotonic()
         self._prev_thumbnail = None
-        self._prev_left_angle_with_yaxis = None      # angle b/w left shoulder-hip line with vertical axis
-        self._prev_right_angle_with_yaxis = None     # angle b/w right shoulder-hip line with vertical axis
+        # angle b/w left shoulder-hip line with vertical axis
+        self._prev_left_angle_with_yaxis = None
+        # angle b/w right shoulder-hip line with vertical axis
+        self._prev_right_angle_with_yaxis = None
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
@@ -79,9 +81,15 @@ class FallDetector(TFImageDetection):
 
 
     def calculate_angle(self, p):
-
+        '''
+            Calculate angle b/w two lines such as 
+            left shoulder-hip with prev frame's left shoulder-hip or
+            right shoulder-hip with prev frame's right shoulder-hip or
+            shoulder-hip line with vertical axis
+        '''
         angle = 0
 
+        # verify shoulder and hip coordinates are detected by posenet
         body_line_detected = len(p[0]) == len(p[1]) == 2
         if not body_line_detected:
             return angle
@@ -198,8 +206,8 @@ class FallDetector(TFImageDetection):
                 elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
                     log.info("The body-line angle with vertical axis is decreasing from the previous frame.")
                 else:
-                    temp_left_point = [self._prev_vals[0], pose_vals_list[0]]
-                    left_angle = self.calculate_angle(temp_left_point)
+                    temp_left_vector = [self._prev_vals[0], pose_vals_list[0]]
+                    left_angle = self.calculate_angle(temp_left_vector)
                     log.info("Left shoulder-hip angle: %r", left_angle)
 
                     temp_right_point = [self._prev_vals[1], pose_vals_list[1]]
