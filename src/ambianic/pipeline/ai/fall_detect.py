@@ -49,6 +49,7 @@ class FallDetector(TFImageDetection):
         # Otherwise there could be data noise which could lead false positive detections.
         self.max_time_between_frames = 10
 
+        self.fall_detect_corr = ['left shoulder', 'left hip', 'right shoulder', 'right hip']
 
 
     def process_sample(self, **sample):
@@ -87,13 +88,7 @@ class FallDetector(TFImageDetection):
             right shoulder-hip with prev frame's right shoulder-hip or
             shoulder-hip line with vertical axis
         '''
-        angle = 0
 
-        # verify shoulder and hip coordinates are detected by posenet
-        body_line_detected = len(p[0]) == len(p[1]) == 2
-        if not body_line_detected:
-            return angle
-        
         x1, y1 = p[0][0]
         x2, y2 = p[0][1]
     
@@ -162,6 +157,71 @@ class FallDetector(TFImageDetection):
         return pose, thumbnail
 
 
+    def find_changes_in_angle(self, pose_dix):
+        '''
+            Find the changes in angle for shoulder-hip lines b/w current and previpus frame.
+        '''
+
+        prev_leftLine_corr_exist = all(e in self._prev_vals for e in ['left shoulder','left hip'])
+        curr_leftLine_corr_exist = all(e in pose_dix for e in ['left shoulder','left hip'])
+
+        prev_rightLine_corr_exist = all(e in self._prev_vals for e in ['right shoulder','right hip'])
+        curr_rightLine_corr_exist = all(e in pose_dix for e in ['right shoulder','right hip'])
+        
+        left_angle = right_angle = 0
+
+        if prev_leftLine_corr_exist and curr_leftLine_corr_exist:
+            temp_left_vector = [[self._prev_vals['left shoulder'], self._prev_vals['left hip']], [pose_dix['left shoulder'], pose_dix['left hip']]]
+            left_angle = self.calculate_angle(temp_left_vector)
+            log.info("Left shoulder-hip angle: %r", left_angle)
+
+        if prev_rightLine_corr_exist and curr_rightLine_corr_exist:
+            temp_right_vector = [[self._prev_vals['right shoulder'], self._prev_vals['right hip']], [pose_dix['right shoulder'], pose_dix['right hip']]]
+            right_angle = self.calculate_angle(temp_right_vector)
+            log.info("Right shoulder-hip angle: %r", right_angle)
+
+        angle_change = max(left_angle, right_angle)
+        return angle_change
+
+    def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail):
+        self._prev_vals = pose_dix
+        self._prev_left_angle_with_yaxis = left_angle_with_yaxis
+        self._prev_right_angle_with_yaxis = rigth_angle_with_yaxis
+        self._prev_time = now
+        self._prev_thumbnail = thumbnail
+
+    def draw_lines(self, thumbnail, pose_dix):
+        # save an image with drawn lines for debugging
+        draw = ImageDraw.Draw(thumbnail)
+
+        body_line = [tuple(pose_dix['left shoulder']), tuple(pose_dix['left hip'])]
+        draw.line(body_line, fill='red')
+
+        body_line = [tuple(pose_dix['right shoulder']), tuple(pose_dix['right hip'])]
+        draw.line(body_line, fill='red')
+        # DEBUG: save template_image for debugging
+        # DEBUG: timestr = int(time.monotonic()*1000)
+        # DEBUG: thumbnail.save(f'tmp-thumbnail-body-line-time-{timestr}.jpg', format='JPEG')
+
+    def get_line_angles_with_yaxis(self, pose_dix):
+        '''
+            Find the angle b/w shoulder-hip line with yaxis.
+        '''
+        y_axis_corr = [[0, 0], [0, self._pose_engine._tensor_image_height]]
+        
+        leftLine_corr_exist = all(e in pose_dix for e in ['left shoulder','left hip'])
+        rightLine_corr_exist = all(e in pose_dix for e in ['right shoulder','right hip'])
+
+        l_angle = r_angle = 0
+
+        if leftLine_corr_exist:
+            l_angle = self.calculate_angle([y_axis_corr, [pose_dix['left shoulder'], pose_dix['left hip']]])
+        
+        if rightLine_corr_exist:
+            r_angle = self.calculate_angle([y_axis_corr, [pose_dix['right shoulder'], pose_dix['right hip']]])
+        
+        return (l_angle, r_angle)
+
     def fall_detect(self, image=None):
         assert image
         log.info("Calling TF engine for inference")
@@ -180,41 +240,29 @@ class FallDetector(TFImageDetection):
                 log.info("No pose with key-points found.")
                 return inference_result, thumbnail
             else:
-                pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
+                pose_dix = {}
                 inference_result = []
-                for label, keypoint in pose.keypoints.items():
-                    if (label == 'left shoulder' or label == 'left hip'):
-                        pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
-                    elif label == 'right shoulder' or label == 'right hip':
-                        pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
-                log.info("Pose detected [[left shoulder, left hip], [right shoulder, right hip]]: %r", pose_vals_list) 
 
-                y_axis_corr = [[0, 0], [0, self._pose_engine._tensor_image_height]]
-                left_angle_with_yaxis = self.calculate_angle([y_axis_corr, pose_vals_list[0]])
-                rigth_angle_with_yaxis = self.calculate_angle([y_axis_corr, pose_vals_list[1]])
+                for e_corr in self.fall_detect_corr:
+                    if pose.keypoints[e_corr].score > 0.6:
+                        # detected key-point probability must be greater than 0.6
+                        pose_dix[e_corr] = pose.keypoints[e_corr].yx
+                                        
+                log.info("Pose detected : %r", pose_dix) 
+
+                # Find line angle with vertcal axis
+                left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
 
                 # save an image with drawn lines for debugging
-                draw = ImageDraw.Draw(thumbnail)
-                for body_line in pose_vals_list:
-                    draw.line(body_line, fill='red')
-                # DEBUG: save template_image for debugging
-                # DEBUG: timestr = int(time.monotonic()*1000)
-                # DEBUG: thumbnail.save(f'tmp-thumbnail-body-line-time-{timestr}.jpg', format='JPEG')
+                self.draw_lines(thumbnail, pose_dix)
 
                 if not self._prev_vals or lapse > self.max_time_between_frames:
                     log.info("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
                 elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
                     log.info("The body-line angle with vertical axis is decreasing from the previous frame.")
                 else:
-                    temp_left_vector = [self._prev_vals[0], pose_vals_list[0]]
-                    left_angle = self.calculate_angle(temp_left_vector)
-                    log.info("Left shoulder-hip angle: %r", left_angle)
+                    angle_change = self.find_changes_in_angle(pose_dix)
 
-                    temp_right_point = [self._prev_vals[1], pose_vals_list[1]]
-                    right_angle = self.calculate_angle(temp_right_point)
-                    log.info("Right shoulder-hip angle: %r", left_angle)
-
-                    angle_change = max(left_angle, right_angle)
                     if angle_change > self._fall_factor:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
@@ -223,11 +271,8 @@ class FallDetector(TFImageDetection):
                         log.info("Fall detected: %r", inference_result)
 
                 log.info("Saving pose for subsequent comparison.")
-                self._prev_vals = pose_vals_list
-                self._prev_left_angle_with_yaxis = left_angle_with_yaxis
-                self._prev_right_angle_with_yaxis = rigth_angle_with_yaxis
-                self._prev_time = now
-                self._prev_thumbnail = thumbnail
+                self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail)
+                
                 log.info("Logging stats")
                 self.log_stats(start_time=start_time)
 
