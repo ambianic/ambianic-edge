@@ -14,7 +14,7 @@ logging:
 # Store notifications provider configuration
 # see https://github.com/caronc/apprise#popular-notification-services for syntax examples
 # notifications:
-#   email: 
+#   email:
 #     include_attachments: true
 #     providers:
 #       - mailto://userid:pass@domain.com
@@ -90,7 +90,7 @@ pipelines:
         positive_interval: 10
         idle_interval: 600000
 #        notify: # notify a thirdy party service
-#          providers: 
+#          providers:
 #            - alert_fall
 
 
