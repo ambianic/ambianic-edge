@@ -71,8 +71,8 @@ class SaveDetectionSamples(PipeElement):
         
         # setup notification handler
         self.notification = None
-        self.notification_providers = notify
-        if self.notification_providers is not None:
+        self.notification_config = notify        
+        if self.notification_config is not None and self.notification_config.get("providers"):
             self.notification = NotificationHandler()
 
     def _save_sample(self,
@@ -128,9 +128,7 @@ class SaveDetectionSamples(PipeElement):
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
         self.event_log.info('Detection Event', save_json)
         log.debug("Saved sample (detection event): %r ", save_json)
-
         self.notify(save_json)
-
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:
@@ -195,6 +193,7 @@ class SaveDetectionSamples(PipeElement):
                 'id': save_json['id'],
                 'label': inference_result['label'],
                 'confidence': inference_result['confidence'],
+                'datetime': save_json['datetime'],
             }
-            notification = Notification(data=data, providers=self.notification_providers)
-            self.notification.send(notification.to_dict())
+            notification = Notification(data=data, providers=self.notification_config["providers"])
+            self.notification.send(notification)

@@ -86,8 +86,8 @@ pipelines:
      - save_detections: # save samples from the inference results
         positive_interval: 10
         idle_interval: 600000
-        notify: # notify a thirdy party service
-          providers: 
-            - alert_fall
+        # notify: # notify a thirdy party service
+        #   providers: 
+        #     - alert_fall
 
 
