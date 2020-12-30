@@ -18,10 +18,17 @@ class MockRequestHandler(BaseHTTPRequestHandler):
         self.event:Event = event
         BaseHTTPRequestHandler.__init__(self, *args)
     def do_POST(self):
+
+        # read the message and convert it into a python dictionary
+        length = int(self.headers.get('content-length'))
+        message = json.loads(self.rfile.read(length))
+
+        assert message.get("title") is not None
+
         self.send_response(200)
         self.end_headers()
+
         self.event.set()
-        return
 
 def get_free_port():
     s = socket.socket(socket.AF_INET, type=socket.SOCK_STREAM)
@@ -66,24 +73,60 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
                                  inference_result=inference_result,
                                  inference_meta=inference_meta)
 
-
-def test_notification():
-
-    called:Event = Event()
+def test_notification_with_attachments():
+    """Ensure a positive detection is notified"""
+    called: Event = Event()
     mock_server = HTTPMockServer(called)
 
     # register the mock server endpoint
     config.update({
         'notifications': {
-            'providers': {
-                'test': [
+            'test': {
+                'include_attachments': True,
+                'providers': [
                     'json://localhost:%s/webhook' % (mock_server.port)
                 ],
             }
         }
     })
 
-    """The first time a positive sample is processed, it should be saved."""
+    out_dir = os.path.dirname(os.path.abspath(__file__))
+    out_dir = os.path.join(out_dir, 'tmp/')
+    out_dir = os.path.abspath(out_dir)
+    context = PipelineContext(unique_pipeline_name='test pipeline notify')
+    context.data_dir = out_dir
+    notify = {'providers': ['test']}
+    store = _TestSaveDetectionSamples(
+        context=context,
+        event_log=logging.getLogger(),
+        notify=notify,
+    )
+    img = Image.new('RGB', (60, 30), color='red')
+    detections = [('person', 0.98, (0, 1, 2, 3))]
+    processed_samples = list(store.process_sample(image=img,
+                                                  thumbnail=img,
+                                                  inference_result=detections))
+    assert len(processed_samples) == 1
+    mock_server.stop()
+    assert called.is_set()
+
+def test_plain_notification():
+    """Ensure a positive detection is notified"""
+    called:Event = Event()
+    mock_server = HTTPMockServer(called)
+
+    # register the mock server endpoint
+    config.update({
+        'notifications': {
+            'test': {
+                'include_attachments': True,
+                'providers': [
+                    'json://localhost:%s/webhook' % (mock_server.port)
+                ],
+            }
+        }
+    })
+
     out_dir = os.path.dirname(os.path.abspath(__file__))
     out_dir = os.path.join(out_dir,'tmp/')
     out_dir = os.path.abspath(out_dir)
@@ -103,4 +146,3 @@ def test_notification():
     assert len(processed_samples) == 1
     mock_server.stop()
     assert called.is_set()
-    

@@ -30,11 +30,9 @@ class NotificationHandler:
             config = ambianic.config
         self.apobj = apprise.Apprise(debug=True)
         self.config = config.get("notifications", {})
-        providers = self.config.get("providers", {})
-        for name, cfg in providers.items():
-            if not isinstance(cfg, list):
-                cfg = [cfg]
-            for provider in cfg:
+        for name, cfg in self.config.items():
+            providers = cfg.get("providers", [])
+            for provider in providers:
                 if not self.apobj.add(provider, tag=name):
                     log.warning(
                         "Failed to add notification provider: %s=%s" 
@@ -76,11 +74,17 @@ class NotificationHandler:
             message = message.replace(k, v)
 
         for provider in notification.providers:
+            cfg = self.config.get(provider, None)
+            if cfg is None:
+                log.warning("Skip unknown provider %s" % provider)
+                continue
+            
+            include_attachments = cfg.get("include_attachments", False)
             ok = self.apobj.notify(
                 message, 
                 title=title,
                 tag=provider, 
-                attach=attachments,
+                attach=attachments if include_attachments else [],
             )
             if ok:
                 log.debug(
