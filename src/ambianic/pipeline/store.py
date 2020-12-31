@@ -8,6 +8,7 @@ from typing import Iterable
 
 from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline import PipeElement
+from ambianic.notification import Notification, NotificationHandler
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class SaveDetectionSamples(PipeElement):
     def __init__(self,
                  positive_interval=2,
                  idle_interval=600,
+                 notify=None,
                  **kwargs):
         """Create SaveDetectionSamples element with the provided arguments.
 
@@ -33,6 +35,7 @@ class SaveDetectionSamples(PipeElement):
 
         """
         super().__init__(**kwargs)
+
         log.info('Loading pipe element %r ', self.__class__.__name__)
         if self.context:
             self._sys_data_dir = self.context.data_dir
@@ -65,6 +68,12 @@ class SaveDetectionSamples(PipeElement):
         ii = idle_interval
         self._idle_interval = datetime.timedelta(seconds=ii)
         self._time_latest_saved_idle = self._time_latest_saved_detection
+        
+        # setup notification handler
+        self.notification = None
+        self.notification_config = notify        
+        if self.notification_config is not None and self.notification_config.get("providers"):
+            self.notification = NotificationHandler()
 
     def _save_sample(self,
                      inf_time=None,
@@ -119,6 +128,7 @@ class SaveDetectionSamples(PipeElement):
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
         self.event_log.info('Detection Event', save_json)
         log.debug("Saved sample (detection event): %r ", save_json)
+        self.notify(save_json)
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:
@@ -172,3 +182,18 @@ class SaveDetectionSamples(PipeElement):
                 }
                 log.debug('Passing sample on: %r ', processed_sample)
                 yield processed_sample
+
+    def notify(self, save_json: dict):
+        if self.notification is None:
+            return
+        log.debug("Sending notification(s)..")
+        # TODO extract inference data
+        for inference_result in save_json['inference_result']:
+            data = {
+                'id': save_json['id'],
+                'label': inference_result['label'],
+                'confidence': inference_result['confidence'],
+                'datetime': save_json['datetime'],
+            }
+            notification = Notification(data=data, providers=self.notification_config["providers"])
+            self.notification.send(notification)

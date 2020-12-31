@@ -86,7 +86,7 @@ class AmbianicServer:
     def _healthcheck(self, servers):
         """Check the health of managed servers."""
         for s in servers.values():
-            latest_heartbeat, status = s.healthcheck()
+            latest_heartbeat, _ = s.healthcheck()
             now = time.monotonic()
             lapse = now - latest_heartbeat
             if lapse > 1:
