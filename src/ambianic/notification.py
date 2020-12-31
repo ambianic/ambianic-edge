@@ -61,13 +61,9 @@ class NotificationHandler:
                 continue
             attachments.append(a)
 
-        event_name = notification.data.get("category", "")
-        if not event_name:
-            event_name = notification.event
-
         template_args = {
             "event_type": notification.event,
-            "event": event_name,
+            "event": notification.data.get("label", notification.event),
             "event_details_url": "%s/%s" % (UI_BASEURL, notification.data.get("id", ""))
         }
         template_args = {**template_args, **notification.data}
