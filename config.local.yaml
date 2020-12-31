@@ -16,7 +16,7 @@ default:
       title: "[Ambianic.ai] ${event} recognized"
       body: >
         ${event} event has been recognized by the system.
-        Visit https://ui.ambianic.ai/ for more details.
+        Visit ${event_details_url} for more details.
     labels:
       fall_detection: Fall
       object_detection: Object

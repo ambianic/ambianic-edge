@@ -7,6 +7,7 @@ import ambianic
 
 log = logging.getLogger(__name__)
 
+UI_BASEURL = "https://ui.ambianic.ai"
 
 class Notification:
     def __init__(self, event:str = "detection", data:dict = {}, providers:list = ["all"]):
@@ -64,6 +65,7 @@ class NotificationHandler:
         template_args = {
             "event_type": notification.event,
             "event": labels.get(notification.event, notification.event),
+            "event_details_url": "%s/%s" % (UI_BASEURL, notification.data.get("id", ""))
         }
         template_args = {**template_args, **notification.data}
 
