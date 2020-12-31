@@ -17,9 +17,6 @@ default:
       body: >
         ${event} event has been recognized by the system.
         Visit ${event_details_url} for more details.
-    labels:
-      fall_detection: Fall
-      object_detection: Object
 
   sources: {}
 

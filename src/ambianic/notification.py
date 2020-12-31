@@ -42,7 +42,6 @@ class NotificationHandler:
 
     def send(self, notification: Notification):
 
-        labels = dict(self.config.get("labels", {}))
         templates = self.config.get("templates", {})
 
         title = notification.title
@@ -62,9 +61,13 @@ class NotificationHandler:
                 continue
             attachments.append(a)
 
+        event_name = notification.data.get("category", "")
+        if not event_name:
+            event_name = notification.event
+
         template_args = {
             "event_type": notification.event,
-            "event": labels.get(notification.event, notification.event),
+            "event": event_name,
             "event_details_url": "%s/%s" % (UI_BASEURL, notification.data.get("id", ""))
         }
         template_args = {**template_args, **notification.data}
