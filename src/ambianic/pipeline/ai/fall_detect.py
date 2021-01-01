@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class FallDetector(TFImageDetection):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
-                 model=None,
+                 model=None, confidence_threshold = 0.25, 
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -22,7 +22,7 @@ class FallDetector(TFImageDetection):
         model: dict
         {
             'tflite': 
-                'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
+                'ai_models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
             'edgetpu': 
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
@@ -39,7 +39,7 @@ class FallDetector(TFImageDetection):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
-        self.pose_confidence_threshold = kwargs['confidence_threshold']
+        self.pose_confidence_threshold = confidence_threshold
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
