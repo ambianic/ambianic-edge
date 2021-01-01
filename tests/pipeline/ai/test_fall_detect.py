@@ -26,7 +26,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.8,
+        'confidence_threshold': 0.25,
     }
     return config
 
@@ -162,6 +162,7 @@ def test_fall_detection_case_2_2():
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
+    assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -192,6 +193,7 @@ def test_fall_detection_case_3():
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
+    assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
@@ -219,6 +221,32 @@ def test_fall_detection_case_4():
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
+
+
+def test_fall_detection_case_5():
+    """Expected to not detect a fall even the angle criteria is met because image 2 is standing up rather than fall"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_2.png')
+    img_2 = _get_image(file_name='fall_img_1.png')
+    fall_detector.receive_next_sample(image=img_1)
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
 
 def test_background_image():
     """Expect to not detect anything interesting in a background image."""
@@ -284,6 +312,7 @@ def test_bad_sample_good_sample():
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
+    assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60

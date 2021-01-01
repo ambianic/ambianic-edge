@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class FallDetector(TFImageDetection):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
-                 model=None,
+                 model=None, confidence_threshold = 0.25, 
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -22,7 +22,7 @@ class FallDetector(TFImageDetection):
         model: dict
         {
             'tflite': 
-                'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder.tflite'
+                'ai_models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
             'edgetpu': 
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
@@ -32,9 +32,14 @@ class FallDetector(TFImageDetection):
         self._prev_vals = []
         self._prev_time = time.monotonic()
         self._prev_thumbnail = None
+        # angle b/w left shoulder-hip line with vertical axis
+        self._prev_left_angle_with_yaxis = None
+        # angle b/w right shoulder-hip line with vertical axis
+        self._prev_right_angle_with_yaxis = None
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
+        self.pose_confidence_threshold = confidence_threshold
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
@@ -44,6 +49,7 @@ class FallDetector(TFImageDetection):
         # Otherwise there could be data noise which could lead false positive detections.
         self.max_time_between_frames = 10
 
+        self.fall_detect_corr = ['left shoulder', 'left hip', 'right shoulder', 'right hip']
 
 
     def process_sample(self, **sample):
@@ -76,22 +82,42 @@ class FallDetector(TFImageDetection):
 
 
     def calculate_angle(self, p):
-        x1, y1 = p[0][0][0], p[0][0][1]
-        x2, y2 = p[0][1][0], p[0][1][1]
-        x3, y3 = p[1][0][0], p[1][0][1]
-        x4, y4 = p[1][1][0], p[1][1][1]
+        '''
+            Calculate angle b/w two lines such as 
+            left shoulder-hip with prev frame's left shoulder-hip or
+            right shoulder-hip with prev frame's right shoulder-hip or
+            shoulder-hip line with vertical axis
+        '''
+
+        x1, y1 = p[0][0]
+        x2, y2 = p[0][1]
+    
+        x3, y3 = p[1][0]
+        x4, y4 = p[1][1]
 
         theta1 = math.degrees(math.atan2(y2-y1, x1-x2))
         theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
             
-        theta = abs(theta1-theta2)
-        return theta
+        angle = abs(theta1-theta2)
+        return angle
+
+
+    def is_body_line_motion_downward(self, left_angle_with_yaxis, rigth_angle_with_yaxis):
+
+        test = False
+        l_angle = left_angle_with_yaxis and self._prev_left_angle_with_yaxis and left_angle_with_yaxis > self._prev_left_angle_with_yaxis
+        r_angle = rigth_angle_with_yaxis and self._prev_right_angle_with_yaxis and rigth_angle_with_yaxis > self._prev_right_angle_with_yaxis 
+
+        if l_angle or r_angle:
+            test = True
+
+        return test
 
 
     def find_keypoints(self, image):
 
         # this score value should be related to the configuration confidence_threshold parameter
-        min_score = 0.25
+        min_score = self.pose_confidence_threshold
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
@@ -113,7 +139,7 @@ class FallDetector(TFImageDetection):
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
                 # ROTATE_90 rotates 90' counter clockwise from ^ to < orientation.
-                for label, keypoint in pose.keypoints.items():
+                for _, keypoint in pose.keypoints.items():
                     # keypoint.yx[0] is the x coordinate in an image
                     # keypoint.yx[0] is the y coordinate in an image, with 0,0 in the upper left corner (not lower left).
                     tmp_swap = keypoint.yx[0]
@@ -121,7 +147,7 @@ class FallDetector(TFImageDetection):
                     keypoint.yx[1] = tmp_swap
             elif  angle == Image.ROTATE_270: 
             # ROTATE_270 rotates 90' clockwise from ^ to > orientation.
-                for label, keypoint in pose.keypoints.items():
+                for _, keypoint in pose.keypoints.items():
                     tmp_swap = keypoint.yx[0]
                     keypoint.yx[0] = keypoint.yx[1]
                     keypoint.yx[1] = height-tmp_swap
@@ -131,7 +157,70 @@ class FallDetector(TFImageDetection):
         return pose, thumbnail
 
 
+    def find_changes_in_angle(self, pose_dix):
+        '''
+            Find the changes in angle for shoulder-hip lines b/w current and previpus frame.
+        '''
 
+        prev_leftLine_corr_exist = all(e in self._prev_vals for e in ['left shoulder','left hip'])
+        curr_leftLine_corr_exist = all(e in pose_dix for e in ['left shoulder','left hip'])
+
+        prev_rightLine_corr_exist = all(e in self._prev_vals for e in ['right shoulder','right hip'])
+        curr_rightLine_corr_exist = all(e in pose_dix for e in ['right shoulder','right hip'])
+        
+        left_angle = right_angle = 0
+
+        if prev_leftLine_corr_exist and curr_leftLine_corr_exist:
+            temp_left_vector = [[self._prev_vals['left shoulder'], self._prev_vals['left hip']], [pose_dix['left shoulder'], pose_dix['left hip']]]
+            left_angle = self.calculate_angle(temp_left_vector)
+            log.info("Left shoulder-hip angle: %r", left_angle)
+
+        if prev_rightLine_corr_exist and curr_rightLine_corr_exist:
+            temp_right_vector = [[self._prev_vals['right shoulder'], self._prev_vals['right hip']], [pose_dix['right shoulder'], pose_dix['right hip']]]
+            right_angle = self.calculate_angle(temp_right_vector)
+            log.info("Right shoulder-hip angle: %r", right_angle)
+
+        angle_change = max(left_angle, right_angle)
+        return angle_change
+
+    def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail):
+        self._prev_vals = pose_dix
+        self._prev_left_angle_with_yaxis = left_angle_with_yaxis
+        self._prev_right_angle_with_yaxis = rigth_angle_with_yaxis
+        self._prev_time = now
+        self._prev_thumbnail = thumbnail
+
+    def draw_lines(self, thumbnail, pose_dix):
+        # save an image with drawn lines for debugging
+        draw = ImageDraw.Draw(thumbnail)
+
+        body_line = [tuple(pose_dix['left shoulder']), tuple(pose_dix['left hip'])]
+        draw.line(body_line, fill='red')
+
+        body_line = [tuple(pose_dix['right shoulder']), tuple(pose_dix['right hip'])]
+        draw.line(body_line, fill='red')
+        # DEBUG: save template_image for debugging
+        # DEBUG: timestr = int(time.monotonic()*1000)
+        # DEBUG: thumbnail.save(f'tmp-thumbnail-body-line-time-{timestr}.jpg', format='JPEG')
+
+    def get_line_angles_with_yaxis(self, pose_dix):
+        '''
+            Find the angle b/w shoulder-hip line with yaxis.
+        '''
+        y_axis_corr = [[0, 0], [0, self._pose_engine._tensor_image_height]]
+        
+        leftLine_corr_exist = all(e in pose_dix for e in ['left shoulder','left hip'])
+        rightLine_corr_exist = all(e in pose_dix for e in ['right shoulder','right hip'])
+
+        l_angle = r_angle = 0
+
+        if leftLine_corr_exist:
+            l_angle = self.calculate_angle([y_axis_corr, [pose_dix['left shoulder'], pose_dix['left hip']]])
+        
+        if rightLine_corr_exist:
+            r_angle = self.calculate_angle([y_axis_corr, [pose_dix['right shoulder'], pose_dix['right hip']]])
+        
+        return (l_angle, r_angle)
 
     def fall_detect(self, image=None):
         assert image
@@ -151,65 +240,41 @@ class FallDetector(TFImageDetection):
                 log.info("No pose with key-points found.")
                 return inference_result, thumbnail
             else:
-                pose_vals_list = [[], []]      # [[left shoulder, left hip], [right shoulder, right hip]]
+                pose_dix = {}
                 inference_result = []
-                for label, keypoint in pose.keypoints.items():
-                    if (label == 'left shoulder' or label == 'left hip'):
-                        pose_vals_list[0].append((keypoint.yx[0], keypoint.yx[1]))
-                    elif label == 'right shoulder' or label == 'right hip':
-                        pose_vals_list[1].append((keypoint.yx[0], keypoint.yx[1]))
-                log.info("Pose detected [[left shoulder, left hip], [right shoulder, right hip]]: %r", pose_vals_list) 
+
+                for e_corr in self.fall_detect_corr:
+                    if pose.keypoints[e_corr].score > 0.6:
+                        # detected key-point probability must be greater than 0.6
+                        pose_dix[e_corr] = pose.keypoints[e_corr].yx
+                                        
+                log.info("Pose detected : %r", pose_dix) 
+
+                # Find line angle with vertcal axis
+                left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
+
                 # save an image with drawn lines for debugging
-                draw = ImageDraw.Draw(thumbnail)
-                for body_line in pose_vals_list:
-                    draw.line(body_line, fill='red')
-                # DEBUG: save template_image for debugging
-                # DEBUG: timestr = int(time.monotonic()*1000)
-                # DEBUG: thumbnail.save(f'tmp-thumbnail-body-line-time-{timestr}.jpg', format='JPEG')
+                self.draw_lines(thumbnail, pose_dix)
 
                 if not self._prev_vals or lapse > self.max_time_between_frames:
                     log.info("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
+                elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
+                    log.info("The body-line angle with vertical axis is decreasing from the previous frame.")
                 else:
-                    left_angle = 0
-                    left_body_line_detected = len(pose_vals_list[0]) == 2
-                    if left_body_line_detected and (self._prev_vals[0] is not None):
-                        try:
-                            temp_left_point = [[self._prev_vals[0][0], self._prev_vals[0][1]], [pose_vals_list[0][0], pose_vals_list[0][1]]]
-                            left_angle = self.calculate_angle(temp_left_point)
-                            log.info("Left shoulder-hip angle: %r", left_angle)
-                        except IndexError as e:
-                            log.exception("Error while calculating angle: %r", e)
-                    right_angle = 0
-                    right_body_line_detected = len(pose_vals_list[1]) == 2
-                    if right_body_line_detected and (self._prev_vals[1] is not None):
-                        try:
-                            temp_right_point = [[self._prev_vals[1][0], self._prev_vals[1][1]], [pose_vals_list[1][0], pose_vals_list[1][1]]]
-                            right_angle = self.calculate_angle(temp_right_point)
-                            log.info("Right shoulder-hip angle: %r", left_angle)
-                        except IndexError as e:
-                            log.exception("Error while calculating angle: %r", e)
+                    angle_change = self.find_changes_in_angle(pose_dix)
 
-                    angle_change = max(left_angle, right_angle)
                     if angle_change > self._fall_factor:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
                         box = [0, 0, 1, 1]
-                        inference_result.append(('FALL', pose.score, box, angle_change ))
+                        inference_result.append(('FALL', pose.score, box, angle_change))
                         log.info("Fall detected: %r", inference_result)
+
                 log.info("Saving pose for subsequent comparison.")
-                self._prev_vals = pose_vals_list
-                self._prev_time = now
-                self._prev_thumbnail = thumbnail
+                self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail)
+                
                 log.info("Logging stats")
                 self.log_stats(start_time=start_time)
 
             log.info("thumbnail: %r", thumbnail) 
             return inference_result, thumbnail
-
-
-
-
-
-
-
-
