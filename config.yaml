@@ -11,6 +11,18 @@ logging:
   file: ./data/ambianic-log.txt
   level: INFO
 
+# Store notifications provider configuration
+# see https://github.com/caronc/apprise#popular-notification-services for syntax examples
+# notifications:
+#   catch_all_email:
+#     include_attachments: true
+#     providers:
+#       - mailto://userid:pass@domain.com
+#   alert_fall:
+#     providers:
+#       - mailto://userid:pass@domain.com
+#       - json://hostname/a/path/to/post/to
+
 # Pipeline event timeline configuration
 timeline:
   event_log: ./data/timeline-event-log.yaml
@@ -77,5 +89,8 @@ pipelines:
      - save_detections: # save samples from the inference results
         positive_interval: 10
         idle_interval: 600000
+#        notify: # notify a thirdy party service
+#          providers:
+#            - alert_fall
 
 
