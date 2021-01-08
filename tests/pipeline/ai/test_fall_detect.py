@@ -161,8 +161,7 @@ def test_fall_detection_case_2_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    category, confidence, angle = result[0]
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -192,8 +191,7 @@ def test_fall_detection_case_3():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    category, confidence, angle = result[0]
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
@@ -311,8 +309,7 @@ def test_bad_sample_good_sample():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    category, confidence, angle = result[0]
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60

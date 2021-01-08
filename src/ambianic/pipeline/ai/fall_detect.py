@@ -266,8 +266,9 @@ class FallDetector(TFImageDetection):
                     if angle_change > self._fall_factor:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
-                        box = [0, 0, 1, 1]
-                        inference_result.append(('FALL', pose.score, box, angle_change))
+                        #box = [0, 0, 1, 1]
+                        #inference_result.append(('FALL', pose.score, box, angle_change))
+                        inference_result.append(('FALL', pose.score, angle_change))
                         log.info("Fall detected: %r", inference_result)
 
                 log.info("Saving pose for subsequent comparison.")
