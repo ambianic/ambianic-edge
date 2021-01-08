@@ -1,12 +1,10 @@
 """Face detection pipe element."""
 import logging
-
-from .image_detection import TFImageDetection
-
+from .image_boundingBox_detection import TFBoundingBoxDetection
 log = logging.getLogger(__name__)
 
 
-class FaceDetector(TFImageDetection):
+class FaceDetector(TFBoundingBoxDetection):
     """Detecting faces in an image."""
 
     @staticmethod

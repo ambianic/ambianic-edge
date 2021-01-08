@@ -1,5 +1,5 @@
 """Fall detection pipe element."""
-from ambianic.pipeline.ai.image_detection import TFImageDetection
+from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
 import logging
@@ -10,10 +10,10 @@ from PIL import Image, ImageDraw
 log = logging.getLogger(__name__)
 
 
-class FallDetector(TFImageDetection):
+class FallDetector(TFDetectionModel):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
-                 model=None, confidence_threshold = 0.25, 
+                 model=None, 
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -39,7 +39,7 @@ class FallDetector(TFImageDetection):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
-        self.pose_confidence_threshold = confidence_threshold
+        self.pose_confidence_threshold = self._tfengine._confidence_threshold
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference

@@ -1,13 +1,12 @@
 """Object detection pipe element."""
 import logging
-
-from .image_detection import TFImageDetection
+from .image_boundingBox_detection import TFBoundingBoxDetection
 from ambianic.util import stacktrace
 
 log = logging.getLogger(__name__)
 
 
-class ObjectDetector(TFImageDetection):
+class ObjectDetector(TFBoundingBoxDetection):
     """Detects objects in an image."""
 
     def process_sample(self, **sample):
