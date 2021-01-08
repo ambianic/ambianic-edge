@@ -91,22 +91,40 @@ class SaveDetectionSamples(PipeElement):
         inf_json = []
         if inference_result:
             for inf in inference_result:
-                label, confidence, box = inf[0:3]
-                log.info('label: %s , confidence: %.0f, box: %s',
-                        label,
-                        confidence,
-                        box)
-                one_inf = {
-                    'label': label,
-                    'confidence': float(confidence),
-                    'box': {
-                        'xmin': float(box[0]),
-                        'ymin': float(box[1]),
-                        'xmax': float(box[2]),
-                        'ymax': float(box[3]),
+                label, confidence = inf[0:2]
+
+                if isinstance(inf[2], (list, tuple)):
+                    # Process inference for person/object detection model
+                    box = inf[2]
+                    log.info('label: %s , confidence: %.0f, box: %s',
+                            label,
+                            confidence,
+                            box)
+                    one_inf = {
+                        'label': label,
+                        'confidence': float(confidence),
+                        'box': {
+                            'xmin': float(box[0]),
+                            'ymin': float(box[1]),
+                            'xmax': float(box[2]),
+                            'ymax': float(box[3]),
+                        }
                     }
-                }
-                inf_json.append(one_inf)
+                    inf_json.append(one_inf)
+                else:
+                    # Process inference for Fall detection model
+                    angle_diff_posenet = inf[2]
+                    log.info('label: %s , confidence: %.0f, angle difference: %s',
+                            label,
+                            confidence,
+                            angle_diff_posenet)
+                    one_inf = {
+                        'label': label,
+                        'confidence': float(confidence),
+                        'angle_diff': angle_diff_posenet
+                    }
+                    inf_json.append(one_inf)
+
         save_json = {
             'id': uuid.uuid4().hex,
             'datetime': inf_time.isoformat(),
