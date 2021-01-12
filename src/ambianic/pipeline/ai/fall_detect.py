@@ -1,5 +1,5 @@
 """Fall detection pipe element."""
-from ambianic.pipeline.ai.image_detection import TFImageDetection
+from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.util import stacktrace
 import logging
@@ -10,10 +10,10 @@ from PIL import Image, ImageDraw
 log = logging.getLogger(__name__)
 
 
-class FallDetector(TFImageDetection):
+class FallDetector(TFDetectionModel):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
-                 model=None, confidence_threshold = 0.25, 
+                 model=None,
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -39,7 +39,7 @@ class FallDetector(TFImageDetection):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
-        self.pose_confidence_threshold = confidence_threshold
+        self.pose_confidence_threshold = self._tfengine._confidence_threshold
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
@@ -243,11 +243,18 @@ class FallDetector(TFImageDetection):
                 pose_dix = {}
                 inference_result = []
 
-                for e_corr in self.fall_detect_corr:
-                    if pose.keypoints[e_corr].score > 0.6:
-                        # detected key-point probability must be greater than 0.6
-                        pose_dix[e_corr] = pose.keypoints[e_corr].yx
-                                        
+                # Find leftVectorScore and rightVectorScore --> i.e average score of shoulder & hip
+                leftVectorScore = (pose.keypoints['left shoulder'].score + pose.keypoints['left hip'].score) / 2.0
+                rightVectorScore = (pose.keypoints['right shoulder'].score + pose.keypoints['right hip'].score) / 2.0
+
+                if leftVectorScore >  self.pose_confidence_threshold:
+                    pose_dix['left shoulder'] = pose.keypoints['left shoulder'].yx
+                    pose_dix['left hip'] = pose.keypoints['left hip'].yx
+
+                if rightVectorScore >  self.pose_confidence_threshold:
+                    pose_dix['right shoulder'] = pose.keypoints['right shoulder'].yx
+                    pose_dix['right hip'] = pose.keypoints['right hip'].yx
+
                 log.info("Pose detected : %r", pose_dix) 
 
                 # Find line angle with vertcal axis

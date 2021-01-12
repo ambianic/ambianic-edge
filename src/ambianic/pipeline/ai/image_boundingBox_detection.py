@@ -7,12 +7,12 @@ import numpy as np
 from PIL import ImageOps
 from .inference import TFInferenceEngine
 from ambianic.pipeline import PipeElement
-
+from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 
 log = logging.getLogger(__name__)
 
 
-class TFImageDetection(PipeElement):
+class TFBoundingBoxDetection(PipeElement):
     """Applies Tensorflow image detection."""
 
     def __init__(self,
@@ -65,125 +65,6 @@ class TFImageDetection(PipeElement):
             lines = (p.match(line).groups() for line in f.readlines())
             return {int(num): text.strip() for num, text in lines}
 
-    @staticmethod
-    def thumbnail(image=None, desired_size=None):
-        """Resizes original image as close as possible to desired size.
-
-        Preserves aspect ratio of original image.
-        Does not modify the original image.
-
-        :Parameters:
-        ----------
-        image : PIL.Image
-            Input Image for AI model detection.
-
-        desired_size : (width, height)
-            Size expected by the AI model.
-
-        :Returns:
-        -------
-        PIL.Image
-            Resized image fitting for the AI model input tensor.
-
-        """
-        assert image
-        assert desired_size
-        log.debug('input image size = %r', image.size)
-        thumb = image.copy()
-        w, h = desired_size
-        try:
-            # convert from numpy to native Python int type
-            # that PIL expects
-            if isinstance(w, np.generic):
-                w = w.item()
-                w = int(w)
-                h = h.item()
-                h = int(h)
-            thumb.thumbnail((w, h))
-        except Exception as e:
-            msg = (f"Exception in "
-                   f"PIL.image.thumbnail(desired_size={desired_size}):"
-                   f"type(width)={type(w)}, type(height)={type(h)}"
-                   f"\n{e}"
-                   )
-            log.exception(msg)
-            raise RuntimeError(msg)
-        log.debug('thmubnail image size = %r', thumb.size)
-        return thumb
-
-    @staticmethod
-    def resize(image=None, desired_size=None):
-        """Pad original image to exact size expected by input tensor.
-
-        Preserve aspect ratio to avoid confusing the AI model with
-        unnatural distortions. Pad the resulting image
-        with solid black color pixels to fill the desired size.
-
-        Do not modify the original image.
-
-        :Parameters:
-        ----------
-        image : PIL.Image
-            Input Image sized to fit an input tensor but without padding.
-            Its possible that one size fits one tensor dimension exactly
-            but the other size is smaller than
-            the input tensor other dimension.
-
-        desired_size : (width, height)
-            Exact size expected by the AI model.
-
-        :Returns:
-        -------
-        PIL.Image
-            Resized image fitting exactly the AI model input tensor.
-
-        """
-        assert image
-        assert desired_size
-        log.debug('input image size = %r', image.size)
-        thumb = image.copy()
-        delta_w = desired_size[0] - thumb.size[0]
-        delta_h = desired_size[1] - thumb.size[1]
-        padding = (0, 0, delta_w, delta_h)
-        new_im = ImageOps.expand(thumb, padding)
-        log.debug('new image size = %r', new_im.size)
-        assert new_im.size == desired_size
-        return new_im
-
-    @staticmethod
-    def resize_to_input_tensor(image=None, desired_size=None):
-        """Resize and pad original image to exact size expected by input tensor.
-
-        Preserve aspect ratio to avoid confusing the AI model with
-        distortions that it was not trained on. Pad the resulting image
-        with solid black color pixels to fill the desired size.
-
-        Do not modify anything else in the original image.
-
-        :Parameters:
-        ----------
-        image : PIL.Image
-            Input Image
-
-        desired_size : (width, height)
-            Exact input tensor size expected by the AI model.
-
-        :Returns:
-        -------
-        PIL.Image
-            Resized image fitting exactly the AI model input tensor.
-
-        """
-        assert image
-        assert desired_size
-        # thumbnail is a proportionately resized image
-        thumbnail = TFImageDetection.thumbnail(image=image, desired_size=desired_size)
-        # convert thumbnail into an image with the exact size
-        # as the input tensor
-        # preserving proportions by padding as needed
-        new_im = TFImageDetection.resize(image=thumbnail, desired_size=desired_size)
-        return new_im
-
 
     def log_stats(self, start_time=None):
         assert start_time
@@ -229,11 +110,11 @@ class TFImageDetection(PipeElement):
 
         desired_size = (width, height)
         # thumbnail is a proportionately resized image
-        thumbnail = TFImageDetection.thumbnail(image=image, desired_size=desired_size)
+        thumbnail = TFDetectionModel.thumbnail(image=image, desired_size=desired_size)
         # convert thumbnail into an image with the exact size
         # as the input tensor
         # preserving proportions by padding as needed
-        new_im = TFImageDetection.resize(image=thumbnail, desired_size=desired_size)
+        new_im = TFDetectionModel.resize(image=thumbnail, desired_size=desired_size)
 
         # calculate what fraction of the new image is the thumbnail size
         # we will use these factors to adjust detection box coordinates

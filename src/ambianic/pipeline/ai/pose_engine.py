@@ -1,5 +1,4 @@
-from ambianic.pipeline.ai.inference import TFInferenceEngine
-from ambianic.pipeline.ai.image_detection import TFImageDetection
+from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 import logging
 import time
 import numpy as np
@@ -124,10 +123,10 @@ class PoseEngine:
         _tensor_input_size = (self._tensor_image_width, self._tensor_image_height)
 
         # thumbnail is a proportionately resized image
-        thumbnail = TFImageDetection.thumbnail(image=img, desired_size=_tensor_input_size)
+        thumbnail = TFDetectionModel.thumbnail(image=img, desired_size=_tensor_input_size)
         # convert thumbnail into an image with the exact size
         # as the input tensor preserving proportions by padding with a solid color as needed
-        template_image = TFImageDetection.resize(image=thumbnail, desired_size=_tensor_input_size)
+        template_image = TFDetectionModel.resize(image=thumbnail, desired_size=_tensor_input_size)
        
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
