@@ -243,6 +243,7 @@ class FallDetector(TFDetectionModel):
                 pose_dix = {}
                 inference_result = []
 
+                # Calculate leftVectorScore & rightVectorScore
                 leftVectorScore = min(pose.keypoints['left shoulder'].score, pose.keypoints['left hip'].score)
                 rightVectorScore = min(pose.keypoints['right shoulder'].score, pose.keypoints['right hip'].score) 
 
