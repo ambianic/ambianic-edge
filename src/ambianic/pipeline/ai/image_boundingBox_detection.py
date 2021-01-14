@@ -74,12 +74,8 @@ class TFBoundingBoxDetection(PipeElement):
         width = tfe.input_details[0]['shape'][2]
 
         desired_size = (width, height)
-        # thumbnail is a proportionately resized image
-        thumbnail = self._tfDetect.thumbnail(image=image, desired_size=desired_size)
-        # convert thumbnail into an image with the exact size
-        # as the input tensor
-        # preserving proportions by padding as needed
-        new_im = self._tfDetect.resize(image=thumbnail, desired_size=desired_size)
+
+        new_im, thumbnail = self.resize_to_input_tensor(image=image, desired_size=desired_size)
 
         # calculate what fraction of the new image is the thumbnail size
         # we will use these factors to adjust detection box coordinates

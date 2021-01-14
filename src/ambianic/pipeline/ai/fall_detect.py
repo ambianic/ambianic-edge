@@ -247,11 +247,11 @@ class FallDetector(TFDetectionModel):
                 leftVectorScore = (pose.keypoints['left shoulder'].score + pose.keypoints['left hip'].score) / 2.0
                 rightVectorScore = (pose.keypoints['right shoulder'].score + pose.keypoints['right hip'].score) / 2.0
 
-                if leftVectorScore >  self.pose_confidence_threshold:
+                if leftVectorScore > self.pose_confidence_threshold:
                     pose_dix['left shoulder'] = pose.keypoints['left shoulder'].yx
                     pose_dix['left hip'] = pose.keypoints['left hip'].yx
 
-                if rightVectorScore >  self.pose_confidence_threshold:
+                if rightVectorScore > self.pose_confidence_threshold:
                     pose_dix['right shoulder'] = pose.keypoints['right shoulder'].yx
                     pose_dix['right hip'] = pose.keypoints['right hip'].yx
 

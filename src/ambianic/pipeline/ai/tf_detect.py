@@ -161,8 +161,7 @@ class TFDetectionModel(PipeElement):
         # as the input tensor
         # preserving proportions by padding as needed
         new_im = TFDetectionModel.resize(image=thumbnail, desired_size=desired_size)
-        return new_im
-
+        return new_im, thumbnail
 
     def log_stats(self, start_time=None):
         assert start_time
