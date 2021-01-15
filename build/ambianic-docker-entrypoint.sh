@@ -14,5 +14,5 @@ then
   sudo apt-get install -y ca-certificates
 fi
 
-python3 -m peerjs.ext.http-proxy   &
+python3 -m peerjs.ext.http_proxy   &
 python3 -m ambianic
