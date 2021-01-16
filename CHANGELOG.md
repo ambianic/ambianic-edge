@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.12.8](https://github.com/ambianic/ambianic-edge/compare/v1.12.7...v1.12.8) (2021-01-16)
+
+
+### Bug Fixes
+
+* pick up latest peerjs python v1.4.2 ([492ef96](https://github.com/ambianic/ambianic-edge/commit/492ef96b153b85dab42769ac9ef525ab13a3f59d))
+* update peerjs http proxy name reference ([15d9285](https://github.com/ambianic/ambianic-edge/commit/15d9285ed1ae5f767598a1f2e83dcfca8a43ed50))
+
 ## [1.12.7](https://github.com/ambianic/ambianic-edge/compare/v1.12.6...v1.12.7) (2021-01-01)
 
 
