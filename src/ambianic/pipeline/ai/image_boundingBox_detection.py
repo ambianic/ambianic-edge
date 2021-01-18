@@ -12,15 +12,11 @@ from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 log = logging.getLogger(__name__)
 
 
-class TFBoundingBoxDetection(PipeElement):
+class TFBoundingBoxDetection(TFDetectionModel):
     """Applies Tensorflow image detection."""
 
     def __init__(self,
                  model=None,
-                 labels=None,
-                 label_filter=None,
-                 confidence_threshold=0.6,
-                 top_k=3,
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -28,22 +24,9 @@ class TFBoundingBoxDetection(PipeElement):
         :Parameters:
         ----------
         model: ai_models/mobilenet_ssd_v2_face.tflite
-        labels: ai_models/coco_labels.txt
-        confidence_threshold: 0.6
-        top_k: 3
-
         """
-        # log.warning('TFImageDetection __init__ invoked')
-        super().__init__(**kwargs)
 
-        self._tfDetect = TFDetectionModel(model=model,
-                    labels=labels,
-                    confidence_threshold=confidence_threshold,
-                    top_k=top_k, **kwargs)
-
-        self._tfengine = self._tfDetect._tfengine
-        self._labels = self._tfDetect._labels
-        self._label_filter = label_filter
+        super().__init__(model, **kwargs)
 
 
     def detect(self, image=None):
@@ -107,7 +90,7 @@ class TFBoundingBoxDetection(PipeElement):
         # with the configured model
         tfe.infer()
 
-        self._tfDetect.log_stats(start_time=start_time)
+        self.log_stats(start_time=start_time)
 
         # log.debug('output_details: %r', tfe.output_details)
         # od = tfe.output_details[0]['index']
