@@ -226,7 +226,7 @@ def test_fall_detection_case_3_2():
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60

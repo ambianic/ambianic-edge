@@ -36,6 +36,7 @@ class FallDetector(TFDetectionModel):
         self._prev_left_angle_with_yaxis = None
         # angle b/w right shoulder-hip line with vertical axis
         self._prev_right_angle_with_yaxis = None
+        self.previous_body_vector_score = 0
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
@@ -183,12 +184,13 @@ class FallDetector(TFDetectionModel):
         angle_change = max(left_angle, right_angle)
         return angle_change
 
-    def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail):
+    def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score):
         self._prev_vals = pose_dix
         self._prev_left_angle_with_yaxis = left_angle_with_yaxis
         self._prev_right_angle_with_yaxis = rigth_angle_with_yaxis
         self._prev_time = now
         self._prev_thumbnail = thumbnail
+        self.previous_body_vector_score = current_body_vector_score
 
     def draw_lines(self, thumbnail, pose_dix):
         # save an image with drawn lines for debugging
@@ -221,6 +223,36 @@ class FallDetector(TFDetectionModel):
             r_angle = self.calculate_angle([y_axis_corr, [pose_dix['right shoulder'], pose_dix['right hip']]])
         
         return (l_angle, r_angle)
+
+    def estimate_spinalVector_score(self, leftVectorScore, rightVectorScore, pose_dix):
+        def find_spinalLine():
+            left_spinal_x1 = (pose_dix['left shoulder'][0] + pose_dix['right shoulder'][0]) / 2
+            left_spinal_y1 = (pose_dix['left shoulder'][1] + pose_dix['right shoulder'][1]) / 2
+            
+            right_spinal_x1 = (pose_dix['left hip'][0] + pose_dix['right hip'][0]) / 2
+            right_spinal_y1 = (pose_dix['left hip'][1] + pose_dix['right hip'][1]) / 2
+            
+            return (left_spinal_x1, left_spinal_y1), (right_spinal_x1, right_spinal_y1)
+
+        is_leftVector = leftVectorScore >= self.pose_confidence_threshold
+        is_rightVector = rightVectorScore >= self.pose_confidence_threshold
+
+        if is_leftVector and is_rightVector:
+            spinalVectorEstimate = find_spinalLine()
+            spinalVectorScore = (leftVectorScore + rightVectorScore) / 2.0
+        elif is_leftVector:
+            spinalVectorEstimate = pose_dix['left shoulder'], pose_dix['left hip']
+            # 10% score penalty in conficence
+            spinalVectorScore = leftVectorScore - (leftVectorScore * 0.1)
+        elif is_rightVector:
+            spinalVectorEstimate = pose_dix['right shoulder'], pose_dix['right hip']
+            # 10% score penalty in conficence
+            spinalVectorScore = rightVectorScore - (rightVectorScore * 0.1)
+        else:
+            spinalVectorScore = 0
+
+        pose_score = spinalVectorScore
+        return pose_score
 
     def fall_detect(self, image=None):
         assert image
@@ -256,6 +288,8 @@ class FallDetector(TFDetectionModel):
                     pose_dix['right hip'] = pose.keypoints['right hip'].yx
 
                 log.info("Pose detected : %r", pose_dix) 
+                pose_score = self.estimate_spinalVector_score(leftVectorScore, rightVectorScore, pose_dix)
+                current_body_vector_score = pose_score
 
                 # Find line angle with vertcal axis
                 left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
@@ -268,17 +302,20 @@ class FallDetector(TFDetectionModel):
                 elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
                     log.info("The body-line angle with vertical axis is decreasing from the previous frame.")
                 else:
-                    angle_change = self.find_changes_in_angle(pose_dix)
+                    leaning_angle = self.find_changes_in_angle(pose_dix)
 
-                    if angle_change > self._fall_factor:
+                    leaning_probability = 1 if leaning_angle > self._fall_factor else 0
+                    fall_score = leaning_probability * (self.previous_body_vector_score + current_body_vector_score) / 2
+
+                    if leaning_angle > self._fall_factor:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
                         box = [0, 0, 1, 1]
-                        inference_result.append(('FALL', pose.score, box, angle_change))
+                        inference_result.append(('FALL', fall_score, box, leaning_angle))
                         log.info("Fall detected: %r", inference_result)
 
                 log.info("Saving pose for subsequent comparison.")
-                self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail)
+                self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score)
                 
                 log.info("Logging stats")
                 self.log_stats(start_time=start_time)
