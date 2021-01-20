@@ -26,7 +26,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.25,
+        'confidence_threshold': 0.6,
     }
     return config
 
@@ -298,6 +298,56 @@ def test_fall_detection_case_6():
 
     img_1 = _get_image(file_name='fall_img_5.png')
     img_2 = _get_image(file_name='fall_img_6.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
+def test_fall_detection_case_7():
+    """Expect to not detect a fall"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_5.png')
+    img_2 = _get_image(file_name='fall_img_7.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
+def test_fall_detection_case_8():
+    """Expect to not detect a fall"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_6.png')
+    img_2 = _get_image(file_name='fall_img_7.png')
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01

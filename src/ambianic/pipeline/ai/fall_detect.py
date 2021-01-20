@@ -40,8 +40,8 @@ class FallDetector(TFDetectionModel):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
-        self.pose_confidence_threshold = self._tfengine._confidence_threshold
-
+        self.confidence_threshold = self._tfengine._confidence_threshold
+        
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
         # for fall detection purpose.
@@ -118,7 +118,7 @@ class FallDetector(TFDetectionModel):
     def find_keypoints(self, image):
 
         # this score value should be related to the configuration confidence_threshold parameter
-        min_score = self.pose_confidence_threshold
+        min_score = self.confidence_threshold
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
@@ -127,15 +127,21 @@ class FallDetector(TFDetectionModel):
         # if no pose detected with high confidence, 
         # try rotating the image +/- 90' to find a fallen person
         # currently only looking at pose[0] because we are focused on a lone person falls
-        while (not poses or poses[0].score < min_score) and rotations:
+        #while (not poses or poses[0].score < min_score) and rotations:
+        pose_score, _ = self.estimate_spinalVector_score(poses[0])
+        while pose_score < min_score and rotations:
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
           poses, _ = self._pose_engine.DetectPosesInImage(transposed)
+          pose_score, _ = self.estimate_spinalVector_score(poses[0])
+
         if poses and poses[0]:
             pose = poses[0]
+            pose_score, _ = self.estimate_spinalVector_score(pose)
         # lets check if we found a good pose candidate
-        if (pose and pose.score >= min_score):
+                
+        if (pose and pose_score >= min_score):
             # if the image was rotated, we need to rotate back to the original image coordinates
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
@@ -224,7 +230,21 @@ class FallDetector(TFDetectionModel):
         
         return (l_angle, r_angle)
 
-    def estimate_spinalVector_score(self, leftVectorScore, rightVectorScore, pose_dix):
+    def estimate_spinalVector_score(self, pose):
+        pose_dix = {}
+
+        # Calculate leftVectorScore & rightVectorScore
+        leftVectorScore = min(pose.keypoints['left shoulder'].score, pose.keypoints['left hip'].score)
+        rightVectorScore = min(pose.keypoints['right shoulder'].score, pose.keypoints['right hip'].score) 
+
+        if leftVectorScore > self.confidence_threshold:
+            pose_dix['left shoulder'] = pose.keypoints['left shoulder'].yx
+            pose_dix['left hip'] = pose.keypoints['left hip'].yx
+
+        if rightVectorScore > self.confidence_threshold:
+            pose_dix['right shoulder'] = pose.keypoints['right shoulder'].yx
+            pose_dix['right hip'] = pose.keypoints['right hip'].yx
+        
         def find_spinalLine():
             left_spinal_x1 = (pose_dix['left shoulder'][0] + pose_dix['right shoulder'][0]) / 2
             left_spinal_y1 = (pose_dix['left shoulder'][1] + pose_dix['right shoulder'][1]) / 2
@@ -234,8 +254,8 @@ class FallDetector(TFDetectionModel):
             
             return (left_spinal_x1, left_spinal_y1), (right_spinal_x1, right_spinal_y1)
 
-        is_leftVector = leftVectorScore >= self.pose_confidence_threshold
-        is_rightVector = rightVectorScore >= self.pose_confidence_threshold
+        is_leftVector = leftVectorScore >= self.confidence_threshold
+        is_rightVector = rightVectorScore >= self.confidence_threshold
 
         if is_leftVector and is_rightVector:
             spinalVectorEstimate = find_spinalLine()
@@ -252,7 +272,8 @@ class FallDetector(TFDetectionModel):
             spinalVectorScore = 0
 
         pose_score = spinalVectorScore
-        return pose_score
+        
+        return pose_score, pose_dix
 
     def fall_detect(self, image=None):
         assert image
@@ -272,23 +293,11 @@ class FallDetector(TFDetectionModel):
                 log.info("No pose with key-points found.")
                 return inference_result, thumbnail
             else:
-                pose_dix = {}
                 inference_result = []
+                pose_score, pose_dix = self.estimate_spinalVector_score(pose)
+                
+                log.info("Pose detected : %r", pose_dix)
 
-                # Calculate leftVectorScore & rightVectorScore
-                leftVectorScore = min(pose.keypoints['left shoulder'].score, pose.keypoints['left hip'].score)
-                rightVectorScore = min(pose.keypoints['right shoulder'].score, pose.keypoints['right hip'].score) 
-
-                if leftVectorScore > self.pose_confidence_threshold:
-                    pose_dix['left shoulder'] = pose.keypoints['left shoulder'].yx
-                    pose_dix['left hip'] = pose.keypoints['left hip'].yx
-
-                if rightVectorScore > self.pose_confidence_threshold:
-                    pose_dix['right shoulder'] = pose.keypoints['right shoulder'].yx
-                    pose_dix['right hip'] = pose.keypoints['right hip'].yx
-
-                log.info("Pose detected : %r", pose_dix) 
-                pose_score = self.estimate_spinalVector_score(leftVectorScore, rightVectorScore, pose_dix)
                 current_body_vector_score = pose_score
 
                 # Find line angle with vertcal axis
@@ -306,7 +315,7 @@ class FallDetector(TFDetectionModel):
 
                     leaning_probability = 1 if leaning_angle > self._fall_factor else 0
                     fall_score = leaning_probability * (self.previous_body_vector_score + current_body_vector_score) / 2
-
+                    
                     if leaning_angle > self._fall_factor:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
