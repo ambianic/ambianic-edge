@@ -138,7 +138,7 @@ class FallDetector(TFDetectionModel):
 
         if poses and poses[0]:
             pose = poses[0]
-            pose_score, _ = self.estimate_spinalVector_score(pose)
+
         # lets check if we found a good pose candidate
                 
         if (pose and pose_score >= min_score):
@@ -232,47 +232,48 @@ class FallDetector(TFDetectionModel):
 
     def estimate_spinalVector_score(self, pose):
         pose_dix = {}
+        is_leftVector = is_rightVector = False
 
         # Calculate leftVectorScore & rightVectorScore
         leftVectorScore = min(pose.keypoints['left shoulder'].score, pose.keypoints['left hip'].score)
         rightVectorScore = min(pose.keypoints['right shoulder'].score, pose.keypoints['right hip'].score) 
 
         if leftVectorScore > self.confidence_threshold:
+            is_leftVector = True
             pose_dix['left shoulder'] = pose.keypoints['left shoulder'].yx
             pose_dix['left hip'] = pose.keypoints['left hip'].yx
 
         if rightVectorScore > self.confidence_threshold:
+            is_rightVector = True
             pose_dix['right shoulder'] = pose.keypoints['right shoulder'].yx
             pose_dix['right hip'] = pose.keypoints['right hip'].yx
-        
+
         def find_spinalLine():
             left_spinal_x1 = (pose_dix['left shoulder'][0] + pose_dix['right shoulder'][0]) / 2
             left_spinal_y1 = (pose_dix['left shoulder'][1] + pose_dix['right shoulder'][1]) / 2
-            
+
             right_spinal_x1 = (pose_dix['left hip'][0] + pose_dix['right hip'][0]) / 2
             right_spinal_y1 = (pose_dix['left hip'][1] + pose_dix['right hip'][1]) / 2
-            
+
             return (left_spinal_x1, left_spinal_y1), (right_spinal_x1, right_spinal_y1)
 
-        is_leftVector = leftVectorScore >= self.confidence_threshold
-        is_rightVector = rightVectorScore >= self.confidence_threshold
 
         if is_leftVector and is_rightVector:
             spinalVectorEstimate = find_spinalLine()
             spinalVectorScore = (leftVectorScore + rightVectorScore) / 2.0
         elif is_leftVector:
             spinalVectorEstimate = pose_dix['left shoulder'], pose_dix['left hip']
-            # 10% score penalty in conficence
-            spinalVectorScore = leftVectorScore - (leftVectorScore * 0.1)
+            # 10% score penalty in conficence as only left shoulder-hip line is detected
+            spinalVectorScore = leftVectorScore * 0.9
         elif is_rightVector:
             spinalVectorEstimate = pose_dix['right shoulder'], pose_dix['right hip']
-            # 10% score penalty in conficence
-            spinalVectorScore = rightVectorScore - (rightVectorScore * 0.1)
+            # 10% score penalty in conficence as only right shoulder-hip line is detected
+            spinalVectorScore = rightVectorScore * 0.9
         else:
             spinalVectorScore = 0
 
         pose_score = spinalVectorScore
-        
+
         return pose_score, pose_dix
 
     def fall_detect(self, image=None):
@@ -315,8 +316,9 @@ class FallDetector(TFDetectionModel):
 
                     leaning_probability = 1 if leaning_angle > self._fall_factor else 0
                     fall_score = leaning_probability * (self.previous_body_vector_score + current_body_vector_score) / 2
-                    
-                    if leaning_angle > self._fall_factor:
+
+                    #if leaning_angle > self._fall_factor:
+                    if fall_score >= self.confidence_threshold:
                         # insert a box that covers the whole image as a workaround
                         # to meet the expected format of the save_detections element
                         box = [0, 0, 1, 1]
