@@ -26,7 +26,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.25,
+        'confidence_threshold': 0.6,
     }
     return config
 
@@ -167,8 +167,9 @@ def test_fall_detection_case_2_2():
     assert confidence > 0.7
     assert angle > 60
 
-def test_fall_detection_case_3():
-    """Expect to detect a fall as key-points are detected by rotating the image."""
+
+def test_fall_detection_case_3_1():
+    """Expect to detect a fall as key-points are detected by rotating the image clockwise."""
     config = _fall_detect_config()
     result = None
 
@@ -194,6 +195,38 @@ def test_fall_detection_case_3():
     assert len(result) == 1
     category, confidence, box, angle = result[0]
     assert box   # Add this line to avoid 'Unused local variable' 
+    assert category == 'FALL'
+    assert confidence > 0.3
+    assert angle > 60
+
+
+def test_fall_detection_case_3_2():
+    """Expect to detect a fall as key-points are detected by rotating the image counter clockwise."""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_11_flip.png')
+    img_2 = _get_image(file_name='fall_img_12_flip.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert result
+    assert len(result) == 1
+    category, confidence, box, angle = result[0]
+    assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
@@ -241,6 +274,82 @@ def test_fall_detection_case_5():
     img_1 = _get_image(file_name='fall_img_2.png')
     img_2 = _get_image(file_name='fall_img_1.png')
     fall_detector.receive_next_sample(image=img_1)
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
+
+def test_fall_detection_case_6():
+    """Expect to not detect a fall as in 1st image key-points are detected but not in 2nd"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_5.png')
+    img_2 = _get_image(file_name='fall_img_6.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
+def test_fall_detection_case_7():
+    """Expect to not detect a fall"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_5.png')
+    img_2 = _get_image(file_name='fall_img_7.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
+    fall_detector.min_time_between_frames = 0.01
+    time.sleep(fall_detector.min_time_between_frames)
+    fall_detector.receive_next_sample(image=img_2)
+
+    assert not result
+
+def test_fall_detection_case_8():
+    """Expect to not detect a fall"""
+    config = _fall_detect_config()
+    result = None
+
+    def sample_callback(image=None, inference_result=None, **kwargs):
+        nonlocal result
+        result = inference_result
+
+    fall_detector = FallDetector(**config)
+
+    output = _OutPipeElement(sample_callback=sample_callback)
+
+    fall_detector.connect_to_next_element(output)
+
+    img_1 = _get_image(file_name='fall_img_6.png')
+    img_2 = _get_image(file_name='fall_img_7.png')
+    fall_detector.receive_next_sample(image=img_1)
+    # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
