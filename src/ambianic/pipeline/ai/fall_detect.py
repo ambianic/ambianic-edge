@@ -128,13 +128,13 @@ class FallDetector(TFDetectionModel):
         # try rotating the image +/- 90' to find a fallen person
         # currently only looking at pose[0] because we are focused on a lone person falls
         #while (not poses or poses[0].score < min_score) and rotations:
-        pose_score, _ = self.estimate_spinalVector_score(poses[0])
+        pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
         while pose_score < min_score and rotations:
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
           poses, _ = self._pose_engine.DetectPosesInImage(transposed)
-          pose_score, _ = self.estimate_spinalVector_score(poses[0])
+          pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
 
         if poses and poses[0]:
             pose = poses[0]
@@ -161,7 +161,7 @@ class FallDetector(TFDetectionModel):
         else:
             # we could not detect a pose with sufficient confidence
             pose = None
-        return pose, thumbnail
+        return pose, thumbnail, pose_score, pose_dix
 
 
     def find_changes_in_angle(self, pose_dix):
@@ -288,17 +288,16 @@ class FallDetector(TFDetectionModel):
             return None, self._prev_thumbnail
         else:
             # Detection using tensorflow posenet module
-            pose, thumbnail = self.find_keypoints(image)
+            pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
+            log.info("Pose detected : %r", pose_dix)
+
             inference_result = None
             if not pose:
                 log.info("No pose with key-points found.")
                 return inference_result, thumbnail
             else:
                 inference_result = []
-                pose_score, pose_dix = self.estimate_spinalVector_score(pose)
-                
-                log.info("Pose detected : %r", pose_dix)
-
+                                
                 current_body_vector_score = pose_score
 
                 # Find line angle with vertcal axis
