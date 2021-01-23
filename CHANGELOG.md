@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.12.12](https://github.com/ambianic/ambianic-edge/compare/v1.12.11...v1.12.12) (2021-01-23)
+
+
+### Bug Fixes
+
+* pickup peers-python fix ([8c75531](https://github.com/ambianic/ambianic-edge/commit/8c75531e73dca8b297488d9afc53255b1a1e575f))
+
 ## [1.12.11](https://github.com/ambianic/ambianic-edge/compare/v1.12.10...v1.12.11) (2021-01-23)
 
 
