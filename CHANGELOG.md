@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.12.10](https://github.com/ambianic/ambianic-edge/compare/v1.12.9...v1.12.10) (2021-01-23)
+
+
+### Bug Fixes
+
+* pull latest peerjs python package ([b29a636](https://github.com/ambianic/ambianic-edge/commit/b29a6364146a3582d5ef3e42b42dc52b51853dd9))
+
 ## [1.12.9](https://github.com/ambianic/ambianic-edge/compare/v1.12.8...v1.12.9) (2021-01-22)
 
 
