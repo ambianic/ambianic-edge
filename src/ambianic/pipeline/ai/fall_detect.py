@@ -167,6 +167,10 @@ class FallDetector(TFDetectionModel):
         else:
             # we could not detect a pose with sufficient confidence
             pose = None
+
+        if pose_dix:
+            log.debug(f"Pose detected with confidence {pose_score} and keypoints: {pose_dix}")
+
         return pose, thumbnail, pose_score, pose_dix
 
 
@@ -305,17 +309,16 @@ class FallDetector(TFDetectionModel):
         now = time.monotonic()
         lapse = now - self._prev_time
         if self._prev_vals and lapse < self.min_time_between_frames:
-            log.debug("Received an image frame is too soone after the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
-            return None, self._prev_thumbnail
+            log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
+            inference_result = None
+            thumbnail = self._prev_thumbnail
         else:
             # Detection using tensorflow posenet module
             pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
-            log.info("Pose detected : %r", pose_dix)
 
             inference_result = None
             if not pose:
-                log.debug("No pose with key-points found.")
-                return inference_result, thumbnail
+                log.debug("No pose detected or detection score does not meet confidence threshold.")
             else:
                 inference_result = []
                                 
@@ -349,7 +352,7 @@ class FallDetector(TFDetectionModel):
                 self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score)
                 
                 # log.debug("Logging stats")
-                self.log_stats(start_time=start_time)
 
-            log.info("thumbnail: %r", thumbnail) 
-            return inference_result, thumbnail
+        self.log_stats(start_time=start_time)
+        log.debug("thumbnail: %r", thumbnail) 
+        return inference_result, thumbnail
