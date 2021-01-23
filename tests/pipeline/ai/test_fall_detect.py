@@ -425,3 +425,54 @@ def test_bad_sample_good_sample():
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
+
+
+def test_draw_line_0():
+    """No body lines passed to draw. No image should be saved."""
+    config = _fall_detect_config()
+
+    fall_detector = FallDetector(**config)
+
+    image = _get_image(file_name='fall_img_1.png')
+    pose_dix = None
+    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    assert lines_drawn == 0
+
+    pose_dix = {}
+    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    assert lines_drawn == 0
+
+
+
+def test_draw_line_1():
+    """One body line passed to draw. Image with one line should be saved."""
+    config = _fall_detect_config()
+
+    fall_detector = FallDetector(**config)
+
+    image = _get_image(file_name='fall_img_1.png')
+    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1]}
+    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    assert lines_drawn == 1
+
+def test_draw_line_1_1():
+    """One keypoing but no full body line. No image should be saved."""
+    config = _fall_detect_config()
+
+    fall_detector = FallDetector(**config)
+
+    image = _get_image(file_name='fall_img_1.png')
+    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0]}
+    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    assert lines_drawn == 0
+
+def test_draw_line_2():
+    """Two body lines passed to draw. Image with two lines should be saved."""
+    config = _fall_detect_config()
+
+    fall_detector = FallDetector(**config)
+
+    image = _get_image(file_name='fall_img_1.png')
+    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1], fall_detector.RIGHT_SHOULDER: [1,0], fall_detector.RIGHT_HIP: [1,1]}
+    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    assert lines_drawn == 2
