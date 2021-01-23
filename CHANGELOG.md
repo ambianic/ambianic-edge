@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.12.11](https://github.com/ambianic/ambianic-edge/compare/v1.12.10...v1.12.11) (2021-01-23)
+
+
+### Bug Fixes
+
+* pickup latest peerjs package ([116c75b](https://github.com/ambianic/ambianic-edge/commit/116c75b025788a4a176c5f9c9476c8358e844dda))
+
 ## [1.12.10](https://github.com/ambianic/ambianic-edge/compare/v1.12.9...v1.12.10) (2021-01-23)
 
 
