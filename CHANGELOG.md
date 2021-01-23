@@ -1,5 +1,39 @@
 # Semantic Versioning Changelog
 
+## [1.9.5](https://github.com/ivelin/ambianic-edge/compare/v1.9.4...v1.9.5) (2021-01-23)
+
+
+### Bug Fixes
+
+*  fall detection enhancements, closes [#279](https://github.com/ivelin/ambianic-edge/issues/279) ([3d9980d](https://github.com/ivelin/ambianic-edge/commit/3d9980d176a6321cbc973d4852fc13c63ad5528c)), closes [#280](https://github.com/ivelin/ambianic-edge/issues/280)
+* codecov ([d084899](https://github.com/ivelin/ambianic-edge/commit/d084899bddccf0b15a219cc7b5e207ecbeb1f6bf))
+* codecov report upload ([4108490](https://github.com/ivelin/ambianic-edge/commit/4108490ba670af40f74e7ed8b7257164ea8eb257))
+* codecov upload ([b061c33](https://github.com/ivelin/ambianic-edge/commit/b061c335ae0ca6a42ad2abfd03c7bea303c15e43))
+* codecov upload ([c322541](https://github.com/ivelin/ambianic-edge/commit/c3225415a661f4c78a0514deb0a9bed426bec91e))
+* codecov upload ([c8ab31b](https://github.com/ivelin/ambianic-edge/commit/c8ab31b8f8cd39e9bd65c9cd6ee7cf64b49949cf))
+* codecov upload from ci ([fbc1663](https://github.com/ivelin/ambianic-edge/commit/fbc1663e1ff887b47cce3da08aa3c722e5351a88)), closes [#268](https://github.com/ivelin/ambianic-edge/issues/268)
+* codecov upload from ci ([95dcff8](https://github.com/ivelin/ambianic-edge/commit/95dcff8f0be88157e4b45f84e78131a8badfd994))
+* configuration bug fixes ([9938820](https://github.com/ivelin/ambianic-edge/commit/99388200f7c85ec28e6a9b508148402d10568644)), closes [#251](https://github.com/ivelin/ambianic-edge/issues/251)
+* fall detect runtime exception, closes [#285](https://github.com/ivelin/ambianic-edge/issues/285) ([1949b2f](https://github.com/ivelin/ambianic-edge/commit/1949b2f887c58ee493d90394bc217b60bdd58a84))
+* fall detection ([b33cbd4](https://github.com/ivelin/ambianic-edge/commit/b33cbd49ecc71c8d7f5e9b380affac24f5a79357)), closes [#263](https://github.com/ivelin/ambianic-edge/issues/263)
+* fall detection ([433461f](https://github.com/ivelin/ambianic-edge/commit/433461f9bc609efade912e48c0d0ab426c42fd12))
+* fall detection ([9edcf41](https://github.com/ivelin/ambianic-edge/commit/9edcf41763e006a0cea21d72900f26014446d124))
+* fall detection ([dd0a93c](https://github.com/ivelin/ambianic-edge/commit/dd0a93cf480eb923a6a6fc5097abab8e5e778fb6))
+* fall detection ([7f0ed7b](https://github.com/ivelin/ambianic-edge/commit/7f0ed7b015d20cb860f1b9734979e31b884d8b3c))
+* fall detection bugs ([7c63194](https://github.com/ivelin/ambianic-edge/commit/7c63194eda041b8d789831ca62a06359d46691fa)), closes [#270](https://github.com/ivelin/ambianic-edge/issues/270)
+* fall detection edge case ([3761e93](https://github.com/ivelin/ambianic-edge/commit/3761e933ad99aae9339c01033159c44868ad6a0e)), closes [#255](https://github.com/ivelin/ambianic-edge/issues/255)
+* fall detection edge case ([7ae2adf](https://github.com/ivelin/ambianic-edge/commit/7ae2adf5aee1ff0a769db846bd36ddec0b8cc914))
+* fall detection edge case ([b2b35e5](https://github.com/ivelin/ambianic-edge/commit/b2b35e5fda8d0046f341b4320dcfc1e8a9062160))
+* fall detection tests ([cb11daf](https://github.com/ivelin/ambianic-edge/commit/cb11dafdb36f7a14219dd3589eeddbd8dd1a9323)), closes [#266](https://github.com/ivelin/ambianic-edge/issues/266)
+* fall detection tests ([bca61f2](https://github.com/ivelin/ambianic-edge/commit/bca61f2287f2994d7caea8e2943f4943386cbe46))
+* pick up latest peerjs python v1.4.2 ([492ef96](https://github.com/ivelin/ambianic-edge/commit/492ef96b153b85dab42769ac9ef525ab13a3f59d))
+* pickup latest peerjs package ([116c75b](https://github.com/ivelin/ambianic-edge/commit/116c75b025788a4a176c5f9c9476c8358e844dda))
+* pickup peers-python fix ([8c75531](https://github.com/ivelin/ambianic-edge/commit/8c75531e73dca8b297488d9afc53255b1a1e575f))
+* pull latest peerjs python package ([b29a636](https://github.com/ivelin/ambianic-edge/commit/b29a6364146a3582d5ef3e42b42dc52b51853dd9))
+* release script ([abcd853](https://github.com/ivelin/ambianic-edge/commit/abcd85312ec2fb8aca966641265f645f4d11c5d5)), closes [#271](https://github.com/ivelin/ambianic-edge/issues/271)
+* release script ([c863e39](https://github.com/ivelin/ambianic-edge/commit/c863e3943bee0f2445375d87f8c053043791595c))
+* update peerjs http proxy name reference ([15d9285](https://github.com/ivelin/ambianic-edge/commit/15d9285ed1ae5f767598a1f2e83dcfca8a43ed50))
+
 ## [1.12.12](https://github.com/ambianic/ambianic-edge/compare/v1.12.11...v1.12.12) (2021-01-23)
 
 
