@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.12.13](https://github.com/ambianic/ambianic-edge/compare/v1.12.12...v1.12.13) (2021-01-23)
+
+
+### Bug Fixes
+
+* fall detect runtime exception, closes [#285](https://github.com/ambianic/ambianic-edge/issues/285) ([41c9d4c](https://github.com/ambianic/ambianic-edge/commit/41c9d4c9f58a2d5f277947d97f722d80bec5520e)), closes [#286](https://github.com/ambianic/ambianic-edge/issues/286)
+* fall detect runtime exception, closes [#285](https://github.com/ambianic/ambianic-edge/issues/285) ([1949b2f](https://github.com/ambianic/ambianic-edge/commit/1949b2f887c58ee493d90394bc217b60bdd58a84))
+
 ## [1.9.5](https://github.com/ivelin/ambianic-edge/compare/v1.9.4...v1.9.5) (2021-01-23)
 
 
