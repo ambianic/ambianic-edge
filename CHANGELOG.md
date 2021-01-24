@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.12.14](https://github.com/ambianic/ambianic-edge/compare/v1.12.13...v1.12.14) (2021-01-24)
+
+
+### Bug Fixes
+
+* clean up fall detections logging ([f086405](https://github.com/ambianic/ambianic-edge/commit/f086405661879c6d6486530a65c285185e9915c6)), closes [#287](https://github.com/ambianic/ambianic-edge/issues/287)
+* clean up fall detections logging ([88a4352](https://github.com/ambianic/ambianic-edge/commit/88a4352400612b89a617b1200b84272db61f6e41))
+
 ## [1.12.13](https://github.com/ambianic/ambianic-edge/compare/v1.12.12...v1.12.13) (2021-01-23)
 
 
