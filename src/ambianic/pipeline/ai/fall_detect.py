@@ -28,20 +28,22 @@ class FallDetector(TFDetectionModel):
         }
         """
         super().__init__(model, **kwargs)
-        # previous pose detection information to compare pose changes against
-        self._prev_vals = []
-        self._prev_time = time.monotonic()
-        self._prev_thumbnail = None
+        # previous pose detection information for frame t-1 and t-2 to compare pose changes against 
+        self._prev_pose_dix = {'t1': [], 't2': []}
+        self._prev_time = {'t1': time.monotonic(), 't2': time.monotonic()-1}
+        self._prev_thumbnail = {'t1': None, 't2': None}
+
         # angle b/w left shoulder-hip line with vertical axis
-        self._prev_left_angle_with_yaxis = None
+        self._prev_left_angle_with_yaxis = {'t1': None, 't2': None}
         # angle b/w right shoulder-hip line with vertical axis
-        self._prev_right_angle_with_yaxis = None
-        self.previous_body_vector_score = 0
+        self._prev_right_angle_with_yaxis = {'t1': None, 't2': None}
+        
+        self.previous_body_vector_score = {'t1': 0, 't2': 0}
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
         self.confidence_threshold = self._tfengine._confidence_threshold
-        
+
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
         # for fall detection purpose.
@@ -109,11 +111,11 @@ class FallDetector(TFDetectionModel):
         return angle
 
 
-    def is_body_line_motion_downward(self, left_angle_with_yaxis, rigth_angle_with_yaxis):
+    def is_body_line_motion_downward(self, left_angle_with_yaxis, rigth_angle_with_yaxis, prev_frame):
 
         test = False
-        l_angle = left_angle_with_yaxis and self._prev_left_angle_with_yaxis and left_angle_with_yaxis > self._prev_left_angle_with_yaxis
-        r_angle = rigth_angle_with_yaxis and self._prev_right_angle_with_yaxis and rigth_angle_with_yaxis > self._prev_right_angle_with_yaxis 
+        l_angle = left_angle_with_yaxis and self._prev_left_angle_with_yaxis[prev_frame] and left_angle_with_yaxis > self._prev_left_angle_with_yaxis[prev_frame]
+        r_angle = rigth_angle_with_yaxis and self._prev_right_angle_with_yaxis[prev_frame] and rigth_angle_with_yaxis > self._prev_right_angle_with_yaxis[prev_frame]
 
         if l_angle or r_angle:
             test = True
@@ -174,39 +176,50 @@ class FallDetector(TFDetectionModel):
         return pose, thumbnail, pose_score, pose_dix
 
 
-    def find_changes_in_angle(self, pose_dix):
+    def find_changes_in_angle(self, pose_dix, prev_frame):
         '''
             Find the changes in angle for shoulder-hip lines b/w current and previpus frame.
         '''
 
-        prev_leftLine_corr_exist = all(e in self._prev_vals for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
+        prev_leftLine_corr_exist = all(e in self._prev_pose_dix[prev_frame] for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
         curr_leftLine_corr_exist = all(e in pose_dix for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
 
-        prev_rightLine_corr_exist = all(e in self._prev_vals for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
+        prev_rightLine_corr_exist = all(e in self._prev_pose_dix[prev_frame] for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
         curr_rightLine_corr_exist = all(e in pose_dix for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
         
         left_angle = right_angle = 0
 
         if prev_leftLine_corr_exist and curr_leftLine_corr_exist:
-            temp_left_vector = [[self._prev_vals[self.LEFT_SHOULDER], self._prev_vals[self.LEFT_HIP]], [pose_dix[self.LEFT_SHOULDER], pose_dix[self.LEFT_HIP]]]
+            temp_left_vector = [[self._prev_pose_dix[prev_frame][self.LEFT_SHOULDER], self._prev_pose_dix[prev_frame][self.LEFT_HIP]], [pose_dix[self.LEFT_SHOULDER], pose_dix[self.LEFT_HIP]]]
             left_angle = self.calculate_angle(temp_left_vector)
             log.debug("Left shoulder-hip angle: %r", left_angle)
 
+
         if prev_rightLine_corr_exist and curr_rightLine_corr_exist:
-            temp_right_vector = [[self._prev_vals[self.RIGHT_SHOULDER], self._prev_vals[self.RIGHT_HIP]], [pose_dix[self.RIGHT_SHOULDER], pose_dix[self.RIGHT_HIP]]]
+            temp_right_vector = [[self._prev_pose_dix[prev_frame][self.RIGHT_SHOULDER], self._prev_pose_dix[prev_frame][self.RIGHT_HIP]], [pose_dix[self.RIGHT_SHOULDER], pose_dix[self.RIGHT_HIP]]]
             right_angle = self.calculate_angle(temp_right_vector)
             log.debug("Right shoulder-hip angle: %r", right_angle)
+
 
         angle_change = max(left_angle, right_angle)
         return angle_change
 
     def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score):
-        self._prev_vals = pose_dix
-        self._prev_left_angle_with_yaxis = left_angle_with_yaxis
-        self._prev_right_angle_with_yaxis = rigth_angle_with_yaxis
-        self._prev_time = now
-        self._prev_thumbnail = thumbnail
-        self.previous_body_vector_score = current_body_vector_score
+
+        self._prev_pose_dix['t2'] = self._prev_pose_dix['t1']
+        self._prev_left_angle_with_yaxis['t2'] = self._prev_left_angle_with_yaxis['t1']
+        self._prev_right_angle_with_yaxis['t2'] = self._prev_right_angle_with_yaxis['t1']
+        self._prev_time['t2'] = self._prev_time['t1']
+        self._prev_thumbnail['t2'] = self._prev_thumbnail['t1']
+        self.previous_body_vector_score['t2'] = self.previous_body_vector_score['t1']
+
+        self._prev_pose_dix['t1'] = pose_dix
+        self._prev_left_angle_with_yaxis['t1'] = left_angle_with_yaxis
+        self._prev_right_angle_with_yaxis['t1'] = rigth_angle_with_yaxis
+        self._prev_time['t1'] = now
+        self._prev_thumbnail['t1'] = thumbnail
+        self.previous_body_vector_score['t1'] = current_body_vector_score
+        
 
     def draw_lines(self, thumbnail, pose_dix):
         """Draw body lines if available. Return number of lines drawn."""
@@ -301,14 +314,16 @@ class FallDetector(TFDetectionModel):
 
         return pose_score, pose_dix
 
+
     def fall_detect(self, image=None):
         assert image
         log.debug("Calling TF engine for inference")
         start_time = time.monotonic()
 
         now = time.monotonic()
-        lapse = now - self._prev_time
-        if self._prev_vals and lapse < self.min_time_between_frames:
+        lapse = now - self._prev_time['t1']
+
+        if self._prev_pose_dix['t1'] and lapse < self.min_time_between_frames:
             log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
             inference_result = None
             thumbnail = self._prev_thumbnail
@@ -321,7 +336,7 @@ class FallDetector(TFDetectionModel):
                 log.debug("No pose detected or detection score does not meet confidence threshold.")
             else:
                 inference_result = []
-                                
+
                 current_body_vector_score = pose_score
 
                 # Find line angle with vertcal axis
@@ -330,27 +345,34 @@ class FallDetector(TFDetectionModel):
                 # save an image with drawn lines for debugging
                 self.draw_lines(thumbnail, pose_dix)
 
-                if not self._prev_vals or lapse > self.max_time_between_frames:
-                    log.debug("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
-                elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis):
-                    log.debug("The body-line angle with vertical axis is decreasing from the previous frame. Not likely to be a fall.")
-                else:
-                    leaning_angle = self.find_changes_in_angle(pose_dix)
+                timeline = ['t2', 't1']
+                while timeline:
 
-                    leaning_probability = 1 if leaning_angle > self._fall_factor else 0
-                    fall_score = leaning_probability * (self.previous_body_vector_score + current_body_vector_score) / 2
+                    t = timeline.pop()
+                    lapse = now - self._prev_time[t]
 
-                    #if leaning_angle > self._fall_factor:
-                    if fall_score >= self.confidence_threshold:
-                        # insert a box that covers the whole image as a workaround
-                        # to meet the expected format of the save_detections element
-                        box = [0, 0, 1, 1]
-                        inference_result.append(('FALL', fall_score, box, leaning_angle))
-                        log.info("Fall detected: %r", inference_result)
+                    if not self._prev_pose_dix[t] or lapse > self.max_time_between_frames:
+                        log.debug("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
+                    elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis, prev_frame = t):
+                        log.debug("The body-line angle with vertical axis is decreasing from the previous frame. Not likely to be a fall.")
+                    else:
+                        leaning_angle = self.find_changes_in_angle(pose_dix, prev_frame=t)
+
+                        leaning_probability = 1 if leaning_angle > self._fall_factor else 0
+                        fall_score = leaning_probability * (self.previous_body_vector_score[t] + current_body_vector_score) / 2
+
+                        if fall_score >= self.confidence_threshold:
+                            # insert a box that covers the whole image as a workaround
+                            # to meet the expected format of the save_detections element
+                            box = [0, 0, 1, 1]
+                            inference_result.append(('FALL', fall_score, box, leaning_angle))
+                            log.info("Fall detected: %r", inference_result)
+
+                            break
 
                 log.debug("Saving pose for subsequent comparison.")
                 self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score)
-                
+
                 # log.debug("Logging stats")
 
         self.log_stats(start_time=start_time)
