@@ -104,7 +104,7 @@ def test_fall_detection_case_1():
     img_2 = _get_image(file_name='fall_img_3.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
@@ -156,7 +156,7 @@ def test_fall_detection_case_2_2():
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert result
@@ -187,7 +187,7 @@ def test_fall_detection_case_3_1():
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert result
@@ -249,7 +249,7 @@ def test_fall_detection_case_4():
     img_2 = _get_image(file_name='fall_img_4.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
@@ -370,7 +370,7 @@ def test_background_image():
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
     assert result is True
@@ -414,7 +414,7 @@ def test_bad_sample_good_sample():
     img_2 = _get_image(file_name='fall_img_2.png')
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
     fall_detector.receive_next_sample(image=img_2)
 
     assert result
@@ -477,7 +477,14 @@ def test_draw_line_2():
 
 
 def test_fall_detection_2_frame_back_case_1():
-    """Expected to detect a fall using frame[t] and frame[t-1]. """
+    """
+        Expected to detect a fall using frame[t] and frame[t-1]. 
+        frame[t-2] : A person is in standing position. 
+        frame[t-1] : A person is almost in standing position as he is walking.
+        frame[t]   : A person is fall down.
+    """
+
+
     config = _fall_detect_config()
     result = None
 
@@ -490,31 +497,43 @@ def test_fall_detection_2_frame_back_case_1():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
+    # A frame at t-2 timestamp
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # A frame at t-1 timestamp
     img_2 = _get_image(file_name='fall_img_1_1.png')
+
+    # A frame at t timestamp
     img_3 = _get_image(file_name='fall_img_2.png')
 
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
 
+    assert not result
+    
     fall_detector.receive_next_sample(image=img_3)
 
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
 
 
 def test_fall_detection_2_frame_back_case_2():
-    """Expected to detect a fall using frame[t] and frame[t-2]. """
+    """
+        Expected to detect a fall using frame[t] and frame[t-2]. 
+        frame[t-2] : A person is in standing position. 
+        frame[t-1] : A person is mid-way of fall.
+        frame[t]   : A person is fall down.
+    """
     config = _fall_detect_config()
     result = None
 
@@ -527,31 +546,44 @@ def test_fall_detection_2_frame_back_case_2():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
+    # A frame at t-2 timestamp
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # A frame at t-1 timestamp
     img_2 = _get_image(file_name='fall_img_2_2.png')
+
+    # A frame at t timestamp
     img_3 = _get_image(file_name='fall_img_2.png')
 
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
+    
+    assert not result
 
     fall_detector.receive_next_sample(image=img_3)
 
     assert result
     assert len(result) == 1
     category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
 
 
 def test_fall_detection_2_frame_back_case_3():
-    """Expected to not detect a fall. """
+    """
+        Expected to not detect a fall using frame[t] and frame[t-2]. 
+        frame[t-2] : A person is in walking postion. 
+        frame[t-1] : A person is in walking postion.
+        frame[t]   : A person is slight in lean postion but no fall.
+    """
+    
     config = _fall_detect_config()
     result = None
 
@@ -564,20 +596,25 @@ def test_fall_detection_2_frame_back_case_3():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
+    # A frame at t-2 timestamp
     img_1 = _get_image(file_name='fall_img_15.png')
+
+    # A frame at t-1 timestamp
     img_2 = _get_image(file_name='fall_img_16.png')
+
+    # A frame at t timestamp
     img_3 = _get_image(file_name='fall_img_17.png')
 
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
     fall_detector.min_time_between_frames = 0.01
-    time.sleep( fall_detector.min_time_between_frames )
+    time.sleep(fall_detector.min_time_between_frames)
+
+    assert not result
 
     fall_detector.receive_next_sample(image=img_3)
 
     assert not result
-
-    
