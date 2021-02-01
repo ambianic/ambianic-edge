@@ -478,8 +478,8 @@ def test_draw_line_2():
 
 def test_fall_detection_2_frame_back_case_1():
     """
-        Expected to detect a fall using frame[t] and frame[t-1]. 
-        frame[t-2] : A person is in standing position. 
+        Expected to detect a fall using frame[t] and frame[t-1].
+        frame[t-2] : A person is in standing position.
         frame[t-1] : A person is almost in standing position as he is walking.
         frame[t]   : A person is fall down.
     """
@@ -515,7 +515,7 @@ def test_fall_detection_2_frame_back_case_1():
     time.sleep(fall_detector.min_time_between_frames)
 
     assert not result
-    
+
     fall_detector.receive_next_sample(image=img_3)
 
     assert result
@@ -529,8 +529,8 @@ def test_fall_detection_2_frame_back_case_1():
 
 def test_fall_detection_2_frame_back_case_2():
     """
-        Expected to detect a fall using frame[t] and frame[t-2]. 
-        frame[t-2] : A person is in standing position. 
+        Expected to detect a fall using frame[t] and frame[t-2].
+        frame[t-2] : A person is in standing position.
         frame[t-1] : A person is mid-way of fall.
         frame[t]   : A person is fall down.
     """
@@ -562,7 +562,7 @@ def test_fall_detection_2_frame_back_case_2():
     fall_detector.receive_next_sample(image=img_2)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
-    
+
     assert not result
 
     fall_detector.receive_next_sample(image=img_3)
@@ -578,12 +578,12 @@ def test_fall_detection_2_frame_back_case_2():
 
 def test_fall_detection_2_frame_back_case_3():
     """
-        Expected to not detect a fall using frame[t] and frame[t-2]. 
-        frame[t-2] : A person is in walking postion. 
+        Expected to not detect a fall using frame[t] and frame[t-2].
+        frame[t-2] : A person is in walking postion.
         frame[t-1] : A person is in walking postion.
         frame[t]   : A person is slight in lean postion but no fall.
     """
-    
+
     config = _fall_detect_config()
     result = None
 

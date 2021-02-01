@@ -28,7 +28,7 @@ class FallDetector(TFDetectionModel):
         }
         """
         super().__init__(model, **kwargs)
-        
+
         # previous pose detection information for frame at time t-1 and t-2 \
         # to compare pose changes against
         self._prev_data = [None] * 2
@@ -121,7 +121,8 @@ class FallDetector(TFDetectionModel):
         angle = abs(theta1-theta2)
         return angle
 
-    def is_body_line_motion_downward(self, left_angle_with_yaxis, rigth_angle_with_yaxis, inx):
+    def is_body_line_motion_downward(self, left_angle_with_yaxis, 
+                                            rigth_angle_with_yaxis, inx):
 
         test = False
 
@@ -201,16 +202,16 @@ class FallDetector(TFDetectionModel):
         left_angle = right_angle = 0
 
         if prev_leftLine_corr_exist and curr_leftLine_corr_exist:
-            temp_left_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.LEFT_SHOULDER], 
-                                self._prev_data[inx]['_prev_pose_dix'][self.LEFT_HIP]], 
+            temp_left_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.LEFT_SHOULDER],
+                                self._prev_data[inx]['_prev_pose_dix'][self.LEFT_HIP]],
                                 [pose_dix[self.LEFT_SHOULDER], pose_dix[self.LEFT_HIP]]]
             left_angle = self.calculate_angle(temp_left_vector)
             log.debug("Left shoulder-hip angle: %r", left_angle)
 
 
         if prev_rightLine_corr_exist and curr_rightLine_corr_exist:
-            temp_right_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_SHOULDER], 
-                                self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_HIP]], 
+            temp_right_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_SHOULDER],
+                                self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_HIP]],
                                 [pose_dix[self.RIGHT_SHOULDER], pose_dix[self.RIGHT_HIP]]]
             right_angle = self.calculate_angle(temp_right_vector)
             log.debug("Right shoulder-hip angle: %r", right_angle)
@@ -231,7 +232,7 @@ class FallDetector(TFDetectionModel):
 
         self._prev_data[-2] = self._prev_data[-1]
         self._prev_data[-1] = curr_data
-        
+
     def draw_lines(self, thumbnail, pose_dix):
         """Draw body lines if available. Return number of lines drawn."""
         # save an image with drawn lines for debugging
@@ -334,7 +335,8 @@ class FallDetector(TFDetectionModel):
         lapse = now - self._prev_data[-1]['_prev_time']
 
         if self._prev_data[-1]['_prev_pose_dix'] and lapse < self.min_time_between_frames:
-            log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart. Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
+            log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart.\
+                    Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
             inference_result = None
             thumbnail = self._prev_data[-1]['_prev_thumbnail']
         else:
