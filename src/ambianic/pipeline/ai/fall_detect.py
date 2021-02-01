@@ -33,12 +33,20 @@ class FallDetector(TFDetectionModel):
         # to compare pose changes against
         self._prev_data = [None] * 2
 
-        _dix = {'_prev_pose_dix': [],
-                '_prev_time': time.monotonic(),
-                '_prev_thumbnail': None,
-                '_prev_left_angle_with_yaxis': None,
-                '_prev_right_angle_with_yaxis': None,
-                '_prev_body_vector_score': 0
+        # Data of previous frames lookup constants
+        self.POSE_VAL = '_prev_pose_dix'
+        self.TIMESTAMP = '_prev_time'
+        self.THUMBNAIL = '_prev_thumbnail'
+        self.LEFT_ANGLE_WITH_YAXIS = '_prev_left_angle_with_yaxis'
+        self.RIGHT_ANGLE_WITH_YAXIS = '_prev_right_angle_with_yaxis'
+        self.BODY_VECTOR_SCORE = '_prev_body_vector_score'
+
+        _dix = {self.POSE_VAL: [],
+                self.TIMESTAMP: time.monotonic(),
+                self.THUMBNAIL: None,
+                self.LEFT_ANGLE_WITH_YAXIS: None,
+                self.RIGHT_ANGLE_WITH_YAXIS: None,
+                self.BODY_VECTOR_SCORE: 0
                 }
 
         # self._prev_data[0] : store data of frame at t-2
