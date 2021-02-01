@@ -100,8 +100,12 @@ def test_fall_detection_case_1():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # The frame represents a person completely falls.
     img_2 = _get_image(file_name='fall_img_3.png')
+
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
@@ -124,8 +128,12 @@ def test_fall_detection_case_2_1():
     
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # The frame represents a person falls.
     img_2 = _get_image(file_name='fall_img_2.png')
+
     start_time = time.monotonic()
     fall_detector.receive_next_sample(image=img_1)
     end_time = time.monotonic()
@@ -152,8 +160,12 @@ def test_fall_detection_case_2_2():
     
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # The frame represents a person falls.
     img_2 = _get_image(file_name='fall_img_2.png')
+
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
@@ -182,8 +194,12 @@ def test_fall_detection_case_3_1():
     
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_11.png')
+
+    # The frame represents a person completely falls.
     img_2 = _get_image(file_name='fall_img_12.png')
+
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
@@ -214,8 +230,12 @@ def test_fall_detection_case_3_2():
 
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_11_flip.png')
+
+    # The frame represents a person completely falls.
     img_2 = _get_image(file_name='fall_img_12_flip.png')
+
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
@@ -245,8 +265,12 @@ def test_fall_detection_case_4():
     
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # The frame represents a person who is in a standing position.
     img_2 = _get_image(file_name='fall_img_4.png')
+
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
@@ -270,8 +294,12 @@ def test_fall_detection_case_5():
 
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person falls.
     img_1 = _get_image(file_name='fall_img_2.png')
+
+    # The frame represents a person who is in a standing position.
     img_2 = _get_image(file_name='fall_img_1.png')
+
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
@@ -295,8 +323,12 @@ def test_fall_detection_case_6():
 
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_5.png')
+
+    # No person in a frame
     img_2 = _get_image(file_name='fall_img_6.png')
+
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
@@ -320,8 +352,12 @@ def test_fall_detection_case_7():
 
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_5.png')
+
+    # The frame represents a person who is in a standing position.
     img_2 = _get_image(file_name='fall_img_7.png')
+
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
@@ -345,8 +381,12 @@ def test_fall_detection_case_8():
 
     fall_detector.connect_to_next_element(output)
 
+    # No person in a frame
     img_1 = _get_image(file_name='fall_img_6.png')
+
+    # The frame represents a person who is in a standing position.
     img_2 = _get_image(file_name='fall_img_7.png')
+
     fall_detector.receive_next_sample(image=img_1)
     # set min time to a small number to speed up testing
     fall_detector.min_time_between_frames = 0.01
@@ -410,8 +450,12 @@ def test_bad_sample_good_sample():
     fall_detector = FallDetector(**config)
     fall_detector.connect_to_next_element(output)
 
+    # The frame represents a person who is in a standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
+
+    # The frame represents a person falls.
     img_2 = _get_image(file_name='fall_img_2.png')
+
     fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
@@ -470,6 +514,7 @@ def test_draw_line_2():
 
     fall_detector = FallDetector(**config)
 
+    # The frame represents a person who is in a standing position.
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1], fall_detector.RIGHT_SHOULDER: [1,0], fall_detector.RIGHT_HIP: [1,1]}
     lines_drawn = fall_detector.draw_lines(image, pose_dix)
@@ -497,13 +542,13 @@ def test_fall_detection_2_frame_back_case_1():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
-    # A frame at t-2 timestamp
+    # A frame at t-2 timestamp when person is in standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
 
-    # A frame at t-1 timestamp
+    # A frame at t-1 timestamp when person is almost in standing position as he is walking.
     img_2 = _get_image(file_name='fall_img_1_1.png')
 
-    # A frame at t timestamp
+    # A frame at t timestamp when person falls down.
     img_3 = _get_image(file_name='fall_img_2.png')
 
     fall_detector.receive_next_sample(image=img_1)
@@ -546,13 +591,13 @@ def test_fall_detection_2_frame_back_case_2():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
-    # A frame at t-2 timestamp
+    # A frame at t-2 timestamp when person is in standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
 
-    # A frame at t-1 timestamp
+    # A frame at t-1 timestamp when person is mid-way of fall.
     img_2 = _get_image(file_name='fall_img_2_2.png')
 
-    # A frame at t timestamp
+    # A frame at t timestamp when person falls down.
     img_3 = _get_image(file_name='fall_img_2.png')
 
     fall_detector.receive_next_sample(image=img_1)
@@ -578,7 +623,7 @@ def test_fall_detection_2_frame_back_case_2():
 
 def test_fall_detection_2_frame_back_case_3():
     """
-        Expected to not detect a fall using frame[t] and frame[t-2].
+        Expected to not detect a fall using frame[t], frame[t-1] and frame[t-2].
         frame[t-2] : A person is in walking postion.
         frame[t-1] : A person is in walking postion.
         frame[t]   : A person is slight in lean postion but no fall.
@@ -596,13 +641,13 @@ def test_fall_detection_2_frame_back_case_3():
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
 
-    # A frame at t-2 timestamp
+    # A frame at t-2 timestamp when person is in walking postion.
     img_1 = _get_image(file_name='fall_img_15.png')
 
-    # A frame at t-1 timestamp
+    # A frame at t-1 timestamp when person is in walking postion.
     img_2 = _get_image(file_name='fall_img_16.png')
 
-    # A frame at t timestamp
+    # A frame at t timestamp when person is slight in lean postion but no fall.
     img_3 = _get_image(file_name='fall_img_17.png')
 
     fall_detector.receive_next_sample(image=img_1)

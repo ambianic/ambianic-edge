@@ -126,10 +126,10 @@ class FallDetector(TFDetectionModel):
 
         test = False
 
-        l_angle = left_angle_with_yaxis and self._prev_data[inx]['_prev_left_angle_with_yaxis']  \
-                    and left_angle_with_yaxis > self._prev_data[inx]['_prev_left_angle_with_yaxis']
-        r_angle = rigth_angle_with_yaxis and self._prev_data[inx]['_prev_right_angle_with_yaxis'] \
-                    and rigth_angle_with_yaxis > self._prev_data[inx]['_prev_right_angle_with_yaxis']
+        l_angle = left_angle_with_yaxis and self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]  \
+                    and left_angle_with_yaxis > self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]
+        r_angle = rigth_angle_with_yaxis and self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS] \
+                    and rigth_angle_with_yaxis > self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS]
 
         if l_angle or r_angle:
             test = True
@@ -193,25 +193,25 @@ class FallDetector(TFDetectionModel):
             Find the changes in angle for shoulder-hip lines b/w current and previpus frame.
         '''
 
-        prev_leftLine_corr_exist = all(e in self._prev_data[inx]['_prev_pose_dix'] for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
+        prev_leftLine_corr_exist = all(e in self._prev_data[inx][self.POSE_VAL] for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
         curr_leftLine_corr_exist = all(e in pose_dix for e in [self.LEFT_SHOULDER, self.LEFT_HIP])
 
-        prev_rightLine_corr_exist = all(e in self._prev_data[inx]['_prev_pose_dix'] for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
+        prev_rightLine_corr_exist = all(e in self._prev_data[inx][self.POSE_VAL] for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
         curr_rightLine_corr_exist = all(e in pose_dix for e in [self.RIGHT_SHOULDER, self.RIGHT_HIP])
         
         left_angle = right_angle = 0
 
         if prev_leftLine_corr_exist and curr_leftLine_corr_exist:
-            temp_left_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.LEFT_SHOULDER],
-                                self._prev_data[inx]['_prev_pose_dix'][self.LEFT_HIP]],
+            temp_left_vector = [[self._prev_data[inx][self.POSE_VAL][self.LEFT_SHOULDER],
+                                self._prev_data[inx][self.POSE_VAL][self.LEFT_HIP]],
                                 [pose_dix[self.LEFT_SHOULDER], pose_dix[self.LEFT_HIP]]]
             left_angle = self.calculate_angle(temp_left_vector)
             log.debug("Left shoulder-hip angle: %r", left_angle)
 
 
         if prev_rightLine_corr_exist and curr_rightLine_corr_exist:
-            temp_right_vector = [[self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_SHOULDER],
-                                self._prev_data[inx]['_prev_pose_dix'][self.RIGHT_HIP]],
+            temp_right_vector = [[self._prev_data[inx][self.POSE_VAL][self.RIGHT_SHOULDER],
+                                self._prev_data[inx][self.POSE_VAL][self.RIGHT_HIP]],
                                 [pose_dix[self.RIGHT_SHOULDER], pose_dix[self.RIGHT_HIP]]]
             right_angle = self.calculate_angle(temp_right_vector)
             log.debug("Right shoulder-hip angle: %r", right_angle)
@@ -222,12 +222,12 @@ class FallDetector(TFDetectionModel):
 
     def assign_prev_records(self, pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score):
 
-        curr_data = {'_prev_pose_dix': pose_dix,
-                '_prev_time': now,
-                '_prev_thumbnail': thumbnail,
-                '_prev_left_angle_with_yaxis': left_angle_with_yaxis,
-                '_prev_right_angle_with_yaxis': rigth_angle_with_yaxis,
-                '_prev_body_vector_score': current_body_vector_score
+        curr_data = {self.POSE_VAL: pose_dix,
+                self.TIMESTAMP: now,
+                self.THUMBNAIL: thumbnail,
+                self.LEFT_ANGLE_WITH_YAXIS: left_angle_with_yaxis,
+                self.RIGHT_ANGLE_WITH_YAXIS: rigth_angle_with_yaxis,
+                self.BODY_VECTOR_SCORE: current_body_vector_score
                 }
 
         self._prev_data[-2] = self._prev_data[-1]
@@ -332,13 +332,13 @@ class FallDetector(TFDetectionModel):
         start_time = time.monotonic()
 
         now = time.monotonic()
-        lapse = now - self._prev_data[-1]['_prev_time']
+        lapse = now - self._prev_data[-1][self.TIMESTAMP]
 
-        if self._prev_data[-1]['_prev_pose_dix'] and lapse < self.min_time_between_frames:
+        if self._prev_data[-1][self.POSE_VAL] and lapse < self.min_time_between_frames:
             log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart.\
                     Minimum %.2f ms distance required for fall detection.", lapse, self.min_time_between_frames)
             inference_result = None
-            thumbnail = self._prev_data[-1]['_prev_thumbnail']
+            thumbnail = self._prev_data[-1][self.THUMBNAIL]
         else:
             # Detection using tensorflow posenet module
             pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
@@ -358,9 +358,9 @@ class FallDetector(TFDetectionModel):
                 self.draw_lines(thumbnail, pose_dix)
 
                 for t in [-1, -2]:
-                    lapse = now - self._prev_data[t]['_prev_time']
+                    lapse = now - self._prev_data[t][self.TIMESTAMP]
 
-                    if not self._prev_data[t]['_prev_pose_dix'] or lapse > self.max_time_between_frames:
+                    if not self._prev_data[t][self.POSE_VAL] or lapse > self.max_time_between_frames:
                         log.debug("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
                     elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis, inx=t):
                         log.debug("The body-line angle with vertical axis is decreasing from the previous frame. Not likely to be a fall.")
@@ -371,7 +371,7 @@ class FallDetector(TFDetectionModel):
                         leaning_probability = 1 if leaning_angle > self._fall_factor else 0
 
                         # Calculate fall score using average of current and previous frame's body vector score with leaning_probability
-                        fall_score = leaning_probability * (self._prev_data[t]['_prev_body_vector_score'] + current_body_vector_score) / 2
+                        fall_score = leaning_probability * (self._prev_data[t][self.BODY_VECTOR_SCORE] + current_body_vector_score) / 2
 
                         if fall_score >= self.confidence_threshold:
                             # insert a box that covers the whole image as a workaround
