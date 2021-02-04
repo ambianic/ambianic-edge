@@ -26,7 +26,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.6,
+        'confidence_threshold': 0.55,
     }
     return config
 
