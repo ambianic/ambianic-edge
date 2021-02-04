@@ -377,7 +377,7 @@ class FallDetector(TFDetectionModel):
                             # insert a box that covers the whole image as a workaround
                             # to meet the expected format of the save_detections element
                             box = [0, 0, 1, 1]
-                            inference_result.append(('FALL', fall_score, box, leaning_angle))
+                            inference_result.append(('FALL', fall_score, box, leaning_angle, pose_dix))
                             log.info("Fall detected: %r", inference_result)
 
                             break

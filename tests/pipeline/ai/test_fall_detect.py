@@ -173,7 +173,7 @@ def test_fall_detection_case_2_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.7
@@ -208,7 +208,7 @@ def test_fall_detection_case_3_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.3
@@ -244,7 +244,7 @@ def test_fall_detection_case_3_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.3
@@ -463,7 +463,7 @@ def test_bad_sample_good_sample():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable' 
     assert category == 'FALL'
     assert confidence > 0.7
@@ -565,7 +565,7 @@ def test_fall_detection_2_frame_back_case_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.7
@@ -614,7 +614,7 @@ def test_fall_detection_2_frame_back_case_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
+    category, confidence, box, angle, keypoint_corr = result[0]
     assert box   # Add this line to avoid 'Unused local variable'
     assert category == 'FALL'
     assert confidence > 0.7
