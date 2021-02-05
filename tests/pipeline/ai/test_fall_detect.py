@@ -26,7 +26,7 @@ def _fall_detect_config():
             },
         'labels': _good_labels,
         'top_k': 3,
-        'confidence_threshold': 0.55,
+        'confidence_threshold': 0.6,
     }
     return config
 
@@ -551,12 +551,12 @@ def test_fall_detection_2_frame_back_case_1():
     # A frame at t timestamp when person falls down.
     img_3 = _get_image(file_name='fall_img_2.png')
 
-    fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
+
+    fall_detector.receive_next_sample(image=img_1)
     time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
-    fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
 
     assert not result
@@ -600,12 +600,13 @@ def test_fall_detection_2_frame_back_case_2():
     # A frame at t timestamp when person falls down.
     img_3 = _get_image(file_name='fall_img_2.png')
 
-    fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
+    fall_detector.max_time_between_frames = 15
+
+    fall_detector.receive_next_sample(image=img_1)
     time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
-    fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
 
     assert not result
@@ -650,12 +651,12 @@ def test_fall_detection_2_frame_back_case_3():
     # A frame at t timestamp when person is slight in lean postion but no fall.
     img_3 = _get_image(file_name='fall_img_17.png')
 
-    fall_detector.receive_next_sample(image=img_1)
     fall_detector.min_time_between_frames = 0.01
+
+    fall_detector.receive_next_sample(image=img_1)
     time.sleep(fall_detector.min_time_between_frames)
 
     fall_detector.receive_next_sample(image=img_2)
-    fall_detector.min_time_between_frames = 0.01
     time.sleep(fall_detector.min_time_between_frames)
 
     assert not result
