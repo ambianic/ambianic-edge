@@ -342,7 +342,7 @@ class FallDetector(TFDetectionModel):
         else:
             # Detection using tensorflow posenet module
             pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
-
+            
             inference_result = None
             if not pose:
                 log.debug("No pose detected or detection score does not meet confidence threshold.")
@@ -361,19 +361,21 @@ class FallDetector(TFDetectionModel):
                     lapse = now - self._prev_data[t][self.TIMESTAMP]
 
                     if not self._prev_data[t][self.POSE_VAL] or lapse > self.max_time_between_frames:
-                        log.debug("No recent pose to compare to. Will save this frame pose for subsequent comparison.")
+                        log.debug(f"No recent pose to compare to. Will save this frame pose for subsequent comparison. \
+                                    time lapse : {lapse}")
                     elif not self.is_body_line_motion_downward(left_angle_with_yaxis, rigth_angle_with_yaxis, inx=t):
                         log.debug("The body-line angle with vertical axis is decreasing from the previous frame. Not likely to be a fall.")
                     else:
                         leaning_angle = self.find_changes_in_angle(pose_dix, inx=t)
-                        assert leaning_angle > self._fall_factor
+                        log.debug(f"leaning_angle : {leaning_angle}")
 
                         # Get leaning_probability by comparing leaning_angle with fall_factor probability.
                         leaning_probability = 1 if leaning_angle > self._fall_factor else 0
-    
+                        log.debug(f"leaning_probability : {leaning_probability}")
+
                         # Calculate fall score using average of current and previous frame's body vector score with leaning_probability
                         fall_score = leaning_probability * (self._prev_data[t][self.BODY_VECTOR_SCORE] + current_body_vector_score) / 2
-                        assert fall_score >= self.confidence_threshold
+                        log.debug(f"fall_score : {fall_score}")
 
                         if fall_score >= self.confidence_threshold:
                             # insert a box that covers the whole image as a workaround
