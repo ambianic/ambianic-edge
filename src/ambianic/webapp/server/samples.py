@@ -164,7 +164,7 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
               'Sample index range [%d:%d]. ',
               page, page_size, page_start_position, page_end_position)
 
-    files = list(Path(data_dir).rglob('./timeline-event-log.yaml*'))
+    files = list(Path(data_dir).glob('./timeline-event-log.yaml*'))
     files = sorted(files, reverse=False)
 
     page_count = 1
