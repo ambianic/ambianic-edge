@@ -366,12 +366,15 @@ class FallDetector(TFDetectionModel):
                         log.debug("The body-line angle with vertical axis is decreasing from the previous frame. Not likely to be a fall.")
                     else:
                         leaning_angle = self.find_changes_in_angle(pose_dix, inx=t)
+                        assert leaning_angle
 
                         # Get leaning_probability by comparing leaning_angle with fall_factor probability.
                         leaning_probability = 1 if leaning_angle > self._fall_factor else 0
+                        assert leaning_probability
 
                         # Calculate fall score using average of current and previous frame's body vector score with leaning_probability
                         fall_score = leaning_probability * (self._prev_data[t][self.BODY_VECTOR_SCORE] + current_body_vector_score) / 2
+                        assert fall_score >= self.confidence_threshold
 
                         if fall_score >= self.confidence_threshold:
                             # insert a box that covers the whole image as a workaround
