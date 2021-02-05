@@ -333,6 +333,7 @@ class FallDetector(TFDetectionModel):
 
         now = time.monotonic()
         lapse = now - self._prev_data[-1][self.TIMESTAMP]
+        log.debug(f"lapse 1 : {lapse}")
 
         if self._prev_data[-1][self.POSE_VAL] and lapse < self.min_time_between_frames:
             log.debug("Received an image frame too soon after the previous frame. Only %.2f ms apart.\
@@ -359,6 +360,7 @@ class FallDetector(TFDetectionModel):
 
                 for t in [-1, -2]:
                     lapse = now - self._prev_data[t][self.TIMESTAMP]
+                    log.debug(f"lapse now-prev_frame[{t}]: {lapse}")
 
                     if not self._prev_data[t][self.POSE_VAL] or lapse > self.max_time_between_frames:
                         log.debug(f"No recent pose to compare to. Will save this frame pose for subsequent comparison. \
