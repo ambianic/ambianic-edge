@@ -1,5 +1,14 @@
 # Semantic Versioning Changelog
 
+## [1.13.1](https://github.com/ambianic/ambianic-edge/compare/v1.13.0...v1.13.1) (2021-02-06)
+
+
+### Bug Fixes
+
+* look for timeline-event log files in a flat dir not recursively ([e7873ec](https://github.com/ambianic/ambianic-edge/commit/e7873ecdb9d5c96ffebb65d7e4be5d97ba5e654a))
+* merge remote-tracking branch 'upstream/master' ([8e313be](https://github.com/ambianic/ambianic-edge/commit/8e313bef0f025e83131ac886ef1af89ac5dc5256))
+* search for timeline event in a flat dir only ([1838f57](https://github.com/ambianic/ambianic-edge/commit/1838f57c9472e88bb7a72622f40455098fd6deec)), closes [#297](https://github.com/ambianic/ambianic-edge/issues/297)
+
 # [1.10.0](https://github.com/ivelin/ambianic-edge/compare/v1.9.5...v1.10.0) (2021-02-06)
 
 
