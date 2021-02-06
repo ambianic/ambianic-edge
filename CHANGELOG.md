@@ -1,5 +1,24 @@
 # Semantic Versioning Changelog
 
+# [1.10.0](https://github.com/ivelin/ambianic-edge/compare/v1.9.5...v1.10.0) (2021-02-06)
+
+
+### Bug Fixes
+
+* clean up fall detections logging ([f086405](https://github.com/ivelin/ambianic-edge/commit/f086405661879c6d6486530a65c285185e9915c6)), closes [#287](https://github.com/ivelin/ambianic-edge/issues/287)
+* clean up fall detections logging ([88a4352](https://github.com/ivelin/ambianic-edge/commit/88a4352400612b89a617b1200b84272db61f6e41))
+* failing fall detection test; closes [#294](https://github.com/ivelin/ambianic-edge/issues/294) ([8b06fc0](https://github.com/ivelin/ambianic-edge/commit/8b06fc0e4a15becc8d1fdd5976876121f5adfe4e)), closes [#298](https://github.com/ivelin/ambianic-edge/issues/298)
+* fall detect runtime exception, closes [#285](https://github.com/ivelin/ambianic-edge/issues/285) ([41c9d4c](https://github.com/ivelin/ambianic-edge/commit/41c9d4c9f58a2d5f277947d97f722d80bec5520e)), closes [#286](https://github.com/ivelin/ambianic-edge/issues/286)
+* fall detection issue [#282](https://github.com/ivelin/ambianic-edge/issues/282) ([9dd818b](https://github.com/ivelin/ambianic-edge/commit/9dd818bc01941687630b51dd56e25d380ae7329d))
+* fall-detection bug [#294](https://github.com/ivelin/ambianic-edge/issues/294) ([d0814e1](https://github.com/ivelin/ambianic-edge/commit/d0814e16683af8b862ecc17edc62a9cbbc4d5328)), closes [#295](https://github.com/ivelin/ambianic-edge/issues/295)
+* look for timeline-event log files in a flat dir not recursively ([e7873ec](https://github.com/ivelin/ambianic-edge/commit/e7873ecdb9d5c96ffebb65d7e4be5d97ba5e654a))
+* merge remote-tracking branch 'upstream/master' ([8e313be](https://github.com/ivelin/ambianic-edge/commit/8e313bef0f025e83131ac886ef1af89ac5dc5256))
+
+
+### Features
+
+* improved fall detection with 2 frame lookback instead of 1; closes [#282](https://github.com/ivelin/ambianic-edge/issues/282) ([4abcfc3](https://github.com/ivelin/ambianic-edge/commit/4abcfc37c344f9171b6a508f359ab86b3bfe015c)), closes [#289](https://github.com/ivelin/ambianic-edge/issues/289)
+
 # [1.13.0](https://github.com/ambianic/ambianic-edge/compare/v1.12.14...v1.13.0) (2021-02-06)
 
 
