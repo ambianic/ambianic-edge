@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.10.1](https://github.com/ivelin/ambianic-edge/compare/v1.10.0...v1.10.1) (2021-02-08)
+
+
+### Bug Fixes
+
+* adjust default confidence threshold for fall detection ([5a98549](https://github.com/ivelin/ambianic-edge/commit/5a9854937d3b713b704d0229783aa36fce5d7d5a))
+* search for timeline event in a flat dir only ([1838f57](https://github.com/ivelin/ambianic-edge/commit/1838f57c9472e88bb7a72622f40455098fd6deec)), closes [#297](https://github.com/ivelin/ambianic-edge/issues/297)
+
 ## [1.13.1](https://github.com/ambianic/ambianic-edge/compare/v1.13.0...v1.13.1) (2021-02-06)
 
 
