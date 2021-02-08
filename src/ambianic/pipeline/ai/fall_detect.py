@@ -14,6 +14,7 @@ class FallDetector(TFDetectionModel):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
                  model=None,
+                 confidence_threshold=0.25,
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -27,7 +28,7 @@ class FallDetector(TFDetectionModel):
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
         """
-        super().__init__(model, **kwargs)
+        super().__init__(model=model, confidence_threshold=confidence_threshold, **kwargs)
 
         # previous pose detection information for frame at time t-1 and t-2 \
         # to compare pose changes against
