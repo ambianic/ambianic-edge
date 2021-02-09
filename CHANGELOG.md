@@ -1,6 +1,6 @@
 # Semantic Versioning Changelog
 
-## [1.10.2](https://github.com/ivelin/ambianic-edge/compare/v1.10.1...v1.10.2) (2021-02-09)
+## [1.13.3](https://github.com/ambianic/ambianic-edge/compare/v1.13.2...v1.13.3) (2021-02-09)
 
 
 ### Bug Fixes
