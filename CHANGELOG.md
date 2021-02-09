@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.13.3](https://github.com/ambianic/ambianic-edge/compare/v1.13.2...v1.13.3) (2021-02-09)
+
+
+### Bug Fixes
+
+* debug logging issues; closes [#257](https://github.com/ambianic/ambianic-edge/issues/257); closes [#305](https://github.com/ambianic/ambianic-edge/issues/305) ([ec172a8](https://github.com/ambianic/ambianic-edge/commit/ec172a8d6b83b836ef4ff364b843b1915d7d7940)), closes [#306](https://github.com/ambianic/ambianic-edge/issues/306)
+* debug logging issues; closes [#257](https://github.com/ambianic/ambianic-edge/issues/257); closes [#305](https://github.com/ambianic/ambianic-edge/issues/305) ([34fbe1e](https://github.com/ambianic/ambianic-edge/commit/34fbe1e545749c9af1e6735f209e0b4f1aecfd7c))
+
 ## [1.13.2](https://github.com/ambianic/ambianic-edge/compare/v1.13.1...v1.13.2) (2021-02-09)
 
 
