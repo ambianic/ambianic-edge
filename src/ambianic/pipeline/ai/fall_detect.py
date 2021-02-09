@@ -14,7 +14,7 @@ class FallDetector(TFDetectionModel):
     """Detects falls comparing two images spaced about 1-2 seconds apart."""
     def __init__(self,
                  model=None,
-                 confidence_threshold=0.25,
+                 confidence_threshold=0.15,
                  **kwargs
                  ):
         """Initialize detector with config parameters.
@@ -56,7 +56,8 @@ class FallDetector(TFDetectionModel):
 
         self._pose_engine = PoseEngine(self._tfengine)
         self._fall_factor = 60
-        self.confidence_threshold = self._tfengine._confidence_threshold
+        self.confidence_threshold = confidence_threshold
+        log.debug(f"Initializing FallDetector with conficence threshold: {self.confidence_threshold}")
 
         # Require a minimum amount of time between two video frames in seconds.
         # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
@@ -144,7 +145,7 @@ class FallDetector(TFDetectionModel):
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
-        poses, thumbnail = self._pose_engine.DetectPosesInImage(image)
+        poses, thumbnail = self._pose_engine.detect_poses(image)
         width, height = thumbnail.size
         # if no pose detected with high confidence, 
         # try rotating the image +/- 90' to find a fallen person
@@ -155,7 +156,7 @@ class FallDetector(TFDetectionModel):
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
-          poses, _ = self._pose_engine.DetectPosesInImage(transposed)
+          poses, _ = self._pose_engine.detect_poses(transposed)
           pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
 
         if poses and poses[0]:
@@ -182,6 +183,7 @@ class FallDetector(TFDetectionModel):
                     keypoint.yx[1] = height-tmp_swap
         else:
             # we could not detect a pose with sufficient confidence
+            log.debug(f"No pose detected with sufficient confidence. Score {pose_score} < {min_score} minimum threshold")
             pose = None
 
         if pose_dix:

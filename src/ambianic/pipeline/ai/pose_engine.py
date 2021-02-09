@@ -61,6 +61,8 @@ class PoseEngine:
         self._input_tensor_shape = self.get_input_tensor_shape()
         _, self._tensor_image_height, self._tensor_image_width, self._tensor_image_depth = \
                                                 self.get_input_tensor_shape()
+        self.confidence_threshold = self._tfengine.confidence_threshold
+        log.debug(f"Initializing PoseEngine with confidence threshold {self.confidence_threshold}")
 
 
     def get_input_tensor_shape(self):
@@ -103,7 +105,7 @@ class PoseEngine:
     def tf_interpreter(self):
         return self._tfengine._tf_interpreter
 
-    def DetectPosesInImage(self, img):
+    def detect_poses(self, img):
         """
         Detects poses in a given image.
 
@@ -150,11 +152,12 @@ class PoseEngine:
         keypoint_dict = {}
         cnt = 0
 
-        for point_i in range(kps.shape[0]):
+        keypoint_count = kps.shape[0]
+        for point_i in range(keypoint_count):
             x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         
-            if prob > 0.60:
+            if prob > self.confidence_threshold:
                 cnt += 1
             keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
@@ -162,7 +165,8 @@ class PoseEngine:
             draw = ImageDraw.Draw(template_image)
             draw.line(((0,0), (x, y)), fill='red')
         
-        pose_scores = cnt/17
+        # overall pose score is calculated as the average of all individual keypoint scores
+        pose_scores = cnt/keypoint_count
         poses.append(Pose(keypoint_dict, pose_scores))
         # DEBUG: save template_image for debugging
         # DEBUG: timestr = int(time.monotonic()*1000)

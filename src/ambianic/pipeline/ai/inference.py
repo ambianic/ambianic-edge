@@ -83,7 +83,7 @@ class TFInferenceEngine:
         self._model_labels_path = labels
         self._confidence_threshold = confidence_threshold
         self._top_k = top_k
-        log.debug('Loading AI model:\n'
+        log.info('Loading AI model:\n'
                   'TFLite graph: %r\n'
                   'EdgeTPU graph: %r\n'
                   'Labels %r.'
