@@ -39,11 +39,10 @@ def configure(config=None):
 
     log_level = config.get("level", None)
 
-    file_log_level = config.get("file", log_level)
-    console_log_level = config.get("console", log_level)
+    console_log_level = config.get("console_level", log_level)
 
     numeric_level, fmt = _get_log_level(
-        file_log_level, default_log_level=DEFAULT_FILE_LOG_LEVEL)
+        log_level, default_log_level=DEFAULT_FILE_LOG_LEVEL)
 
     root_logger = logging.getLogger()
     # remove any other handlers that may be assigned previously
