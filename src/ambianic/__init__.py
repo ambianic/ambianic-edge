@@ -2,7 +2,7 @@ import os
 from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
 from typing import Union
-import importlib.metadata
+from importlib import metadata
 
 DEFAULT_WORK_DIR: str = '/workspace'
 DEFAULT_DATA_DIR: str = './data'
@@ -12,7 +12,7 @@ DEFAULT_SECRETS_FILE: str = 'secrets.yaml'
 
 __CONFIG_FILE: str = None
 __SECRETS_FILE: str = None
-__version__ = importlib.metadata.version('Example')
+__version__: str = metadata.version('Ambianic')
 
 
 def get_config_file() -> str:

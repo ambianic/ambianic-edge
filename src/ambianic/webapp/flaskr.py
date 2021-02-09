@@ -11,7 +11,7 @@ from flask.logging import default_handler
 from requests import get
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
-from ambianic import config, DEFAULT_DATA_DIR
+from ambianic import config, DEFAULT_DATA_DIR, __version__
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic.webapp.server import samples, config_sources
 
@@ -158,7 +158,7 @@ def create_app(data_dir=None):
     def get_status():
         response_object = {
             'status': 'OK',
-            'version': importlib.metadata.version('Ambianic')}
+            'version': __version__}
         resp = jsonify(response_object)
         return resp
 

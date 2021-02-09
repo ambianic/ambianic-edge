@@ -1,8 +1,6 @@
 from setuptools import setup
 
-setup()
-
-setup.version(
+setup(
     name='Ambianic',
     version="1.13.2"
 )
