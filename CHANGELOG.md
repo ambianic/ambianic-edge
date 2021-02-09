@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.10.2](https://github.com/ivelin/ambianic-edge/compare/v1.10.1...v1.10.2) (2021-02-09)
+
+
+### Bug Fixes
+
+* adjust default confidence threshold for fall detection ([f73e3ef](https://github.com/ivelin/ambianic-edge/commit/f73e3ef7c5c0a1e888e9f82425db3586cfb4c47d)), closes [#302](https://github.com/ivelin/ambianic-edge/issues/302)
+* debug logging issues; closes [#257](https://github.com/ivelin/ambianic-edge/issues/257); closes [#305](https://github.com/ivelin/ambianic-edge/issues/305) ([34fbe1e](https://github.com/ivelin/ambianic-edge/commit/34fbe1e545749c9af1e6735f209e0b4f1aecfd7c))
+
 ## [1.13.2](https://github.com/ambianic/ambianic-edge/compare/v1.13.1...v1.13.2) (2021-02-09)
 
 
