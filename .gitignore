@@ -21,3 +21,6 @@ _mdwriter.cson
 ambianic-debug2.sh
 config.yaml.local
 /.ropeproject
+
+venv/**
+./venv/**

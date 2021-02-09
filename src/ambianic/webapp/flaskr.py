@@ -2,6 +2,7 @@
 import os
 import logging
 import time
+import importlib.metadata
 from pathlib import Path
 import flask
 from flask import Flask, request, jsonify, json
@@ -18,6 +19,7 @@ log = logging.getLogger(__name__)
 
 # configuration
 DEBUG = True
+
 
 class FlaskJob(ManagedService):
     """Flask based managed web service."""
@@ -154,7 +156,9 @@ def create_app(data_dir=None):
     # and other health monitoring tools
     @app.route('/api/status')
     def get_status():
-        response_object = {'status': 'OK'}
+        response_object = {
+            'status': 'OK',
+            'version': importlib.metadata.version('Ambianic')}
         resp = jsonify(response_object)
         return resp
 
@@ -285,10 +289,10 @@ def create_app(data_dir=None):
             error="Request failed"
         ), 500
 
-#    @app.route('/', defaults={'path': 'index.html'})
-#    @app.route('/<path:path>')
-#    def client_all(path):
-#        return flask.send_from_directory('client/dist', path)
+    #    @app.route('/', defaults={'path': 'index.html'})
+    #    @app.route('/<path:path>')
+    #    def client_all(path):
+    #        return flask.send_from_directory('client/dist', path)
 
     log.debug('Flask url map: %s', str(app.url_map))
     log.debug('Flask config map: %s', str(app.config))
