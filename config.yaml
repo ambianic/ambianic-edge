@@ -10,6 +10,8 @@ data_dir: ./data
 logging:
   file: ./data/ambianic-log.txt
   level: INFO
+  # set a less noisy log level for the console output
+  # console_level: WARNING
 
 # Store notifications provider configuration
 # see https://github.com/caronc/apprise#popular-notification-services for syntax examples

@@ -254,7 +254,8 @@ class FallDetector(TFDetectionModel):
             draw.line(body_line, fill='red')
             body_lines_drawn += 1
 
-        if body_lines_drawn > 0 and log.level <= logging.DEBUG:  # development mode
+        # save a thumbnail for debugging
+        if body_lines_drawn > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
             # DEBUG: save template_image for debugging
             timestr = int(time.monotonic()*1000)
             path = f'tmp-fall-detect-thumbnail-{timestr}.jpg'
@@ -382,6 +383,8 @@ class FallDetector(TFDetectionModel):
                             log.info("Fall detected: %r", inference_result)
 
                             break
+                        else:
+                            log.debug(f"No fall detected due to low confidence score: {fall_score} < {self.confidence_threshold} min threshold. Inference result: {inference_result}")
 
                 log.debug("Saving pose for subsequent comparison.")
                 self.assign_prev_records(pose_dix, left_angle_with_yaxis, rigth_angle_with_yaxis, now, thumbnail, current_body_vector_score)
