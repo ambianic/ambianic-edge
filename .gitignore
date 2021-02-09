@@ -22,5 +22,6 @@ ambianic-debug2.sh
 config.yaml.local
 /.ropeproject
 
+src/Ambianic.egg-info/**
 venv/**
 ./venv/**
