@@ -2,7 +2,6 @@
 import os
 import logging
 import time
-import importlib.metadata
 from pathlib import Path
 import flask
 from flask import Flask, request, jsonify, json
