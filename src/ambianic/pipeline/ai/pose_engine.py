@@ -159,16 +159,22 @@ class PoseEngine:
         
             if prob > self.confidence_threshold:
                 cnt += 1
+                if log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+                    #draw on image and save it for debugging
+                    draw = ImageDraw.Draw(template_image)
+                    draw.line(((0,0), (x, y)), fill='blue')
+
             keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
-            # draw on image and save it for debugging
-            draw = ImageDraw.Draw(template_image)
-            draw.line(((0,0), (x, y)), fill='red')
         
         # overall pose score is calculated as the average of all individual keypoint scores
         pose_scores = cnt/keypoint_count
         poses.append(Pose(keypoint_dict, pose_scores))
-        # DEBUG: save template_image for debugging
-        # DEBUG: timestr = int(time.monotonic()*1000)
-        # DEBUG: template_image.save(f'tmp-template-image-time-{timestr}-keypoints-{cnt}.jpg', format='JPEG')
+        if cnt > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+            # save template_image for debugging
+            timestr = int(time.monotonic()*1000)
+            log.debug(f"Detected a pose with {cnt} keypoints that score over the minimum confidence threshold of {self.confidence_threshold}.")
+            debug_image_file_name = f'tmp-pose-detect-image-time-{timestr}-keypoints-{cnt}.jpg'
+            template_image.save(debug_image_file_name, format='JPEG')
+            log.debug(f"Debug image saved: {debug_image_file_name}")
         return poses, thumbnail

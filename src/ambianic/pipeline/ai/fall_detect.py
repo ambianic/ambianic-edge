@@ -236,7 +236,7 @@ class FallDetector(TFDetectionModel):
         self._prev_data[-2] = self._prev_data[-1]
         self._prev_data[-1] = curr_data
 
-    def draw_lines(self, thumbnail, pose_dix):
+    def draw_lines(self, thumbnail, pose_dix, score):
         """Draw body lines if available. Return number of lines drawn."""
         # save an image with drawn lines for debugging
         draw = ImageDraw.Draw(thumbnail)
@@ -260,7 +260,7 @@ class FallDetector(TFDetectionModel):
         if body_lines_drawn > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
             # DEBUG: save template_image for debugging
             timestr = int(time.monotonic()*1000)
-            path = f'tmp-fall-detect-thumbnail-{timestr}.jpg'
+            path = f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
             thumbnail.save(path, format='JPEG')
 
         return body_lines_drawn
@@ -359,7 +359,7 @@ class FallDetector(TFDetectionModel):
                 left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
 
                 # save an image with drawn lines for debugging
-                self.draw_lines(thumbnail, pose_dix)
+                self.draw_lines(thumbnail, pose_dix, pose_score)
 
                 for t in [-1, -2]:
                     lapse = now - self._prev_data[t][self.TIMESTAMP]

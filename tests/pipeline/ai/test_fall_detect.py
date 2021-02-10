@@ -478,11 +478,11 @@ def test_draw_line_0():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = None
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
     pose_dix = {}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
 
@@ -494,7 +494,7 @@ def test_draw_line_1():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 1
 
 def test_draw_line_1_1():
@@ -505,7 +505,7 @@ def test_draw_line_1_1():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
 def test_draw_line_2():
@@ -517,7 +517,7 @@ def test_draw_line_2():
     # The frame represents a person who is in a standing position.
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1], fall_detector.RIGHT_SHOULDER: [1,0], fall_detector.RIGHT_HIP: [1,1]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 2
 
 
