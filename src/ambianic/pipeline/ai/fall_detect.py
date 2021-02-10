@@ -1,13 +1,13 @@
 """Fall detection pipe element."""
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
-from ambianic.util import stacktrace
 import logging
 import math
 import time
 from PIL import Image, ImageDraw
 
 log = logging.getLogger(__name__)
+
 
 class FallDetector(TFDetectionModel):
 
@@ -28,7 +28,9 @@ class FallDetector(TFDetectionModel):
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
         """
-        super().__init__(model=model, confidence_threshold=confidence_threshold, **kwargs)
+        super().__init__(model=model, 
+                         confidence_threshold=confidence_threshold,
+                         **kwargs)
 
         # previous pose detection information for frame at time t-1 and t-2 \
         # to compare pose changes against
@@ -60,11 +62,14 @@ class FallDetector(TFDetectionModel):
         log.debug(f"Initializing FallDetector with conficence threshold: {self.confidence_threshold}")
 
         # Require a minimum amount of time between two video frames in seconds.
-        # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
+        # Otherwise on high performing hard, the poses could be too close to 
+        # each other and have negligible difference
         # for fall detection purpose.
         self.min_time_between_frames = 1
-        # Require the time distance between two video frames not to exceed a certain limit in seconds.
-        # Otherwise there could be data noise which could lead false positive detections.
+        # Require the time distance between two video frames not to exceed 
+        # a certain limit in seconds.
+        # Otherwise there could be data noise which could lead 
+        # false positive detections.
         self.max_time_between_frames = 10
 
         # keypoint lookup constants
@@ -73,7 +78,8 @@ class FallDetector(TFDetectionModel):
         self.RIGHT_SHOULDER = 'right shoulder'
         self.RIGHT_HIP = 'right hip'
 
-        self.fall_detect_corr = [self.LEFT_SHOULDER, self.LEFT_HIP, self.RIGHT_SHOULDER, self.RIGHT_HIP]
+        self.fall_detect_corr = [self.LEFT_SHOULDER, self.LEFT_HIP,
+                                 self.RIGHT_SHOULDER, self.RIGHT_HIP]
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -98,14 +104,14 @@ class FallDetector(TFDetectionModel):
                 yield processed_sample
             except Exception as e:
                 log.exception('Error "%s" while processing sample. '
-                          'Dropping sample: %s',
+                              'Dropping sample: %s',
                           str(e),
                           str(sample)
                           )
 
     def calculate_angle(self, p):
         '''
-            Calculate angle b/w two lines such as 
+            Calculate angle b/w two lines such as
             left shoulder-hip with prev frame's left shoulder-hip or
             right shoulder-hip with prev frame's right shoulder-hip or
             shoulder-hip line with vertical axis
@@ -113,25 +119,29 @@ class FallDetector(TFDetectionModel):
 
         x1, y1 = p[0][0]
         x2, y2 = p[0][1]
-    
+
         x3, y3 = p[1][0]
         x4, y4 = p[1][1]
 
         theta1 = math.degrees(math.atan2(y2-y1, x1-x2))
         theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
-            
+
         angle = abs(theta1-theta2)
         return angle
 
-    def is_body_line_motion_downward(self, left_angle_with_yaxis, 
-                                            rigth_angle_with_yaxis, inx):
+    def is_body_line_motion_downward(self, left_angle_with_yaxis,
+                                     rigth_angle_with_yaxis, inx):
 
         test = False
 
-        l_angle = left_angle_with_yaxis and self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]  \
-                    and left_angle_with_yaxis > self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]
-        r_angle = rigth_angle_with_yaxis and self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS] \
-                    and rigth_angle_with_yaxis > self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS]
+        l_angle = left_angle_with_yaxis and \
+            self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]  \
+            and left_angle_with_yaxis > \
+            self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]
+        r_angle = rigth_angle_with_yaxis and \
+            self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS] \
+            and rigth_angle_with_yaxis > \
+            self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS]
 
         if l_angle or r_angle:
             test = True
