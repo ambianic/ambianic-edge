@@ -21,3 +21,5 @@ _mdwriter.cson
 ambianic-debug2.sh
 config.yaml.local
 /.ropeproject
+.theia/**
+src/Ambianic.egg-info/**
