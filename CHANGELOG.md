@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.10.5](https://github.com/ivelin/ambianic-edge/compare/v1.10.4...v1.10.5) (2021-02-10)
+
+
+### Bug Fixes
+
+* dall detection debug logging ([f06f218](https://github.com/ivelin/ambianic-edge/commit/f06f21867c7a8e2dbde03c3474221f9b3e261a33))
+
 ## [1.10.4](https://github.com/ivelin/ambianic-edge/compare/v1.10.3...v1.10.4) (2021-02-10)
 
 
