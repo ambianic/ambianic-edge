@@ -145,26 +145,26 @@ class FallDetector(TFDetectionModel):
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
-        poses, thumbnail = self._pose_engine.detect_poses(image)
+        poses, thumbnail, _ = self._pose_engine.detect_poses(image)
         width, height = thumbnail.size
         # if no pose detected with high confidence, 
         # try rotating the image +/- 90' to find a fallen person
         # currently only looking at pose[0] because we are focused on a lone person falls
         #while (not poses or poses[0].score < min_score) and rotations:
-        pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
-        while pose_score < min_score and rotations:
+        spinal_vector_score, pose_dix = self.estimate_spinal_vector_score(poses[0])
+        while spinal_vector_score < min_score and rotations:
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
-          poses, _ = self._pose_engine.detect_poses(transposed)
-          pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
+          poses, _, _ = self._pose_engine.detect_poses(transposed)
+          spinal_vector_score, pose_dix = self.estimate_spinal_vector_score(poses[0])
 
         if poses and poses[0]:
             pose = poses[0]
 
         # lets check if we found a good pose candidate
                 
-        if (pose and pose_score >= min_score):
+        if (pose and spinal_vector_score >= min_score):
             # if the image was rotated, we need to rotate back to the original image coordinates
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
@@ -181,15 +181,15 @@ class FallDetector(TFDetectionModel):
                     tmp_swap = keypoint.yx[0]
                     keypoint.yx[0] = keypoint.yx[1]
                     keypoint.yx[1] = height-tmp_swap
-        else:
             # we could not detect a pose with sufficient confidence
-            log.debug(f"No pose detected with sufficient confidence. Score {pose_score} < {min_score} minimum threshold")
+            log.info(f"""A pose detected with spinal_vector_score={spinal_vector_score} >= {min_score} confidence threshold.
+                Pose keypoints: {pose_dix}"
+                """
+            )
+        else:
             pose = None
 
-        if pose_dix:
-            log.debug(f"Pose detected with confidence {pose_score} and keypoints: {pose_dix}")
-
-        return pose, thumbnail, pose_score, pose_dix
+        return pose, thumbnail, spinal_vector_score, pose_dix
 
     def find_changes_in_angle(self, pose_dix, inx):
         '''
@@ -257,11 +257,9 @@ class FallDetector(TFDetectionModel):
             body_lines_drawn += 1
 
         # save a thumbnail for debugging
-        if body_lines_drawn > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
-            # DEBUG: save template_image for debugging
-            timestr = int(time.monotonic()*1000)
-            path = f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
-            thumbnail.save(path, format='JPEG')
+        timestr = int(time.monotonic()*1000)
+        path = f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
+        thumbnail.save(path, format='JPEG')
 
         return body_lines_drawn
 
@@ -284,7 +282,7 @@ class FallDetector(TFDetectionModel):
         
         return (l_angle, r_angle)
 
-    def estimate_spinalVector_score(self, pose):
+    def estimate_spinal_vector_score(self, pose):
         pose_dix = {}
         is_leftVector = is_rightVector = False
 
@@ -326,9 +324,8 @@ class FallDetector(TFDetectionModel):
         else:
             spinalVectorScore = 0
 
-        pose_score = spinalVectorScore
-
-        return pose_score, pose_dix
+        log.debug(f"Estimated spinal vector score: {spinalVectorScore}")
+        return spinalVectorScore, pose_dix
 
     def fall_detect(self, image=None):
         assert image
@@ -345,21 +342,22 @@ class FallDetector(TFDetectionModel):
             thumbnail = self._prev_data[-1][self.THUMBNAIL]
         else:
             # Detection using tensorflow posenet module
-            pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
+            pose, thumbnail, spinal_vector_score, pose_dix = self.find_keypoints(image)
 
             inference_result = None
             if not pose:
-                log.debug("No pose detected or detection score does not meet confidence threshold.")
+                log.debug(f"No pose detected or detection score does not meet confidence threshold of {self.confidence_threshold}.")
             else:
                 inference_result = []
 
-                current_body_vector_score = pose_score
+                current_body_vector_score = spinal_vector_score
 
                 # Find line angle with vertcal axis
                 left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
 
                 # save an image with drawn lines for debugging
-                self.draw_lines(thumbnail, pose_dix, pose_score)
+                if log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+                    self.draw_lines(thumbnail, pose_dix, spinal_vector_score)
 
                 for t in [-1, -2]:
                     lapse = now - self._prev_data[t][self.TIMESTAMP]
@@ -383,7 +381,6 @@ class FallDetector(TFDetectionModel):
                             box = [0, 0, 1, 1]
                             inference_result.append(('FALL', fall_score, box, leaning_angle))
                             log.info("Fall detected: %r", inference_result)
-
                             break
                         else:
                             log.debug(f"No fall detected due to low confidence score: {fall_score} < {self.confidence_threshold} min threshold. Inference result: {inference_result}")

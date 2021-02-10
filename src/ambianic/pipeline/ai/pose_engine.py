@@ -168,8 +168,9 @@ class PoseEngine:
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
         
         # overall pose score is calculated as the average of all individual keypoint scores
-        pose_scores = cnt/keypoint_count
-        poses.append(Pose(keypoint_dict, pose_scores))
+        pose_score = cnt/keypoint_count
+        log.debug(f"Overall pose score (keypoint score average): {pose_score}")
+        poses.append(Pose(keypoint_dict, pose_score))
         if cnt > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
             # save template_image for debugging
             timestr = int(time.monotonic()*1000)
@@ -177,4 +178,4 @@ class PoseEngine:
             debug_image_file_name = f'tmp-pose-detect-image-time-{timestr}-keypoints-{cnt}.jpg'
             template_image.save(debug_image_file_name, format='JPEG')
             log.debug(f"Debug image saved: {debug_image_file_name}")
-        return poses, thumbnail
+        return poses, thumbnail, pose_score
