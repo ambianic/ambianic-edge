@@ -1,12 +1,20 @@
 # Semantic Versioning Changelog
 
+## [1.10.3](https://github.com/ivelin/ambianic-edge/compare/v1.10.2...v1.10.3) (2021-02-10)
+
+
+### Bug Fixes
+
+* confidence_threshold propagation ([71972a7](https://github.com/ivelin/ambianic-edge/commit/71972a78a1d5346f79cbaf0f238051bd466d4ac0))
+* debug logging issues; closes [#257](https://github.com/ivelin/ambianic-edge/issues/257); closes [#305](https://github.com/ivelin/ambianic-edge/issues/305) ([ec172a8](https://github.com/ivelin/ambianic-edge/commit/ec172a8d6b83b836ef4ff364b843b1915d7d7940)), closes [#306](https://github.com/ivelin/ambianic-edge/issues/306)
+
 ## [1.13.3](https://github.com/ambianic/ambianic-edge/compare/v1.13.2...v1.13.3) (2021-02-09)
 
 
 ### Bug Fixes
 
-* debug logging issues; closes [#257](https://github.com/ambianic/ambianic-edge/issues/257); closes [#305](https://github.com/ambianic/ambianic-edge/issues/305) ([ec172a8](https://github.com/ambianic/ambianic-edge/commit/ec172a8d6b83b836ef4ff364b843b1915d7d7940)), closes [#306](https://github.com/ambianic/ambianic-edge/issues/306)
-* debug logging issues; closes [#257](https://github.com/ambianic/ambianic-edge/issues/257); closes [#305](https://github.com/ambianic/ambianic-edge/issues/305) ([34fbe1e](https://github.com/ambianic/ambianic-edge/commit/34fbe1e545749c9af1e6735f209e0b4f1aecfd7c))
+* adjust default confidence threshold for fall detection ([f73e3ef](https://github.com/ivelin/ambianic-edge/commit/f73e3ef7c5c0a1e888e9f82425db3586cfb4c47d)), closes [#302](https://github.com/ivelin/ambianic-edge/issues/302)
+* debug logging issues; closes [#257](https://github.com/ivelin/ambianic-edge/issues/257); closes [#305](https://github.com/ivelin/ambianic-edge/issues/305) ([34fbe1e](https://github.com/ivelin/ambianic-edge/commit/34fbe1e545749c9af1e6735f209e0b4f1aecfd7c))
 
 ## [1.13.2](https://github.com/ambianic/ambianic-edge/compare/v1.13.1...v1.13.2) (2021-02-09)
 
