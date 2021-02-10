@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [1.13.4](https://github.com/ambianic/ambianic-edge/compare/v1.13.3...v1.13.4) (2021-02-10)
+
+
+### Bug Fixes
+
+* confidence_threshold propagation ([71972a7](https://github.com/ambianic/ambianic-edge/commit/71972a78a1d5346f79cbaf0f238051bd466d4ac0))
+* fall detection confidence_threshold propagation ([08609a7](https://github.com/ambianic/ambianic-edge/commit/08609a7993c9cea419d0e8fce3c7956ba5c72fe7)), closes [#307](https://github.com/ambianic/ambianic-edge/issues/307)
+
 ## [1.10.3](https://github.com/ivelin/ambianic-edge/compare/v1.10.2...v1.10.3) (2021-02-10)
 
 
