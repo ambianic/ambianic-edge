@@ -10,7 +10,7 @@ from flask.logging import default_handler
 from requests import get
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
-from ambianic import config, DEFAULT_DATA_DIR
+from ambianic import config, DEFAULT_DATA_DIR, __version__
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic.webapp.server import samples, config_sources
 
@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 
 # configuration
 DEBUG = True
+
 
 class FlaskJob(ManagedService):
     """Flask based managed web service."""
@@ -154,7 +155,7 @@ def create_app(data_dir=None):
     # and other health monitoring tools
     @app.route('/api/status')
     def get_status():
-        response_object = {'status': 'OK'}
+        response_object = {'status': 'OK', 'version': __version__}
         resp = jsonify(response_object)
         return resp
 

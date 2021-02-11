@@ -3,7 +3,7 @@ import json
 import tempfile
 import pytest
 from ambianic.webapp import flaskr
-from ambianic import config
+from ambianic import config, __version__
 import logging
 
 log = logging.getLogger(__name__)
@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 def reset_config():
     config.reload()
+
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
@@ -54,7 +55,8 @@ def test_health_check(client):
 
 def test_status(client):
     rv = client.get('/api/status')
-    assert json.loads(rv.data)["status"] == "OK"
+    assert (json.loads(rv.data)["status"], json.loads(
+        rv.data)["version"]) == ("OK", __version__)
 
 
 def test_get_timeline(client):
