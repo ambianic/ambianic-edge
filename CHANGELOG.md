@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+# [1.14.0](https://github.com/ambianic/ambianic-edge/compare/v1.13.4...v1.14.0) (2021-02-11)
+
+
+### Features
+
+* introduced single sourcing for edge version ([27541d5](https://github.com/ambianic/ambianic-edge/commit/27541d53a574994fef015537677eca507260a1f5)), closes [#308](https://github.com/ambianic/ambianic-edge/issues/308)
+* Introduced single sourcing for edge version ([c2d122b](https://github.com/ambianic/ambianic-edge/commit/c2d122bad15bc39047c8a94f14fced44d4612a6e))
+
 ## [1.13.4](https://github.com/ambianic/ambianic-edge/compare/v1.13.3...v1.13.4) (2021-02-10)
 
 
