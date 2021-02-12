@@ -19,8 +19,12 @@ docker pull ambianic/ambianic-edge:dev
 docker run -it --rm \
   --name ambianic-edge-dev \
   --mount type=bind,source="$MY_DIR",target=/workspace \
+  --mount type=bind,source="$MY_DIR",target=/opt/ambianic-edge \
   -p 8778:8778 \
   $USB_ARG \
   ambianic/ambianic-edge:dev /workspace/src/run-dev.sh
 # on Mac, --net=host doesnt work as expected
 #  --net=host \
+
+
+#ambianic/ambianic-edge:dev /workspace/src/run-dev.sh
