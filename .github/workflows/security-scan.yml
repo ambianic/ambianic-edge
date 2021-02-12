@@ -1,5 +1,6 @@
 name: Container Security Scan
 on:
+  workflow_dispatch:
   release:
     types: [published]
   schedule:
