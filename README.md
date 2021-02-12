@@ -4,6 +4,8 @@
 [![codecov](https://codecov.io/gh/ambianic/ambianic-edge/branch/master/graph/badge.svg?token=JJlxaW5flS)](https://codecov.io/gh/ambianic/ambianic-edge)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fambianic%2Fambianic-edge.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fambianic%2Fambianic-edge?ref=badge_shield) 
 [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
+![CodeQL](https://github.com/ambianic/ambianic-edge/workflows/CodeQL/badge.svg)
+![Container Security Scan](https://github.com/ambianic/ambianic-edge/workflows/Container%20Security%20Scan/badge.svg)
 
 ![Ambianic logo][ambianic-logo]
  &nbsp; 
