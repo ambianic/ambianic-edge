@@ -12,7 +12,7 @@ currently being supported with security updates.
 
 ## Reporting a Vulnerability
 
-Please report vulnerabilities as a [new issue](https://github.com/ambianic/ambianic-edge/issues) using the BUG template with `secureity vulnerability` label.
+Please report vulnerabilities as a [new issue](https://github.com/ambianic/ambianic-edge/issues) using the BUG template with `security vulnerability` label.
 
 <!-- 
 Use this section to tell people how to report a vulnerability.
