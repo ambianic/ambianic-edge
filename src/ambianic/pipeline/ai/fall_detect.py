@@ -1,7 +1,6 @@
 """Fall detection pipe element."""
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
-from ambianic.util import stacktrace
 import logging
 import math
 import time

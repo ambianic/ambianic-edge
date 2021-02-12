@@ -1,8 +1,7 @@
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 import logging
-import time
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import ImageDraw
 
 log = logging.getLogger(__name__)
 

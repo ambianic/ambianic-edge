@@ -1,12 +1,8 @@
 """Tensorflow image detection wrapper."""
 import logging
 import time
-import re
 import numpy as np
 # from importlib import import_module
-from PIL import ImageOps
-from .inference import TFInferenceEngine
-from ambianic.pipeline import PipeElement
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 
 log = logging.getLogger(__name__)
