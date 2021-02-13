@@ -1,9 +1,10 @@
 """Test fall detection pipe element."""
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic import DEFAULT_DATA_DIR
+from ambianic.pipeline.timeline import PipelineContext
 from ambianic import logger
-from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement
 from pathlib import Path
+from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement
 
 
 _data_dir = Path(DEFAULT_DATA_DIR)
@@ -44,10 +45,7 @@ def test_config_confidence_threshold():
     assert tfe.confidence_threshold == config['confidence_threshold']
 
 
-def test_debug_image_save():
-    """In DEBUG mode Fall detection should be saving pose and fall detection
-        images while making a detection decision."""
-
+def _helper_test_debug_image_save(context: PipelineContext = None):
     log_config = {
         'level': 'DEBUG'
     }
@@ -63,7 +61,7 @@ def test_debug_image_save():
         result = image is not None and thumbnail is not None and \
             inference_result is not None
 
-    fall_detector = FallDetector(**config)
+    fall_detector = FallDetector(context=context, **config)
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
     img_1 = _get_image(file_name='fall_img_1.png')
@@ -84,3 +82,18 @@ def test_debug_image_save():
         'level': 'INFO'
     }
     logger.configure(config=log_config)
+
+
+def test_debug_image_save_no_context():
+    """In DEBUG mode Fall detection should be saving pose and fall detection
+        images while making a detection decision.
+        No config context provided."""
+    _helper_test_debug_image_save()
+
+
+def test_debug_image_save_with_context():
+    """In DEBUG mode Fall detection should be saving pose and fall detection
+        images while making a detection decision. Config context provided."""
+    context = PipelineContext()
+    context.data_dir = DEFAULT_DATA_DIR
+    _helper_test_debug_image_save(context)

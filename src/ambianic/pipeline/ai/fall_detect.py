@@ -30,7 +30,7 @@ class FallDetector(TFDetectionModel):
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
         """
-        super().__init__(model=model, 
+        super().__init__(model=model,
                          confidence_threshold=confidence_threshold,
                          **kwargs)
 

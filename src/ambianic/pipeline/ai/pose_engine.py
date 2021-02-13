@@ -58,7 +58,7 @@ class PoseEngine:
         """Creates a PoseEngine wrapper around an initialized tfengine.
         """
         if context:
-            self._sys_data_dir = self.context.data_dir
+            self._sys_data_dir = context.data_dir
         else:
             self._sys_data_dir = DEFAULT_DATA_DIR
         self._sys_data_dir = Path(self._sys_data_dir)
