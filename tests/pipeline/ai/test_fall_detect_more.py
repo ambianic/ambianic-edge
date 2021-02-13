@@ -6,14 +6,12 @@ from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement
 from pathlib import Path
 
 
-assert DEFAULT_DATA_DIR is not None
 _data_dir = Path(DEFAULT_DATA_DIR)
 _data_dir.mkdir(parents=True, exist_ok=True)
 
 
 def test_model_inputs():    
     """Verify against known model inputs."""
-    global _data_dir
     config = _fall_detect_config()
     fall_detector = FallDetector(**config)
     tfe = fall_detector._tfengine
@@ -55,8 +53,8 @@ def test_debug_image_save():
     }
     logger.configure(config=log_config)
 
-    """Expected to receive thumnail in result if image is provided and
-        poses are detected."""
+    # Expect to receive thumnail in result if image is provided and
+    #    poses are detected.
     config = _fall_detect_config()
     result = None
 
