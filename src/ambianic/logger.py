@@ -3,7 +3,6 @@ import logging
 import logging.handlers
 import os
 import pathlib
-import time
 
 DEFAULT_FILE_LOG_LEVEL = logging.INFO
 DEFAULT_CONSOLE_LOG_LEVEL = logging.WARN

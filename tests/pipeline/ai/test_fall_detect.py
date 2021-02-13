@@ -73,16 +73,14 @@ def test_fall_detection_thumbnail_present():
 
     def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None and inference_result is not None
+        result = image is not None and thumbnail is not None and \
+            inference_result is not None
 
     fall_detector = FallDetector(**config)
-
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
-
     img_1 = _get_image(file_name='fall_img_1.png')
     fall_detector.receive_next_sample(image=img_1)
-
     assert result is True
 
 
@@ -478,11 +476,11 @@ def test_draw_line_0():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = None
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
     pose_dix = {}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
 
@@ -494,7 +492,7 @@ def test_draw_line_1():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 1
 
 def test_draw_line_1_1():
@@ -505,7 +503,7 @@ def test_draw_line_1_1():
 
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
 
 def test_draw_line_2():
@@ -517,7 +515,7 @@ def test_draw_line_2():
     # The frame represents a person who is in a standing position.
     image = _get_image(file_name='fall_img_1.png')
     pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1], fall_detector.RIGHT_SHOULDER: [1,0], fall_detector.RIGHT_HIP: [1,1]}
-    lines_drawn = fall_detector.draw_lines(image, pose_dix)
+    lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 2
 
 

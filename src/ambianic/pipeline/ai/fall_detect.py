@@ -1,13 +1,15 @@
 """Fall detection pipe element."""
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
-from ambianic.util import stacktrace
+from ambianic import DEFAULT_DATA_DIR
 import logging
 import math
 import time
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 log = logging.getLogger(__name__)
+
 
 class FallDetector(TFDetectionModel):
 
@@ -28,7 +30,15 @@ class FallDetector(TFDetectionModel):
                 'ai_models/posenet_mobilenet_v1_075_721_1281_quant_decoder_edgetpu.tflite'
         }
         """
-        super().__init__(model=model, confidence_threshold=confidence_threshold, **kwargs)
+        super().__init__(model=model,
+                         confidence_threshold=confidence_threshold,
+                         **kwargs)
+
+        if self.context:
+            self._sys_data_dir = self.context.data_dir
+        else:
+            self._sys_data_dir = DEFAULT_DATA_DIR
+        self._sys_data_dir = Path(self._sys_data_dir)
 
         # previous pose detection information for frame at time t-1 and t-2 \
         # to compare pose changes against
@@ -54,17 +64,20 @@ class FallDetector(TFDetectionModel):
         # self._prev_data[1] : store data of frame at t-1
         self._prev_data[0] = self._prev_data[1] = _dix
 
-        self._pose_engine = PoseEngine(self._tfengine)
+        self._pose_engine = PoseEngine(self._tfengine, context=self.context)
         self._fall_factor = 60
         self.confidence_threshold = confidence_threshold
         log.debug(f"Initializing FallDetector with conficence threshold: {self.confidence_threshold}")
 
         # Require a minimum amount of time between two video frames in seconds.
-        # Otherwise on high performing hard, the poses could be too close to each other and have negligible difference
+        # Otherwise on high performing hard, the poses could be too close to 
+        # each other and have negligible difference
         # for fall detection purpose.
         self.min_time_between_frames = 1
-        # Require the time distance between two video frames not to exceed a certain limit in seconds.
-        # Otherwise there could be data noise which could lead false positive detections.
+        # Require the time distance between two video frames not to exceed 
+        # a certain limit in seconds.
+        # Otherwise there could be data noise which could lead 
+        # false positive detections.
         self.max_time_between_frames = 10
 
         # keypoint lookup constants
@@ -73,7 +86,8 @@ class FallDetector(TFDetectionModel):
         self.RIGHT_SHOULDER = 'right shoulder'
         self.RIGHT_HIP = 'right hip'
 
-        self.fall_detect_corr = [self.LEFT_SHOULDER, self.LEFT_HIP, self.RIGHT_SHOULDER, self.RIGHT_HIP]
+        self.fall_detect_corr = [self.LEFT_SHOULDER, self.LEFT_HIP,
+                                 self.RIGHT_SHOULDER, self.RIGHT_HIP]
 
     def process_sample(self, **sample):
         """Detect objects in sample image."""
@@ -98,14 +112,14 @@ class FallDetector(TFDetectionModel):
                 yield processed_sample
             except Exception as e:
                 log.exception('Error "%s" while processing sample. '
-                          'Dropping sample: %s',
+                              'Dropping sample: %s',
                           str(e),
                           str(sample)
                           )
 
     def calculate_angle(self, p):
         '''
-            Calculate angle b/w two lines such as 
+            Calculate angle b/w two lines such as
             left shoulder-hip with prev frame's left shoulder-hip or
             right shoulder-hip with prev frame's right shoulder-hip or
             shoulder-hip line with vertical axis
@@ -113,25 +127,29 @@ class FallDetector(TFDetectionModel):
 
         x1, y1 = p[0][0]
         x2, y2 = p[0][1]
-    
+
         x3, y3 = p[1][0]
         x4, y4 = p[1][1]
 
         theta1 = math.degrees(math.atan2(y2-y1, x1-x2))
         theta2 = math.degrees(math.atan2(y4-y3, x3-x4))
-            
+
         angle = abs(theta1-theta2)
         return angle
 
-    def is_body_line_motion_downward(self, left_angle_with_yaxis, 
-                                            rigth_angle_with_yaxis, inx):
+    def is_body_line_motion_downward(self, left_angle_with_yaxis,
+                                     rigth_angle_with_yaxis, inx):
 
         test = False
 
-        l_angle = left_angle_with_yaxis and self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]  \
-                    and left_angle_with_yaxis > self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]
-        r_angle = rigth_angle_with_yaxis and self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS] \
-                    and rigth_angle_with_yaxis > self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS]
+        l_angle = left_angle_with_yaxis and \
+            self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]  \
+            and left_angle_with_yaxis > \
+            self._prev_data[inx][self.LEFT_ANGLE_WITH_YAXIS]
+        r_angle = rigth_angle_with_yaxis and \
+            self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS] \
+            and rigth_angle_with_yaxis > \
+            self._prev_data[inx][self.RIGHT_ANGLE_WITH_YAXIS]
 
         if l_angle or r_angle:
             test = True
@@ -145,26 +163,26 @@ class FallDetector(TFDetectionModel):
         rotations = [Image.ROTATE_270, Image.ROTATE_90]
         angle = 0
         pose = None
-        poses, thumbnail = self._pose_engine.detect_poses(image)
+        poses, thumbnail, _ = self._pose_engine.detect_poses(image)
         width, height = thumbnail.size
         # if no pose detected with high confidence, 
         # try rotating the image +/- 90' to find a fallen person
         # currently only looking at pose[0] because we are focused on a lone person falls
         #while (not poses or poses[0].score < min_score) and rotations:
-        pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
-        while pose_score < min_score and rotations:
+        spinal_vector_score, pose_dix = self.estimate_spinal_vector_score(poses[0])
+        while spinal_vector_score < min_score and rotations:
           angle = rotations.pop()
           transposed = image.transpose(angle)
           # we are interested in the poses but not the rotated thumbnail
-          poses, _ = self._pose_engine.detect_poses(transposed)
-          pose_score, pose_dix = self.estimate_spinalVector_score(poses[0])
+          poses, _, _ = self._pose_engine.detect_poses(transposed)
+          spinal_vector_score, pose_dix = self.estimate_spinal_vector_score(poses[0])
 
         if poses and poses[0]:
             pose = poses[0]
 
         # lets check if we found a good pose candidate
                 
-        if (pose and pose_score >= min_score):
+        if (pose and spinal_vector_score >= min_score):
             # if the image was rotated, we need to rotate back to the original image coordinates
             # before comparing with poses in other frames.
             if angle == Image.ROTATE_90:
@@ -181,15 +199,15 @@ class FallDetector(TFDetectionModel):
                     tmp_swap = keypoint.yx[0]
                     keypoint.yx[0] = keypoint.yx[1]
                     keypoint.yx[1] = height-tmp_swap
+            # we could not detexct a pose with sufficient confidence
+            log.info(f"""A pose detected with spinal_vector_score={spinal_vector_score} >= {min_score} confidence threshold.
+                Pose keypoints: {pose_dix}"
+                """
+            )
         else:
-            # we could not detect a pose with sufficient confidence
-            log.debug(f"No pose detected with sufficient confidence. Score {pose_score} < {min_score} minimum threshold")
             pose = None
 
-        if pose_dix:
-            log.debug(f"Pose detected with confidence {pose_score} and keypoints: {pose_dix}")
-
-        return pose, thumbnail, pose_score, pose_dix
+        return pose, thumbnail, spinal_vector_score, pose_dix
 
     def find_changes_in_angle(self, pose_dix, inx):
         '''
@@ -236,7 +254,7 @@ class FallDetector(TFDetectionModel):
         self._prev_data[-2] = self._prev_data[-1]
         self._prev_data[-1] = curr_data
 
-    def draw_lines(self, thumbnail, pose_dix):
+    def draw_lines(self, thumbnail, pose_dix, score):
         """Draw body lines if available. Return number of lines drawn."""
         # save an image with drawn lines for debugging
         draw = ImageDraw.Draw(thumbnail)
@@ -257,12 +275,12 @@ class FallDetector(TFDetectionModel):
             body_lines_drawn += 1
 
         # save a thumbnail for debugging
-        if body_lines_drawn > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
-            # DEBUG: save template_image for debugging
-            timestr = int(time.monotonic()*1000)
-            path = f'tmp-fall-detect-thumbnail-{timestr}.jpg'
-            thumbnail.save(path, format='JPEG')
-
+        timestr = int(time.monotonic()*1000)
+        debug_image_file_name = \
+            f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
+        thumbnail.save(
+                       Path(self._sys_data_dir, debug_image_file_name),
+                       format='JPEG')
         return body_lines_drawn
 
     def get_line_angles_with_yaxis(self, pose_dix):
@@ -284,7 +302,7 @@ class FallDetector(TFDetectionModel):
         
         return (l_angle, r_angle)
 
-    def estimate_spinalVector_score(self, pose):
+    def estimate_spinal_vector_score(self, pose):
         pose_dix = {}
         is_leftVector = is_rightVector = False
 
@@ -326,9 +344,8 @@ class FallDetector(TFDetectionModel):
         else:
             spinalVectorScore = 0
 
-        pose_score = spinalVectorScore
-
-        return pose_score, pose_dix
+        log.debug(f"Estimated spinal vector score: {spinalVectorScore}")
+        return spinalVectorScore, pose_dix
 
     def fall_detect(self, image=None):
         assert image
@@ -345,21 +362,22 @@ class FallDetector(TFDetectionModel):
             thumbnail = self._prev_data[-1][self.THUMBNAIL]
         else:
             # Detection using tensorflow posenet module
-            pose, thumbnail, pose_score, pose_dix = self.find_keypoints(image)
+            pose, thumbnail, spinal_vector_score, pose_dix = self.find_keypoints(image)
 
             inference_result = None
             if not pose:
-                log.debug("No pose detected or detection score does not meet confidence threshold.")
+                log.debug(f"No pose detected or detection score does not meet confidence threshold of {self.confidence_threshold}.")
             else:
                 inference_result = []
 
-                current_body_vector_score = pose_score
+                current_body_vector_score = spinal_vector_score
 
                 # Find line angle with vertcal axis
                 left_angle_with_yaxis, rigth_angle_with_yaxis = self.get_line_angles_with_yaxis(pose_dix)
 
                 # save an image with drawn lines for debugging
-                self.draw_lines(thumbnail, pose_dix)
+                if log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+                    self.draw_lines(thumbnail, pose_dix, spinal_vector_score)
 
                 for t in [-1, -2]:
                     lapse = now - self._prev_data[t][self.TIMESTAMP]
@@ -383,7 +401,6 @@ class FallDetector(TFDetectionModel):
                             box = [0, 0, 1, 1]
                             inference_result.append(('FALL', fall_score, box, leaning_angle))
                             log.info("Fall detected: %r", inference_result)
-
                             break
                         else:
                             log.debug(f"No fall detected due to low confidence score: {fall_score} < {self.confidence_threshold} min threshold. Inference result: {inference_result}")

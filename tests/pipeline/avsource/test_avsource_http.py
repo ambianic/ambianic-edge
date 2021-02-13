@@ -278,7 +278,7 @@ def test_exception_on_http_fetch_continuous():
         )
     t.start()
     avsource.stop()
-    avsource._fetch_img_exception_recovery_called.wait(timeout=10)
+    assert avsource._fetch_img_exception_recovery_called.wait(timeout=10)
     t.join(timeout=10)
     assert not t.is_alive()
     assert avsource._run_http_fetch_called

@@ -2,14 +2,14 @@
 import logging
 import logging.handlers
 import os
-import pathlib
 import time
 from watchdog.observers import Observer
 
 from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic import logger, config, get_config_file, get_secrets_file, load_config
+from ambianic import logger, config, get_config_file, \
+    get_secrets_file, load_config
 from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)

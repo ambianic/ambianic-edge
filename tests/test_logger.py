@@ -2,16 +2,12 @@
 import logging
 import logging.handlers
 import os
-from time import sleep
-import ambianic
-from ambianic.server import AmbianicServer
-from ambianic import server, config, logger, load_config
-import yaml
-import pytest
+from ambianic import config, logger
 
 log = logging.getLogger(__name__)
 
 _dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
