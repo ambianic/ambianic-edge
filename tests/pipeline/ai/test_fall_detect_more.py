@@ -80,7 +80,7 @@ def test_debug_image_save():
     # cleanup after test
     all_tmp_files = pose_img_files + fall_img_files
     for f in all_tmp_files:
-        f.unlink
+        f.unlink()
     # return logger level to INFO to prevent side effects in other tests
     log_config = {
         'level': 'INFO'

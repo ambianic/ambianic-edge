@@ -5,7 +5,7 @@
 
 ### Bug Fixes
 
-* dall detection debug logging ([f06f218](https://github.com/ivelin/ambianic-edge/commit/f06f21867c7a8e2dbde03c3474221f9b3e261a33))
+* fall detection debug logging ([f06f218](https://github.com/ivelin/ambianic-edge/commit/f06f21867c7a8e2dbde03c3474221f9b3e261a33))
 
 ## [1.10.4](https://github.com/ivelin/ambianic-edge/compare/v1.10.3...v1.10.4) (2021-02-10)
 
@@ -14,6 +14,13 @@
 
 * fall detection confidence_threshold propagation ([08609a7](https://github.com/ivelin/ambianic-edge/commit/08609a7993c9cea419d0e8fce3c7956ba5c72fe7)), closes [#307](https://github.com/ivelin/ambianic-edge/issues/307)
 * fall detection debug info ([d497374](https://github.com/ivelin/ambianic-edge/commit/d497374da3dae6ce5c65a9e859e6bcf5c027a0bd))
+# [1.14.0](https://github.com/ambianic/ambianic-edge/compare/v1.13.4...v1.14.0) (2021-02-11)
+
+
+### Features
+
+* introduced single sourcing for edge version ([27541d5](https://github.com/ambianic/ambianic-edge/commit/27541d53a574994fef015537677eca507260a1f5)), closes [#308](https://github.com/ambianic/ambianic-edge/issues/308)
+* Introduced single sourcing for edge version ([c2d122b](https://github.com/ambianic/ambianic-edge/commit/c2d122bad15bc39047c8a94f14fced44d4612a6e))
 
 ## [1.13.4](https://github.com/ambianic/ambianic-edge/compare/v1.13.3...v1.13.4) (2021-02-10)
 
