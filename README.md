@@ -6,6 +6,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/ambianic/ambianic-edge/badge)](https://www.codefactor.io/repository/github/ambianic/ambianic-edge)
 ![CodeQL](https://github.com/ambianic/ambianic-edge/workflows/CodeQL/badge.svg)
 ![Container Security Scan](https://github.com/ambianic/ambianic-edge/workflows/Container%20Security%20Scan/badge.svg)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ambianic/ambianic-edge.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ambianic/ambianic-edge/context:python)
 
 ![Ambianic logo][ambianic-logo]
  &nbsp; 
