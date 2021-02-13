@@ -1,5 +1,17 @@
 # Semantic Versioning Changelog
 
+## [1.14.1](https://github.com/ambianic/ambianic-edge/compare/v1.14.0...v1.14.1) (2021-02-13)
+
+
+### Bug Fixes
+
+* codefactor alerts ([d12c999](https://github.com/ambianic/ambianic-edge/commit/d12c99982edc0f65e9ff8417c39a909dc33679f2))
+* dall detection debug logging ([f06f218](https://github.com/ambianic/ambianic-edge/commit/f06f21867c7a8e2dbde03c3474221f9b3e261a33))
+* fall detection debug info ([d497374](https://github.com/ambianic/ambianic-edge/commit/d497374da3dae6ce5c65a9e859e6bcf5c027a0bd))
+* improve fall detection debug info ([7762752](https://github.com/ambianic/ambianic-edge/commit/776275235007835527c211d629d98ae1d4d46181)), closes [#309](https://github.com/ambianic/ambianic-edge/issues/309)
+* merge with upstream master ([4ec3a60](https://github.com/ambianic/ambianic-edge/commit/4ec3a60d380382558af8a50949807f138776f6b5))
+* test coverage and linting ([0ff1007](https://github.com/ambianic/ambianic-edge/commit/0ff1007f4ea53aa11ad818595478887b1966ea0e))
+
 # [1.11.0](https://github.com/ivelin/ambianic-edge/compare/v1.10.5...v1.11.0) (2021-02-13)
 
 
