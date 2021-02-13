@@ -73,16 +73,14 @@ def test_fall_detection_thumbnail_present():
 
     def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None and inference_result is not None
+        result = image is not None and thumbnail is not None and \
+            inference_result is not None
 
     fall_detector = FallDetector(**config)
-
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
-
     img_1 = _get_image(file_name='fall_img_1.png')
     fall_detector.receive_next_sample(image=img_1)
-
     assert result is True
 
 

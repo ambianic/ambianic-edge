@@ -1,10 +1,12 @@
 """Fall detection pipe element."""
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from ambianic.pipeline.ai.pose_engine import PoseEngine
+from ambianic import DEFAULT_DATA_DIR
 import logging
 import math
 import time
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +34,12 @@ class FallDetector(TFDetectionModel):
                          confidence_threshold=confidence_threshold,
                          **kwargs)
 
+        if self.context:
+            self._sys_data_dir = self.context.data_dir
+        else:
+            self._sys_data_dir = DEFAULT_DATA_DIR
+        self._sys_data_dir = Path(self._sys_data_dir)
+
         # previous pose detection information for frame at time t-1 and t-2 \
         # to compare pose changes against
         self._prev_data = [None] * 2
@@ -56,7 +64,7 @@ class FallDetector(TFDetectionModel):
         # self._prev_data[1] : store data of frame at t-1
         self._prev_data[0] = self._prev_data[1] = _dix
 
-        self._pose_engine = PoseEngine(self._tfengine)
+        self._pose_engine = PoseEngine(self._tfengine, context=self.context)
         self._fall_factor = 60
         self.confidence_threshold = confidence_threshold
         log.debug(f"Initializing FallDetector with conficence threshold: {self.confidence_threshold}")
@@ -191,7 +199,7 @@ class FallDetector(TFDetectionModel):
                     tmp_swap = keypoint.yx[0]
                     keypoint.yx[0] = keypoint.yx[1]
                     keypoint.yx[1] = height-tmp_swap
-            # we could not detect a pose with sufficient confidence
+            # we could not detexct a pose with sufficient confidence
             log.info(f"""A pose detected with spinal_vector_score={spinal_vector_score} >= {min_score} confidence threshold.
                 Pose keypoints: {pose_dix}"
                 """
@@ -268,9 +276,11 @@ class FallDetector(TFDetectionModel):
 
         # save a thumbnail for debugging
         timestr = int(time.monotonic()*1000)
-        path = f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
-        thumbnail.save(path, format='JPEG')
-
+        debug_image_file_name = \
+            f'tmp-fall-detect-thumbnail-{timestr}-score-{score}.jpg'
+        thumbnail.save(
+                       Path(self._sys_data_dir, debug_image_file_name),
+                       format='JPEG')
         return body_lines_drawn
 
     def get_line_angles_with_yaxis(self, pose_dix):

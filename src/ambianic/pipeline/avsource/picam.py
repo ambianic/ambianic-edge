@@ -47,7 +47,11 @@ class Picamera():
             return picamera_override.PiCamera()
 
     def run(self):
-        with self._get_camera() as camera:
+        cam = self._get_camera()
+        if cam is None:
+            # picam not available
+            return
+        with cam as camera:
 
             if self.has_failure():
                 return None
