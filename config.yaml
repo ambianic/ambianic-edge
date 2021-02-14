@@ -44,7 +44,9 @@ sources:
     live: true
 
   recorded_cam_feed:
-    uri: file:///workspace/tests/pipeline/ai/fall_img_1.png
+    #uri: file:///workspace/tests/pipeline/ai/fall_img_1.png
+    uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
+
 
 #    type: video
 #    live: true

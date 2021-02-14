@@ -75,7 +75,7 @@ class SaveDetectionSamples(PipeElement):
         if self.notification_config is not None and self.notification_config.get("providers"):
             self.notification = NotificationHandler()
 
-    def _save_sample(self,
+    def _save_sample_old(self,
                      inf_time=None,
                      image=None,
                      thumbnail=None,
@@ -131,12 +131,16 @@ class SaveDetectionSamples(PipeElement):
         self.notify(save_json)
         return image_path, json_path
 
-    def _save_sample_new(self,
+    def _save_sample(self,
                      inf_time=None,
                      image=None,
                      thumbnail=None,
                      inference_result=None,
                      inference_meta=None):
+
+        print("\n ****************************** : in store.py file ")
+        print(inference_result)
+        print("****************************************")
         time_prefix = inf_time.strftime("%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}")
         image_file = time_prefix.format(suffix='image', fext='jpg')
         image_path = self._output_directory / image_file
@@ -144,34 +148,7 @@ class SaveDetectionSamples(PipeElement):
         thumbnail_path = self._output_directory / thumbnail_file
         json_file = time_prefix.format(suffix='inference', fext='json')
         json_path = self._output_directory / json_file
-        inf_json = []
-        if inference_result:
-            for inf in inference_result:
-                label, confidence, box, leaning_angle, keypoint_corr = inf
-                log.info('label: %s , confidence: %.0f, box: %s, leaning_angle: %.0f, keypoint_corr: %s',
-                        label,
-                        confidence,
-                        box,
-                        leaning_angle,
-                        keypoint_corr)
-                one_inf = {
-                    'label': label,
-                    'confidence': float(confidence),
-                    'box': {
-                        'xmin': float(box[0]),
-                        'ymin': float(box[1]),
-                        'xmax': float(box[2]),
-                        'ymax': float(box[3]),
-                    },
-                    'leaning_angle': float(leaning_angle),
-                    'keypoint_corr': {
-                        'left shoulder': keypoint_corr.get('left shoulder', None),
-                        'left hip': keypoint_corr.get('left hip', None),
-                        'right shoulder': keypoint_corr.get('right shoulder', None),
-                        'right hip': keypoint_corr.get('right hip', None)
-                    }
-                }
-                inf_json.append(one_inf)
+
         save_json = {
             'id': uuid.uuid4().hex,
             'datetime': inf_time.isoformat(),
@@ -182,7 +159,7 @@ class SaveDetectionSamples(PipeElement):
             # this will be important when resloving REST API data
             # file serving
             'rel_dir': self._rel_data_dir,
-            'inference_result': inf_json,
+            'inference_result': inference_result,
             'inference_meta': inference_meta
         }
         image.save(image_path)

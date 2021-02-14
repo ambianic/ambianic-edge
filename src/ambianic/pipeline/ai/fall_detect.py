@@ -83,6 +83,9 @@ class FallDetector(TFDetectionModel):
             try:
                 image = sample['image']
                 inference_result, thumbnail = self.fall_detect(image=image)
+
+                inference_result = self.convert_inference_result(inference_result)
+
                 inf_meta = {
                     'display': 'Fall Detection',
                 }
@@ -374,10 +377,7 @@ class FallDetector(TFDetectionModel):
                         fall_score = leaning_probability * (self._prev_data[t][self.BODY_VECTOR_SCORE] + current_body_vector_score) / 2
 
                         if fall_score >= self.confidence_threshold:
-                            # insert a box that covers the whole image as a workaround
-                            # to meet the expected format of the save_detections element
-                            box = [0, 0, 1, 1]
-                            inference_result.append(('FALL', fall_score, box, leaning_angle, pose_dix))
+                            inference_result.append(('FALL', fall_score, leaning_angle, pose_dix))
                             log.info("Fall detected: %r", inference_result)
 
                             break
@@ -389,4 +389,32 @@ class FallDetector(TFDetectionModel):
 
         self.log_stats(start_time=start_time)
         log.debug("thumbnail: %r", thumbnail) 
+
         return inference_result, thumbnail
+
+
+    def convert_inference_result(self, inference_result):
+        inf_json = []
+
+        if inference_result:
+            for inf in inference_result:
+                label, confidence, leaning_angle, keypoint_corr = inf
+                log.info('label: %s , confidence: %.0f, leaning_angle: %.0f, keypoint_corr: %s',
+                        label,
+                        confidence,
+                        leaning_angle,
+                        keypoint_corr)
+                one_inf = {
+                    'label': label,
+                    'confidence': float(confidence),
+                    'leaning_angle': float(leaning_angle),
+                    'keypoint_corr': {
+                        'left shoulder': keypoint_corr.get('left shoulder', None),
+                        'left hip': keypoint_corr.get('left hip', None),
+                        'right shoulder': keypoint_corr.get('right shoulder', None),
+                        'right hip': keypoint_corr.get('right hip', None)
+                    }
+                }
+                inf_json.append(one_inf)
+
+        return inf_json
