@@ -417,7 +417,7 @@ def test_background_image():
 
     def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None and inference_result is None
+        result = image is not None and thumbnail is not None and not inference_result
     fall_detector = FallDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
@@ -428,7 +428,6 @@ def test_background_image():
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
 
-    print("&&&&&&&&&&&&&&&&&&&&&& : ", result)
     assert result is True
 
 
