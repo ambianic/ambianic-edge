@@ -16,10 +16,10 @@ class FaceDetector(TFBoundingBoxDetection):
         width, height = image.size
 
         # Setting the points for cropped image
-        left = box[0]*width
-        top = box[1]*height
-        right = box[2]*width
-        bottom = box[3]*height
+        left = box['xmin']*width
+        top = box['ymin']*height
+        right = box['xmax']*width
+        bottom = box['ymax']*height
 
         # Cropped image of above dimension
         # (It will not change orginal image)
@@ -38,6 +38,7 @@ class FaceDetector(TFBoundingBoxDetection):
             try:
                 image = sample['image']
                 prev_inference_result = sample.get('inference_result', None)
+
                 log.debug("Received sample with inference_result: %s",
                           str(prev_inference_result))
                 person_regions = []
@@ -46,7 +47,9 @@ class FaceDetector(TFBoundingBoxDetection):
                 else:
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
-                    for label, confidence, box in prev_inference_result:
+                    for e_result in prev_inference_result:
+                        label, confidence, box = e_result['label'], e_result['confidence'], e_result['box']
+
                         if label == 'person' and \
                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
@@ -56,8 +59,7 @@ class FaceDetector(TFBoundingBoxDetection):
                         person_image = self.crop_image(image, box)
                         thumbnail, tensor_image, inference_result = \
                             self.detect(image=person_image)
-                        
-                        print("before inference_result : ", inference_result)
+
                         inference_result = self.convert_inference_result(inference_result)
 
                         log.debug('Face detection inference_result: %r',

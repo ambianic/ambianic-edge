@@ -28,7 +28,7 @@ cd $BASEDIR/../
 echo PWD=$PWD
 #python3 -m pytest --cov=ambianic --cov-report=xml --cov-report=term tests/
 python3 -m pytest --cov=ambianic --cov-report=xml --cov-report=term tests/pipeline/ai/ -rP
-
+#python3 -m pytest --cov=ambianic --log-cli-level=DEBUG --cov-report=xml --cov-report=term tests/pipeline/ai/ 
 # if -u command line argument is passed, submit code coverage report to codecov.io
 # parse command line arguments
 # if [ "$upload_codecov" = true ] ; then

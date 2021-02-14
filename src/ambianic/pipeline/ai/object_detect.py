@@ -21,7 +21,6 @@ class ObjectDetector(TFBoundingBoxDetection):
                 thumbnail, tensor_image, inference_result = \
                     self.detect(image=image)
 
-                print("before inference_result : ", inference_result)
                 inference_result = self.convert_inference_result(inference_result)
 
                 log.debug('Object detection inference_result: %r',

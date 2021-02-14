@@ -133,13 +133,13 @@ def test_bad_sample_good_sample():
     # bad sample
     face_detector.receive_next_sample(
         image=None,
-        inference_result=[('person', 1, [-1, -2, -3, -4]), ]
+        inference_result = [{'label': 'person', 'confidence': 1, 'box': {'xmin': -1, 'ymin': -2, 'xmax': -3, 'ymax': -4}}]
         )
     # good sample
     img = _get_image(file_name='person-face.jpg')
     face_detector.receive_next_sample(
         image=img,
-        inference_result=[('person', 1, [0, 0, 1, 1]), ]
+        inference_result = [{'label': 'person', 'confidence': 1, 'box': {'xmin': 0, 'ymin': 0, 'xmax': 1, 'ymax': 1}}]
         )
     assert result
     assert len(result) == 1
@@ -444,7 +444,7 @@ def test_one_person_face_high_confidence_one_stage_pipe():
     img = _get_image(file_name='person-face.jpg')
     face_detector.receive_next_sample(
         image=img,
-        inference_result=[('person', 1, [0, 0, 1, 1]), ]
+        inference_result = [{'label': 'person', 'confidence': 1, 'box': {'xmin': 0, 'ymin': 0, 'xmax': 1, 'ymax': 1}}]
         )
     assert result
     assert len(result) == 1
