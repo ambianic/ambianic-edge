@@ -81,6 +81,7 @@ class SaveDetectionSamples(PipeElement):
                      thumbnail=None,
                      inference_result=None,
                      inference_meta=None):
+
         time_prefix = inf_time.strftime("%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}")
         image_file = time_prefix.format(suffix='image', fext='jpg')
         image_path = self._output_directory / image_file
@@ -88,25 +89,7 @@ class SaveDetectionSamples(PipeElement):
         thumbnail_path = self._output_directory / thumbnail_file
         json_file = time_prefix.format(suffix='inference', fext='json')
         json_path = self._output_directory / json_file
-        inf_json = []
-        if inference_result:
-            for inf in inference_result:
-                label, confidence, box = inf[0:3]
-                log.info('label: %s , confidence: %.0f, box: %s',
-                        label,
-                        confidence,
-                        box)
-                one_inf = {
-                    'label': label,
-                    'confidence': float(confidence),
-                    'box': {
-                        'xmin': float(box[0]),
-                        'ymin': float(box[1]),
-                        'xmax': float(box[2]),
-                        'ymax': float(box[3]),
-                    }
-                }
-                inf_json.append(one_inf)
+
         save_json = {
             'id': uuid.uuid4().hex,
             'datetime': inf_time.isoformat(),
@@ -117,7 +100,7 @@ class SaveDetectionSamples(PipeElement):
             # this will be important when resloving REST API data
             # file serving
             'rel_dir': self._rel_data_dir,
-            'inference_result': inf_json,
+            'inference_result': inference_result,
             'inference_meta': inference_meta
         }
         image.save(image_path)
