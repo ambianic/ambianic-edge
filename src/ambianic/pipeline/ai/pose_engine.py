@@ -1,7 +1,10 @@
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
+from ambianic import DEFAULT_DATA_DIR
 import logging
+import time
 import numpy as np
 from PIL import ImageDraw
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -51,15 +54,22 @@ class Pose:
 
 class PoseEngine:
     """Engine used for pose tasks."""
-    def __init__(self, tfengine=None):
+    def __init__(self, tfengine=None, context=None):
         """Creates a PoseEngine wrapper around an initialized tfengine.
         """
+        if context:
+            self._sys_data_dir = context.data_dir
+        else:
+            self._sys_data_dir = DEFAULT_DATA_DIR
+        self._sys_data_dir = Path(self._sys_data_dir)
         assert tfengine is not None
         self._tfengine = tfengine
-        
+
         self._input_tensor_shape = self.get_input_tensor_shape()
         _, self._tensor_image_height, self._tensor_image_width, self._tensor_image_depth = \
                                                 self.get_input_tensor_shape()
+        self.confidence_threshold = self._tfengine.confidence_threshold
+        log.debug(f"Initializing PoseEngine with confidence threshold {self.confidence_threshold}")
 
 
     def get_input_tensor_shape(self):
@@ -102,15 +112,13 @@ class PoseEngine:
     def tf_interpreter(self):
         return self._tfengine._tf_interpreter
 
-    def DetectPosesInImage(self, img):
+    def detect_poses(self, img):
         """
         Detects poses in a given image.
-
         :Parameters:
         ----------
         img : PIL.Image
             Input Image for AI model detection.
-
         :Returns:
         -------
         poses:
@@ -149,21 +157,34 @@ class PoseEngine:
         keypoint_dict = {}
         cnt = 0
 
-        for point_i in range(kps.shape[0]):
+        keypoint_count = kps.shape[0]
+        for point_i in range(keypoint_count):
             x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
         
-            if prob > 0.60:
+            if prob > self.confidence_threshold:
                 cnt += 1
+                if log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+                    #draw on image and save it for debugging
+                    draw = ImageDraw.Draw(template_image)
+                    draw.line(((0,0), (x, y)), fill='blue')
+
             keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
-            # draw on image and save it for debugging
-            draw = ImageDraw.Draw(template_image)
-            draw.line(((0,0), (x, y)), fill='red')
-        
-        pose_scores = cnt/17
-        poses.append(Pose(keypoint_dict, pose_scores))
-        # DEBUG: save template_image for debugging
-        # DEBUG: timestr = int(time.monotonic()*1000)
-        # DEBUG: template_image.save(f'tmp-template-image-time-{timestr}-keypoints-{cnt}.jpg', format='JPEG')
-        return poses, thumbnail
+
+        # overall pose score is calculated as the average of all individual keypoint scores
+        pose_score = cnt/keypoint_count
+        log.debug(f"Overall pose score (keypoint score average): {pose_score}")
+        poses.append(Pose(keypoint_dict, pose_score))
+        if cnt > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+            # save template_image for debugging
+            timestr = int(time.monotonic()*1000)
+            log.debug(f"Detected a pose with {cnt} keypoints that score over the minimum confidence threshold of {self.confidence_threshold}.")
+            debug_image_file_name = \
+                f'tmp-pose-detect-image-time-{timestr}-keypoints-{cnt}.jpg'
+            template_image.save(
+                                Path(self._sys_data_dir,
+                                     debug_image_file_name),
+                                format='JPEG')
+            log.debug(f"Debug image saved: {debug_image_file_name}")
+        return poses, thumbnail, pose_score
