@@ -71,7 +71,7 @@ ai_models:
 pipelines:
    # Pipeline names could be descriptive, e.g. front_door_watch or entry_room_watch.
    area_watch:
-     - source: picamera
+     - source: recorded_cam_feed
      - detect_objects: # run ai inference on the input data
         ai_model: image_detection
         confidence_threshold: 0.6

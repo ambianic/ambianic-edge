@@ -143,7 +143,7 @@ def test_fall_detection_case_2_1():
     fall_detector.min_time_between_frames = safe_min
     fall_detector.receive_next_sample(image=img_2)
 
-    assert result is None
+    assert not result
 
 def test_fall_detection_case_2_2():
     """Expected to detect a fall because key-points are detected, the angle criteria is met and the time distance between frames is not too short."""
@@ -173,8 +173,12 @@ def test_fall_detection_case_2_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -208,8 +212,13 @@ def test_fall_detection_case_3_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
@@ -244,8 +253,13 @@ def test_fall_detection_case_3_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
@@ -403,7 +417,7 @@ def test_background_image():
 
     def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None and inference_result is None
+        result = image is not None and thumbnail is not None and not inference_result
     fall_detector = FallDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
@@ -413,6 +427,7 @@ def test_background_image():
     time.sleep(fall_detector.min_time_between_frames)
     img = _get_image(file_name='background.jpg')
     fall_detector.receive_next_sample(image=img)
+
     assert result is True
 
 
@@ -463,8 +478,13 @@ def test_bad_sample_good_sample():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -565,8 +585,13 @@ def test_fall_detection_2_frame_back_case_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -614,8 +639,13 @@ def test_fall_detection_2_frame_back_case_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle, keypoint_corr = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr   
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
