@@ -47,10 +47,12 @@ class FaceDetector(TFBoundingBoxDetection):
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
                     for e_result in prev_inference_result:
-                        label, confidence, box = e_result['label'], e_result['confidence'], e_result['box']
+                        label, confidence, box = e_result['label'], \
+                                                 e_result['confidence'], \
+                                                 e_result['box']
 
                         if label == 'person' and \
-                          confidence >= self._tfengine.confidence_threshold:
+                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
                     log.debug('Received %d person boxes for face detection',
                               len(person_regions))
@@ -59,7 +61,8 @@ class FaceDetector(TFBoundingBoxDetection):
                         thumbnail, tensor_image, inference_result = \
                             self.detect(image=person_image)
 
-                        inference_result = self.convert_inference_result(inference_result)
+                        inference_result = self.convert_inference_result(
+                            inference_result)
                         log.debug('Face detection inference_result: %r',
                                   inference_result)
                         inf_meta = {
@@ -85,9 +88,9 @@ class FaceDetector(TFBoundingBoxDetection):
             for inf in inference_result:
                 label, confidence, box = inf[0:3]
                 log.info('label: %s , confidence: %.0f, box: %s',
-                        label,
-                        confidence,
-                        box)
+                         label,
+                         confidence,
+                         box)
                 one_inf = {
                     'label': label,
                     'confidence': float(confidence),

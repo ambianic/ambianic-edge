@@ -444,7 +444,8 @@ def test_one_person_face_high_confidence_one_stage_pipe():
     img = _get_image(file_name='person-face.jpg')
     face_detector.receive_next_sample(
         image=img,
-        inference_result = [{'label': 'person', 'confidence': 1, 'box': {'xmin': 0, 'ymin': 0, 'xmax': 1, 'ymax': 1}}]
+        inference_result =[{'label': 'person', 'confidence': 1,
+                            'box': {'xmin': 0, 'ymin': 0, 'xmax': 1, 'ymax': 1}}]
         )
     assert result
     assert len(result) == 1

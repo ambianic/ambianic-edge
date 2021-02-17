@@ -21,7 +21,8 @@ class ObjectDetector(TFBoundingBoxDetection):
                 thumbnail, tensor_image, inference_result = \
                     self.detect(image=image)
 
-                inference_result = self.convert_inference_result(inference_result)
+                inference_result = self.convert_inference_result(
+                    inference_result)
                 log.debug('Object detection inference_result: %r',
                           inference_result)
                 inf_meta = {
@@ -50,9 +51,9 @@ class ObjectDetector(TFBoundingBoxDetection):
             for inf in inference_result:
                 label, confidence, box = inf[0:3]
                 log.info('label: %s , confidence: %.0f, box: %s',
-                        label,
-                        confidence,
-                        box)
+                         label,
+                         confidence,
+                         box)
                 one_inf = {
                     'label': label,
                     'confidence': float(confidence),

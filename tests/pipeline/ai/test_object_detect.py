@@ -112,7 +112,7 @@ def test_one_person():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    
+
     category = result[0]['label']
     confidence = result[0]['confidence']
     (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
