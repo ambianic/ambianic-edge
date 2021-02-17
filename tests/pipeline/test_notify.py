@@ -102,7 +102,20 @@ def test_notification_with_attachments():
         notify=notify,
     )
     img = Image.new('RGB', (60, 30), color='red')
-    detections = [('person', 0.98, (0, 1, 2, 3))]
+
+    detections = [
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
                                                   inference_result=detections))
@@ -139,7 +152,20 @@ def test_plain_notification():
         notify=notify,
     )
     img = Image.new('RGB', (60, 30), color='red')
-    detections = [('person', 0.98, (0, 1, 2, 3))]
+
+    detections = [
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
                                                   inference_result=detections))
