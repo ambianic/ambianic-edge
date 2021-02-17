@@ -435,7 +435,8 @@ class FallDetector(TFDetectionModel):
 
                         # Get leaning_probability by comparing leaning_angle
                         # with fall_factor probability.
-                        leaning_probability = 1 if leaning_angle > self._fall_factor else 0
+                        leaning_probability = 1 \
+                            if leaning_angle > self._fall_factor else 0
 
                         # Calculate fall score using average of current and \
                         # previous frame's body vector score with \
