@@ -112,12 +112,7 @@ def test_one_person():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -140,12 +135,7 @@ def test_one_person_thermal():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -186,12 +176,7 @@ def test_bad_sample_good_sample():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -214,12 +199,7 @@ def test_one_person_no_face():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -245,12 +225,7 @@ def test_one_label_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > confidence_threshold
     assert x0 > 0 and x0 < x1
@@ -274,22 +249,12 @@ def test_two_labels_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.7
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-
-    category = result[1]['label']
-    confidence = result[1]['confidence']
-    (x0, y0) = result[1]['box']['xmin'], result[1]['box']['ymin']
-    (x1, y1) = result[1]['box']['xmax'], result[1]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[1]
     assert category == 'couch'
     assert confidence > 0.6
     assert x0 > 0 and x0 < x1
@@ -314,22 +279,12 @@ def test_no_labels_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-
-    category = result[0]['label']
-    confidence = result[0]['confidence']
-    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
-    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[0]
     assert category == 'person'
     assert confidence > 0.7
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-
-    category = result[1]['label']
-    confidence = result[1]['confidence']
-    (x0, y0) = result[1]['box']['xmin'], result[1]['box']['ymin']
-    (x1, y1) = result[1]['box']['xmax'], result[1]['box']['ymax']
-
+    category, confidence, (x0, y0, x1, y1) = result[1]
     assert category == 'couch'
     assert confidence > 0.6
     assert x0 > 0 and x0 < x1

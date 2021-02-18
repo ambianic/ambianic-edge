@@ -28,7 +28,6 @@ KEYPOINTS = (
   'right ankle'
 )
 
-
 class Keypoint:
     __slots__ = ['k', 'yx', 'score']
 
@@ -67,26 +66,23 @@ class PoseEngine:
         self._tfengine = tfengine
 
         self._input_tensor_shape = self.get_input_tensor_shape()
-
         _, self._tensor_image_height, self._tensor_image_width, self._tensor_image_depth = \
-            self.get_input_tensor_shape()
-
+                                                self.get_input_tensor_shape()
         self.confidence_threshold = self._tfengine.confidence_threshold
-        log.debug(f"Initializing PoseEngine with confidence threshold \
-            {self.confidence_threshold}")
+        log.debug(f"Initializing PoseEngine with confidence threshold {self.confidence_threshold}")
+
 
     def get_input_tensor_shape(self):
         """Get the shape of the input tensor structure.
         Gets the shape required for the input tensor.
-        For models trained for image classification / detection, the shape is
-        always [1, height, width, channels].
-        To be used as input for :func:`run_inference`,
-        this tensor shape must be flattened into a 1-D array with size
-        ``height * width * channels``. To instead get that 1-D array size, use
+        For models trained for image classification / detection, the shape is always
+        [1, height, width, channels]. To be used as input for :func:`run_inference`,
+        this tensor shape must be flattened into a 1-D array with size ``height *
+        width * channels``. To instead get that 1-D array size, use
         :func:`required_input_array_size`.
         Returns:
-        A 1-D array (:obj:`numpy.ndarray`) representing the required input
-        tensor shape.
+        A 1-D array (:obj:`numpy.ndarray`) representing the required input tensor
+        shape.
         """
         return self._tfengine.input_details[0]['shape']
 
@@ -96,24 +92,20 @@ class PoseEngine:
 
         for i in range(heatmap_data.shape[-1]):
 
-            joint_heatmap = heatmap_data[..., i]
-            max_val_pos = np.squeeze(
-                np.argwhere(joint_heatmap == np.max(joint_heatmap)))
-            remap_pos = np.array(max_val_pos/8*self._tensor_image_height,
-                                 dtype=np.int32)
-            pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0],
-                                 max_val_pos[1], i])
-            pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0],
-                                 max_val_pos[1], i+joint_num])
+            joint_heatmap = heatmap_data[...,i]
+            max_val_pos = np.squeeze(np.argwhere(joint_heatmap == np.max(joint_heatmap)))
+            remap_pos = np.array(max_val_pos/8*self._tensor_image_height, dtype=np.int32)
+            pose_kps[i, 0] = int(remap_pos[0] + offset_data[max_val_pos[0], max_val_pos[1], i])
+            pose_kps[i, 1] = int(remap_pos[1] + offset_data[max_val_pos[0], max_val_pos[1], i+joint_num])
             max_prob = np.max(joint_heatmap)
             pose_kps[i, 3] = max_prob
             if max_prob > threshold:
-                if pose_kps[i, 0] < self._tensor_image_height and \
-                   pose_kps[i, 1] < self._tensor_image_width:
+                if pose_kps[i, 0] < self._tensor_image_height and pose_kps[i, 1] < self._tensor_image_width:
                     pose_kps[i, 2] = 1
 
         return pose_kps
 
+    
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
@@ -137,39 +129,31 @@ class PoseEngine:
             Resized image fitting the AI model input tensor.
         """
 
-        _tensor_input_size = (self._tensor_image_width,
-                              self._tensor_image_height)
+        _tensor_input_size = (self._tensor_image_width, self._tensor_image_height)
 
         # thumbnail is a proportionately resized image
-        thumbnail = TFDetectionModel.thumbnail(image=img,
-                                               desired_size=_tensor_input_size)
+        thumbnail = TFDetectionModel.thumbnail(image=img, desired_size=_tensor_input_size)
         # convert thumbnail into an image with the exact size
-        # as the input tensor preserving proportions by padding with
-        # a solid color as needed
-        template_image = TFDetectionModel.resize(image=thumbnail,
-                                                 desired_size=_tensor_input_size)
-
+        # as the input tensor preserving proportions by padding with a solid color as needed
+        template_image = TFDetectionModel.resize(image=thumbnail, desired_size=_tensor_input_size)
+       
         template_input = np.expand_dims(template_image.copy(), axis=0)
         floating_model = self._tfengine.input_details[0]['dtype'] == np.float32
 
         if floating_model:
             template_input = (np.float32(template_input) - 127.5) / 127.5
 
-        self.tf_interpreter().\
-            set_tensor(self._tfengine.input_details[0]['index'],
-                       template_input)
+        self.tf_interpreter().set_tensor(self._tfengine.input_details[0]['index'], template_input)
         self.tf_interpreter().invoke()
 
-        template_output_data = self.tf_interpreter().\
-            get_tensor(self._tfengine.output_details[0]['index'])
-        template_offset_data = self.tf_interpreter().\
-            get_tensor(self._tfengine.output_details[1]['index'])
+        template_output_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[0]['index'])
+        template_offset_data = self.tf_interpreter().get_tensor(self._tfengine.output_details[1]['index'])
 
         template_heatmaps = np.squeeze(template_output_data)
         template_offsets = np.squeeze(template_offset_data)
-
+        
         kps = self.parse_output(template_heatmaps, template_offsets, 0.3)
-
+        
         poses = []
 
         keypoint_dict = {}
@@ -179,30 +163,25 @@ class PoseEngine:
         for point_i in range(keypoint_count):
             x, y = kps[point_i, 1], kps[point_i, 0]
             prob = self.sigmoid(kps[point_i, 3])
-
+        
             if prob > self.confidence_threshold:
                 cnt += 1
-                if log.getEffectiveLevel() <= logging.DEBUG:
-                    # development mode
-                    # draw on image and save it for debugging
+                if log.getEffectiveLevel() <= logging.DEBUG:  # development mode
+                    #draw on image and save it for debugging
                     draw = ImageDraw.Draw(template_image)
-                    draw.line(((0, 0), (x, y)), fill='blue')
+                    draw.line(((0,0), (x, y)), fill='blue')
 
-            keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)
+            keypoint = Keypoint(KEYPOINTS[point_i], [x, y], prob)            
             keypoint_dict[KEYPOINTS[point_i]] = keypoint
 
-        # overall pose score is calculated as the average of all
-        # individual keypoint scores
+        # overall pose score is calculated as the average of all individual keypoint scores
         pose_score = cnt/keypoint_count
         log.debug(f"Overall pose score (keypoint score average): {pose_score}")
         poses.append(Pose(keypoint_dict, pose_score))
-        if cnt > 0 and log.getEffectiveLevel() <= logging.DEBUG:
-            # development mode
+        if cnt > 0 and log.getEffectiveLevel() <= logging.DEBUG:  # development mode
             # save template_image for debugging
             timestr = int(time.monotonic()*1000)
-            log.debug(f"Detected a pose with {cnt} keypoints that score over \
-                the minimum confidence threshold of \
-                {self.confidence_threshold}.")
+            log.debug(f"Detected a pose with {cnt} keypoints that score over the minimum confidence threshold of {self.confidence_threshold}.")
             debug_image_file_name = \
                 f'tmp-pose-detect-image-time-{timestr}-keypoints-{cnt}.jpg'
             template_image.save(
