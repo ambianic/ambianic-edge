@@ -11,7 +11,7 @@ _data_dir = Path(DEFAULT_DATA_DIR)
 _data_dir.mkdir(parents=True, exist_ok=True)
 
 
-def test_model_inputs():
+def test_model_inputs():    
     """Verify against known model inputs."""
     config = _fall_detect_config()
     fall_detector = FallDetector(**config)
@@ -28,8 +28,7 @@ def test_model_inputs():
 
 
 def test_config_confidence_threshold():
-    """Verify against known confidence threshold. Make sure it propagates
-       at all levels."""
+    """Verify against known confidence threshold. Make sure it propagates at all levels."""
     config = _fall_detect_config()
     fall_detector = FallDetector(**config)
     tfe = fall_detector._tfengine
@@ -57,8 +56,7 @@ def _helper_test_debug_image_save(context: PipelineContext = None):
     config = _fall_detect_config()
     result = None
 
-    def sample_callback(image=None, thumbnail=None, inference_result=None,
-                        **kwargs):
+    def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
         nonlocal result
         result = image is not None and thumbnail is not None and \
             inference_result is not None

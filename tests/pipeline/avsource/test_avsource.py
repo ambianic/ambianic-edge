@@ -18,6 +18,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
+
 class _TestAVSourceElement(AVSourceElement):
 
     def __init__(self, **source_conf):
@@ -146,8 +147,7 @@ def test_start_stop_file_source_person_detect():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -167,12 +167,7 @@ def test_start_stop_file_source_person_detect():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
-
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -247,8 +242,7 @@ def test_still_image_input_detect_person_exit_eos():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -268,12 +262,7 @@ def test_still_image_input_detect_person_exit_eos():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
-
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -307,8 +296,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -328,10 +316,7 @@ def test_still_image_input_detect_person_exit_stop_signal():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -375,8 +360,7 @@ def test_picamera_input():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -396,10 +380,7 @@ def test_picamera_input():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -514,8 +495,7 @@ def test_exception_on_new_sample():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -535,10 +515,7 @@ def test_exception_on_new_sample():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -619,8 +596,7 @@ def test_gst_process_kill():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -640,10 +616,7 @@ def test_gst_process_kill():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -739,8 +712,7 @@ def test_gst_process_terminate():
         print('detections: {det}'.format(det=detections))
         print('len(detections): {len}'.format(len=len(detections)))
         if detections:
-            label = detections[0]['label']
-            confidence = detections[0]['confidence']
+            label, confidence, _ = detections[0]
             if label == 'person' and confidence > 0.9:
                 # skip video image samples until we reach a person detection
                 # with high level of confidence
@@ -760,10 +732,7 @@ def test_gst_process_terminate():
     assert sample_image.size[1] == 720
     assert detections
     assert len(detections) == 1
-    label = detections[0]['label']
-    confidence = detections[0]['confidence']
-    (x0, y0) = detections[0]['box']['xmin'], detections[0]['box']['ymin']
-    (x1, y1) = detections[0]['box']['xmax'], detections[0]['box']['ymax']
+    label, confidence, (x0, y0, x1, y1) = detections[0]
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
