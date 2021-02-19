@@ -54,9 +54,20 @@ def test_store_positive_detection():
     store = _TestSaveDetectionSamples(context=context,
                                       event_log=logging.getLogger())
     img = Image.new('RGB', (60, 30), color='red')
+
     detections = [
-            ('person', 0.98, (0, 1, 2, 3))
-    ]
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
                                                   inference_result=detections))
@@ -66,10 +77,15 @@ def test_store_positive_detection():
     assert img_out == img
     inf = processed_samples[0]['inference_result']
     print(inf)
-    category, confidence, box = inf[0]
+
+    category = inf[0]['label']
+    confidence = inf[0]['confidence']
+    (x0, y0) = inf[0]['box']['xmin'], inf[0]['box']['ymin']
+    (x1, y1) = inf[0]['box']['xmax'], inf[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence == 0.98
-    assert box[0] == 0 and box[1] == 1 and box[2] == 2 and box[3] == 3
+    assert x0 == 0 and y0 == 1 and x1 == 2 and y1 == 3
     assert store._save_sample_called
     assert store._inf_result == detections
     assert store._img_path
@@ -155,7 +171,9 @@ def test_store_negative_detection():
 
 
 def test_store_negative_detection_no_inference():
-    """Expect store to save the image from an inference without any detection."""
+    """
+        Expect store to save the image from an inference without any detection.
+    """
     out_dir = os.path.dirname(os.path.abspath(__file__))
     out_dir = os.path.join(
         out_dir,
@@ -226,9 +244,20 @@ def test_process_sample_exception():
     store = _TestSaveDetectionSamples2(context=context,
                                        event_log=logging.getLogger())
     img = Image.new('RGB', (60, 30), color='red')
+
     detections = [
-            ('person', 0.98, (0, 1, 2, 3))
-    ]
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   inference_result=detections,
                                                   inference_meta=None))
@@ -239,7 +268,12 @@ def test_process_sample_exception():
     assert img_out == img
     inf = processed_samples[0]['inference_result']
     print(inf)
-    category, confidence, box = inf[0]
+
+    category = inf[0]['label']
+    confidence = inf[0]['confidence']
+    (x0, y0) = inf[0]['box']['xmin'], inf[0]['box']['ymin']
+    (x1, y1) = inf[0]['box']['xmax'], inf[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence == 0.98
-    assert box[0] == 0 and box[1] == 1 and box[2] == 2 and box[3] == 3
+    assert x0 == 0 and y0 == 1 and x1 == 2 and y1 == 3

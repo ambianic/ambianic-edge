@@ -20,7 +20,6 @@ class TFBoundingBoxDetection(TFDetectionModel):
                  **kwargs
                  ):
         """Initialize detector with config parameters.
-
         :Parameters:
         ----------
         model: ai_models/mobilenet_ssd_v2_face.tflite
@@ -28,23 +27,19 @@ class TFBoundingBoxDetection(TFDetectionModel):
 
         super().__init__(model, **kwargs)
 
-
     def detect(self, image=None):
         """Detect objects in image.
-
         :Parameters:
         ----------
         image : PIL.Image
             Input image in raw RGB format
             with the exact size of the input tensor.
-
         :Returns:
         -------
         list of tuples
             List of top_k detections above confidence_threshold.
             Each detection is a tuple of:
             (label, confidence, (x0, y0, x1, y1))
-
         """
         assert image
         start_time = time.monotonic()
@@ -58,7 +53,8 @@ class TFBoundingBoxDetection(TFDetectionModel):
 
         desired_size = (width, height)
 
-        new_im, thumbnail = self.resize_to_input_tensor(image=image, desired_size=desired_size)
+        new_im, thumbnail = self.resize_to_input_tensor(image=image,
+                                                        desired_size=desired_size)
 
         # calculate what fraction of the new image is the thumbnail size
         # we will use these factors to adjust detection box coordinates
@@ -142,13 +138,13 @@ class TFBoundingBoxDetection(TFDetectionModel):
                         x1 = min(box[3] / w_factor, 1)
                         y1 = min(box[2] / h_factor, 1)
                         log.debug('thumbnail image size: %r , '
-                                'tensor image size: %r',
-                                thumbnail.size,
-                                new_im.size)
+                                  'tensor image size: %r',
+                                  thumbnail.size,
+                                  new_im.size)
                         log.debug('resizing detection box (x0, y0, x1, y1) '
-                                'from: %r to %r',
-                                (box[1], box[0], box[3], box[2]),
-                                (x0, y0, x1, y1))
+                                  'from: %r to %r',
+                                  (box[1], box[0], box[3], box[2]),
+                                  (x0, y0, x1, y1))
                         inference_result.append((
                             label,
                             confidence,

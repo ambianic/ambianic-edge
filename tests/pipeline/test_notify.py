@@ -73,6 +73,7 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
                                  inference_result=inference_result,
                                  inference_meta=inference_meta)
 
+
 def test_notification_with_attachments():
     """Ensure a positive detection is notified"""
     called: Event = Event()
@@ -102,13 +103,27 @@ def test_notification_with_attachments():
         notify=notify,
     )
     img = Image.new('RGB', (60, 30), color='red')
-    detections = [('person', 0.98, (0, 1, 2, 3))]
+
+    detections = [
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
                                                   inference_result=detections))
     assert len(processed_samples) == 1
     mock_server.stop()
     assert called.is_set()
+
 
 def test_plain_notification():
     """Ensure a positive detection is notified"""
@@ -139,7 +154,20 @@ def test_plain_notification():
         notify=notify,
     )
     img = Image.new('RGB', (60, 30), color='red')
-    detections = [('person', 0.98, (0, 1, 2, 3))]
+
+    detections = [
+                    {
+                     'label': 'person',
+                     'confidence': 0.98,
+                     'box': {
+                         'xmin': 0,
+                         'ymin': 1,
+                         'xmax': 2,
+                         'ymax': 3
+                        }
+                    }
+                ]
+
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
                                                   inference_result=detections))

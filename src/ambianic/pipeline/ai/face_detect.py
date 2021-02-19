@@ -16,10 +16,10 @@ class FaceDetector(TFBoundingBoxDetection):
         width, height = image.size
 
         # Setting the points for cropped image
-        left = box[0]*width
-        top = box[1]*height
-        right = box[2]*width
-        bottom = box[3]*height
+        left = box['xmin']*width
+        top = box['ymin']*height
+        right = box['xmax']*width
+        bottom = box['ymax']*height
 
         # Cropped image of above dimension
         # (It will not change orginal image)
@@ -46,9 +46,13 @@ class FaceDetector(TFBoundingBoxDetection):
                 else:
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
-                    for label, confidence, box in prev_inference_result:
+                    for e_result in prev_inference_result:
+                        label, confidence, box = e_result['label'], \
+                                                 e_result['confidence'], \
+                                                 e_result['box']
+
                         if label == 'person' and \
-                          confidence >= self._tfengine.confidence_threshold:
+                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
                     log.debug('Received %d person boxes for face detection',
                               len(person_regions))
@@ -56,6 +60,9 @@ class FaceDetector(TFBoundingBoxDetection):
                         person_image = self.crop_image(image, box)
                         thumbnail, tensor_image, inference_result = \
                             self.detect(image=person_image)
+
+                        inference_result = self.convert_inference_result(
+                            inference_result)
                         log.debug('Face detection inference_result: %r',
                                   inference_result)
                         inf_meta = {
@@ -73,3 +80,27 @@ class FaceDetector(TFBoundingBoxDetection):
                               'Dropping sample: %r',
                               e,
                               sample)
+
+    def convert_inference_result(self, inference_result):
+
+        inf_json = []
+        if inference_result:
+            for inf in inference_result:
+                label, confidence, box = inf[0:3]
+                log.info('label: %s , confidence: %.0f, box: %s',
+                         label,
+                         confidence,
+                         box)
+                one_inf = {
+                    'label': label,
+                    'confidence': float(confidence),
+                    'box': {
+                        'xmin': float(box[0]),
+                        'ymin': float(box[1]),
+                        'xmax': float(box[2]),
+                        'ymax': float(box[3]),
+                    }
+                }
+                inf_json.append(one_inf)
+
+        return inf_json
