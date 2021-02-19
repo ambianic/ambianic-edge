@@ -177,7 +177,7 @@ class PoseEngine:
 
         keypoint_count = kps.shape[0]
         for point_i in range(keypoint_count):
-            x, y = kps[point_i, 1], kps[point_i, 0]
+            x, y = float(kps[point_i, 1]), float(kps[point_i, 0])
             prob = self.sigmoid(kps[point_i, 3])
 
             if prob > self.confidence_threshold:
