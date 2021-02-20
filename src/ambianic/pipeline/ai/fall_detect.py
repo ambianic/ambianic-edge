@@ -482,8 +482,8 @@ class FallDetector(TFDetectionModel):
                          keypoint_corr)
                 one_inf = {
                     'label': label,
-                    'confidence': float(confidence),
-                    'leaning_angle': float(leaning_angle),
+                    'confidence': confidence,
+                    'leaning_angle': leaning_angle,
                     'keypoint_corr': {
                         'left shoulder': keypoint_corr.get('left shoulder',
                                                            None),

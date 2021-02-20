@@ -2,6 +2,7 @@
 
 from ambianic.pipeline.store import SaveDetectionSamples
 from PIL import Image
+import numpy as np
 import os
 import json
 import logging
@@ -16,6 +17,42 @@ def test_process_sample_none():
     processed_samples = list(processed_samples)
     assert len(processed_samples) == 1
     assert processed_samples[0] is None
+
+# def test_process_sample():
+#     store = SaveDetectionSamples()      
+#     img = Image.new('RGB', (60, 30), color='red')
+
+#     detections = [
+#                     {
+#                      'label': 'person',
+#                      'confidence': np.float32(0.98),
+#                      'box': {
+#                          'xmin': np.float32(0),
+#                          'ymin': np.float32(1),
+#                          'xmax': np.float32(2),
+#                          'ymax': np.float32(3)
+#                         }
+#                     }
+#                 ]
+
+#     processed_samples = list(store.process_sample(image=img,
+#                                                   thumbnail=img,
+#                                                   inference_result=detections,
+#                                                   inference_meta=None))
+    
+#     assert len(processed_samples) == 1
+#     print(processed_samples)
+#     inf = processed_samples[0]['inference_result']
+#     print(inf)
+
+#     category = inf[0]['label']
+#     confidence = inf[0]['confidence']
+#     (x0, y0) = inf[0]['box']['xmin'], inf[0]['box']['ymin']
+#     (x1, y1) = inf[0]['box']['xmax'], inf[0]['box']['ymax']
+
+#     assert category == 'person'
+#     assert confidence == 0.98
+#     assert x0 == 0 and y0 == 1 and x1 == 2 and y1 == 3
 
 
 class _TestSaveDetectionSamples(SaveDetectionSamples):

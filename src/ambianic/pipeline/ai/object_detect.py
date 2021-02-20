@@ -56,12 +56,12 @@ class ObjectDetector(TFBoundingBoxDetection):
                          box)
                 one_inf = {
                     'label': label,
-                    'confidence': float(confidence),
+                    'confidence': confidence,
                     'box': {
-                        'xmin': float(box[0]),
-                        'ymin': float(box[1]),
-                        'xmax': float(box[2]),
-                        'ymax': float(box[3]),
+                        'xmin': box[0],
+                        'ymin': box[1],
+                        'xmax': box[2],
+                        'ymax': box[3],
                     }
                 }
                 inf_json.append(one_inf)
