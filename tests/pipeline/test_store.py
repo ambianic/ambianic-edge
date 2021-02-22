@@ -26,26 +26,26 @@ def test_json_encoder():
     encode = json.dumps(inp, cls=JsonEncoder)
     decode = json.loads(encode)
 
-    assert type(decode['confidence']) == float
-    assert type(decode['leaning_angle']) == float
-    assert type(decode['keypoint_corr']['left shoulder'][0]) == float
-    assert type(decode['keypoint_corr']['left shoulder'][1]) == float
+    assert isinstance(decode['confidence'], float)
+    assert isinstance(decode['leaning_angle'], float)
+    assert isinstance(decode['keypoint_corr']['left shoulder'][0], float)
+    assert isinstance(decode['keypoint_corr']['left shoulder'][1], float)
 
 
 def test_json_encoder_integerData():
-    input = np.int32(10)
-    encode = json.dumps(input, cls=JsonEncoder)
+    inp = np.int32(10)
+    encode = json.dumps(inp, cls=JsonEncoder)
     decode = json.loads(encode)
 
-    assert type(decode) == int
+    assert isinstance(decode, int)
 
 
 def test_json_encoder_arrayData():
-    input = np.array([1, 2, 3, 4, 5])
-    encode = json.dumps(input, cls=JsonEncoder)
+    inp = np.array([1, 2, 3, 4, 5])
+    encode = json.dumps(inp, cls=JsonEncoder)
     decode = json.loads(encode)
 
-    assert type(decode) == list
+    assert isinstance(decode, list)
 
 
 def test_process_sample_none():
@@ -101,8 +101,11 @@ def test_process_sample():
     (x1, y1) = inf[0]['box']['xmax'], inf[0]['box']['ymax']
 
     assert category == 'person'
-    assert type(confidence) == np.float32
-    assert type(x0) == type(y0) == type(x1) == type(y1) == np.float32
+    assert isinstance(confidence, np.float32)
+    assert isinstance(x0, np.float32)
+    assert isinstance(y0, np.float32)
+    assert isinstance(x1, np.float32)
+    assert isinstance(y1, np.float32)
     assert store._save_sample_called
     assert store._inf_result == detections
     assert store._img_path
@@ -129,11 +132,11 @@ def test_process_sample():
         assert len(json_inf_res) == 1
         json_inf_res = json_inf_res[0]
         assert json_inf_res['label'] == 'person'
-        assert type(json_inf_res['confidence']) == float
-        assert type(json_inf_res['box']['xmin']) == float
-        assert type(json_inf_res['box']['ymin']) == float
-        assert type(json_inf_res['box']['xmax']) == float
-        assert type(json_inf_res['box']['ymax']) == float
+        assert isinstance(json_inf_res['confidence'], float)
+        assert isinstance(json_inf_res['box']['xmin'], float)
+        assert isinstance(json_inf_res['box']['ymin'], float)
+        assert isinstance(json_inf_res['box']['xmax'], float)
+        assert isinstance(json_inf_res['box']['ymax'], float)
 
 
 class _TestSaveDetectionSamples(SaveDetectionSamples):
