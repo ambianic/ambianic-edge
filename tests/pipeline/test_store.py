@@ -8,6 +8,7 @@ import os
 import json
 import logging
 from ambianic.pipeline.timeline import PipelineContext
+import shutil
 
 
 def test_json_encoder():
@@ -139,6 +140,8 @@ def test_process_sample():
         assert isinstance(json_inf_res['box']['xmax'], float)
         assert isinstance(json_inf_res['box']['ymax'], float)
 
+    shutil.rmtree(out_dir)
+
 
 class _TestSaveDetectionSamples(SaveDetectionSamples):
 
@@ -241,6 +244,8 @@ def test_store_positive_detection():
         assert json_inf_res['box']['xmax'] == 2
         assert json_inf_res['box']['ymax'] == 3
 
+    shutil.rmtree(out_dir)
+
 
 def test_store_negative_detection():
     """The first time a negative sample is processed, it should be saved."""
@@ -292,6 +297,8 @@ def test_store_negative_detection():
         assert os.path.exists(img_fpath)
         json_inf_res = json_inf['inference_result']
         assert not json_inf_res
+
+    shutil.rmtree(out_dir)
 
 
 def test_store_negative_detection_no_inference():
@@ -347,6 +354,7 @@ def test_store_negative_detection_no_inference():
         json_inf_res = json_inf['inference_result']
         assert not json_inf_res
 
+    shutil.rmtree(out_dir)
 
 class _TestSaveDetectionSamples2(SaveDetectionSamples):
 
