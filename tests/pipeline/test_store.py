@@ -128,6 +128,7 @@ def test_process_sample():
         rel_dir = json_inf['rel_dir']
         img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
+        assert os.path.exists(img_fpath)
         json_inf_res = json_inf['inference_result']
         assert len(json_inf_res) == 1
         json_inf_res = json_inf_res[0]
@@ -229,6 +230,7 @@ def test_store_positive_detection():
         rel_dir = json_inf['rel_dir']
         img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
+        assert os.path.exists(img_fpath)
         json_inf_res = json_inf['inference_result']
         assert len(json_inf_res) == 1
         json_inf_res = json_inf_res[0]
@@ -287,6 +289,7 @@ def test_store_negative_detection():
         rel_dir = json_inf['rel_dir']
         img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
+        assert os.path.exists(img_fpath)
         json_inf_res = json_inf['inference_result']
         assert not json_inf_res
 
@@ -340,6 +343,7 @@ def test_store_negative_detection_no_inference():
         rel_dir = json_inf['rel_dir']
         img_fpath = os.path.join(out_dir, rel_dir, img_fname)
         assert img_fpath == str(store._img_path)
+        assert os.path.exists(img_fpath)
         json_inf_res = json_inf['inference_result']
         assert not json_inf_res
 
