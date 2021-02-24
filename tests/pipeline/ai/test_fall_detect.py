@@ -67,11 +67,13 @@ def test_model_inputs():
 
 
 def test_fall_detection_thumbnail_present():
-    """Expected to receive thumnail in result if image is provided and poses are detected."""
+    """Expected to receive thumnail in result if image is provided \
+        and poses are detected."""
     config = _fall_detect_config()
     result = None
 
-    def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
+    def sample_callback(image=None, thumbnail=None, inference_result=None,
+                        **kwargs):
         nonlocal result
         result = image is not None and thumbnail is not None and \
             inference_result is not None
@@ -110,9 +112,12 @@ def test_fall_detection_case_1():
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
-    
+
+
 def test_fall_detection_case_2_1():
-    """Expected to not detect a fall even though key-points are detected and the angle criteria is met. However the time distance between frames is too short."""
+    """Expected to not detect a fall even though key-points are detected
+        and the angle criteria is met. However the time distance between
+        frames is too short."""
     config = _fall_detect_config()
     result = None
 
@@ -123,7 +128,7 @@ def test_fall_detection_case_2_1():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
+
     fall_detector.connect_to_next_element(output)
 
     # The frame represents a person who is in a standing position.
@@ -136,15 +141,20 @@ def test_fall_detection_case_2_1():
     fall_detector.receive_next_sample(image=img_1)
     end_time = time.monotonic()
     safe_min = end_time-start_time+1
-    # set min time to a sufficiently big number to ensure test passes on slow environments
-    # the goal is to simulate two frames that are too close in time to be considered for a fall detection sequence
+    # set min time to a sufficiently big number to ensure test passes
+    # on slow environments
+    # the goal is to simulate two frames that are too close in time
+    # to be considered for a fall detection sequence
     fall_detector.min_time_between_frames = safe_min
     fall_detector.receive_next_sample(image=img_2)
 
-    assert result is None
+    assert not result
+
 
 def test_fall_detection_case_2_2():
-    """Expected to detect a fall because key-points are detected, the angle criteria is met and the time distance between frames is not too short."""
+    """Expected to detect a fall because key-points are detected,
+       the angle criteria is met and the time distance between
+       frames is not too short."""
     config = _fall_detect_config()
     result = None
 
@@ -155,7 +165,7 @@ def test_fall_detection_case_2_2():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
+
     fall_detector.connect_to_next_element(output)
 
     # The frame represents a person who is in a standing position.
@@ -171,14 +181,20 @@ def test_fall_detection_case_2_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
 
+
 def test_fall_detection_case_3_1():
-    """Expect to detect a fall as key-points are detected by rotating the image clockwise."""
+    """Expect to detect a fall as key-points are detected by
+       rotating the image clockwise."""
     config = _fall_detect_config()
     result = None
 
@@ -189,7 +205,7 @@ def test_fall_detection_case_3_1():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
+
     fall_detector.connect_to_next_element(output)
 
     # The frame represents a person who is in a standing position.
@@ -206,15 +222,21 @@ def test_fall_detection_case_3_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
 
 
 def test_fall_detection_case_3_2():
-    """Expect to detect a fall as key-points are detected by rotating the image counter clockwise."""
+    """Expect to detect a fall as key-points are detected
+       by rotating the image counter clockwise."""
     config = _fall_detect_config()
     result = None
 
@@ -242,11 +264,17 @@ def test_fall_detection_case_3_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.3
     assert angle > 60
+
 
 def test_fall_detection_case_4():
     """No Fall"""
@@ -260,7 +288,7 @@ def test_fall_detection_case_4():
     fall_detector = FallDetector(**config)
 
     output = _OutPipeElement(sample_callback=sample_callback)
-    
+
     fall_detector.connect_to_next_element(output)
 
     # The frame represents a person who is in a standing position.
@@ -278,7 +306,8 @@ def test_fall_detection_case_4():
 
 
 def test_fall_detection_case_5():
-    """Expected to not detect a fall even the angle criteria is met because image 2 is standing up rather than fall"""
+    """Expected to not detect a fall even the angle criteria is met
+        because image 2 is standing up rather than fall"""
     config = _fall_detect_config()
     result = None
 
@@ -307,7 +336,8 @@ def test_fall_detection_case_5():
 
 
 def test_fall_detection_case_6():
-    """Expect to not detect a fall as in 1st image key-points are detected but not in 2nd"""
+    """Expect to not detect a fall as in 1st image key-points are detected
+        but not in 2nd"""
     config = _fall_detect_config()
     result = None
 
@@ -334,6 +364,7 @@ def test_fall_detection_case_6():
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
+
 
 def test_fall_detection_case_7():
     """Expect to not detect a fall"""
@@ -363,6 +394,7 @@ def test_fall_detection_case_7():
     fall_detector.receive_next_sample(image=img_2)
 
     assert not result
+
 
 def test_fall_detection_case_8():
     """Expect to not detect a fall"""
@@ -399,9 +431,11 @@ def test_background_image():
     config = _fall_detect_config()
     result = None
 
-    def sample_callback(image=None, thumbnail=None, inference_result=None, **kwargs):
+    def sample_callback(image=None, thumbnail=None, inference_result=None,
+                        **kwargs):
         nonlocal result
-        result = image is not None and thumbnail is not None and inference_result is None
+        result = image is not None and thumbnail is not None and \
+            not inference_result
     fall_detector = FallDetector(**config)
     output = _OutPipeElement(sample_callback=sample_callback)
     fall_detector.connect_to_next_element(output)
@@ -461,8 +495,13 @@ def test_bad_sample_good_sample():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable' 
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -491,9 +530,11 @@ def test_draw_line_1():
     fall_detector = FallDetector(**config)
 
     image = _get_image(file_name='fall_img_1.png')
-    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1]}
+    pose_dix = {fall_detector.LEFT_SHOULDER: [0, 0],
+                fall_detector.LEFT_HIP: [0, 1]}
     lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 1
+
 
 def test_draw_line_1_1():
     """One keypoing but no full body line. No image should be saved."""
@@ -502,9 +543,10 @@ def test_draw_line_1_1():
     fall_detector = FallDetector(**config)
 
     image = _get_image(file_name='fall_img_1.png')
-    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0]}
+    pose_dix = {fall_detector.LEFT_SHOULDER: [0, 0]}
     lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 0
+
 
 def test_draw_line_2():
     """Two body lines passed to draw. Image with two lines should be saved."""
@@ -514,7 +556,10 @@ def test_draw_line_2():
 
     # The frame represents a person who is in a standing position.
     image = _get_image(file_name='fall_img_1.png')
-    pose_dix = { fall_detector.LEFT_SHOULDER: [0,0], fall_detector.LEFT_HIP: [0,1], fall_detector.RIGHT_SHOULDER: [1,0], fall_detector.RIGHT_HIP: [1,1]}
+    pose_dix = {fall_detector.LEFT_SHOULDER: [0, 0],
+                fall_detector.LEFT_HIP: [0, 1],
+                fall_detector.RIGHT_SHOULDER: [1, 0],
+                fall_detector.RIGHT_HIP: [1, 1]}
     lines_drawn = fall_detector.draw_lines(image, pose_dix, 0.5)
     assert lines_drawn == 2
 
@@ -526,7 +571,6 @@ def test_fall_detection_2_frame_back_case_1():
         frame[t-1] : A person is almost in standing position as he is walking.
         frame[t]   : A person is fall down.
     """
-
 
     config = _fall_detect_config()
     result = None
@@ -543,7 +587,8 @@ def test_fall_detection_2_frame_back_case_1():
     # A frame at t-2 timestamp when person is in standing position.
     img_1 = _get_image(file_name='fall_img_1.png')
 
-    # A frame at t-1 timestamp when person is almost in standing position as he is walking.
+    # A frame at t-1 timestamp when person is almost in standing position \
+    # as he is walking.
     img_2 = _get_image(file_name='fall_img_1_1.png')
 
     # A frame at t timestamp when person falls down.
@@ -563,8 +608,13 @@ def test_fall_detection_2_frame_back_case_1():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -613,8 +663,13 @@ def test_fall_detection_2_frame_back_case_2():
 
     assert result
     assert len(result) == 1
-    category, confidence, box, angle = result[0]
-    assert box   # Add this line to avoid 'Unused local variable'
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    angle = result[0]['leaning_angle']
+    keypoint_corr = result[0]['keypoint_corr']
+
+    assert keypoint_corr
     assert category == 'FALL'
     assert confidence > 0.7
     assert angle > 60
@@ -622,7 +677,7 @@ def test_fall_detection_2_frame_back_case_2():
 
 def test_fall_detection_2_frame_back_case_3():
     """
-        Expected to not detect a fall using frame[t], frame[t-1] and frame[t-2].
+        Expected to not detect a fall using frame[t],frame[t-1] and frame[t-2].
         frame[t-2] : A person is in walking postion.
         frame[t-1] : A person is in walking postion.
         frame[t]   : A person is slight in lean postion but no fall.

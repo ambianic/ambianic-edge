@@ -133,17 +133,26 @@ def test_bad_sample_good_sample():
     # bad sample
     face_detector.receive_next_sample(
         image=None,
-        inference_result=[('person', 1, [-1, -2, -3, -4]), ]
+        inference_result=[{'label': 'person', 'confidence': 1,
+                           'box': {'xmin': -1, 'ymin': -2,
+                                   'xmax': -3, 'ymax': -4}}]
         )
     # good sample
     img = _get_image(file_name='person-face.jpg')
     face_detector.receive_next_sample(
         image=img,
-        inference_result=[('person', 1, [0, 0, 1, 1]), ]
+        inference_result=[{'label': 'person', 'confidence': 1,
+                           'box': {'xmin': 0, 'ymin': 0,
+                                   'xmax': 1, 'ymax': 1}}]
         )
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -183,7 +192,12 @@ def test_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -214,7 +228,10 @@ def test_thermal_one_person_face_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -227,7 +244,10 @@ def test_thermal_one_person_face_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -251,7 +271,10 @@ def test_thermal_one_person_miss_face_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -283,7 +306,10 @@ def test2_one_person_high_confidence_face_low_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -316,7 +342,10 @@ def test_one_person_two_stage_pipe_high_face_confidence():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -341,12 +370,18 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-    label, confidence, (x0, y0, x1, y1) = result[1]
+    label = result[1]['label']
+    confidence = result[1]['confidence']
+    (x0, y0) = result[1]['box']['xmin'], result[1]['box']['ymin']
+    (x1, y1) = result[1]['box']['xmax'], result[1]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -359,7 +394,10 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.6
     assert x0 > 0 and x0 < x1
@@ -368,7 +406,6 @@ def test_two_person_high_confidence_one_face_high_confidence_two_stage_pipe():
 
 def test_two_person_with_faces_no_confidence_one_stage_pipe():
     """No faces detected when the whole jpg is fed directly to face detect.
-
     Illustrates the point of piping models from more generic to specialized.
     The object detection model detects people and feeds a zoomed in image
     to the face detector. Instead of resizing 1280x720 to 320x320, which
@@ -376,7 +413,6 @@ def test_two_person_with_faces_no_confidence_one_stage_pipe():
     of the original image where a person was detected to face detection.
     That resizes approximately a 500x400 image to 320x320, which preserves
     more feature information.
-
     """
     face_config = _face_detect_config()
     result = None
@@ -410,11 +446,16 @@ def test_one_person_face_high_confidence_one_stage_pipe():
     img = _get_image(file_name='person-face.jpg')
     face_detector.receive_next_sample(
         image=img,
-        inference_result=[('person', 1, [0, 0, 1, 1]), ]
+        inference_result=[{'label': 'person', 'confidence': 1,
+                           'box': {'xmin': 0, 'ymin': 0,
+                                   'xmax': 1, 'ymax': 1}}]
         )
     assert result
     assert len(result) == 1
-    label, confidence, (x0, y0, x1, y1) = result[0]
+    label = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
     assert label == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1

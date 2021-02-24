@@ -112,7 +112,12 @@ def test_one_person():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -135,7 +140,12 @@ def test_one_person_thermal():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.8
     assert x0 > 0 and x0 < x1
@@ -176,7 +186,12 @@ def test_bad_sample_good_sample():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -199,7 +214,12 @@ def test_one_person_no_face():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.9
     assert x0 > 0 and x0 < x1
@@ -225,11 +245,17 @@ def test_one_label_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 1
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > confidence_threshold
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
+
 
 def test_two_labels_filter():
     """Expect to detect one person and one couch."""
@@ -249,16 +275,27 @@ def test_two_labels_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.7
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-    category, confidence, (x0, y0, x1, y1) = result[1]
+
+    category = result[1]['label']
+    confidence = result[1]['confidence']
+    (x0, y0) = result[1]['box']['xmin'], result[1]['box']['ymin']
+    (x1, y1) = result[1]['box']['xmax'], result[1]['box']['ymax']
+
     assert category == 'couch'
     assert confidence > 0.6
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
+
 
 def test_no_labels_filter():
     """Expect to detect all labeled objects - one person and one couch."""
@@ -279,19 +316,31 @@ def test_no_labels_filter():
     object_detector.receive_next_sample(image=img)
     assert result
     assert len(result) == 2
-    category, confidence, (x0, y0, x1, y1) = result[0]
+
+    category = result[0]['label']
+    confidence = result[0]['confidence']
+    (x0, y0) = result[0]['box']['xmin'], result[0]['box']['ymin']
+    (x1, y1) = result[0]['box']['xmax'], result[0]['box']['ymax']
+
     assert category == 'person'
     assert confidence > 0.7
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
-    category, confidence, (x0, y0, x1, y1) = result[1]
+
+    category = result[1]['label']
+    confidence = result[1]['confidence']
+    (x0, y0) = result[1]['box']['xmin'], result[1]['box']['ymin']
+    (x1, y1) = result[1]['box']['xmax'], result[1]['box']['ymax']
+
     assert category == 'couch'
     assert confidence > 0.6
     assert x0 > 0 and x0 < x1
     assert y0 > 0 and y0 < y1
 
+
 def test_bad_label_filter():
-    """Expect to detect nothing because the label is not in the training label set."""
+    """Expect to detect nothing because the label is not in the training
+       label set."""
     config = _object_detect_config()
     config['confidence_threshold'] = 0.6
     config['label_filter'] = ['SomeR@ndomJunk']
@@ -308,8 +357,10 @@ def test_bad_label_filter():
     object_detector.receive_next_sample(image=img)
     assert not result
 
+
 def test_one_label_not_in_picture():
-    """Expect to detect nothing because there is no object with the given label in the picture."""
+    """Expect to detect nothing because there is no object with the given
+       label in the picture."""
     config = _object_detect_config()
     config['confidence_threshold'] = 0.6
     config['label_filter'] = ['car']
