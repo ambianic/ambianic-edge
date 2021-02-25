@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.14.4](https://github.com/ambianic/ambianic-edge/compare/v1.14.3...v1.14.4) (2021-02-25)
+
+
+### Bug Fixes
+
+* separate inference output formatting for each detection model; [issues [#330](https://github.com/ambianic/ambianic-edge/issues/330), [#254](https://github.com/ambianic/ambianic-edge/issues/254)] ([b83e4f8](https://github.com/ambianic/ambianic-edge/commit/b83e4f840e00844695f4c5fab8435bf30f978938)), closes [#332](https://github.com/ambianic/ambianic-edge/issues/332)
+
 ## [1.14.3](https://github.com/ambianic/ambianic-edge/compare/v1.14.2...v1.14.3) (2021-02-18)
 
 
