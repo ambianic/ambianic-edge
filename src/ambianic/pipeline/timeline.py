@@ -6,6 +6,8 @@ import yaml
 import uuid
 import os
 import pathlib
+import json
+import numpy as np
 
 log = logging.getLogger(__name__)
 TIMELINE_EVENT_LOGGER_NAME = __name__ + '__timeline__event__logger__'
@@ -98,7 +100,10 @@ class PipelineEventFormatter(logging.Formatter):
         # log.warning('record.args: %r', record.args)
         e['created'] = record.created
         e['priority'] = record.levelname
-        e['args'] = record.args
+
+        dec = json.loads(json.dumps(record.args, cls=JsonEncoder))
+        e['args'] = dec
+
         e['source_code'] = {}
         e['source_code']['pathname'] = record.pathname
         e['source_code']['funcName'] = record.funcName
@@ -183,3 +188,15 @@ def get_event_log(pipeline_context: PipelineContext = None) \
         pipeline_event_log,
         {PIPELINE_CONTEXT_KEY: pipeline_context})
     return pipeline_event_log
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        return super(JsonEncoder, self).default(obj)
