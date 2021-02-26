@@ -103,6 +103,7 @@ class PipelineEventFormatter(logging.Formatter):
 
         dec = json.loads(json.dumps(record.args, cls=JsonEncoder))
         e['args'] = dec
+        # e['args'] = record.args
 
         e['source_code'] = {}
         e['source_code']['pathname'] = record.pathname
