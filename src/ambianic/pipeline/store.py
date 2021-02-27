@@ -108,7 +108,10 @@ class SaveDetectionSamples(PipeElement):
             json.dump(save_json, f, ensure_ascii=False, indent=4,
                       cls=JsonEncoder)
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
-        self.event_log.info('Detection Event', save_json)
+
+        json_encoded_obj = json.loads(json.dumps(save_json, cls=JsonEncoder))
+        self.event_log.info('Detection Event', json_encoded_obj)
+
         log.debug("Saved sample (detection event): %r ", save_json)
         self.notify(save_json)
         return image_path, json_path
