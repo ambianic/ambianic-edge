@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.14.5](https://github.com/ambianic/ambianic-edge/compare/v1.14.4...v1.14.5) (2021-02-27)
+
+
+### Bug Fixes
+
+* temporary solution to manage yaml.dump() encoding issue; closes [#330](https://github.com/ambianic/ambianic-edge/issues/330) ([db4b00a](https://github.com/ambianic/ambianic-edge/commit/db4b00a0e4acb7341a788b333463f59ddf190766)), closes [#333](https://github.com/ambianic/ambianic-edge/issues/333)
+
 ## [1.14.4](https://github.com/ambianic/ambianic-edge/compare/v1.14.3...v1.14.4) (2021-02-25)
 
 
