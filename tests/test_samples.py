@@ -85,6 +85,93 @@ def test_bad_yaml():
     assert len(res) == 5
     assert not os.path.exists(file_path)
 
+
+def test_bad_yaml_2():
+    data_dir = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "timeline")
+    file_path = os.path.join(data_dir, "timeline-event-log.yaml")
+    with open(file_path, 'w+') as fw:
+        fw.write("xmax: !!python/object/apply:numpy.core.multiarray.scalar")
+
+    res = samples.get_timeline(
+        before_datetime="2020-05-10T19:05:45.577145",
+        page=1,
+        data_dir=data_dir
+    )
+
+    assert len(res) == 5
+    assert not os.path.exists(file_path)
+
+
+def test_bad_yaml_3():
+    data_dir = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "timeline")
+    file_path = os.path.join(data_dir, "timeline-event-log.yaml")
+    with open(file_path, 'w+') as fw:
+        tmp_str = """
+        keypoint_corr:
+        left hip:
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - &id001 !!python/object/apply:numpy.dtype
+            args:
+            - f4
+            - 0
+            - 1
+            state: !!python/tuple
+            - 3
+            - <
+            - null
+            - null
+            - null
+            - -1
+            - -1
+            - 0
+          - !!binary |
+            AAAiQw==
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AAAwQg==
+        left shoulder:
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AAAeQw==
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AAAAAA==
+        right hip:
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AAA3Qw==
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AAA0Qg==
+        right shoulder:
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AABAQw==
+        - !!python/object/apply:numpy.core.multiarray.scalar
+          - *id001
+          - !!binary |
+            AACAvw==
+        """
+        fw.write(tmp_str)
+
+    res = samples.get_timeline(
+        before_datetime="2020-05-10T19:05:45.577145",
+        page=1,
+        data_dir=data_dir
+    )
+
+    assert len(res) == 5
+    assert not os.path.exists(file_path)
+
+
 def test_get_timelines():
     data_dir = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "./timeline")

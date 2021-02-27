@@ -6,6 +6,7 @@ import yaml
 import uuid
 import os
 import pathlib
+import numpy as np
 
 log = logging.getLogger(__name__)
 TIMELINE_EVENT_LOGGER_NAME = __name__ + '__timeline__event__logger__'
@@ -98,7 +99,9 @@ class PipelineEventFormatter(logging.Formatter):
         # log.warning('record.args: %r', record.args)
         e['created'] = record.created
         e['priority'] = record.levelname
+
         e['args'] = record.args
+
         e['source_code'] = {}
         e['source_code']['pathname'] = record.pathname
         e['source_code']['funcName'] = record.funcName

@@ -178,8 +178,10 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
                 timeline_events = yaml.safe_load(pf)
                 timeline_events += events_queue
             except (
-                yaml.reader.ReaderError, 
+                yaml.reader.ReaderError,
                 yaml.scanner.ScannerError,
+                yaml.composer.ComposerError,
+                yaml.constructor.ConstructorError
             ):
                 log.exception("Detected unreadable timeline, removing %s" % file_path)
                 remove_timeline(file_path)
