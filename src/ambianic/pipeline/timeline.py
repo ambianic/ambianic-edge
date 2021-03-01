@@ -6,7 +6,6 @@ import yaml
 import uuid
 import os
 import pathlib
-import numpy as np
 
 log = logging.getLogger(__name__)
 TIMELINE_EVENT_LOGGER_NAME = __name__ + '__timeline__event__logger__'
