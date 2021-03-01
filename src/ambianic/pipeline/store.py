@@ -104,12 +104,14 @@ class SaveDetectionSamples(PipeElement):
         image.save(image_path)
         thumbnail.save(thumbnail_path)
         # save samples to local disk
+
+        json_str = json.dumps(save_json, cls=JsonEncoder)
+
         with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(save_json, f, ensure_ascii=False, indent=4,
-                      cls=JsonEncoder)
+            f.write(json_str)
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
 
-        json_encoded_obj = json.loads(json.dumps(save_json, cls=JsonEncoder))
+        json_encoded_obj = json.loads(json_str)
         self.event_log.info('Detection Event', json_encoded_obj)
 
         log.debug("Saved sample (detection event): %r ", save_json)
