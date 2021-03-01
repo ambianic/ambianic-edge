@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.14.6](https://github.com/ambianic/ambianic-edge/compare/v1.14.5...v1.14.6) (2021-03-01)
+
+
+### Bug Fixes
+
+* json serialization redundancy issue in store.py; closes [#337](https://github.com/ambianic/ambianic-edge/issues/337); closes [#300](https://github.com/ambianic/ambianic-edge/issues/300) ([bb8d20a](https://github.com/ambianic/ambianic-edge/commit/bb8d20a82347a871c58ba2d2f01e7c0957f13cf3)), closes [#339](https://github.com/ambianic/ambianic-edge/issues/339)
+
 ## [1.14.5](https://github.com/ambianic/ambianic-edge/compare/v1.14.4...v1.14.5) (2021-02-27)
 
 
