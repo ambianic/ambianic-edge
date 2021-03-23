@@ -31,6 +31,7 @@ requests-oauthlib>=1.0.0
 responses>=0.9.0
 simplegeneric>=0.8.1
 simplejson>=3.16.0
+scipy==1.4.1 
 webencodings>=0.5.1
 Werkzeug>=0.15.3
 concurrent-log-handler>=0.9.19
