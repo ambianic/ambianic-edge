@@ -123,8 +123,8 @@ jobs:
         echo ${{ steps.semrel.outputs.new_release_major_version }}
         echo ${{ steps.semrel.outputs.new_release_minor_version }}
         echo ${{ steps.semrel.outputs.new_release_patch_version }}
-        
-        
+
+
   publish_docs:
     needs: [push_release]
     runs-on: ubuntu-latest
@@ -145,4 +145,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./html   
+        publish_dir: ./html
