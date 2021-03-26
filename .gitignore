@@ -20,6 +20,8 @@ _mdwriter.cson
 **/ambianic_edge.egg-info/
 ambianic-debug2.sh
 config.yaml.local
+premium.yaml
 /.ropeproject
 tmp*.jpg
 src/Ambianic.egg-info/**
+config.yaml

@@ -4,13 +4,22 @@ import logging
 import apprise
 import os
 import ambianic
+import pkg_resources
+import yaml
+from requests import post
+
 
 log = logging.getLogger(__name__)
 
 UI_BASEURL = "https://ui.ambianic.ai"
 
+
 class Notification:
-    def __init__(self, event:str = "detection", data:dict = {}, providers:list = ["all"]):
+    def __init__(
+            self,
+            event: str = "detection",
+            data: dict = {},
+            providers: list = ["all"]):
         self.event: str = event
         self.providers: list = providers
         self.title: str = None
@@ -36,17 +45,16 @@ class NotificationHandler:
             for provider in providers:
                 if not self.apobj.add(provider, tag=name):
                     log.warning(
-                        "Failed to add notification provider: %s=%s" 
-                            % (name, provider)
+                        "Failed to add notification provider: %s=%s"
+                        % (name, provider)
                     )
 
     def send(self, notification: Notification):
-
         templates = self.config.get("templates", {})
 
         title = notification.title
         if title is None:
-            title = templates.get("title", "[Ambianic.ai] New ${event} event" )
+            title = templates.get("title", "[Ambianic.ai] New ${event} event")
 
         message = notification.message
         if message is None:
@@ -63,9 +71,14 @@ class NotificationHandler:
 
         template_args = {
             "event_type": notification.event,
-            "event": notification.data.get("label", notification.event),
-            "event_details_url": "%s/%s" % (UI_BASEURL, notification.data.get("id", ""))
-        }
+            "event": notification.data.get(
+                "label",
+                notification.event),
+            "event_details_url": "%s/%s" %
+            (UI_BASEURL,
+             notification.data.get(
+                 "id",
+                 ""))}
         template_args = {**template_args, **notification.data}
 
         for key, value in template_args.items():
@@ -74,24 +87,49 @@ class NotificationHandler:
             title = title.replace(k, v)
             message = message.replace(k, v)
 
+        # send notification to cloud API
+        premiumFile = pkg_resources.resource_filename(
+            "ambianic.webapp", "premium.yaml")
+
+        try:
+            with open(premiumFile, "r") as file:
+                configFile = yaml.safe_load(file)
+                userId = configFile['credentials']["USER_AUTH0_ID"]
+
+                if (userId):
+                    post(
+                        'http://localhost:5050/.netlify/functions/notification',
+                        json={
+                            'userId': userId,
+                            'notification': {
+                                'title': title,
+                                'message': message,
+                                'attachments': attachments}})
+
+        except FileNotFoundError:
+            log.debug("Error locating file")
+
+        except TypeError:
+            log.debug("Auth0 key not found")
+
         for provider in notification.providers:
             cfg = self.config.get(provider, None)
             if cfg is None:
                 log.warning("Skip unknown provider %s" % provider)
                 continue
-            
+
             include_attachments = cfg.get("include_attachments", False)
             ok = self.apobj.notify(
-                message, 
+                message,
                 title=title,
-                tag=provider, 
+                tag=provider,
                 attach=attachments if include_attachments else [],
             )
             if ok:
                 log.debug(
-                    "Sent notification for %s to %s" % 
+                    "Sent notification for %s to %s" %
                     (notification.event, provider)
                 )
             else:
                 log.warning("Error sending notification for %s to %s" %
-                          (notification.event, provider))
+                            (notification.event, provider))

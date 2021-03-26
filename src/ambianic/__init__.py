@@ -18,7 +18,6 @@ __version__: str = metadata.version('ambianic-edge')
 def get_config_file() -> str:
     return __CONFIG_FILE
 
-
 def get_secrets_file() -> str:
     if __SECRETS_FILE:
         return __SECRETS_FILE
@@ -66,14 +65,12 @@ def load_config(filename: str, clean: bool = False) -> Dynaconf:
         __CONFIG_FILE = filename
     return config
 
-
 def get_work_dir() -> str:
     """Retrieve the ambianic working directory"""
     env_work_dir = os.environ.get('AMBIANIC_DIR', os.getcwd())
     if not env_work_dir:
         env_work_dir = DEFAULT_WORK_DIR
     return env_work_dir
-
 
 # initialization
 server_instance = None

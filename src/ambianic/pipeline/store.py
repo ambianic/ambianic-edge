@@ -66,11 +66,12 @@ class SaveDetectionSamples(PipeElement):
         ii = idle_interval
         self._idle_interval = datetime.timedelta(seconds=ii)
         self._time_latest_saved_idle = self._time_latest_saved_detection
-        
+
         # setup notification handler
         self.notification = None
         self.notification_config = notify
-        if self.notification_config is not None and self.notification_config.get("providers"):
+        if self.notification_config is not None and self.notification_config.get(
+                "providers"):
             self.notification = NotificationHandler()
 
     def _save_sample(self,
@@ -139,7 +140,7 @@ class SaveDetectionSamples(PipeElement):
                     # let's save it if its been longer than
                     # the user specified positive_interval
                     if now - self._time_latest_saved_detection >= \
-                      self._positive_interval:
+                            self._positive_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -151,7 +152,7 @@ class SaveDetectionSamples(PipeElement):
                     # let's save a sample if its been longer than
                     #  the user specified idle_interval
                     if now - self._time_latest_saved_idle >= \
-                      self._idle_interval:
+                            self._idle_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -182,7 +183,8 @@ class SaveDetectionSamples(PipeElement):
                 'confidence': inference_result['confidence'],
                 'datetime': save_json['datetime'],
             }
-            notification = Notification(data=data, providers=self.notification_config["providers"])
+            notification = Notification(
+                data=data, providers=self.notification_config["providers"])
             self.notification.send(notification)
 
 
