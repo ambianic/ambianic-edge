@@ -134,15 +134,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3
-    - name: Install dependencies
+    - name: Run doc build script
       run: |
-        python -m pip install --upgrade pip
-        pip install pdoc3
-    - name: Run build script
-      run: |
-        pdoc --html src/ambianic
+        ${GITHUB_WORKSPACE}/build/ci-docs-job.sh
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./html
+        publish_dir: ./docs/dist
