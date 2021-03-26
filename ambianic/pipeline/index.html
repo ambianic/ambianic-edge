@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>ambianic.pipeline API documentation</title>
+<meta name="description" content="Main module for Ambianic AI pipelines." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ambianic.pipeline</code></h1>
+</header>
+<section id="section-intro">
+<p>Main module for Ambianic AI pipelines.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Main module for Ambianic AI pipelines.&#34;&#34;&#34;
+import logging
+import abc
+import time
+from typing import Iterable
+from ambianic.util import ManagedService
+from ambianic.pipeline.timeline import PipelineContext
+
+log = logging.getLogger(__name__)
+
+# Define pipe lifecycle states
+PIPE_STATE_STOPPED = 0
+PIPE_STATE_RUNNING = 10
+PIPE_STATES = [PIPE_STATE_RUNNING, PIPE_STATE_STOPPED]
+
+
+class PipeElement(ManagedService):
+    &#34;&#34;&#34;The basic building block of an Ambianic pipeline.&#34;&#34;&#34;
+
+    def __init__(self,
+                 element_name=None,
+                 context: PipelineContext = None,
+                 event_log: logging.Logger = None,
+                 **kwargs):
+        &#34;&#34;&#34;Create a PipeElement instance.&#34;&#34;&#34;
+        super().__init__()
+        self._name = element_name
+        self._state = PIPE_STATE_STOPPED
+        self._next_element = None
+        self._latest_heartbeat = time.monotonic()
+        self._context = context
+        self._timeline_event_log = event_log
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;Return this element&#39;s reference name in pipeline definitions.&#34;&#34;&#34;
+        return self._name
+
+    @property
+    def context(self) -&gt; PipelineContext:
+        &#34;&#34;&#34;Pipeline execution context.
+
+        :Returns:
+        -------
+        type: PipelineContext
+            pipeline execution context
+
+        &#34;&#34;&#34;
+        return self._context
+
+    def push_context(self, element_context: dict = None):
+        &#34;&#34;&#34;Push this element information to the context stack.
+
+        Invoke before the element yields its first sample output
+        for a given input sample.
+
+        :Parameters:
+        ----------
+        element_context : dict
+            Contextual info about this element.
+
+        &#34;&#34;&#34;
+        if element_context is None:
+            element_context = {}
+        element_context[&#39;class&#39;] = self.__class__.__name__
+        self._context.push_element_context(element_context)
+
+    def pop_context(self) -&gt; dict:
+        &#34;&#34;&#34;Pop element information from the context stack.
+
+        Invoke after the element yields its last sample output
+        for a given input sample.
+
+        :Returns:
+        -------
+        type: dict
+            Element context info.
+
+        &#34;&#34;&#34;
+        return self._context.pop_element_context()
+
+    @property
+    def event_log(self) -&gt; logging.Logger:
+        &#34;&#34;&#34;Get timeline event log for the current pipe execution context.&#34;&#34;&#34;
+        return self._timeline_event_log
+
+    @property
+    def state(self):
+        &#34;&#34;&#34;Lifecycle state of the pipe element.&#34;&#34;&#34;
+        return self._state
+
+    def start(self):
+        &#34;&#34;&#34;Only sourcing elements (first in a pipeline) need to override.
+
+        It is invoked once when the enclosing pipeline is started. It should
+        continue to run until the corresponding stop() method is invoked on the
+        same object from a separate pipeline lifecycle manager thread.
+
+        It is recommended for overriding methods to invoke this base method
+        via super().start() before proceeding with custom logic.
+
+        &#34;&#34;&#34;
+        self._state = PIPE_STATE_RUNNING
+
+    def heal(self):  # pragma: no cover
+        &#34;&#34;&#34;Override with adequate implementation of a healing procedure.
+
+        heal() is invoked by a lifecycle manager when its determined that
+        the element does not respond within reasonable timeframe.
+        This can happen for example if the element depends on external IO
+        resources, which become unavailable for an extended period of time.
+
+        The healing procedure should be considered a chance to recover or find
+        an alternative way to proceed.
+
+        If heal does not reset the pipe element back to a responsive state,
+        it is likely that the lifecycle manager will stop the
+        element and its ecnlosing pipeline.
+
+        &#34;&#34;&#34;
+        pass
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Check the health of this element.
+
+        :returns: (timestamp, status) tuple with most recent heartbeat
+        timestamp and health status code (&#39;OK&#39; normally).
+        &#34;&#34;&#34;
+        status = &#39;OK&#39;  # At some point status may carry richer information
+        return self._latest_heartbeat, status
+
+    def heartbeat(self):
+        &#34;&#34;&#34;Set the heartbeat timestamp to time.monotonic().
+
+        Keeping the heartbeat timestamp current informs
+        the lifecycle manager that this element is functioning
+        well.
+
+        &#34;&#34;&#34;
+        now = time.monotonic()
+        self._latest_heartbeat = now
+
+    def stop(self):
+        &#34;&#34;&#34;Receive stop signal and act accordingly.
+
+        Subclasses implementing sourcing elements should override this method
+        by first invoking their super class implementation and then running
+        through steps specific to stopping their ongoing sample processing.
+
+        &#34;&#34;&#34;
+        self._state = PIPE_STATE_STOPPED
+
+    def connect_to_next_element(self, next_element=None):
+        &#34;&#34;&#34;Connect this element to the next element in the pipe.
+
+        Subclasses should not override this method.
+
+        &#34;&#34;&#34;
+        assert next_element
+        assert isinstance(next_element, PipeElement)
+        self._next_element = next_element
+
+    def receive_next_sample(self, **sample):
+        &#34;&#34;&#34;Receive next sample from a connected previous element if applicable.
+
+        All pipeline elements except for the first (sourcing) element
+        in the pipeline will depend on this method to feed them with new
+        samples to process.
+
+        Subclasses should not override this method.
+
+        :Parameters:
+        ----------
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
+        &#34;&#34;&#34;
+        self.heartbeat()
+        for processed_sample in self.process_sample(**sample):
+            if self._next_element:
+                if (processed_sample):
+                    self._next_element.receive_next_sample(**processed_sample)
+                else:
+                    self._next_element.receive_next_sample()
+                self.heartbeat()
+
+    def process_sample(self, **sample) -&gt; Iterable[dict]:
+        &#34;&#34;&#34;Override and implement as generator.
+
+        Invoked by receive_next_sample() when the previous element
+        (or pipeline source) feeds another data input sample.
+
+        Implementing subclasses should process input samples and yield
+        output samples for the next element in the pipeline.
+
+        :Parameters:
+        ----------
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
+        :Returns:
+        ----------
+        processed_sample: Iterable[dict]
+            Generates processed samples to be passed on
+            to the next pipeline element.
+
+        &#34;&#34;&#34;
+        yield sample
+
+
+class HealthChecker(PipeElement):
+    &#34;&#34;&#34;Monitor overall pipeline throughput health.
+
+    Attaches at the end of a pipeline to monitor its health status
+    based on received output samples and their frequency.
+    &#34;&#34;&#34;
+
+    def __init__(self, health_status_callback=None, **kwargs):
+        &#34;&#34;&#34;Create instance given health status callback.
+
+        The health status call back will be invoked each time
+        the sample_process method is invoked.
+
+        :Parameters:
+        ----------
+        health_status_callback : function
+            Method that is expected to measure the overall pipeline throughput
+            health.
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+        assert health_status_callback
+        self._health_status_callback = health_status_callback
+
+    def process_sample(self, **sample):
+        &#34;&#34;&#34;Call health callback and pass on sample as is.&#34;&#34;&#34;
+        log.debug(&#39;%s received sample from the connected &#39;
+                  &#39;preceding pipe element.&#39;,
+                  self.__class__.__name__
+                  )
+        self._health_status_callback()
+        yield sample</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="ambianic.pipeline.ai" href="ai/index.html">ambianic.pipeline.ai</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="ambianic.pipeline.avsource" href="avsource/index.html">ambianic.pipeline.avsource</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="ambianic.pipeline.interpreter" href="interpreter.html">ambianic.pipeline.interpreter</a></code></dt>
+<dd>
+<div class="desc"><p>Ambianic pipeline interpreter module.</p></div>
+</dd>
+<dt><code class="name"><a title="ambianic.pipeline.store" href="store.html">ambianic.pipeline.store</a></code></dt>
+<dd>
+<div class="desc"><p>Pipeline sample storage elements.</p></div>
+</dd>
+<dt><code class="name"><a title="ambianic.pipeline.timeline" href="timeline.html">ambianic.pipeline.timeline</a></code></dt>
+<dd>
+<div class="desc"><p>Pipeline event timeline read/write/search functions.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ambianic.pipeline.HealthChecker"><code class="flex name class">
+<span>class <span class="ident">HealthChecker</span></span>
+<span>(</span><span>health_status_callback=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Monitor overall pipeline throughput health.</p>
+<p>Attaches at the end of a pipeline to monitor its health status
+based on received output samples and their frequency.</p>
+<p>Create instance given health status callback.</p>
+<p>The health status call back will be invoked each time
+the sample_process method is invoked.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>health_status_callback : function
+Method that is expected to measure the overall pipeline throughput
+health.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HealthChecker(PipeElement):
+    &#34;&#34;&#34;Monitor overall pipeline throughput health.
+
+    Attaches at the end of a pipeline to monitor its health status
+    based on received output samples and their frequency.
+    &#34;&#34;&#34;
+
+    def __init__(self, health_status_callback=None, **kwargs):
+        &#34;&#34;&#34;Create instance given health status callback.
+
+        The health status call back will be invoked each time
+        the sample_process method is invoked.
+
+        :Parameters:
+        ----------
+        health_status_callback : function
+            Method that is expected to measure the overall pipeline throughput
+            health.
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+        assert health_status_callback
+        self._health_status_callback = health_status_callback
+
+    def process_sample(self, **sample):
+        &#34;&#34;&#34;Call health callback and pass on sample as is.&#34;&#34;&#34;
+        log.debug(&#39;%s received sample from the connected &#39;
+                  &#39;preceding pipe element.&#39;,
+                  self.__class__.__name__
+                  )
+        self._health_status_callback()
+        yield sample</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.pipeline.PipeElement" href="#ambianic.pipeline.PipeElement">PipeElement</a></li>
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.HealthChecker.process_sample"><code class="name flex">
+<span>def <span class="ident">process_sample</span></span>(<span>self, **sample)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Call health callback and pass on sample as is.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_sample(self, **sample):
+    &#34;&#34;&#34;Call health callback and pass on sample as is.&#34;&#34;&#34;
+    log.debug(&#39;%s received sample from the connected &#39;
+              &#39;preceding pipe element.&#39;,
+              self.__class__.__name__
+              )
+    self._health_status_callback()
+    yield sample</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ambianic.pipeline.PipeElement" href="#ambianic.pipeline.PipeElement">PipeElement</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ambianic.pipeline.PipeElement.connect_to_next_element" href="#ambianic.pipeline.PipeElement.connect_to_next_element">connect_to_next_element</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.context" href="#ambianic.pipeline.PipeElement.context">context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.event_log" href="#ambianic.pipeline.PipeElement.event_log">event_log</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heal" href="#ambianic.pipeline.PipeElement.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.healthcheck" href="#ambianic.pipeline.PipeElement.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heartbeat" href="#ambianic.pipeline.PipeElement.heartbeat">heartbeat</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.name" href="#ambianic.pipeline.PipeElement.name">name</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.pop_context" href="#ambianic.pipeline.PipeElement.pop_context">pop_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.push_context" href="#ambianic.pipeline.PipeElement.push_context">push_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.receive_next_sample" href="#ambianic.pipeline.PipeElement.receive_next_sample">receive_next_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.start" href="#ambianic.pipeline.PipeElement.start">start</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.state" href="#ambianic.pipeline.PipeElement.state">state</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.stop" href="#ambianic.pipeline.PipeElement.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ambianic.pipeline.PipeElement"><code class="flex name class">
+<span>class <span class="ident">PipeElement</span></span>
+<span>(</span><span>element_name=None, context: <a title="ambianic.pipeline.timeline.PipelineContext" href="timeline.html#ambianic.pipeline.timeline.PipelineContext">PipelineContext</a> = None, event_log: logging.Logger = None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The basic building block of an Ambianic pipeline.</p>
+<p>Create a PipeElement instance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PipeElement(ManagedService):
+    &#34;&#34;&#34;The basic building block of an Ambianic pipeline.&#34;&#34;&#34;
+
+    def __init__(self,
+                 element_name=None,
+                 context: PipelineContext = None,
+                 event_log: logging.Logger = None,
+                 **kwargs):
+        &#34;&#34;&#34;Create a PipeElement instance.&#34;&#34;&#34;
+        super().__init__()
+        self._name = element_name
+        self._state = PIPE_STATE_STOPPED
+        self._next_element = None
+        self._latest_heartbeat = time.monotonic()
+        self._context = context
+        self._timeline_event_log = event_log
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;Return this element&#39;s reference name in pipeline definitions.&#34;&#34;&#34;
+        return self._name
+
+    @property
+    def context(self) -&gt; PipelineContext:
+        &#34;&#34;&#34;Pipeline execution context.
+
+        :Returns:
+        -------
+        type: PipelineContext
+            pipeline execution context
+
+        &#34;&#34;&#34;
+        return self._context
+
+    def push_context(self, element_context: dict = None):
+        &#34;&#34;&#34;Push this element information to the context stack.
+
+        Invoke before the element yields its first sample output
+        for a given input sample.
+
+        :Parameters:
+        ----------
+        element_context : dict
+            Contextual info about this element.
+
+        &#34;&#34;&#34;
+        if element_context is None:
+            element_context = {}
+        element_context[&#39;class&#39;] = self.__class__.__name__
+        self._context.push_element_context(element_context)
+
+    def pop_context(self) -&gt; dict:
+        &#34;&#34;&#34;Pop element information from the context stack.
+
+        Invoke after the element yields its last sample output
+        for a given input sample.
+
+        :Returns:
+        -------
+        type: dict
+            Element context info.
+
+        &#34;&#34;&#34;
+        return self._context.pop_element_context()
+
+    @property
+    def event_log(self) -&gt; logging.Logger:
+        &#34;&#34;&#34;Get timeline event log for the current pipe execution context.&#34;&#34;&#34;
+        return self._timeline_event_log
+
+    @property
+    def state(self):
+        &#34;&#34;&#34;Lifecycle state of the pipe element.&#34;&#34;&#34;
+        return self._state
+
+    def start(self):
+        &#34;&#34;&#34;Only sourcing elements (first in a pipeline) need to override.
+
+        It is invoked once when the enclosing pipeline is started. It should
+        continue to run until the corresponding stop() method is invoked on the
+        same object from a separate pipeline lifecycle manager thread.
+
+        It is recommended for overriding methods to invoke this base method
+        via super().start() before proceeding with custom logic.
+
+        &#34;&#34;&#34;
+        self._state = PIPE_STATE_RUNNING
+
+    def heal(self):  # pragma: no cover
+        &#34;&#34;&#34;Override with adequate implementation of a healing procedure.
+
+        heal() is invoked by a lifecycle manager when its determined that
+        the element does not respond within reasonable timeframe.
+        This can happen for example if the element depends on external IO
+        resources, which become unavailable for an extended period of time.
+
+        The healing procedure should be considered a chance to recover or find
+        an alternative way to proceed.
+
+        If heal does not reset the pipe element back to a responsive state,
+        it is likely that the lifecycle manager will stop the
+        element and its ecnlosing pipeline.
+
+        &#34;&#34;&#34;
+        pass
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Check the health of this element.
+
+        :returns: (timestamp, status) tuple with most recent heartbeat
+        timestamp and health status code (&#39;OK&#39; normally).
+        &#34;&#34;&#34;
+        status = &#39;OK&#39;  # At some point status may carry richer information
+        return self._latest_heartbeat, status
+
+    def heartbeat(self):
+        &#34;&#34;&#34;Set the heartbeat timestamp to time.monotonic().
+
+        Keeping the heartbeat timestamp current informs
+        the lifecycle manager that this element is functioning
+        well.
+
+        &#34;&#34;&#34;
+        now = time.monotonic()
+        self._latest_heartbeat = now
+
+    def stop(self):
+        &#34;&#34;&#34;Receive stop signal and act accordingly.
+
+        Subclasses implementing sourcing elements should override this method
+        by first invoking their super class implementation and then running
+        through steps specific to stopping their ongoing sample processing.
+
+        &#34;&#34;&#34;
+        self._state = PIPE_STATE_STOPPED
+
+    def connect_to_next_element(self, next_element=None):
+        &#34;&#34;&#34;Connect this element to the next element in the pipe.
+
+        Subclasses should not override this method.
+
+        &#34;&#34;&#34;
+        assert next_element
+        assert isinstance(next_element, PipeElement)
+        self._next_element = next_element
+
+    def receive_next_sample(self, **sample):
+        &#34;&#34;&#34;Receive next sample from a connected previous element if applicable.
+
+        All pipeline elements except for the first (sourcing) element
+        in the pipeline will depend on this method to feed them with new
+        samples to process.
+
+        Subclasses should not override this method.
+
+        :Parameters:
+        ----------
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
+        &#34;&#34;&#34;
+        self.heartbeat()
+        for processed_sample in self.process_sample(**sample):
+            if self._next_element:
+                if (processed_sample):
+                    self._next_element.receive_next_sample(**processed_sample)
+                else:
+                    self._next_element.receive_next_sample()
+                self.heartbeat()
+
+    def process_sample(self, **sample) -&gt; Iterable[dict]:
+        &#34;&#34;&#34;Override and implement as generator.
+
+        Invoked by receive_next_sample() when the previous element
+        (or pipeline source) feeds another data input sample.
+
+        Implementing subclasses should process input samples and yield
+        output samples for the next element in the pipeline.
+
+        :Parameters:
+        ----------
+        **sample : dict
+            A dict of (key, value) pairs that represent the sample.
+            It is left to specialized implementations of PipeElement to specify
+            their in/out sample formats and enforce compatibility with
+            adjacent connected pipe elements.
+
+        :Returns:
+        ----------
+        processed_sample: Iterable[dict]
+            Generates processed samples to be passed on
+            to the next pipeline element.
+
+        &#34;&#34;&#34;
+        yield sample</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ambianic.pipeline.HealthChecker" href="#ambianic.pipeline.HealthChecker">HealthChecker</a></li>
+<li><a title="ambianic.pipeline.ai.tf_detect.TFDetectionModel" href="ai/tf_detect.html#ambianic.pipeline.ai.tf_detect.TFDetectionModel">TFDetectionModel</a></li>
+<li><a title="ambianic.pipeline.avsource.av_element.AVSourceElement" href="avsource/av_element.html#ambianic.pipeline.avsource.av_element.AVSourceElement">AVSourceElement</a></li>
+<li><a title="ambianic.pipeline.store.SaveDetectionSamples" href="store.html#ambianic.pipeline.store.SaveDetectionSamples">SaveDetectionSamples</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ambianic.pipeline.PipeElement.context"><code class="name">var <span class="ident">context</span> : <a title="ambianic.pipeline.timeline.PipelineContext" href="timeline.html#ambianic.pipeline.timeline.PipelineContext">PipelineContext</a></code></dt>
+<dd>
+<div class="desc"><p>Pipeline execution context.</p>
+<h2 id="returns">:Returns:</h2>
+<p>type: PipelineContext
+pipeline execution context</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def context(self) -&gt; PipelineContext:
+    &#34;&#34;&#34;Pipeline execution context.
+
+    :Returns:
+    -------
+    type: PipelineContext
+        pipeline execution context
+
+    &#34;&#34;&#34;
+    return self._context</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.event_log"><code class="name">var <span class="ident">event_log</span> : logging.Logger</code></dt>
+<dd>
+<div class="desc"><p>Get timeline event log for the current pipe execution context.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def event_log(self) -&gt; logging.Logger:
+    &#34;&#34;&#34;Get timeline event log for the current pipe execution context.&#34;&#34;&#34;
+    return self._timeline_event_log</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"><p>Return this element's reference name in pipeline definitions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    &#34;&#34;&#34;Return this element&#39;s reference name in pipeline definitions.&#34;&#34;&#34;
+    return self._name</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.state"><code class="name">var <span class="ident">state</span></code></dt>
+<dd>
+<div class="desc"><p>Lifecycle state of the pipe element.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def state(self):
+    &#34;&#34;&#34;Lifecycle state of the pipe element.&#34;&#34;&#34;
+    return self._state</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.PipeElement.connect_to_next_element"><code class="name flex">
+<span>def <span class="ident">connect_to_next_element</span></span>(<span>self, next_element=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Connect this element to the next element in the pipe.</p>
+<p>Subclasses should not override this method.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def connect_to_next_element(self, next_element=None):
+    &#34;&#34;&#34;Connect this element to the next element in the pipe.
+
+    Subclasses should not override this method.
+
+    &#34;&#34;&#34;
+    assert next_element
+    assert isinstance(next_element, PipeElement)
+    self._next_element = next_element</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.heal"><code class="name flex">
+<span>def <span class="ident">heal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override with adequate implementation of a healing procedure.</p>
+<p>heal() is invoked by a lifecycle manager when its determined that
+the element does not respond within reasonable timeframe.
+This can happen for example if the element depends on external IO
+resources, which become unavailable for an extended period of time.</p>
+<p>The healing procedure should be considered a chance to recover or find
+an alternative way to proceed.</p>
+<p>If heal does not reset the pipe element back to a responsive state,
+it is likely that the lifecycle manager will stop the
+element and its ecnlosing pipeline.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal(self):  # pragma: no cover
+    &#34;&#34;&#34;Override with adequate implementation of a healing procedure.
+
+    heal() is invoked by a lifecycle manager when its determined that
+    the element does not respond within reasonable timeframe.
+    This can happen for example if the element depends on external IO
+    resources, which become unavailable for an extended period of time.
+
+    The healing procedure should be considered a chance to recover or find
+    an alternative way to proceed.
+
+    If heal does not reset the pipe element back to a responsive state,
+    it is likely that the lifecycle manager will stop the
+    element and its ecnlosing pipeline.
+
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.healthcheck"><code class="name flex">
+<span>def <span class="ident">healthcheck</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check the health of this element.</p>
+<p>:returns: (timestamp, status) tuple with most recent heartbeat
+timestamp and health status code ('OK' normally).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def healthcheck(self):
+    &#34;&#34;&#34;Check the health of this element.
+
+    :returns: (timestamp, status) tuple with most recent heartbeat
+    timestamp and health status code (&#39;OK&#39; normally).
+    &#34;&#34;&#34;
+    status = &#39;OK&#39;  # At some point status may carry richer information
+    return self._latest_heartbeat, status</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.heartbeat"><code class="name flex">
+<span>def <span class="ident">heartbeat</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set the heartbeat timestamp to time.monotonic().</p>
+<p>Keeping the heartbeat timestamp current informs
+the lifecycle manager that this element is functioning
+well.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heartbeat(self):
+    &#34;&#34;&#34;Set the heartbeat timestamp to time.monotonic().
+
+    Keeping the heartbeat timestamp current informs
+    the lifecycle manager that this element is functioning
+    well.
+
+    &#34;&#34;&#34;
+    now = time.monotonic()
+    self._latest_heartbeat = now</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.pop_context"><code class="name flex">
+<span>def <span class="ident">pop_context</span></span>(<span>self) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Pop element information from the context stack.</p>
+<p>Invoke after the element yields its last sample output
+for a given input sample.</p>
+<h2 id="returns">:Returns:</h2>
+<p>type: dict
+Element context info.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pop_context(self) -&gt; dict:
+    &#34;&#34;&#34;Pop element information from the context stack.
+
+    Invoke after the element yields its last sample output
+    for a given input sample.
+
+    :Returns:
+    -------
+    type: dict
+        Element context info.
+
+    &#34;&#34;&#34;
+    return self._context.pop_element_context()</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.process_sample"><code class="name flex">
+<span>def <span class="ident">process_sample</span></span>(<span>self, **sample) ‑> Iterable[dict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override and implement as generator.</p>
+<p>Invoked by receive_next_sample() when the previous element
+(or pipeline source) feeds another data input sample.</p>
+<p>Implementing subclasses should process input samples and yield
+output samples for the next element in the pipeline.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>**sample : dict
+A dict of (key, value) pairs that represent the sample.
+It is left to specialized implementations of PipeElement to specify
+their in/out sample formats and enforce compatibility with
+adjacent connected pipe elements.</p>
+<h2 id="returns">:Returns:</h2>
+<p>processed_sample: Iterable[dict]
+Generates processed samples to be passed on
+to the next pipeline element.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_sample(self, **sample) -&gt; Iterable[dict]:
+    &#34;&#34;&#34;Override and implement as generator.
+
+    Invoked by receive_next_sample() when the previous element
+    (or pipeline source) feeds another data input sample.
+
+    Implementing subclasses should process input samples and yield
+    output samples for the next element in the pipeline.
+
+    :Parameters:
+    ----------
+    **sample : dict
+        A dict of (key, value) pairs that represent the sample.
+        It is left to specialized implementations of PipeElement to specify
+        their in/out sample formats and enforce compatibility with
+        adjacent connected pipe elements.
+
+    :Returns:
+    ----------
+    processed_sample: Iterable[dict]
+        Generates processed samples to be passed on
+        to the next pipeline element.
+
+    &#34;&#34;&#34;
+    yield sample</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.push_context"><code class="name flex">
+<span>def <span class="ident">push_context</span></span>(<span>self, element_context: dict = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Push this element information to the context stack.</p>
+<p>Invoke before the element yields its first sample output
+for a given input sample.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>element_context : dict
+Contextual info about this element.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def push_context(self, element_context: dict = None):
+    &#34;&#34;&#34;Push this element information to the context stack.
+
+    Invoke before the element yields its first sample output
+    for a given input sample.
+
+    :Parameters:
+    ----------
+    element_context : dict
+        Contextual info about this element.
+
+    &#34;&#34;&#34;
+    if element_context is None:
+        element_context = {}
+    element_context[&#39;class&#39;] = self.__class__.__name__
+    self._context.push_element_context(element_context)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.receive_next_sample"><code class="name flex">
+<span>def <span class="ident">receive_next_sample</span></span>(<span>self, **sample)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Receive next sample from a connected previous element if applicable.</p>
+<p>All pipeline elements except for the first (sourcing) element
+in the pipeline will depend on this method to feed them with new
+samples to process.</p>
+<p>Subclasses should not override this method.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>**sample : dict
+A dict of (key, value) pairs that represent the sample.
+It is left to specialized implementations of PipeElement to specify
+their in/out sample formats and enforce compatibility with
+adjacent connected pipe elements.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def receive_next_sample(self, **sample):
+    &#34;&#34;&#34;Receive next sample from a connected previous element if applicable.
+
+    All pipeline elements except for the first (sourcing) element
+    in the pipeline will depend on this method to feed them with new
+    samples to process.
+
+    Subclasses should not override this method.
+
+    :Parameters:
+    ----------
+    **sample : dict
+        A dict of (key, value) pairs that represent the sample.
+        It is left to specialized implementations of PipeElement to specify
+        their in/out sample formats and enforce compatibility with
+        adjacent connected pipe elements.
+
+    &#34;&#34;&#34;
+    self.heartbeat()
+    for processed_sample in self.process_sample(**sample):
+        if self._next_element:
+            if (processed_sample):
+                self._next_element.receive_next_sample(**processed_sample)
+            else:
+                self._next_element.receive_next_sample()
+            self.heartbeat()</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Only sourcing elements (first in a pipeline) need to override.</p>
+<p>It is invoked once when the enclosing pipeline is started. It should
+continue to run until the corresponding stop() method is invoked on the
+same object from a separate pipeline lifecycle manager thread.</p>
+<p>It is recommended for overriding methods to invoke this base method
+via super().start() before proceeding with custom logic.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self):
+    &#34;&#34;&#34;Only sourcing elements (first in a pipeline) need to override.
+
+    It is invoked once when the enclosing pipeline is started. It should
+    continue to run until the corresponding stop() method is invoked on the
+    same object from a separate pipeline lifecycle manager thread.
+
+    It is recommended for overriding methods to invoke this base method
+    via super().start() before proceeding with custom logic.
+
+    &#34;&#34;&#34;
+    self._state = PIPE_STATE_RUNNING</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.PipeElement.stop"><code class="name flex">
+<span>def <span class="ident">stop</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Receive stop signal and act accordingly.</p>
+<p>Subclasses implementing sourcing elements should override this method
+by first invoking their super class implementation and then running
+through steps specific to stopping their ongoing sample processing.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stop(self):
+    &#34;&#34;&#34;Receive stop signal and act accordingly.
+
+    Subclasses implementing sourcing elements should override this method
+    by first invoking their super class implementation and then running
+    through steps specific to stopping their ongoing sample processing.
+
+    &#34;&#34;&#34;
+    self._state = PIPE_STATE_STOPPED</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ambianic" href="../index.html">ambianic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="ambianic.pipeline.ai" href="ai/index.html">ambianic.pipeline.ai</a></code></li>
+<li><code><a title="ambianic.pipeline.avsource" href="avsource/index.html">ambianic.pipeline.avsource</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter" href="interpreter.html">ambianic.pipeline.interpreter</a></code></li>
+<li><code><a title="ambianic.pipeline.store" href="store.html">ambianic.pipeline.store</a></code></li>
+<li><code><a title="ambianic.pipeline.timeline" href="timeline.html">ambianic.pipeline.timeline</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ambianic.pipeline.HealthChecker" href="#ambianic.pipeline.HealthChecker">HealthChecker</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.HealthChecker.process_sample" href="#ambianic.pipeline.HealthChecker.process_sample">process_sample</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.pipeline.PipeElement" href="#ambianic.pipeline.PipeElement">PipeElement</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.PipeElement.connect_to_next_element" href="#ambianic.pipeline.PipeElement.connect_to_next_element">connect_to_next_element</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.context" href="#ambianic.pipeline.PipeElement.context">context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.event_log" href="#ambianic.pipeline.PipeElement.event_log">event_log</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heal" href="#ambianic.pipeline.PipeElement.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.healthcheck" href="#ambianic.pipeline.PipeElement.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heartbeat" href="#ambianic.pipeline.PipeElement.heartbeat">heartbeat</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.name" href="#ambianic.pipeline.PipeElement.name">name</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.pop_context" href="#ambianic.pipeline.PipeElement.pop_context">pop_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.process_sample" href="#ambianic.pipeline.PipeElement.process_sample">process_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.push_context" href="#ambianic.pipeline.PipeElement.push_context">push_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.receive_next_sample" href="#ambianic.pipeline.PipeElement.receive_next_sample">receive_next_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.start" href="#ambianic.pipeline.PipeElement.start">start</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.state" href="#ambianic.pipeline.PipeElement.state">state</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.stop" href="#ambianic.pipeline.PipeElement.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
