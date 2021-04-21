@@ -165,10 +165,12 @@ def create_app(data_dir=None):
     @app.route('/api/auth/premium-notification')
     def initialize_premium_notification():
         userAuth0Id = request.args.get('userId')
+        endpoint = request.args.get('notification_endpoint')
         auth_file = {
             'name': 'AMBIANIC-EDGE-PREMIUM',
             'credentials': {
                 'USER_AUTH0_ID': userAuth0Id,
+                'NOTIFICATION_ENDPOINT': endpoint,
             }}
 
         directory = pkg_resources.resource_filename(

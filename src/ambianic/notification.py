@@ -95,16 +95,18 @@ class NotificationHandler:
             with open(premiumFile, "r") as file:
                 configFile = yaml.safe_load(file)
                 userId = configFile['credentials']["USER_AUTH0_ID"]
+                endpoint = configFile['credentials']["NOTIFICATION_ENDPOINT"]
 
                 if (userId):
                     post(
-                        'http://localhost:5050/.netlify/functions/notification',
+                        '{0}/notification'.format(endpoint),
                         json={
                             'userId': userId,
                             'notification': {
                                 'title': title,
                                 'message': message,
-                                'attachments': attachments}})
+                                'provider': notification.providers
+                            }})
 
         except FileNotFoundError:
             log.debug("Error locating file")
