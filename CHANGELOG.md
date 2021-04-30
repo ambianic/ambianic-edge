@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.14.7](https://github.com/ambianic/ambianic-edge/compare/v1.14.6...v1.14.7) (2021-03-27)
+
+
+### Bug Fixes
+
+* build and publish python API docs ([2091c54](https://github.com/ambianic/ambianic-edge/commit/2091c5436cd697788dccc055d91550ba26c75ba4)), closes [#342](https://github.com/ambianic/ambianic-edge/issues/342)
+
 ## [1.14.6](https://github.com/ambianic/ambianic-edge/compare/v1.14.5...v1.14.6) (2021-03-01)
 
 
