@@ -25,3 +25,4 @@ premium.yaml
 tmp*.jpg
 src/Ambianic.egg-info/**
 config.yaml
+/docs/dist
