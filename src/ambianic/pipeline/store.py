@@ -1,14 +1,14 @@
 """Pipeline sample storage elements."""
 import logging
-import datetime
 import pathlib
 import json
 import uuid
+import datetime
 from typing import Iterable
 import numpy as np
 from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline import PipeElement
-from ambianic.notification import Notification, NotificationHandler
+from ambianic.notification import Notification, NotificationHandler, sendCloudNotification
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +70,7 @@ class SaveDetectionSamples(PipeElement):
         # setup notification handler
         self.notification = None
         self.notification_config = notify
+
         if self.notification_config is not None and self.notification_config.get(
                 "providers"):
             self.notification = NotificationHandler()
@@ -80,7 +81,6 @@ class SaveDetectionSamples(PipeElement):
                      thumbnail=None,
                      inference_result=None,
                      inference_meta=None):
-
         time_prefix = inf_time.strftime("%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}")
         image_file = time_prefix.format(suffix='image', fext='jpg')
         image_path = self._output_directory / image_file
@@ -102,6 +102,7 @@ class SaveDetectionSamples(PipeElement):
             'inference_result': inference_result,
             'inference_meta': inference_meta
         }
+
         image.save(image_path)
         thumbnail.save(thumbnail_path)
         # save samples to local disk
@@ -172,10 +173,10 @@ class SaveDetectionSamples(PipeElement):
                 yield processed_sample
 
     def notify(self, save_json: dict):
-        if self.notification is None:
-            return
-        log.debug("Sending notification(s)..")
         # TODO extract inference data
+        if save_json['inference_result'] is None:
+            return
+
         for inference_result in save_json['inference_result']:
             data = {
                 'id': save_json['id'],
@@ -183,6 +184,12 @@ class SaveDetectionSamples(PipeElement):
                 'confidence': inference_result['confidence'],
                 'datetime': save_json['datetime'],
             }
+
+            sendCloudNotification(data=data)
+
+            if self.notification is None:
+                return
+
             notification = Notification(
                 data=data, providers=self.notification_config["providers"])
             self.notification.send(notification)

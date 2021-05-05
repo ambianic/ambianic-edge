@@ -1,29 +1,28 @@
 """Test cases for SaveDetectionSamples."""
-
-from json import encoder
 from ambianic.pipeline.store import SaveDetectionSamples, JsonEncoder
 from PIL import Image
 import numpy as np
 import os
 import json
-import logging
 from ambianic.pipeline.timeline import PipelineContext
 import shutil
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def test_json_encoder():
-
     inp = {
-            'label': 'FALL',
-            'confidence': np.float32(12.3),
-            'leaning_angle': np.float32(24.3),
-            'keypoint_corr': {
-                'left shoulder': [np.float32(1.2), np.float32(1.23)],
-                'left hip': [np.float32(1.2), np.float32(1.23)],
-                'right shoulder': [np.float32(1.2), np.float32(1.23)],
-                'right hip': [np.float32(1.2), np.float32(1.23)]
-            }
+        'label': 'FALL',
+        'confidence': np.float32(12.3),
+        'leaning_angle': np.float32(24.3),
+        'keypoint_corr': {
+            'left shoulder': [np.float32(1.2), np.float32(1.23)],
+            'left hip': [np.float32(1.2), np.float32(1.23)],
+            'right shoulder': [np.float32(1.2), np.float32(1.23)],
+            'right hip': [np.float32(1.2), np.float32(1.23)]
         }
+    }
     encode = json.dumps(inp, cls=JsonEncoder)
     decode = json.loads(encode)
 
@@ -60,12 +59,11 @@ def test_process_sample_none():
 
 
 def test_process_sample():
-
     out_dir = os.path.dirname(os.path.abspath(__file__))
     out_dir = os.path.join(
         out_dir,
         'tmp/'
-        )
+    )
     out_dir = os.path.abspath(out_dir)
     context = PipelineContext(unique_pipeline_name='test pipeline')
     context.data_dir = out_dir
@@ -74,17 +72,17 @@ def test_process_sample():
     img = Image.new('RGB', (60, 30), color='red')
 
     detections = [
-                    {
-                     'label': 'person',
-                     'confidence': np.float32(0.98),
-                     'box': {
-                         'xmin': np.float32(0.1),
-                         'ymin': np.float32(1.1),
-                         'xmax': np.float32(2.1),
-                         'ymax': np.float32(3.1)
-                        }
-                    }
-                ]
+        {
+            'label': 'person',
+            'confidence': np.float32(0.98),
+            'box': {
+                'xmin': np.float32(0.1),
+                'ymin': np.float32(1.1),
+                'xmax': np.float32(2.1),
+                'ymax': np.float32(3.1)
+            }
+        }
+    ]
 
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
@@ -144,7 +142,6 @@ def test_process_sample():
 
 
 class _TestSaveDetectionSamples(SaveDetectionSamples):
-
     _save_sample_called = False
     _img_path = None
     _json_path = None
@@ -172,7 +169,7 @@ def test_store_positive_detection():
     out_dir = os.path.join(
         out_dir,
         'tmp/'
-        )
+    )
     out_dir = os.path.abspath(out_dir)
     context = PipelineContext(unique_pipeline_name='test pipeline')
     context.data_dir = out_dir
@@ -181,17 +178,17 @@ def test_store_positive_detection():
     img = Image.new('RGB', (60, 30), color='red')
 
     detections = [
-                    {
-                     'label': 'person',
-                     'confidence': 0.98,
-                     'box': {
-                         'xmin': 0,
-                         'ymin': 1,
-                         'xmax': 2,
-                         'ymax': 3
-                        }
-                    }
-                ]
+        {
+            'label': 'person',
+            'confidence': 0.98,
+            'box': {
+                'xmin': 0,
+                'ymin': 1,
+                'xmax': 2,
+                'ymax': 3
+            }
+        }
+    ]
 
     processed_samples = list(store.process_sample(image=img,
                                                   thumbnail=img,
@@ -253,7 +250,7 @@ def test_store_negative_detection():
     out_dir = os.path.join(
         out_dir,
         'tmp/'
-        )
+    )
     out_dir = os.path.abspath(out_dir)
     out_dir = os.path.abspath(out_dir)
     context = PipelineContext(unique_pipeline_name='test pipeline')
@@ -309,7 +306,7 @@ def test_store_negative_detection_no_inference():
     out_dir = os.path.join(
         out_dir,
         'tmp/'
-        )
+    )
     out_dir = os.path.abspath(out_dir)
     out_dir = os.path.abspath(out_dir)
     context = PipelineContext(unique_pipeline_name='test pipeline')
@@ -356,9 +353,24 @@ def test_store_negative_detection_no_inference():
 
     shutil.rmtree(out_dir)
 
-class _TestSaveDetectionSamples2(SaveDetectionSamples):
 
+class _TestSaveDetectionSamples2(SaveDetectionSamples):
     _save_sample_called = False
+    result = {
+        "id": "140343867415240",
+        "datetime": "2021-05-05 14:04:45.428473",
+        'inference_result': [{
+            "confidence": 0.98828125,
+            "datetime": "2021-05-05 14:04:45.428473",
+            "label": "cat",
+            "id": "140343867415240"
+        }]
+    }
+    context = PipelineContext(unique_pipeline_name='test pipeline')
+    context.data_dir = "./tmp/"
+    store = _TestSaveDetectionSamples(context=context,
+                                      event_log=logging.getLogger())
+    store.notify(save_json=result)
 
     def _save_sample(self,
                      inf_time=None,
@@ -367,7 +379,6 @@ class _TestSaveDetectionSamples2(SaveDetectionSamples):
                      inference_result=None,
                      inference_meta=None):
         self._save_sample_called = True
-        raise RuntimeError()
 
 
 def test_process_sample_exception():
@@ -379,17 +390,17 @@ def test_process_sample_exception():
     img = Image.new('RGB', (60, 30), color='red')
 
     detections = [
-                    {
-                     'label': 'person',
-                     'confidence': 0.98,
-                     'box': {
-                         'xmin': 0,
-                         'ymin': 1,
-                         'xmax': 2,
-                         'ymax': 3
-                        }
-                    }
-                ]
+        {
+            'label': 'person',
+            'confidence': 0.98,
+            'box': {
+                'xmin': 0,
+                'ymin': 1,
+                'xmax': 2,
+                'ymax': 3
+            }
+        }
+    ]
 
     processed_samples = list(store.process_sample(image=img,
                                                   inference_result=detections,

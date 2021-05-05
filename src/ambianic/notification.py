@@ -8,10 +8,40 @@ import pkg_resources
 import yaml
 from requests import post
 
-
 log = logging.getLogger(__name__)
 
 UI_BASEURL = "https://ui.ambianic.ai"
+
+
+def sendCloudNotification(data):
+    # r+ flag causes a permission error
+    try:
+        premiumFile = pkg_resources.resource_filename(
+            "ambianic.webapp", "premium.yaml")
+
+        with open(premiumFile, "r") as file:
+            configFile = yaml.safe_load(file)
+
+            userId = configFile['credentials']["USER_AUTH0_ID"]
+            endpoint = configFile['credentials']["NOTIFICATION_ENDPOINT"]
+            if (userId):
+                return post(
+                    url='{0}/notification'.format(endpoint),
+                    json={
+                        'userId': userId,
+                        'notification': {
+                            'title': 'Ambianic.ai New {0} event'.format(
+                                data['label']),
+                            'message': 'New {0} detected with a {1} confidence level'.format(
+                                data['label'],
+                                data['confidence']),
+                        }})
+
+    except FileNotFoundError as err:
+        log.warning("Error locating file: {}".format(err))
+
+    except Exception as error:
+        log.warning("Error sending email: {}".format(str(error)))
 
 
 class Notification:
@@ -87,51 +117,25 @@ class NotificationHandler:
             title = title.replace(k, v)
             message = message.replace(k, v)
 
-        # send notification to cloud API
-        premiumFile = pkg_resources.resource_filename(
-            "ambianic.webapp", "premium.yaml")
-
-        try:
-            with open(premiumFile, "r") as file:
-                configFile = yaml.safe_load(file)
-                userId = configFile['credentials']["USER_AUTH0_ID"]
-                endpoint = configFile['credentials']["NOTIFICATION_ENDPOINT"]
-
-                if (userId):
-                    post(
-                        '{0}/notification'.format(endpoint),
-                        json={
-                            'userId': userId,
-                            'notification': {
-                                'title': title,
-                                'message': message,
-                                'provider': notification.providers
-                            }})
-
-        except FileNotFoundError:
-            log.debug("Error locating file")
-
-        except TypeError:
-            log.debug("Auth0 key not found")
-
         for provider in notification.providers:
             cfg = self.config.get(provider, None)
-            if cfg is None:
+
+            if cfg:
+                include_attachments = cfg.get("include_attachments", False)
+                ok = self.apobj.notify(
+                    message,
+                    title=title,
+                    tag=provider,
+                    attach=attachments if include_attachments else [],
+                )
+                if ok:
+                    log.debug(
+                        "Sent notification for %s to %s" %
+                        (notification.event, provider)
+                    )
+                else:
+                    log.warning("Error sending notification for %s to %s" %
+                                (notification.event, provider))
+            else:
                 log.warning("Skip unknown provider %s" % provider)
                 continue
-
-            include_attachments = cfg.get("include_attachments", False)
-            ok = self.apobj.notify(
-                message,
-                title=title,
-                tag=provider,
-                attach=attachments if include_attachments else [],
-            )
-            if ok:
-                log.debug(
-                    "Sent notification for %s to %s" %
-                    (notification.event, provider)
-                )
-            else:
-                log.warning("Error sending notification for %s to %s" %
-                            (notification.event, provider))

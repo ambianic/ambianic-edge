@@ -8,9 +8,8 @@ import flask
 from flask import Flask, request, jsonify, json
 from flask_cors import CORS
 from flask.logging import default_handler
-from requests import get, post, session
+from requests import get
 import yaml
-import base64
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
 from ambianic import config, DEFAULT_DATA_DIR, __version__
@@ -176,12 +175,9 @@ def create_app(data_dir=None):
         directory = pkg_resources.resource_filename(
             "ambianic.webapp", "premium.yaml")
 
-        try:
-            file = open(directory, 'w+')
-            yaml.dump(auth_file, file)
-            file.close()
-        except FileNotFoundError:
-            log.debug("Error locating file")
+        file = open(directory, 'w+')
+        yaml.dump(auth_file, file)
+        file.close()
 
         return {"status": "OK", "message": "AUTH0_ID SAVED"}
 
