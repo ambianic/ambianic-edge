@@ -4,10 +4,12 @@ tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
       pip3 install -e ./src
+      sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
-      echo "Run `python3 -m ambianic` to start the ambianic edge server."
     command: |
       pyenv global system
       echo "Started ambianic-edge development environment."
       echo "To run the ambianic-edge testsuite use:"
       echo "python3 -m pytest --cov=ambianic --cov-report=term tests/"
+      echo "To run the amgianic-edge server use:
+      echo "python3 -m ambianic"
