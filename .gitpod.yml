@@ -6,11 +6,12 @@ tasks:
       pip3 install -e ./src
       sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
-      pyenv global system
     command: |
+      pyenv global system
       echo "Started ambianic-edge development environment."
       echo "Running ambianic-edge testsuite:"
       python3 -m pytest --cov=ambianic --cov-report=term tests/
   - command: |
+      pyenv global system
       echo "To run the amgianic-edge server use:"
       echo "python3 -m ambianic"
