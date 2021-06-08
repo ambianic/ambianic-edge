@@ -1,8 +1,9 @@
+pytest-httpserver==1.0.0
 absl-py>=0.7.1
 appdirs>=1.4.3
 asn1crypto>=0.24.0
 astor>=0.8.0
-asttokens>=1.1.13  
+asttokens>=1.1.13
 beautifulsoup4>=4.7.1
 blinker>=1.4
 certifi>=2018.8.24
@@ -23,6 +24,7 @@ itsdangerous>=0.24
 Jinja2>=2.10.1
 numpy>=1.16.2
 oauthlib>=2.1.0
+httpretty==1.0.5
 Pillow>=5.4.1
 pyOpenSSL>=19.0.0
 PyYAML>=5.1.2

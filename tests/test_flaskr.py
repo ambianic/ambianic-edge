@@ -1,10 +1,11 @@
-import os
 import json
-import tempfile
+import yaml
 import pytest
+import pkg_resources
 from ambianic.webapp import flaskr
 from ambianic import config, __version__
 import logging
+import os
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ def teardown_module(module):
 
 @pytest.fixture
 def client():
-
     app = flaskr.create_app()
 
     app.config['TESTING'] = True
@@ -67,6 +67,36 @@ def test_get_timeline(client):
 def test_get_samples(client):
     rv = client.get('/api/samples')
     assert json.loads(rv.data)["status"] == "success"
+
+
+def test_initialize_premium_notification(client):
+    testId = 'auth0|123456789abed'
+    endpoint = 'https://localhost:5050'
+
+    request = client.get(
+        '/api/auth/premium-notification?userId={0}&notification_endpoint={1}'.format(testId, endpoint))
+    response = json.loads(request.data)
+
+    assert isinstance(response, dict)
+    configDir = pkg_resources.resource_filename(
+        "ambianic.webapp", "premium.yaml")
+
+    with open(configDir, "r") as file:
+        file_data = yaml.safe_load(file)
+        config_provider = file_data["credentials"]["USER_AUTH0_ID"]
+        email_endpoint = file_data["credentials"]["NOTIFICATION_ENDPOINT"]
+
+        assert isinstance(config_provider, str)
+        assert config_provider == testId
+
+        assert isinstance(email_endpoint, str)
+        assert email_endpoint == endpoint
+
+    assert os.path.isfile(configDir)
+    assert isinstance(response["status"], str)
+    assert isinstance(response["message"], str)
+    assert response["status"] == "OK"
+    assert response["message"] == "AUTH0_ID SAVED"
 
 
 def test_add_samples(client):

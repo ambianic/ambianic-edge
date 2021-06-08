@@ -2,12 +2,14 @@
 import os
 import logging
 import time
+import pkg_resources
 from pathlib import Path
 import flask
 from flask import Flask, request, jsonify, json
 from flask_cors import CORS
 from flask.logging import default_handler
 from requests import get
+import yaml
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
 from ambianic import config, DEFAULT_DATA_DIR, __version__
@@ -158,6 +160,26 @@ def create_app(data_dir=None):
         response_object = {'status': 'OK', 'version': __version__}
         resp = jsonify(response_object)
         return resp
+
+    @app.route('/api/auth/premium-notification')
+    def initialize_premium_notification():
+        userAuth0Id = request.args.get('userId')
+        endpoint = request.args.get('notification_endpoint')
+        auth_file = {
+            'name': 'AMBIANIC-EDGE-PREMIUM',
+            'credentials': {
+                'USER_AUTH0_ID': userAuth0Id,
+                'NOTIFICATION_ENDPOINT': endpoint,
+            }}
+
+        directory = pkg_resources.resource_filename(
+            "ambianic.webapp", "premium.yaml")
+
+        file = open(directory, 'w+')
+        yaml.dump(auth_file, file)
+        file.close()
+
+        return {"status": "OK", "message": "AUTH0_ID SAVED"}
 
     @app.route('/api/timeline', methods=['GET'])
     @app.route('/api/timeline.json', methods=['GET'])
