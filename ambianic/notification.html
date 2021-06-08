@@ -33,13 +33,52 @@ import logging
 import apprise
 import os
 import ambianic
+import pkg_resources
+import yaml
+from requests import post
 
 log = logging.getLogger(__name__)
 
 UI_BASEURL = &#34;https://ui.ambianic.ai&#34;
 
+
+def sendCloudNotification(data):
+    # r+ flag causes a permission error
+    try:
+        premiumFile = pkg_resources.resource_filename(
+            &#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
+
+        with open(premiumFile, &#34;r&#34;) as file:
+            configFile = yaml.safe_load(file)
+
+            userId = configFile[&#39;credentials&#39;][&#34;USER_AUTH0_ID&#34;]
+            endpoint = configFile[&#39;credentials&#39;][&#34;NOTIFICATION_ENDPOINT&#34;]
+            if (userId):
+                return post(
+                    url=&#39;{0}/notification&#39;.format(endpoint),
+                    json={
+                        &#39;userId&#39;: userId,
+                        &#39;notification&#39;: {
+                            &#39;title&#39;: &#39;Ambianic.ai New {0} event&#39;.format(
+                                data[&#39;label&#39;]),
+                            &#39;message&#39;: &#39;New {0} detected with a {1} confidence level&#39;.format(
+                                data[&#39;label&#39;],
+                                data[&#39;confidence&#39;]),
+                        }})
+
+    except FileNotFoundError as err:
+        log.warning(&#34;Error locating file: {}&#34;.format(err))
+
+    except Exception as error:
+        log.warning(&#34;Error sending email: {}&#34;.format(str(error)))
+
+
 class Notification:
-    def __init__(self, event:str = &#34;detection&#34;, data:dict = {}, providers:list = [&#34;all&#34;]):
+    def __init__(
+            self,
+            event: str = &#34;detection&#34;,
+            data: dict = {},
+            providers: list = [&#34;all&#34;]):
         self.event: str = event
         self.providers: list = providers
         self.title: str = None
@@ -65,17 +104,16 @@ class NotificationHandler:
             for provider in providers:
                 if not self.apobj.add(provider, tag=name):
                     log.warning(
-                        &#34;Failed to add notification provider: %s=%s&#34; 
-                            % (name, provider)
+                        &#34;Failed to add notification provider: %s=%s&#34;
+                        % (name, provider)
                     )
 
     def send(self, notification: Notification):
-
         templates = self.config.get(&#34;templates&#34;, {})
 
         title = notification.title
         if title is None:
-            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34; )
+            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
 
         message = notification.message
         if message is None:
@@ -92,9 +130,14 @@ class NotificationHandler:
 
         template_args = {
             &#34;event_type&#34;: notification.event,
-            &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-            &#34;event_details_url&#34;: &#34;%s/%s&#34; % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;))
-        }
+            &#34;event&#34;: notification.data.get(
+                &#34;label&#34;,
+                notification.event),
+            &#34;event_details_url&#34;: &#34;%s/%s&#34; %
+            (UI_BASEURL,
+             notification.data.get(
+                 &#34;id&#34;,
+                 &#34;&#34;))}
         template_args = {**template_args, **notification.data}
 
         for key, value in template_args.items():
@@ -105,25 +148,26 @@ class NotificationHandler:
 
         for provider in notification.providers:
             cfg = self.config.get(provider, None)
-            if cfg is None:
-                log.warning(&#34;Skip unknown provider %s&#34; % provider)
-                continue
-            
-            include_attachments = cfg.get(&#34;include_attachments&#34;, False)
-            ok = self.apobj.notify(
-                message, 
-                title=title,
-                tag=provider, 
-                attach=attachments if include_attachments else [],
-            )
-            if ok:
-                log.debug(
-                    &#34;Sent notification for %s to %s&#34; % 
-                    (notification.event, provider)
+
+            if cfg:
+                include_attachments = cfg.get(&#34;include_attachments&#34;, False)
+                ok = self.apobj.notify(
+                    message,
+                    title=title,
+                    tag=provider,
+                    attach=attachments if include_attachments else [],
                 )
+                if ok:
+                    log.debug(
+                        &#34;Sent notification for %s to %s&#34; %
+                        (notification.event, provider)
+                    )
+                else:
+                    log.warning(&#34;Error sending notification for %s to %s&#34; %
+                                (notification.event, provider))
             else:
-                log.warning(&#34;Error sending notification for %s to %s&#34; %
-                          (notification.event, provider))</code></pre>
+                log.warning(&#34;Skip unknown provider %s&#34; % provider)
+                continue</code></pre>
 </details>
 </section>
 <section>
@@ -131,6 +175,49 @@ class NotificationHandler:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ambianic.notification.sendCloudNotification"><code class="name flex">
+<span>def <span class="ident">sendCloudNotification</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sendCloudNotification(data):
+    # r+ flag causes a permission error
+    try:
+        premiumFile = pkg_resources.resource_filename(
+            &#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
+
+        with open(premiumFile, &#34;r&#34;) as file:
+            configFile = yaml.safe_load(file)
+
+            userId = configFile[&#39;credentials&#39;][&#34;USER_AUTH0_ID&#34;]
+            endpoint = configFile[&#39;credentials&#39;][&#34;NOTIFICATION_ENDPOINT&#34;]
+            if (userId):
+                return post(
+                    url=&#39;{0}/notification&#39;.format(endpoint),
+                    json={
+                        &#39;userId&#39;: userId,
+                        &#39;notification&#39;: {
+                            &#39;title&#39;: &#39;Ambianic.ai New {0} event&#39;.format(
+                                data[&#39;label&#39;]),
+                            &#39;message&#39;: &#39;New {0} detected with a {1} confidence level&#39;.format(
+                                data[&#39;label&#39;],
+                                data[&#39;confidence&#39;]),
+                        }})
+
+    except FileNotFoundError as err:
+        log.warning(&#34;Error locating file: {}&#34;.format(err))
+
+    except Exception as error:
+        log.warning(&#34;Error sending email: {}&#34;.format(str(error)))</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -146,7 +233,11 @@ class NotificationHandler:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Notification:
-    def __init__(self, event:str = &#34;detection&#34;, data:dict = {}, providers:list = [&#34;all&#34;]):
+    def __init__(
+            self,
+            event: str = &#34;detection&#34;,
+            data: dict = {},
+            providers: list = [&#34;all&#34;]):
         self.event: str = event
         self.providers: list = providers
         self.title: str = None
@@ -211,17 +302,16 @@ class NotificationHandler:
             for provider in providers:
                 if not self.apobj.add(provider, tag=name):
                     log.warning(
-                        &#34;Failed to add notification provider: %s=%s&#34; 
-                            % (name, provider)
+                        &#34;Failed to add notification provider: %s=%s&#34;
+                        % (name, provider)
                     )
 
     def send(self, notification: Notification):
-
         templates = self.config.get(&#34;templates&#34;, {})
 
         title = notification.title
         if title is None:
-            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34; )
+            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
 
         message = notification.message
         if message is None:
@@ -238,9 +328,14 @@ class NotificationHandler:
 
         template_args = {
             &#34;event_type&#34;: notification.event,
-            &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-            &#34;event_details_url&#34;: &#34;%s/%s&#34; % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;))
-        }
+            &#34;event&#34;: notification.data.get(
+                &#34;label&#34;,
+                notification.event),
+            &#34;event_details_url&#34;: &#34;%s/%s&#34; %
+            (UI_BASEURL,
+             notification.data.get(
+                 &#34;id&#34;,
+                 &#34;&#34;))}
         template_args = {**template_args, **notification.data}
 
         for key, value in template_args.items():
@@ -251,25 +346,26 @@ class NotificationHandler:
 
         for provider in notification.providers:
             cfg = self.config.get(provider, None)
-            if cfg is None:
-                log.warning(&#34;Skip unknown provider %s&#34; % provider)
-                continue
-            
-            include_attachments = cfg.get(&#34;include_attachments&#34;, False)
-            ok = self.apobj.notify(
-                message, 
-                title=title,
-                tag=provider, 
-                attach=attachments if include_attachments else [],
-            )
-            if ok:
-                log.debug(
-                    &#34;Sent notification for %s to %s&#34; % 
-                    (notification.event, provider)
+
+            if cfg:
+                include_attachments = cfg.get(&#34;include_attachments&#34;, False)
+                ok = self.apobj.notify(
+                    message,
+                    title=title,
+                    tag=provider,
+                    attach=attachments if include_attachments else [],
                 )
+                if ok:
+                    log.debug(
+                        &#34;Sent notification for %s to %s&#34; %
+                        (notification.event, provider)
+                    )
+                else:
+                    log.warning(&#34;Error sending notification for %s to %s&#34; %
+                                (notification.event, provider))
             else:
-                log.warning(&#34;Error sending notification for %s to %s&#34; %
-                          (notification.event, provider))</code></pre>
+                log.warning(&#34;Skip unknown provider %s&#34; % provider)
+                continue</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -283,12 +379,11 @@ class NotificationHandler:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def send(self, notification: Notification):
-
     templates = self.config.get(&#34;templates&#34;, {})
 
     title = notification.title
     if title is None:
-        title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34; )
+        title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
 
     message = notification.message
     if message is None:
@@ -305,9 +400,14 @@ class NotificationHandler:
 
     template_args = {
         &#34;event_type&#34;: notification.event,
-        &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-        &#34;event_details_url&#34;: &#34;%s/%s&#34; % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;))
-    }
+        &#34;event&#34;: notification.data.get(
+            &#34;label&#34;,
+            notification.event),
+        &#34;event_details_url&#34;: &#34;%s/%s&#34; %
+        (UI_BASEURL,
+         notification.data.get(
+             &#34;id&#34;,
+             &#34;&#34;))}
     template_args = {**template_args, **notification.data}
 
     for key, value in template_args.items():
@@ -318,25 +418,26 @@ class NotificationHandler:
 
     for provider in notification.providers:
         cfg = self.config.get(provider, None)
-        if cfg is None:
-            log.warning(&#34;Skip unknown provider %s&#34; % provider)
-            continue
-        
-        include_attachments = cfg.get(&#34;include_attachments&#34;, False)
-        ok = self.apobj.notify(
-            message, 
-            title=title,
-            tag=provider, 
-            attach=attachments if include_attachments else [],
-        )
-        if ok:
-            log.debug(
-                &#34;Sent notification for %s to %s&#34; % 
-                (notification.event, provider)
+
+        if cfg:
+            include_attachments = cfg.get(&#34;include_attachments&#34;, False)
+            ok = self.apobj.notify(
+                message,
+                title=title,
+                tag=provider,
+                attach=attachments if include_attachments else [],
             )
+            if ok:
+                log.debug(
+                    &#34;Sent notification for %s to %s&#34; %
+                    (notification.event, provider)
+                )
+            else:
+                log.warning(&#34;Error sending notification for %s to %s&#34; %
+                            (notification.event, provider))
         else:
-            log.warning(&#34;Error sending notification for %s to %s&#34; %
-                      (notification.event, provider))</code></pre>
+            log.warning(&#34;Skip unknown provider %s&#34; % provider)
+            continue</code></pre>
 </details>
 </dd>
 </dl>
@@ -353,6 +454,11 @@ class NotificationHandler:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="ambianic" href="index.html">ambianic</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="ambianic.notification.sendCloudNotification" href="#ambianic.notification.sendCloudNotification">sendCloudNotification</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

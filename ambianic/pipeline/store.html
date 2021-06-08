@@ -29,15 +29,15 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Pipeline sample storage elements.&#34;&#34;&#34;
 import logging
-import datetime
 import pathlib
 import json
 import uuid
+import datetime
 from typing import Iterable
 import numpy as np
 from ambianic import DEFAULT_DATA_DIR
 from ambianic.pipeline import PipeElement
-from ambianic.notification import Notification, NotificationHandler
+from ambianic.notification import Notification, NotificationHandler, sendCloudNotification
 
 log = logging.getLogger(__name__)
 
@@ -95,11 +95,13 @@ class SaveDetectionSamples(PipeElement):
         ii = idle_interval
         self._idle_interval = datetime.timedelta(seconds=ii)
         self._time_latest_saved_idle = self._time_latest_saved_detection
-        
+
         # setup notification handler
         self.notification = None
         self.notification_config = notify
-        if self.notification_config is not None and self.notification_config.get(&#34;providers&#34;):
+
+        if self.notification_config is not None and self.notification_config.get(
+                &#34;providers&#34;):
             self.notification = NotificationHandler()
 
     def _save_sample(self,
@@ -108,7 +110,6 @@ class SaveDetectionSamples(PipeElement):
                      thumbnail=None,
                      inference_result=None,
                      inference_meta=None):
-
         time_prefix = inf_time.strftime(&#34;%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}&#34;)
         image_file = time_prefix.format(suffix=&#39;image&#39;, fext=&#39;jpg&#39;)
         image_path = self._output_directory / image_file
@@ -130,6 +131,7 @@ class SaveDetectionSamples(PipeElement):
             &#39;inference_result&#39;: inference_result,
             &#39;inference_meta&#39;: inference_meta
         }
+
         image.save(image_path)
         thumbnail.save(thumbnail_path)
         # save samples to local disk
@@ -168,7 +170,7 @@ class SaveDetectionSamples(PipeElement):
                     # let&#39;s save it if its been longer than
                     # the user specified positive_interval
                     if now - self._time_latest_saved_detection &gt;= \
-                      self._positive_interval:
+                            self._positive_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -180,7 +182,7 @@ class SaveDetectionSamples(PipeElement):
                     # let&#39;s save a sample if its been longer than
                     #  the user specified idle_interval
                     if now - self._time_latest_saved_idle &gt;= \
-                      self._idle_interval:
+                            self._idle_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -200,10 +202,10 @@ class SaveDetectionSamples(PipeElement):
                 yield processed_sample
 
     def notify(self, save_json: dict):
-        if self.notification is None:
-            return
-        log.debug(&#34;Sending notification(s)..&#34;)
         # TODO extract inference data
+        if save_json[&#39;inference_result&#39;] is None:
+            return
+
         for inference_result in save_json[&#39;inference_result&#39;]:
             data = {
                 &#39;id&#39;: save_json[&#39;id&#39;],
@@ -211,7 +213,14 @@ class SaveDetectionSamples(PipeElement):
                 &#39;confidence&#39;: inference_result[&#39;confidence&#39;],
                 &#39;datetime&#39;: save_json[&#39;datetime&#39;],
             }
-            notification = Notification(data=data, providers=self.notification_config[&#34;providers&#34;])
+
+            sendCloudNotification(data=data)
+
+            if self.notification is None:
+                return
+
+            notification = Notification(
+                data=data, providers=self.notification_config[&#34;providers&#34;])
             self.notification.send(notification)
 
 
@@ -446,11 +455,13 @@ Default it 10 minutes (600 seconds.)</p></div>
         ii = idle_interval
         self._idle_interval = datetime.timedelta(seconds=ii)
         self._time_latest_saved_idle = self._time_latest_saved_detection
-        
+
         # setup notification handler
         self.notification = None
         self.notification_config = notify
-        if self.notification_config is not None and self.notification_config.get(&#34;providers&#34;):
+
+        if self.notification_config is not None and self.notification_config.get(
+                &#34;providers&#34;):
             self.notification = NotificationHandler()
 
     def _save_sample(self,
@@ -459,7 +470,6 @@ Default it 10 minutes (600 seconds.)</p></div>
                      thumbnail=None,
                      inference_result=None,
                      inference_meta=None):
-
         time_prefix = inf_time.strftime(&#34;%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}&#34;)
         image_file = time_prefix.format(suffix=&#39;image&#39;, fext=&#39;jpg&#39;)
         image_path = self._output_directory / image_file
@@ -481,6 +491,7 @@ Default it 10 minutes (600 seconds.)</p></div>
             &#39;inference_result&#39;: inference_result,
             &#39;inference_meta&#39;: inference_meta
         }
+
         image.save(image_path)
         thumbnail.save(thumbnail_path)
         # save samples to local disk
@@ -519,7 +530,7 @@ Default it 10 minutes (600 seconds.)</p></div>
                     # let&#39;s save it if its been longer than
                     # the user specified positive_interval
                     if now - self._time_latest_saved_detection &gt;= \
-                      self._positive_interval:
+                            self._positive_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -531,7 +542,7 @@ Default it 10 minutes (600 seconds.)</p></div>
                     # let&#39;s save a sample if its been longer than
                     #  the user specified idle_interval
                     if now - self._time_latest_saved_idle &gt;= \
-                      self._idle_interval:
+                            self._idle_interval:
                         self._save_sample(inf_time=now,
                                           image=image,
                                           thumbnail=thumbnail,
@@ -551,10 +562,10 @@ Default it 10 minutes (600 seconds.)</p></div>
                 yield processed_sample
 
     def notify(self, save_json: dict):
-        if self.notification is None:
-            return
-        log.debug(&#34;Sending notification(s)..&#34;)
         # TODO extract inference data
+        if save_json[&#39;inference_result&#39;] is None:
+            return
+
         for inference_result in save_json[&#39;inference_result&#39;]:
             data = {
                 &#39;id&#39;: save_json[&#39;id&#39;],
@@ -562,7 +573,14 @@ Default it 10 minutes (600 seconds.)</p></div>
                 &#39;confidence&#39;: inference_result[&#39;confidence&#39;],
                 &#39;datetime&#39;: save_json[&#39;datetime&#39;],
             }
-            notification = Notification(data=data, providers=self.notification_config[&#34;providers&#34;])
+
+            sendCloudNotification(data=data)
+
+            if self.notification is None:
+                return
+
+            notification = Notification(
+                data=data, providers=self.notification_config[&#34;providers&#34;])
             self.notification.send(notification)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -582,10 +600,10 @@ Default it 10 minutes (600 seconds.)</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def notify(self, save_json: dict):
-    if self.notification is None:
-        return
-    log.debug(&#34;Sending notification(s)..&#34;)
     # TODO extract inference data
+    if save_json[&#39;inference_result&#39;] is None:
+        return
+
     for inference_result in save_json[&#39;inference_result&#39;]:
         data = {
             &#39;id&#39;: save_json[&#39;id&#39;],
@@ -593,7 +611,14 @@ Default it 10 minutes (600 seconds.)</p></div>
             &#39;confidence&#39;: inference_result[&#39;confidence&#39;],
             &#39;datetime&#39;: save_json[&#39;datetime&#39;],
         }
-        notification = Notification(data=data, providers=self.notification_config[&#34;providers&#34;])
+
+        sendCloudNotification(data=data)
+
+        if self.notification is None:
+            return
+
+        notification = Notification(
+            data=data, providers=self.notification_config[&#34;providers&#34;])
         self.notification.send(notification)</code></pre>
 </details>
 </dd>
@@ -627,7 +652,7 @@ Default it 10 minutes (600 seconds.)</p></div>
                 # let&#39;s save it if its been longer than
                 # the user specified positive_interval
                 if now - self._time_latest_saved_detection &gt;= \
-                  self._positive_interval:
+                        self._positive_interval:
                     self._save_sample(inf_time=now,
                                       image=image,
                                       thumbnail=thumbnail,
@@ -639,7 +664,7 @@ Default it 10 minutes (600 seconds.)</p></div>
                 # let&#39;s save a sample if its been longer than
                 #  the user specified idle_interval
                 if now - self._time_latest_saved_idle &gt;= \
-                  self._idle_interval:
+                        self._idle_interval:
                     self._save_sample(inf_time=now,
                                       image=image,
                                       thumbnail=thumbnail,

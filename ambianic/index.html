@@ -31,11 +31,17 @@ from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
 from typing import Union
 import importlib_metadata as metadata
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument(&#34;-c&#34;, &#34;--config&#34;, help=&#34;Specify config YAML file location&#34;)
+
+args, unknown = parser.parse_known_args()
 
 DEFAULT_WORK_DIR: str = &#39;/workspace&#39;
 DEFAULT_DATA_DIR: str = &#39;./data&#39;
 
-DEFAULT_CONFIG_FILE: str = &#39;config.yaml&#39;
+DEFAULT_CONFIG_FILE: str = args.config or &#39;config.yaml&#39;
 DEFAULT_SECRETS_FILE: str = &#39;secrets.yaml&#39;
 
 __CONFIG_FILE: str = None
@@ -53,7 +59,8 @@ def get_secrets_file() -&gt; str:
     return os.path.join(get_work_dir(), DEFAULT_SECRETS_FILE)
 
 
-def __merge_secrets(config: Union[Dynaconf, DynaBox], src_config: Dynaconf = None):
+def __merge_secrets(config: Union[Dynaconf, DynaBox],
+                    src_config: Dynaconf = None):
     if src_config is None:
         src_config = config
     for key, val in config.items():

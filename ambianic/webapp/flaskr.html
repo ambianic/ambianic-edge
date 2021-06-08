@@ -31,12 +31,14 @@
 import os
 import logging
 import time
+import pkg_resources
 from pathlib import Path
 import flask
 from flask import Flask, request, jsonify, json
 from flask_cors import CORS
 from flask.logging import default_handler
 from requests import get
+import yaml
 from werkzeug.serving import make_server
 from werkzeug.exceptions import HTTPException
 from ambianic import config, DEFAULT_DATA_DIR, __version__
@@ -187,6 +189,26 @@ def create_app(data_dir=None):
         response_object = {&#39;status&#39;: &#39;OK&#39;, &#39;version&#39;: __version__}
         resp = jsonify(response_object)
         return resp
+
+    @app.route(&#39;/api/auth/premium-notification&#39;)
+    def initialize_premium_notification():
+        userAuth0Id = request.args.get(&#39;userId&#39;)
+        endpoint = request.args.get(&#39;notification_endpoint&#39;)
+        auth_file = {
+            &#39;name&#39;: &#39;AMBIANIC-EDGE-PREMIUM&#39;,
+            &#39;credentials&#39;: {
+                &#39;USER_AUTH0_ID&#39;: userAuth0Id,
+                &#39;NOTIFICATION_ENDPOINT&#39;: endpoint,
+            }}
+
+        directory = pkg_resources.resource_filename(
+            &#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
+
+        file = open(directory, &#39;w+&#39;)
+        yaml.dump(auth_file, file)
+        file.close()
+
+        return {&#34;status&#34;: &#34;OK&#34;, &#34;message&#34;: &#34;AUTH0_ID SAVED&#34;}
 
     @app.route(&#39;/api/timeline&#39;, methods=[&#39;GET&#39;])
     @app.route(&#39;/api/timeline.json&#39;, methods=[&#39;GET&#39;])
@@ -392,6 +414,26 @@ def create_app(data_dir=None):
         response_object = {&#39;status&#39;: &#39;OK&#39;, &#39;version&#39;: __version__}
         resp = jsonify(response_object)
         return resp
+
+    @app.route(&#39;/api/auth/premium-notification&#39;)
+    def initialize_premium_notification():
+        userAuth0Id = request.args.get(&#39;userId&#39;)
+        endpoint = request.args.get(&#39;notification_endpoint&#39;)
+        auth_file = {
+            &#39;name&#39;: &#39;AMBIANIC-EDGE-PREMIUM&#39;,
+            &#39;credentials&#39;: {
+                &#39;USER_AUTH0_ID&#39;: userAuth0Id,
+                &#39;NOTIFICATION_ENDPOINT&#39;: endpoint,
+            }}
+
+        directory = pkg_resources.resource_filename(
+            &#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
+
+        file = open(directory, &#39;w+&#39;)
+        yaml.dump(auth_file, file)
+        file.close()
+
+        return {&#34;status&#34;: &#34;OK&#34;, &#34;message&#34;: &#34;AUTH0_ID SAVED&#34;}
 
     @app.route(&#39;/api/timeline&#39;, methods=[&#39;GET&#39;])
     @app.route(&#39;/api/timeline.json&#39;, methods=[&#39;GET&#39;])
