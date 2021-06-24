@@ -13,6 +13,13 @@
 
 * added new auth endpoint ([2199ca3](https://github.com/ambianic/ambianic-edge/commit/2199ca33cb25adbe8c5e9438f471a1a0aecbde43))
 * implemented native authentication with pwa using auth0 API ([d82d998](https://github.com/ambianic/ambianic-edge/commit/d82d998ef4bed9cf4bea074cfcd3e583f68c0c80)), closes [#343](https://github.com/ambianic/ambianic-edge/issues/343)
+* build and publish python API docs ([2091c54](https://github.com/ivelin/ambianic-edge/commit/2091c5436cd697788dccc055d91550ba26c75ba4)), closes [#342](https://github.com/ivelin/ambianic-edge/issues/342)
+* improve fall detection debug info ([7762752](https://github.com/ivelin/ambianic-edge/commit/776275235007835527c211d629d98ae1d4d46181)), closes [#309](https://github.com/ivelin/ambianic-edge/issues/309)
+* json serialization redundancy issue in store.py; closes [#337](https://github.com/ivelin/ambianic-edge/issues/337); closes [#300](https://github.com/ivelin/ambianic-edge/issues/300) ([bb8d20a](https://github.com/ivelin/ambianic-edge/commit/bb8d20a82347a871c58ba2d2f01e7c0957f13cf3)), closes [#339](https://github.com/ivelin/ambianic-edge/issues/339)
+* revert [#314](https://github.com/ivelin/ambianic-edge/issues/314); see [#330](https://github.com/ivelin/ambianic-edge/issues/330) for details; separate inference output formatting for each detection model; closes [#254](https://github.com/ivelin/ambianic-edge/issues/254)" ([ee79c40](https://github.com/ivelin/ambianic-edge/commit/ee79c40e019b82ed4dd1c89cf9cd2be40e51643f)), closes [#329](https://github.com/ivelin/ambianic-edge/issues/329)
+* separate inference output formatting for each detection model; [issues [#330](https://github.com/ivelin/ambianic-edge/issues/330), [#254](https://github.com/ivelin/ambianic-edge/issues/254)] ([b83e4f8](https://github.com/ivelin/ambianic-edge/commit/b83e4f840e00844695f4c5fab8435bf30f978938)), closes [#332](https://github.com/ivelin/ambianic-edge/issues/332)
+* separate inference output formatting for each detection model; closes [#254](https://github.com/ivelin/ambianic-edge/issues/254) ([8768c17](https://github.com/ivelin/ambianic-edge/commit/8768c17e5063ab189e92cdec6dff6a24ea29e5ad)), closes [#314](https://github.com/ivelin/ambianic-edge/issues/314)
+* temporary solution to manage yaml.dump() encoding issue; closes [#330](https://github.com/ivelin/ambianic-edge/issues/330) ([db4b00a](https://github.com/ivelin/ambianic-edge/commit/db4b00a0e4acb7341a788b333463f59ddf190766)), closes [#333](https://github.com/ivelin/ambianic-edge/issues/333)
 
 ## [1.14.7](https://github.com/ambianic/ambianic-edge/compare/v1.14.6...v1.14.7) (2021-03-27)
 
