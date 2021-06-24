@@ -1,5 +1,19 @@
 # Semantic Versioning Changelog
 
+# [1.12.0](https://github.com/ivelin/ambianic-edge/compare/v1.11.1...v1.12.0) (2021-06-24)
+
+
+### Bug Fixes
+
+* fixed auth0 client ([bccf6d8](https://github.com/ivelin/ambianic-edge/commit/bccf6d8f0f17e616cb665ba234e11b7b7f9494d4))
+* undefined build errors ([f1d0aa2](https://github.com/ivelin/ambianic-edge/commit/f1d0aa2e0b3c2d14adac6623c5856e7ef4aeaeb5))
+
+
+### Features
+
+* added new auth endpoint ([2199ca3](https://github.com/ivelin/ambianic-edge/commit/2199ca33cb25adbe8c5e9438f471a1a0aecbde43))
+* implemented native authentication with pwa using auth0 API ([d82d998](https://github.com/ivelin/ambianic-edge/commit/d82d998ef4bed9cf4bea074cfcd3e583f68c0c80)), closes [#343](https://github.com/ivelin/ambianic-edge/issues/343)
+
 # [1.15.0](https://github.com/ambianic/ambianic-edge/compare/v1.14.7...v1.15.0) (2021-06-08)
 
 
