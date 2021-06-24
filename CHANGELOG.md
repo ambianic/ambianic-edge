@@ -1,10 +1,18 @@
 # Semantic Versioning Changelog
 
-## [1.11.1](https://github.com/ivelin/ambianic-edge/compare/v1.11.0...v1.11.1) (2021-05-17)
+# [1.15.0](https://github.com/ambianic/ambianic-edge/compare/v1.14.7...v1.15.0) (2021-06-08)
 
 
 ### Bug Fixes
 
+* fixed auth0 client ([bccf6d8](https://github.com/ambianic/ambianic-edge/commit/bccf6d8f0f17e616cb665ba234e11b7b7f9494d4))
+* undefined build errors ([f1d0aa2](https://github.com/ambianic/ambianic-edge/commit/f1d0aa2e0b3c2d14adac6623c5856e7ef4aeaeb5))
+
+
+### Features
+
+* added new auth endpoint ([2199ca3](https://github.com/ambianic/ambianic-edge/commit/2199ca33cb25adbe8c5e9438f471a1a0aecbde43))
+* implemented native authentication with pwa using auth0 API ([d82d998](https://github.com/ambianic/ambianic-edge/commit/d82d998ef4bed9cf4bea074cfcd3e583f68c0c80)), closes [#343](https://github.com/ambianic/ambianic-edge/issues/343)
 * build and publish python API docs ([2091c54](https://github.com/ivelin/ambianic-edge/commit/2091c5436cd697788dccc055d91550ba26c75ba4)), closes [#342](https://github.com/ivelin/ambianic-edge/issues/342)
 * improve fall detection debug info ([7762752](https://github.com/ivelin/ambianic-edge/commit/776275235007835527c211d629d98ae1d4d46181)), closes [#309](https://github.com/ivelin/ambianic-edge/issues/309)
 * json serialization redundancy issue in store.py; closes [#337](https://github.com/ivelin/ambianic-edge/issues/337); closes [#300](https://github.com/ivelin/ambianic-edge/issues/300) ([bb8d20a](https://github.com/ivelin/ambianic-edge/commit/bb8d20a82347a871c58ba2d2f01e7c0957f13cf3)), closes [#339](https://github.com/ivelin/ambianic-edge/issues/339)
