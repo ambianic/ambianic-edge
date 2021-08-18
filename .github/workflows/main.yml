@@ -2,9 +2,9 @@ name: Ambianic Edge CI
 
 on:
   push:
-    branches: [ master ]
+#    branches: [ master ]
   pull_request:
-    branches: [ master ]
+#    branches: [ master ]
 
 jobs:
   test_x86:
@@ -24,31 +24,6 @@ jobs:
           echo "ARCH=${ARCH}"
           ${GITHUB_WORKSPACE}/build/ci-test-job.sh
 
-  prepare_release_x86:
-    needs: test_x86
-    # run this job only if its a push on the master(main) branch
-    # and not a PR from a fork
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}      
-      - name: Run build script
-        env:
-          ARCH: "linux/amd64"
-          TAG_SUFFIX: "amd64"
-        run: |
-          pwd
-          ls -al
-          echo GITHUB_WORKSPACE=${GITHUB_WORKSPACE}
-          echo "ARCH=${ARCH}"
-          echo "TAG_SUFFIX=${TAG_SUFFIX}"
-          ${GITHUB_WORKSPACE}/build/ci-prep-release-job.sh
-
   test_arm:
     # Skip CI if the commit message includes the string '[skip ci]'
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
@@ -66,30 +41,11 @@ jobs:
           echo "ARCH=${ARCH}"
           ${GITHUB_WORKSPACE}/build/ci-test-job.sh
 
-
-  prepare_release_arm:
-    needs: test_arm
+  push_release:
+    needs: [test_x86, test_arm]
     # run this job only if its a push on the master(main) branch
     # and not a PR from a fork
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}      
-      - name: Run build script
-        env:
-          ARCH: "linux/arm/v7"
-          TAG_SUFFIX: "arm32v7"
-        run: |
-          echo "ARCH=${ARCH}"
-          ${GITHUB_WORKSPACE}/build/ci-prep-release-job.sh
-
-  push_release:
-    needs: [prepare_release_x86, prepare_release_arm]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'    
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
