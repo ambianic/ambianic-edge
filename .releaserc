@@ -22,7 +22,8 @@
                 "assets": [
                     "CHANGELOG.md",
                     "src/setup.cfg"
-                ]
+                ],
+                "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
             }
         ],
         "@semantic-release/github",
