@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.15.1](https://github.com/ambianic/ambianic-edge/compare/v1.15.0...v1.15.1) (2021-08-19)
+
+
+### Bug Fixes
+
+* release versioning script ([#366](https://github.com/ambianic/ambianic-edge/issues/366)) ([229be2f](https://github.com/ambianic/ambianic-edge/commit/229be2f40f217a3b2762af0b0f31270427ded657))
+
 # [1.12.0](https://github.com/ivelin/ambianic-edge/compare/v1.11.1...v1.12.0) (2021-06-24)
 
 
