@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.15.3](https://github.com/ambianic/ambianic-edge/compare/v1.15.2...v1.15.3) (2021-08-19)
+
+
+### Bug Fixes
+
+* docker build cache issue with multi arch ([90d5cba](https://github.com/ambianic/ambianic-edge/commit/90d5cba0f61ad771b105e86bec4f5941afd2140c))
+
 ## [1.15.2](https://github.com/ambianic/ambianic-edge/compare/v1.15.1...v1.15.2) (2021-08-19)
 
 
