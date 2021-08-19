@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.15.2](https://github.com/ambianic/ambianic-edge/compare/v1.15.1...v1.15.2) (2021-08-19)
+
+
+### Bug Fixes
+
+* release versioning script; closes 364 ([#367](https://github.com/ambianic/ambianic-edge/issues/367)) (PR Merge) ([e1e15d5](https://github.com/ambianic/ambianic-edge/commit/e1e15d5cde2871f52b67b96f337029b0d8ec0d6d))
+
 ## [1.15.1](https://github.com/ambianic/ambianic-edge/compare/v1.15.0...v1.15.1) (2021-08-19)
 
 
