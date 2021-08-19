@@ -21,18 +21,20 @@ DEV_TAG=dev-${TAG_SUFFIX}
 PROD_TAG=latest-${TAG_SUFFIX}
 docker run --rm --privileged docker/binfmt:66f9012c56a8316f9244ffd7622d7c21c1f6f28d
 cat /proc/sys/fs/binfmt_misc/qemu-aarch64
-cd ${GITHUB_WORKSPACE}/build
-docker build -f Dev.Dockerfile --platform ${ARCH} -t "ambianic/ambianic-edge:${DEV_TAG}" .
-docker tag ambianic/ambianic-edge:${DEV_TAG} "ambianic/ambianic-edge:dev"
-docker images
-cd ${GITHUB_WORKSPACE}/build
 
-# publish docker binaries and multi-arch manifest
+echo "Publishing docker binaries and multi-arch manifests"
 echo "ARCH=$ARCH"
 echo "DEV_TAG=$DEV_TAG"
 echo "PROD_TAG=$PROD_TAG"
 pwd
 ls -al
+
+echo "Building dev image"
+cd ${GITHUB_WORKSPACE}/build
+docker build -f Dev.Dockerfile --no-cache --platform ${ARCH} -t "ambianic/ambianic-edge:${DEV_TAG}" .
+docker tag ambianic/ambianic-edge:${DEV_TAG} "ambianic/ambianic-edge:dev"
+docker images
+cd ${GITHUB_WORKSPACE}/build
 
 # dockerhub login is now done safer via github action
 # docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
@@ -46,7 +48,8 @@ cd ${GITHUB_WORKSPACE}
 pwd
 ls -al
 
-docker build -f ./build/Prod.Dockerfile --platform ${ARCH} -t "ambianic/ambianic-edge:${PROD_TAG}" .
+echo "Building production image"
+docker build -f ./build/Prod.Dockerfile --no-cache --platform ${ARCH} -t "ambianic/ambianic-edge:${PROD_TAG}" .
 docker tag "ambianic/ambianic-edge:${PROD_TAG}" "ambianic/ambianic-edge:latest"
 docker push "ambianic/ambianic-edge:${PROD_TAG}"
 docker manifest create "ambianic/ambianic-edge:latest" "ambianic/ambianic-edge:latest-amd64" "ambianic/ambianic-edge:latest-arm32v7"
