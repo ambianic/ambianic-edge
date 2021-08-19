@@ -35,6 +35,7 @@ docker --version
 # Build docker images for arm32 and amd architectures
 ###
 
+echo "Preparing docker release for AMD64 architecture"
 export ARCH="linux/amd64"
 export TAG_SUFFIX="amd64"
 pwd
@@ -43,8 +44,9 @@ echo "ARCH=${ARCH}"
 echo "TAG_SUFFIX=${TAG_SUFFIX}"
 ${GITHUB_WORKSPACE}/build/ci-prep-release-job.sh
 
-export ARCH: "linux/arm/v7"
-export TAG_SUFFIX: "arm32v7"
+echo "Preparing docker release for ARM32 architecture "
+export ARCH="linux/arm/v7"
+export TAG_SUFFIX="arm32v7"
 pwd
 echo GITHUB_WORKSPACE=${GITHUB_WORKSPACE}
 echo "ARCH=${ARCH}"
