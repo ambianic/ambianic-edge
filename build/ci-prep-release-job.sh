@@ -15,6 +15,12 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 sudo service docker restart
 docker --version
 
+# echo "Clean up any leftover docker build artifacts
+# docker builder prune --all
+echo "Clean up any previous docker artifacts"
+yes | docker system prune --all
+
+
 # Raspberry PI section
 # prepare qemu
 DEV_TAG=dev-${TAG_SUFFIX}
