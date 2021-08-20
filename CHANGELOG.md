@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.15.5](https://github.com/ambianic/ambianic-edge/compare/v1.15.4...v1.15.5) (2021-08-20)
+
+
+### Bug Fixes
+
+* check docker container watchdog auto update ([530d35f](https://github.com/ambianic/ambianic-edge/commit/530d35fbccfe58ea47bddeebca2a861a45a116e0))
+
 ## [1.15.4](https://github.com/ambianic/ambianic-edge/compare/v1.15.3...v1.15.4) (2021-08-20)
 
 
