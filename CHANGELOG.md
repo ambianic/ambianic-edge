@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.15.4](https://github.com/ambianic/ambianic-edge/compare/v1.15.3...v1.15.4) (2021-08-20)
+
+
+### Bug Fixes
+
+* docker arm32 release script ([d2dec3d](https://github.com/ambianic/ambianic-edge/commit/d2dec3d39383255185272f3f9382c5ba2d21bc83))
+
 ## [1.15.3](https://github.com/ambianic/ambianic-edge/compare/v1.15.2...v1.15.3) (2021-08-19)
 
 
