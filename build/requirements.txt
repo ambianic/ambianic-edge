@@ -13,8 +13,6 @@ cookies>=2.2.1
 cryptography>=2.8,<3.4.8
 decorator>=4.3.0
 entrypoints>=0.3
-Flask>=1.0.2
-flask-cors
 gast>=0.2.2
 google-pasta>=0.1.7
 # grpcio>=1.26
@@ -39,3 +37,4 @@ concurrent-log-handler>=0.9.19
 watchdog>=0.10
 dynaconf>=3.1
 apprise>=0.8.9pip
+fastapi[all]>0.68
