@@ -44,4 +44,3 @@ RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh #
 #      echo "pyenv global system" >> ~/.bashrc.d/60-python && \
 #      echo "python3 -m pip install -e ~/src" >> ~/.bashrc
 #
-#
