@@ -4,7 +4,13 @@ image:
 tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
-      pip3 install -e ./src
+      python3 -m pip install --upgrade pip && \
+      python3 -m pip install --upgrade --upgrade setuptools && \
+      python3 -m pip install -U pytest && \
+      python3 -m pip install -U codecov && \
+      python3 -m pip install -U pytest-cov && \
+      python3 -m pip install -U pylint && \            
+      python3 -m pip install -e ./src
     command: |
       pyenv global system
       echo "Started ambianic-edge development environment."

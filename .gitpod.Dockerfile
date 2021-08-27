@@ -32,15 +32,16 @@ COPY ["./build/*", "./"]
 RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh # 
 
 # install gtipod environment dev packages for app testing
-RUN   python3 -m pip install --upgrade pip && \
-      python3 -m pip install --upgrade --upgrade setuptools && \
-      python3 -m pip install -U pytest && \
-      python3 -m pip install -U codecov && \
-      python3 -m pip install -U pytest-cov && \
-      python3 -m pip install -U pylint && \
-      sudo ln -s /usr/bin/python3 /usr/bin/python
+# RUN   python3 -m pip install --upgrade pip && \
+#      python3 -m pip install --upgrade --upgrade setuptools && \
+#      python3 -m pip install -U pytest && \
+#      python3 -m pip install -U codecov && \
+#      python3 -m pip install -U pytest-cov && \
+#      python3 -m pip install -U pylint && \
+#      sudo ln -s /usr/bin/python3 /usr/bin/python
 
 #      && \
 #      echo "pyenv global system" >> ~/.bashrc.d/60-python && \
 #      echo "python3 -m pip install -e ~/src" >> ~/.bashrc
-
+#
+#
