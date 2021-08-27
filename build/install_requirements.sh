@@ -75,8 +75,8 @@ fi
 
 # install python dependencies
 python3 -m pip install --upgrade pip
-python3 -m pip install --version
-python3 -m pip install install -r requirements.txt
+python3 -m pip --version
+python3 -m pip install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
