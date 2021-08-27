@@ -1,3 +1,4 @@
+
 image:
   file: .gitpod.Dockerfile
 tasks:
@@ -15,3 +16,9 @@ tasks:
       pyenv global system
       echo "To run the amgianic-edge server use:"
       echo "python3 -m ambianic"
+      echo "To run tests with coverage report use:"
+      echo "python3 -m pytest --cov=ambianic --cov-report=term tests/"
+
+vscode:
+  extensions:
+    - ms-python.python
