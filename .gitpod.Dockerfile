@@ -19,7 +19,6 @@ FROM gitpod/workspace-full
 #
 # More information: https://www.gitpod.io/docs/config-docker/
 
-
 # Remove pyenv, which gitpod installs by default
 # but it doesn't play well with system level dependencies like gstreamer python wrappers and tflite
 # comment out lines in init shell script that enable pyenv
