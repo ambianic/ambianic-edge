@@ -89,17 +89,17 @@ then
   echo "Installing tflite for x86 CPU"
   if python3 --version | grep -q 3.8
   then
-    sudo pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_x86_64.whl
+    sudo python3 -m pip install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_x86_64.whl
   else
-    sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
+    sudo python3 -m pip install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
   fi
 elif $(arch | grep -q arm)
 then
   echo "Installing tflite for ARM CPU"
-  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
+  sudo python3 -m pip install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
 fi
 
-pip3 show tflite-runtime
+python3 -m pip show tflite-runtime
 
 # install wget
 apt-get install -y curl
@@ -123,7 +123,7 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 apt-get install -y libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config
 apt-get install -y libsrtp2-dev
 # Install peerjs python
-pip3 install peerjs
+python3 -m pip install peerjs
 
 # [devtools]
 # Install tools essential for debugging docker image related problems
