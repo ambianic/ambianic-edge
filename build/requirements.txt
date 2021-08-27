@@ -29,7 +29,6 @@ oauthlib>=2.1.0
 httpretty>=1.1
 Pillow>=5.4.1
 pyOpenSSL>=19.0.0
-pytest-httpserver==1.0.0
 PyYAML>=5.1.2
 requests>=2.25
 requests-oauthlib>=1.0.0
