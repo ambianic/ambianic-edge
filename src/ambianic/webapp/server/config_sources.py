@@ -1,5 +1,5 @@
 
-from werkzeug.exceptions import NotFound, BadRequest
+from fastapi import HTTPException
 from ambianic import config
 import logging
 
@@ -28,12 +28,12 @@ def validate(source_id, source):
 
     for prop in source_model:
         if prop not in source_keys:
-            raise BadRequest(f"missing property {prop}")
+            raise HTTPException(status_code=400, detail=f"missing property {prop}")
         if not isinstance(source[prop], source_model[prop]):
-            raise BadRequest(f"invalid type for {prop}")
+            raise HTTPException(status_code=400, detail=f"invalid type for {prop}")
 
     if source["type"] not in source_types:
-        raise BadRequest(f"type should be one of {source_types}")
+        raise HTTPException(status_code=400, detail=f"type should be one of {source_types}")
 
     return source
 
@@ -43,15 +43,16 @@ def get(source_id):
     log.info("Get source_id=%s", source_id)
 
     if not source_id:
-        raise BadRequest("source id is empy")
+        raise HTTPException(status_code=400, detail="source id is empy")
 
     if not isinstance(source_id, str):
-        raise BadRequest("source id should be a string")
+        raise HTTPException(status_code=400, detail="source id should be a string")
 
     source = config.sources[source_id]
     
     if source is None:
-        raise NotFound("source not found")
+        raise HTTPException(status_code=404, detail="source not found")
+
 
     return source
 

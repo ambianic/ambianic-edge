@@ -3,6 +3,7 @@ import os
 import logging
 import time
 import pkg_resources
+import uvicorn
 from pathlib import Path
 from requests import get
 import yaml
@@ -28,23 +29,15 @@ class FastApiJob(ManagedService):
             data_dir = config.get('data_dir', None)
         if not data_dir:
             data_dir = DEFAULT_DATA_DIR
-        self.srv = None
-        uvi_ip_address = '0.0.0.0' # bind to all local IP addresses
-        uvi_port = 8778
+        self.uvi_ip_address = '0.0.0.0' # bind to all local IP addresses
+        self.uvi_port = 8778
         log.info('starting fastapi/uvicorn web server on %s:%d', ip_address, port)
         # if Ambianic is in DEBUG mode, start FASTAPI/uvicorn in dev mode
         if log.level <= logging.DEBUG:
-            uvi_reload=True
-            uvi_debug=True
-        self.srv = uvicorn.run(
-            app,
-            host=uvi_ip_address, 
-            port=uvi_port, 
-            reload=uvi_reload, 
-            debug=uvi_debug,
-            log_level=log.level, 
-            workers=3)
-        app.data_dir = data_dir
+            self.uvi_reload=True
+            self.uvi_debug=True
+
+        app.set_data_dir(data_dir=data_dir)
         self.fastapi_stopped = True
         log.debug('Fastapi process created')
 
@@ -53,7 +46,14 @@ class FastApiJob(ManagedService):
         log.debug('Fastapi starting main loop')
         self.fastapi_stopped = False
         try:
-            self.srv.serve_forever()
+            uvicorn.run(
+                app,
+                host=self.uvi_ip_address, 
+                port=self.uvi_port, 
+                reload=self.uvi_reload, 
+                debug=self.uvi_debug,
+                log_level=log.level, 
+                workers=3)
         except ServiceExit:
             log.info('Service exit requested')
         self.fastapi_stopped = True
