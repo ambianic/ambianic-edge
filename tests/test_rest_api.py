@@ -28,6 +28,7 @@ def teardown_module(module):
 @pytest.fixture
 def client():
     test_client = TestClient(app)
+    return test_client
 
 
 def test_hello(client):
@@ -153,19 +154,12 @@ def test_delete_source(client):
         "type": "video",
         "live": True
     })
-    data = json.loads(rv.data)
-    assert data["id"] == "test1"
+    log.error(" rv ###### >>>> " + str(rv.json()))
+    assert rv.json() == {"id": "test1"}
     rv = client.delete('/api/config/source/test1')
-    data = json.loads(rv.data)
-    assert data["status"] == "success"
+    assert rv["status"] == "success"
 
 
 def test_ping(client):
     rv = client.get('/api/ping')
-    assert b'pong' in rv.data
-
-
-def test_static(client):
-    rv = client.get('/static/ppview.css')
-    log.debug("%s", rv.data)
-    assert rv.data is not None
+    assert rv == 'pong'
