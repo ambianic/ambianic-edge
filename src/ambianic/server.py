@@ -10,7 +10,7 @@ from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from ambianic import logger, config, get_config_file, \
     get_secrets_file, load_config
-from ambianic.webapp.flaskr import FlaskServer
+from ambianic.webapp.fastapi_server import FastapiServer
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     'pipelines': PipelineServer,
-    'web': FlaskServer,
+    'web': FastapiServer,
 }
 
 class AmbianicServer:

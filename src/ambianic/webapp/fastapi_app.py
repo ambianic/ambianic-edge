@@ -6,13 +6,21 @@ import pkg_resources
 from pathlib import Path
 from requests import get
 import yaml
-from ambianic import config, DEFAULT_DATA_DIR, __version__
+from ambianic import config, __version__
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic.webapp.server import samples, config_sources
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+
+def set_data_dir(data_dir: str = None) -> None:
+    app.data_dir = data_dir
+    # serve static files from the data directory
+    data_path = Path(data_dir).resolve()
+    app.mount("/api/data", StaticFiles(directory=data_path), name="static")
+
 
 log = logging.getLogger(__name__)
 
@@ -69,14 +77,13 @@ def initialize_premium_notification():
 
     return {"status": "OK", "message": "AUTH0_ID SAVED"}
 
-@app.get('/api/timeline', methods=['GET'])
-@app.get('/api/timeline.json', methods=['GET'])
+@app.get('/api/timeline')
+@app.get('/api/timeline.json')
 def get_timeline():
     response_object = {'status': 'success'}
     req_page = request.args.get('page', default=1, type=int)
     log.debug('Requested timeline events page" %d', req_page)
-    nonlocal data_dir
-    resp = samples.get_timeline(page=req_page, data_dir=data_dir)
+    resp = samples.get_timeline(page=req_page, data_dir=app.data_dir)
     response_object['timeline'] = resp
     log.debug('Returning %d timeline events', len(resp))
     # log.debug('Returning samples: %s ', response_object)
@@ -161,31 +168,6 @@ def ping():
     response_object = 'pong'
     return jsonify(response_object)
 
-@app.get('/static/<path:path>')
-def get_static_file(path):
-    return fastapi.send_from_directory('static', path)
 
-@app.get('/api/data/<path:path>')
-def get_data_file(path):
-    data_path = Path(DEFAULT_DATA_DIR).resolve()
-    log.info('Serving static data file from: %r', data_path / path)
-    return fastapi.send_from_directory(data_path, path)
-
-@app.get('/client', defaults={'path': 'index.html'})
-@app.get('/client/', defaults={'path': 'index.html'})
-@app.get('/client/<path:path>')
-def get_client_file(path):
-    if log.level <= logging.DEBUG:  # development mode
-        hostname = fastapi.request.host.split(':')[0]
-        base_uri = 'http://{host}:1234/'.format(host=hostname)
-        return get(f'{base_uri}{path}').content
-    # production mode
-    return fastapi.send_from_directory('client/dist', path)
-
-log.debug('Fastapi url map: %s', str(app.url_map))
-log.debug('Fastapi config map: %s', str(app.config))
-log.debug('Fastapi running in %s mode',
-            'development' if app.config['DEBUG'] else 'production')
-
-log.debug('Fastapi app created.')
+log.info('REST API deployed (as a Fastapi app).')
 

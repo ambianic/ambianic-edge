@@ -2,15 +2,13 @@ import json
 import yaml
 import pytest
 import pkg_resources
-from ambianic.webapp.fastapi-app import app
+from ambianic.webapp.fastapi_app import app
 from ambianic import config, __version__
 import logging
 import os
 from fastapi.testclient import TestClient
 
 log = logging.getLogger(__name__)
-
-test_client = TestClient(app)
 
 def reset_config():
     config.reload()
@@ -29,13 +27,7 @@ def teardown_module(module):
 
 @pytest.fixture
 def client():
-
-    app.config['TESTING'] = True
-
-    with test_client() as fclient:
-        # with app.app_context():
-        #     flaskr.init_db()
-        yield fclient
+    test_client = TestClient(app)
 
 
 def test_hello(client):
