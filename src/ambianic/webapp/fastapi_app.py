@@ -9,9 +9,11 @@ import yaml
 from ambianic import config, __version__
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
 from ambianic.webapp.server import samples, config_sources
+from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -150,24 +152,21 @@ def get_config():
 def get_config_source(source_id):
     return jsonify(config_sources.get(source_id))
 
-@app.put('/api/config/source/<source_id>')
-def update_config_source(source_id):
-    source = request.get_json()
+@app.put('/api/config/source/{source_id}')
+def update_config_source(source: SensorSource, source_id: str):
     config_sources.save(source_id, source)
-    return jsonify(config_sources.get(source_id))
+    return config_sources.get(source_id)
 
-@app.delete('/api/config/source/<source_id>')
-def delete_config_source(source_id):
+@app.delete('/api/config/source/{source_id}')
+def delete_config_source(source_id: str):
     config_sources.remove(source_id)
-    return jsonify({'status': 'success'})
+    return {'status': 'success'}
 
 
 # sanity check route
 @app.get('/api/ping')
 def ping():
-    response_object = 'pong'
-    return jsonify(response_object)
+    return 'pong'
 
 
 log.info('REST API deployed (as a Fastapi app).')
-
