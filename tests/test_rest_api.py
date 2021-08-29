@@ -6,6 +6,7 @@ from ambianic.webapp.fastapi_app import app
 from ambianic import config, __version__
 import logging
 import os
+import sys
 from fastapi.testclient import TestClient
 
 log = logging.getLogger(__name__)
@@ -144,16 +145,24 @@ def test_save_source(client):
         "type": "video",
         "live": True
     }    
-    rv = client.put('/api/config/source/test1', json=src_target)
+    rv = client.put('/api/config/source', json=src_target)
     data = rv.json()
+    log.debug(f"JSON response: {data}")
     assert data
     assert data["id"] == "test1" 
+    assert data["uri"] == "test"
+    assert data["type"] == "video"
     assert data["live"] == True
+    # changes to data should be saved correctly
+    src_target["uri"] = "test1.2"
+    src_target["type"] = "image"
     src_target["live"] = False
-    rv = client.put('/api/config/source/test1', json=src_target)
+    rv = client.put('/api/config/source', json=src_target)
     data = rv.json()
     assert data
     assert data["id"] == "test1" 
+    assert data["uri"] == "test1.2"
+    assert data["type"] == "image"
     assert data["live"] == False
 
 
@@ -165,7 +174,6 @@ def test_delete_source(client):
         "live": True
     }
     rv = client.put('/api/config/source', json=src_target)
-    log.error(rv.json())
     assert rv.json()["id"] == "test1"
     rv = client.delete('/api/config/source/test1')
     assert rv.json()["status"] == "success"
@@ -177,4 +185,4 @@ def test_delete_source(client):
 
 def test_ping(client):
     rv = client.get('/api/ping')
-    assert rv == 'pong'
+    assert rv.json() == 'pong'
