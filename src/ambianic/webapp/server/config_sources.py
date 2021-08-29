@@ -2,6 +2,7 @@
 from fastapi import HTTPException, status
 from ambianic import config
 from pydantic import BaseModel
+from dynaconf.vendor.box.exceptions import BoxKeyError
 
 import logging
 
@@ -19,8 +20,9 @@ source_types = ["video", "audio", "image"]
 def get(source_id):
     """Retrieve a source by id"""
     log.info("Get source_id=%s", source_id)
-    source = config.sources[source_id]
-    if source is None:
+    try:
+        source = config.sources[source_id]
+    except BoxKeyError as not_found:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="source id not found")
     return source
 
@@ -32,8 +34,8 @@ def remove(source_id):
     del config.sources[source_id]
 
 
-def save(source_id, source: SensorSource):
+def save(source: SensorSource):
     """Save source configuration information"""
-    log.info("Saving source_id=%s", source_id)
-    config.sources[source["id"]] = source
-    return config.sources[source["id"]]
+    log.info("Saving source_id=%s", source.id)
+    config.sources[source.id] = source
+    return config.sources[source.id]

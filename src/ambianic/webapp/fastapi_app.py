@@ -154,7 +154,7 @@ def get_config_source(source_id):
 
 @app.put('/api/config/source')
 def update_config_source(source: SensorSource):
-    config_sources.save(source)
+    config_sources.save(source=source)
     return config_sources.get(source.id)
 
 @app.delete('/api/config/source/{source_id}')
