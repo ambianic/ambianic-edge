@@ -138,26 +138,40 @@ def test_get_config(client):
 
 
 def test_save_source(client):
-    rv = client.put('/api/config/source/test1', json={
+    src_target = json={
+        "id": "test1",
         "uri": "test",
         "type": "video",
         "live": True
-    })
-    data = json.loads(rv.data)
+    }    
+    rv = client.put('/api/config/source/test1', src_target)
+    data = rv.json()
     assert data
-    assert data["id"] == "test1"
+    assert data["id"] == "test1" 
+    assert data["live"] == True
+    src_target["live"] = False
+    rv = client.put('/api/config/source/test1', src_target)
+    data = rv.json()
+    assert data
+    assert data["id"] == "test1" 
+    assert data["live"] == False
 
 
 def test_delete_source(client):
-    rv = client.put('/api/config/source/test1', json={
+    src_target = json={
+        "id": "test1",
         "uri": "test",
         "type": "video",
         "live": True
-    })
-    log.error(" rv ###### >>>> " + str(rv.json()))
-    assert rv.json() == {"id": "test1"}
+    }
+    rv = client.put('/api/config/source', src_target)
+    assert rv.json()["id"] == "test1"
     rv = client.delete('/api/config/source/test1')
-    assert rv["status"] == "success"
+    assert rv.json()["status"] == "success"
+    # attempting to delete the same source again should fail
+    rv = client.delete('/api/config/source/test1')
+    assert rv.status_code == 404
+    assert rv.json() == {"detail": "source id not found"}
 
 
 def test_ping(client):

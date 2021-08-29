@@ -1,5 +1,5 @@
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from ambianic import config
 from pydantic import BaseModel
 
@@ -19,19 +19,9 @@ source_types = ["video", "audio", "image"]
 def get(source_id):
     """Retrieve a source by id"""
     log.info("Get source_id=%s", source_id)
-
-    if not source_id:
-        raise HTTPException(status_code=400, detail="source id is empy")
-
-    if not isinstance(source_id, str):
-        raise HTTPException(status_code=400, detail="source id should be a string")
-
     source = config.sources[source_id]
-    
     if source is None:
-        raise HTTPException(status_code=404, detail="source not found")
-
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="source id not found")
     return source
 
 
