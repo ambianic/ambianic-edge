@@ -152,10 +152,10 @@ def get_config():
 def get_config_source(source_id):
     return jsonify(config_sources.get(source_id))
 
-@app.put('/api/config/source/{source_id}')
-def update_config_source(source: SensorSource, source_id: str):
-    config_sources.save(source_id, source)
-    return config_sources.get(source_id)
+@app.put('/api/config/source')
+def update_config_source(source: SensorSource):
+    config_sources.save(source)
+    return config_sources.get(source.id)
 
 @app.delete('/api/config/source/{source_id}')
 def delete_config_source(source_id: str):
