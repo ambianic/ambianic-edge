@@ -10,7 +10,7 @@ from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic.pipeline.store import SaveDetectionSamples
 from ambianic.pipeline import PipeElement, HealthChecker
-from ambianic.pipeline import timeline
+from ambianic.pipeline import timeline_event
 from ambianic.util import ThreadedJob, ManagedService, stacktrace
 from ambianic import config
 
@@ -288,10 +288,10 @@ class Pipeline(ManagedService):
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
         self._healing_thread = None
-        self._context = timeline.PipelineContext(
+        self._context = timeline_event.PipelineContext(
             unique_pipeline_name=self.name)
         self._context.data_dir = self.data_dir
-        self._event_log = timeline.get_event_log(
+        self._event_log = timeline_event.get_event_log(
             pipeline_context=self._context)
         self.load_elements()
 

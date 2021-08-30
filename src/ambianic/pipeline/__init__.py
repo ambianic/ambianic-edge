@@ -4,7 +4,7 @@ import abc
 import time
 from typing import Iterable
 from ambianic.util import ManagedService
-from ambianic.pipeline.timeline import PipelineContext
+from ambianic.pipeline.timeline_event import PipelineContext
 
 log = logging.getLogger(__name__)
 

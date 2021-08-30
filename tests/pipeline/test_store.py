@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 import os
 import json
-from ambianic.pipeline.timeline import PipelineContext
+from ambianic.pipeline.timeline_event import PipelineContext
 import shutil
 import logging
 

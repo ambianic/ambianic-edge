@@ -11,7 +11,7 @@ from threading import Thread, Event
 import httpretty
 from ambianic import config
 from ambianic.notification import sendCloudNotification
-from ambianic.pipeline.timeline import PipelineContext
+from ambianic.pipeline.timeline_event import PipelineContext
 from ambianic.pipeline.store import SaveDetectionSamples
 
 log = logging.getLogger(__name__)
