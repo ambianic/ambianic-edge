@@ -3,6 +3,7 @@ from threading import Thread, Event
 import logging
 import traceback
 import time
+import asyncio
 from abc import abstractmethod
 
 log = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class ThreadedJob(Thread, ManagedService):
     # Consider moving access to coral in a separate process that can serve
     # an inference task queue from multiple pipelines.
 
-    def __init__(self, job=None):
+    def __init__(self, job=None, **kwargs):
         """Inititalize with a ManagedService.
 
         :Parameters:
@@ -81,6 +82,8 @@ class ThreadedJob(Thread, ManagedService):
         log.info('Thread #%s started with job: %s',
                  self.ident,
                  self.job.__class__.__name__)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         self.job.start()
         log.info('Thread #%s for job %s stopped',
                  self.ident,

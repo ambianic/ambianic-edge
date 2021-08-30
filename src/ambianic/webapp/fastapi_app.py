@@ -6,9 +6,9 @@ import pkg_resources
 from pathlib import Path
 from requests import get
 import yaml
-from ambianic import config, __version__
+from ambianic import config, __version__, DEFAULT_DATA_DIR
 from ambianic.util import ServiceExit, ThreadedJob, ManagedService
-from ambianic.webapp.server import samples, config_sources
+from ambianic.webapp.server import timeline_dao, config_sources
 from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,6 +23,11 @@ def set_data_dir(data_dir: str = None) -> None:
     data_path = Path(data_dir).resolve()
     app.mount("/api/data", StaticFiles(directory=data_path), name="static")
 
+# set an initial data dir location
+if config:
+    data_dir = config.get('data_dir', None)
+if not data_dir:
+    data_dir = DEFAULT_DATA_DIR
 
 log = logging.getLogger(__name__)
 
@@ -83,7 +88,7 @@ def initialize_premium_notification(userId: str, notification_endpoint: str):
 def get_timeline(page: int=1):
     response_object = {'status': 'success'}
     log.debug('Requested timeline events page" %d', page)
-    resp = samples.get_timeline(page=page, data_dir=app.data_dir)
+    resp = timeline_dao.get_timeline(page=page, data_dir=app.data_dir)
     response_object['timeline'] = resp
     log.debug('Returning %d timeline events', len(resp))
     # log.debug('Returning samples: %s ', response_object)

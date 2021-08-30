@@ -1,7 +1,7 @@
 """Test fall detection pipe element."""
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic import DEFAULT_DATA_DIR
-from ambianic.pipeline.timeline import PipelineContext
+from ambianic.pipeline.timeline_event import PipelineContext
 from ambianic import logger
 from pathlib import Path
 from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement

@@ -4,8 +4,9 @@ import logging.handlers
 import os
 import time
 from watchdog.observers import Observer
+import asyncio
 
-from ambianic.pipeline import timeline
+from ambianic.pipeline import timeline_event
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from ambianic import logger, config, get_config_file, \
@@ -132,7 +133,7 @@ class AmbianicServer:
         # reload configuration
         load_config(get_config_file())
         logger.configure(config.get("logging"))
-        timeline.configure_timeline(config.get("timeline"))
+        timeline_event.configure_timeline(config.get("timeline"))
 
         # watch configuration changes
         self.start_watch_config()
@@ -145,6 +146,7 @@ class AmbianicServer:
         try:
             for s_name, s_class in ROOT_SERVERS.items():
                 srv = s_class(config=config)
+                loop = None
                 srv.start()
                 servers[s_name] = srv
 
