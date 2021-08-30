@@ -56,13 +56,12 @@ def health_check():
 @app.get('/api/status')
 def get_status():
     response_object = {'status': 'OK', 'version': __version__}
-    resp = jsonify(response_object)
-    return resp
+    return response_object
 
 @app.get('/api/auth/premium-notification')
-def initialize_premium_notification():
-    userAuth0Id = request.args.get('userId')
-    endpoint = request.args.get('notification_endpoint')
+def initialize_premium_notification(userId: str, notification_endpoint: str):
+    userAuth0Id = userId
+    endpoint = notification_endpoint
     auth_file = {
         'name': 'AMBIANIC-EDGE-PREMIUM',
         'credentials': {
@@ -81,76 +80,22 @@ def initialize_premium_notification():
 
 @app.get('/api/timeline')
 @app.get('/api/timeline.json')
-def get_timeline():
+def get_timeline(page: int=1):
     response_object = {'status': 'success'}
-    req_page = request.args.get('page', default=1, type=int)
-    log.debug('Requested timeline events page" %d', req_page)
-    resp = samples.get_timeline(page=req_page, data_dir=app.data_dir)
+    log.debug('Requested timeline events page" %d', page)
+    resp = samples.get_timeline(page=page, data_dir=app.data_dir)
     response_object['timeline'] = resp
     log.debug('Returning %d timeline events', len(resp))
     # log.debug('Returning samples: %s ', response_object)
-    resp = jsonify(response_object)
-    return resp
-
-@app.get('/api/samples')
-def get_samples():
-    response_object = {'status': 'success'}
-    req_page = request.args.get('page', default=1, type=int)
-    resp = samples.get_samples(page=req_page)
-    response_object['samples'] = resp
-    log.debug('Returning %d samples', len(resp))
-    # log.debug('Returning samples: %s ', response_object)
-    resp = jsonify(response_object)
-    return resp
-
-
-@app.post('/api/samples')
-def add_samples():
-    response_object = {'status': 'success'}
-    post_data = request.get_json()
-    new_sample = {
-        'title': post_data.get('title'),
-        'author': post_data.get('author'),
-        'read': post_data.get('read')
-    }
-    samples.add_sample(new_sample)
-    response_object['message'] = 'Sample added!'
-    response_object['sample_id'] = new_sample["id"]
-    log.debug('Sample added: %s ', new_sample)
-    # log.debug('Returning samples: %s ', response_object)
-    resp = jsonify(response_object)
-    return resp
-
-
-@app.put('/api/samples/<sample_id>')
-def update_sample(sample_id):
-    response_object = {'status': 'success'}
-    post_data = request.get_json()
-    sample = {
-        'id': sample_id,
-        'title': post_data.get('title'),
-        'author': post_data.get('author'),
-        'read': post_data.get('read')
-    }
-    log.debug('update_sample %s', sample)
-    samples.update_sample(sample)
-    response_object['message'] = 'Sample updated!'
-    return jsonify(response_object)
-
-@app.delete('/api/samples/<sample_id>')
-def delete_sample(sample_id):
-    response_object = {'status': 'success'}
-    samples.delete_sample(sample_id)
-    response_object['message'] = 'Sample removed!'
-    return jsonify(response_object)
+    return response_object
 
 @app.get('/api/config')
 def get_config():
-    return jsonify(config.as_dict())
+    return config.as_dict()
 
-@app.get('/api/config/source/<source_id>')
-def get_config_source(source_id):
-    return jsonify(config_sources.get(source_id))
+@app.get('/api/config/source/{source_id}')
+def get_config_source(source_id: str):
+    return config_sources.get(source_id)
 
 @app.put('/api/config/source')
 def update_config_source(source: SensorSource):

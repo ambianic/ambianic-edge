@@ -2,29 +2,29 @@ import json
 import yaml
 import pytest
 import pkg_resources
-from ambianic.webapp.fastapi_app import app
-from ambianic import config, __version__
+from fastapi.testclient import TestClient
 import logging
 import os
 import sys
-from fastapi.testclient import TestClient
+from pathlib import Path
+from ambianic.webapp.fastapi_app import app, set_data_dir
+from ambianic import config, __version__, load_config
 
 log = logging.getLogger(__name__)
 
 def reset_config():
     config.reload()
 
-
-def setup_module(module):
+# session scoped test setup 
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="session")
+def setup_session(tmp_path_factory):
     """ setup any state specific to the execution of the given module."""
     reset_config()
-
-
-def teardown_module(module):
-    """ teardown any state that was previously setup with a setup_module
-    method."""
-    reset_config()
-
+    data_dir = tmp_path_factory.mktemp("data")
+    # convert from Path object to str
+    data_dir_str = data_dir.as_posix()
+    set_data_dir(data_dir=data_dir_str)
 
 @pytest.fixture
 def client():
@@ -34,34 +34,23 @@ def client():
 
 def test_hello(client):
     rv = client.get('/')
-    assert b'Ambianic Edge!' in rv.data
+    assert 'Ambianic Edge!' in rv.json()
 
 
 def test_health_check(client):
     rv = client.get('/healthcheck')
-    assert b'is running' in rv.data
+    assert 'is running' in rv.json()
 
-
-# broken?
-# def test_pipelines(client):
-#     rv = client.get('/pipelines')
-#     log.debug("data %s", rv)
-#     # assert b'is running' in rv.data
 
 def test_status(client):
     rv = client.get('/api/status')
-    assert (json.loads(rv.data)["status"], json.loads(
-        rv.data)["version"]) == ("OK", __version__)
+    data = rv.json()
+    assert (data["status"], data["version"]) == ("OK", __version__)
 
 
 def test_get_timeline(client):
     rv = client.get('/api/timeline')
-    assert json.loads(rv.data)["status"] == "success"
-
-
-def test_get_samples(client):
-    rv = client.get('/api/samples')
-    assert json.loads(rv.data)["status"] == "success"
+    assert rv.json()["status"] == "success"
 
 
 def test_initialize_premium_notification(client):
@@ -70,7 +59,7 @@ def test_initialize_premium_notification(client):
 
     request = client.get(
         '/api/auth/premium-notification?userId={0}&notification_endpoint={1}'.format(testId, endpoint))
-    response = json.loads(request.data)
+    response = request.json()
 
     assert isinstance(response, dict)
     configDir = pkg_resources.resource_filename(
@@ -94,48 +83,16 @@ def test_initialize_premium_notification(client):
     assert response["message"] == "AUTH0_ID SAVED"
 
 
-def test_add_samples(client):
-    rv = client.post('/api/samples', json={
-        'title': None,
-        'author': None,
-        'read': None,
-    })
-    data = json.loads(rv.data)
-    assert data["status"] == "success"
-
-
-def test_update_samples(client):
-    rv = client.post('/api/samples', json={
-        'title': None,
-        'author': None,
-        'read': None,
-    })
-    log.debug("%s", json.loads(rv.data))
-    sample_id = json.loads(rv.data)["sample_id"]
-    rv = client.put('/api/samples/' + sample_id, json={
-        'title': None,
-        'author': None,
-        'read': None,
-    })
-    assert json.loads(rv.data)["status"] == "success"
-
-
-def test_delete_samples(client):
-    rv = client.post('/api/samples', json={
-        'title': None,
-        'author': None,
-        'read': None,
-    })
-    log.debug("%s", json.loads(rv.data))
-    sample_id = json.loads(rv.data)["sample_id"]
-    rv = client.delete('/api/samples/' + sample_id)
-    assert json.loads(rv.data)["status"] == "success"
-
-
 def test_get_config(client):
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    load_config(os.path.join(_dir, 'test-config.yaml'), True)
     rv = client.get('/api/config')
-    data = json.loads(rv.data)
-    assert data is not None
+    data = rv.json()
+    # dynaconf conversts to uppercase all root level json keys
+    log.debug(f'config: {data}')
+    assert data['pipelines'.upper()] is not None
+    assert data['ai_models'.upper()] is not None
+    assert data['sources'.upper()] is not None
 
 
 def test_save_source(client):
