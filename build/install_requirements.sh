@@ -84,19 +84,18 @@ python3 -m pip install -r requirements.txt
 
 # [AI]
 # Install Tensorflow Lite and EdgeTPU libraries for the underlying architecture
+# ref: https://www.tensorflow.org/lite/guide/python
 if $(arch | grep -q 86)
 then
   echo "Installing tflite for x86 CPU"
-  if python3 --version | grep -q 3.8
-  then
-    sudo python3 -m pip install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_x86_64.whl
-  else
-    sudo python3 -m pip install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
-  fi
+  pip3 install --index-url https://google-coral.github.io/py-repo/ tflite_runtime
 elif $(arch | grep -q arm)
 then
-  echo "Installing tflite for ARM CPU"
-  sudo python3 -m pip install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
+  echo "Installing tflite for ARM CPU including Raspberry Pi"
+  echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  sudo apt-get update
+  sudo apt-get install python3-tflite-runtime
 fi
 
 python3 -m pip show tflite-runtime
