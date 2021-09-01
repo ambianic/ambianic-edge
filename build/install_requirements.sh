@@ -130,6 +130,9 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 # Install native dependencies for aiortc
 apt-get install -y libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config
 apt-get install -y libsrtp2-dev
+# install a stable version of google/crc32
+# due to break in the later version: https://stackoverflow.com/questions/69000321/install-python-aiortc-module-in-msys2-mingw-64/69020573#69020573
+python3 -m pip install google-crc32c==1.1.2
 # Install peerjs python
 python3 -m pip install peerjs
 
