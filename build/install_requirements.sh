@@ -48,6 +48,10 @@ sudo apt-get install -y python3-numpy
 sudo apt-get install -y libjpeg-dev zlib1g-dev
 # [backend]
 
+# update ca certificates to prevent remote ssl download requests from erroring
+sudo apt install ca-certificates
+sudo update-ca-certificates -f -v
+
 # make sure python sees the packages installed via apt-get
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
@@ -73,7 +77,7 @@ then
 
   # install rust as it is required to build python packages that are not available as binary pip packages
   # for example orjson
-  curl https://sh.rustup.rs -sSf | sh
+  sudo curl https://sh.rustup.rs -sSf | sh
   
 fi
 
