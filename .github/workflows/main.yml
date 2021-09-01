@@ -31,6 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run test script
+        timeout-minutes: 20
         env:
           ARCH: "linux/arm/v7"
           TAG_SUFFIX: "arm32v7"
