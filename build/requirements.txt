@@ -1,4 +1,4 @@
-pytest-httpserver==1.0.0
+pytest-httpserver==1.0.1
 absl-py>=0.7.1
 appdirs>=1.4.3
 asn1crypto>=0.24.0
