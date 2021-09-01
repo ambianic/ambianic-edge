@@ -70,6 +70,10 @@ then
 
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
+
+  # install rust as it is required to build python packages that are not available as binary pip packages
+  # for example orjson
+  curl https://sh.rustup.rs -sSf | sh
   
 fi
 
