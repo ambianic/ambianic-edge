@@ -49,7 +49,7 @@ sudo apt-get install -y libjpeg-dev zlib1g-dev
 # [backend]
 
 # update ca certificates to prevent remote ssl download requests from erroring
-sudo apt install ca-certificates
+sudo apt-get install -y ca-certificates
 sudo update-ca-certificates -f -v
 
 # make sure python sees the packages installed via apt-get
@@ -77,7 +77,7 @@ then
 
   # install rust as it is required to build python packages that are not available as binary pip packages
   # for example orjson
-  sudo curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -ksSf | sh
+  # sudo curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -ksSf | sh
 
   
 fi
