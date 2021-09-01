@@ -77,7 +77,7 @@ then
 
   # install rust as it is required to build python packages that are not available as binary pip packages
   # for example orjson
-$ sudo curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -ksSf | sh
+  sudo curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -ksSf | sh
 
   
 fi
