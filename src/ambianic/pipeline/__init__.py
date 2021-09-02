@@ -1,10 +1,10 @@
 """Main module for Ambianic AI pipelines."""
 import logging
-import abc
 import time
 from typing import Iterable
+
+from ambianic.pipeline.timeline_event import PipelineContext
 from ambianic.util import ManagedService
-from ambianic.pipeline.timeline import PipelineContext
 
 log = logging.getLogger(__name__)
 
@@ -17,11 +17,13 @@ PIPE_STATES = [PIPE_STATE_RUNNING, PIPE_STATE_STOPPED]
 class PipeElement(ManagedService):
     """The basic building block of an Ambianic pipeline."""
 
-    def __init__(self,
-                 element_name=None,
-                 context: PipelineContext = None,
-                 event_log: logging.Logger = None,
-                 **kwargs):
+    def __init__(
+        self,
+        element_name=None,
+        context: PipelineContext = None,
+        event_log: logging.Logger = None,
+        **kwargs
+    ):
         """Create a PipeElement instance."""
         super().__init__()
         self._name = element_name
@@ -62,7 +64,7 @@ class PipeElement(ManagedService):
         """
         if element_context is None:
             element_context = {}
-        element_context['class'] = self.__class__.__name__
+        element_context["class"] = self.__class__.__name__
         self._context.push_element_context(element_context)
 
     def pop_context(self) -> dict:
@@ -118,7 +120,6 @@ class PipeElement(ManagedService):
         element and its ecnlosing pipeline.
 
         """
-        pass
 
     def healthcheck(self):
         """Check the health of this element.
@@ -126,7 +127,7 @@ class PipeElement(ManagedService):
         :returns: (timestamp, status) tuple with most recent heartbeat
         timestamp and health status code ('OK' normally).
         """
-        status = 'OK'  # At some point status may carry richer information
+        status = "OK"  # At some point status may carry richer information
         return self._latest_heartbeat, status
 
     def heartbeat(self):
@@ -181,7 +182,7 @@ class PipeElement(ManagedService):
         self.heartbeat()
         for processed_sample in self.process_sample(**sample):
             if self._next_element:
-                if (processed_sample):
+                if processed_sample:
                     self._next_element.receive_next_sample(**processed_sample)
                 else:
                     self._next_element.receive_next_sample()
@@ -239,9 +240,9 @@ class HealthChecker(PipeElement):
 
     def process_sample(self, **sample):
         """Call health callback and pass on sample as is."""
-        log.debug('%s received sample from the connected '
-                  'preceding pipe element.',
-                  self.__class__.__name__
-                  )
+        log.debug(
+            "%s received sample from the connected " "preceding pipe element.",
+            self.__class__.__name__,
+        )
         self._health_status_callback()
         yield sample

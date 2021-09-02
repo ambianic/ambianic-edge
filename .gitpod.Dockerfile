@@ -12,13 +12,12 @@ FROM gitpod/workspace-full
 # RUN sudo apt-get install -y curl && \
 #  curl -k -L -o ./install_requirements.sh https://raw.githubusercontent.com/ambianic/ambianic-edge/master/build/install_requirements.sh && \
 #  sudo /bin/bash ./install_requirements.sh
-  
+
 # Install custom tools, runtimes, etc.
 # For example "bastet", a command-line tetris clone:
 # RUN brew install bastet
 #
 # More information: https://www.gitpod.io/docs/config-docker/
-
 
 # Remove pyenv, which gitpod installs by default
 # but it doesn't play well with system level dependencies like gstreamer python wrappers and tflite
@@ -30,18 +29,19 @@ FROM gitpod/workspace-full
 # Copy dependencies install list and script
 # COPY install_requirements.sh install_requirements.sh
 COPY ["./build/*", "./"]
-RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh # 
+RUN arch && ls -al && sudo /bin/bash ./install_requirements.sh #
 
 # install gtipod environment dev packages for app testing
-RUN   python3 -m pip install --upgrade pip && \
-      python3 -m pip install --upgrade --upgrade setuptools && \
-      sudo pip3 install -U pytest && \
-      sudo pip3 install -U codecov && \
-      sudo pip3 install -U pytest-cov && \
-      sudo pip3 install -U pylint && \
-      sudo ln -s /usr/bin/python3 /usr/bin/python 
+# RUN   python3 -m pip install --upgrade pip && \
+#      python3 -m pip install --upgrade --upgrade setuptools && \
+#      python3 -m pip install -U pytest && \
+#      python3 -m pip install -U codecov && \
+#      python3 -m pip install -U pytest-cov && \
+#      python3 -m pip install -U pylint && \
+#      sudo ln -s /usr/bin/python3 /usr/bin/python
 
 #      && \
 #      echo "pyenv global system" >> ~/.bashrc.d/60-python && \
 #      echo "python3 -m pip install -e ~/src" >> ~/.bashrc
-
+#
+#

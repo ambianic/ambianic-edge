@@ -1,17 +1,32 @@
+
 image:
   file: .gitpod.Dockerfile
 tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
-      pip3 install -e ./src
+      python3 -m pip install --upgrade pip
+      python3 -m pip install --upgrade setuptools
+      echo "Installing test frameworks"
+      python3 -m pip install -U pytest codecov pytest-cov
+      echo "Installing pre-commit hooks."
+      export PIP_USER=false
+      python3 -m pip install -U pylint isort mccabe pre-commit black flake8
+      pre-commit install
+      echo "Installing local ambianic-edge package from ./src"
+      python3 -m pip install -e ./src
     command: |
       pyenv global system
       echo "Started ambianic-edge development environment."
       echo "Running ambianic-edge testsuite:"
-      python3 -m pytest --cov=ambianic --cov-report=term tests/
+      python3 -m pytest --log-cli-level=DEBUG --cov=ambianic --cov-report=term tests/
   - command: |
       sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
       pyenv global system
       echo "To run the amgianic-edge server use:"
       echo "python3 -m ambianic"
+
+vscode:
+  extensions:
+    - ms-python.python
+    - github.vscode-pull-request-github

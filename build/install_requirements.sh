@@ -48,6 +48,10 @@ sudo apt-get install -y python3-numpy
 sudo apt-get install -y libjpeg-dev zlib1g-dev
 # [backend]
 
+# update ca certificates to prevent remote ssl download requests from erroring
+sudo apt-get install -y ca-certificates
+sudo update-ca-certificates -f -v
+
 # make sure python sees the packages installed via apt-get
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages
 # echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages" >> $HOME/.bashrc
@@ -70,13 +74,18 @@ then
 
   # Enable python wheels for rpi
   sudo cp raspberrypi.pip.conf /etc/pip.conf
-  
+
+  # install rust as it is required to build python packages that are not available as binary pip packages
+  # for example orjson
+  # sudo curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -ksSf | sh
+
+
 fi
 
 # install python dependencies
 python3 -m pip install --upgrade pip
-pip3 --version
-pip3 install -r requirements.txt
+python3 -m pip --version
+python3 -m pip install -r requirements.txt
 
   # install gcc as some of the python native dependencies
   # like pycairo don't ship as PIP packages and require build from source.
@@ -84,22 +93,21 @@ pip3 install -r requirements.txt
 
 # [AI]
 # Install Tensorflow Lite and EdgeTPU libraries for the underlying architecture
+# ref: https://www.tensorflow.org/lite/guide/python
 if $(arch | grep -q 86)
 then
   echo "Installing tflite for x86 CPU"
-  if python3 --version | grep -q 3.8
-  then
-    sudo pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_x86_64.whl
-  else
-    sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
-  fi
+  pip3 install --index-url https://google-coral.github.io/py-repo/ tflite_runtime
 elif $(arch | grep -q arm)
 then
-  echo "Installing tflite for ARM CPU"
-  sudo pip3 install https://dl.google.com/coral/python/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
+  echo "Installing tflite for ARM CPU including Raspberry Pi"
+  echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+  sudo curl -k https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  sudo apt-get update
+  sudo apt-get install python3-tflite-runtime
 fi
 
-pip3 show tflite-runtime
+python3 -m pip show tflite-runtime
 
 # install wget
 apt-get install -y curl
@@ -122,8 +130,11 @@ cp install-edgetpu.sh /tmp/edgetpu_api/install.sh
 # Install native dependencies for aiortc
 apt-get install -y libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config
 apt-get install -y libsrtp2-dev
+# install a stable version of google/crc32
+# due to break in the later version: https://stackoverflow.com/questions/69000321/install-python-aiortc-module-in-msys2-mingw-64/69020573#69020573
+python3 -m pip install google-crc32c==1.1.2
 # Install peerjs python
-pip3 install peerjs
+python3 -m pip install peerjs
 
 # [devtools]
 # Install tools essential for debugging docker image related problems

@@ -1,19 +1,20 @@
 """Input source video processing via Gstreamer."""
 
+import logging
 import os
+import signal
 import sys
 import threading
-import signal
-import logging
 import traceback
-from ambianic.util import stacktrace
+
 import gi
+from ambianic.util import stacktrace
 
 # to prevent flake8 import reordering before setting gi versions
-if 'gi' in sys.modules:
-    gi.require_version('Gst', '1.0')
-    gi.require_version('GstBase', '1.0')
-    from gi.repository import Gst, GLib  # ,GObject,  GLib
+if "gi" in sys.modules:
+    gi.require_version("Gst", "1.0")
+    gi.require_version("GstBase", "1.0")
+    from gi.repository import GLib, Gst  # ,GObject,  GLib
 
 
 Gst.init(None)
@@ -48,29 +49,25 @@ class GstService:
         width = height = None
 
     class PipelineSource:
-
         def __init__(self, source_conf=None):
             assert source_conf, "pipeline source configuration required."
-            assert source_conf['uri'], \
-                "pipeline source config missing uri element"
+            assert source_conf["uri"], "pipeline source config missing uri element"
             # rtsp://..., rtmp://..., http://..., file:///...
-            self.uri = source_conf['uri']
+            self.uri = source_conf["uri"]
             # video, image, audio, auto
-            self.type = source_conf.get('type', 'auto')
-            self.is_live = source_conf.get('live', False)
-            self.format = source_conf.get('format', None)
+            self.type = source_conf.get("type", "auto")
+            self.is_live = source_conf.get("live", False)
+            self.format = source_conf.get("format", None)
 
-    def __init__(self,
-                 source_conf=None,
-                 out_queue=None,
-                 stop_signal=None,
-                 eos_reached=None):
+    def __init__(
+        self, source_conf=None, out_queue=None, stop_signal=None, eos_reached=None
+    ):
         assert source_conf
         assert out_queue
         assert stop_signal
         assert eos_reached
         # pipeline source info
-        log.debug('Initializing GstService with source: %s ', source_conf)
+        log.debug("Initializing GstService with source: %s ", source_conf)
         self._out_queue = out_queue
         self._stop_signal = stop_signal
         self._eos_reached = eos_reached
@@ -106,8 +103,11 @@ class GstService:
         self._source_shape.width = struct["width"]
         self._source_shape.height = struct["height"]
         if self._source_shape.width:
-            log.info("Input source width: %d, height: %d",
-                     self._source_shape.width, self._source_shape.height)
+            log.info(
+                "Input source width: %d, height: %d",
+                self._source_shape.width,
+                self._source_shape.height,
+            )
         return True
 
     def _on_bus_message_eos(self, message):
@@ -115,18 +115,17 @@ class GstService:
         # if its a live source uri, we will keep trying to reconnect
         # otherwise end source input processing
         if not self.source.is_live:
-            log.debug('End of stream. Exiting gstreamer loop '
-                      'for this video stream.')
+            log.debug("End of stream. Exiting gstreamer loop " "for this video stream.")
             self._eos_reached.set()
         self._gst_cleanup()
 
     def _on_bus_message_warning(self, message):
         err, debug = message.parse_warning()
-        log.warning('Warning: %s: %s', err, debug)
+        log.warning("Warning: %s: %s", err, debug)
 
     def _on_bus_message_error(self, message):
         err, debug = message.parse_error()
-        log.warning('Error: %s: %s', err, debug)
+        log.warning("Error: %s: %s", err, debug)
         self._gst_cleanup()
 
     def _on_bus_message(self, bus, message, loop):
@@ -141,21 +140,24 @@ class GstService:
             self._on_bus_message_error(message)
         else:
             # pass
-            log.debug('GST: Ignoring bus message: type: %r, details: %r',
-                      message.type.get_name(message.type), message)
+            log.debug(
+                "GST: Ignoring bus message: type: %r, details: %r",
+                message.type.get_name(message.type),
+                message,
+            )
         return True
 
     def _on_new_sample_out_queue_full(self, sink):
-        log.debug('Out queue full, skipping sample.')
+        log.debug("Out queue full, skipping sample.")
         # free appsink buffer so its not blocked waiting on app pull
-        sink.emit('pull-sample')
+        sink.emit("pull-sample")
         return Gst.FlowReturn.OK
 
     def _on_new_sample(self, sink):
-        log.debug('Input stream received new image sample.')
+        log.debug("Input stream received new image sample.")
         if self._out_queue.full():
             return self._on_new_sample_out_queue_full(sink)
-        sample = sink.emit('pull-sample')
+        sample = sink.emit("pull-sample")
         buf = sample.get_buffer()
         caps = sample.get_caps()
         struct = caps.get_structure(0)
@@ -167,34 +169,36 @@ class GstService:
         result, mapinfo = buf.map(Gst.MapFlags.READ)
         if result:
             sample = {
-                'type': 'image',
-                'format': 'RGB',
-                'width': app_width,
-                'height': app_height,
-                'bytes': mapinfo.data,
+                "type": "image",
+                "format": "RGB",
+                "width": app_width,
+                "height": app_height,
+                "bytes": mapinfo.data,
             }
-            log.info('GstService adding sample to out_queue.')
+            log.info("GstService adding sample to out_queue.")
             self._out_queue.put(sample)
         buf.unmap(mapinfo)
         return Gst.FlowReturn.OK
 
     def _get_pipeline_args(self):
-        log.debug('Preparing Gstreamer pipeline args')
+        log.debug("Preparing Gstreamer pipeline args")
 
         videosrc = self.source.uri
         videofmt = self.source.format
 
-        if videofmt == 'h264':
-            SRC_CAPS = 'video/x-h264,framerate=30/1'
-        elif videofmt == 'jpeg':
-            SRC_CAPS = 'image/jpeg,framerate=30/1'
+        if videofmt == "h264":
+            SRC_CAPS = "video/x-h264,framerate=30/1"
+        elif videofmt == "jpeg":
+            SRC_CAPS = "image/jpeg,framerate=30/1"
         else:
-            SRC_CAPS = 'video/x-raw,framerate=30/1'
+            SRC_CAPS = "video/x-raw,framerate=30/1"
 
         PIPELINE_SRC = "uridecodebin uri=%s use-buffering=true" % videosrc
 
-        if videosrc.startswith('/dev/video') or videosrc.startswith('file:///dev/video'):
-            PIPELINE_SRC = 'v4l2src device=%s ! %s' % (videosrc, SRC_CAPS)
+        if videosrc.startswith("/dev/video") or videosrc.startswith(
+            "file:///dev/video"
+        ):
+            PIPELINE_SRC = f"v4l2src device={videosrc} ! {SRC_CAPS}"
 
         PIPELINE = """
             {pipeline_src}
@@ -208,22 +212,24 @@ class GstService:
         # a big performance difference.
         # Need to look closer at hardware acceleration options where available.
         # ,width={width},pixel-aspect-ratio=1/1'
-        SINK_CAPS = 'video/x-raw,format=RGB'
+        SINK_CAPS = "video/x-raw,format=RGB"
 
-        LEAKY_Q_ = 'queue2 '
-        LEAKY_Q0 = LEAKY_Q_ + ' name=queue0'
-        LEAKY_Q1 = LEAKY_Q_ + ' name=queue1'
-        
+        LEAKY_Q_ = "queue2 "
+        LEAKY_Q0 = LEAKY_Q_ + " name=queue0"
+        LEAKY_Q1 = LEAKY_Q_ + " name=queue1"
+
         SINK_ELEMENT = """
                 appsink name=appsink sync=false
                 emit-signals=true max-buffers=1 drop=true
                 """
-        pipeline_args = PIPELINE.format(leaky_q0=LEAKY_Q0,
-                                        leaky_q1=LEAKY_Q1,
-                                        sink_caps=SINK_CAPS,
-                                        sink_element=SINK_ELEMENT,
-                                        pipeline_src=PIPELINE_SRC)
-        log.debug('Gstreamer pipeline args: %s', pipeline_args)
+        pipeline_args = PIPELINE.format(
+            leaky_q0=LEAKY_Q0,
+            leaky_q1=LEAKY_Q1,
+            sink_caps=SINK_CAPS,
+            sink_element=SINK_ELEMENT,
+            pipeline_src=PIPELINE_SRC,
+        )
+        log.debug("Gstreamer pipeline args: %s", pipeline_args)
 
         print("pipeline_args ", pipeline_args)
 
@@ -245,16 +251,16 @@ class GstService:
         # self.gst_video_source_connect_id = self.gst_video_source.connect(
         #     'autoplug-continue', self.on_autoplug_continue)
         # assert self.gst_video_source_connect_id
-        self.gst_queue0 = self.gst_pipeline.get_by_name('queue0')
-        self.gst_vconvert = self.gst_pipeline.get_by_name('vconvert')
-        self.gst_queue1 = self.gst_pipeline.get_by_name('queue1')
-        self.gst_appsink = self.gst_pipeline.get_by_name('appsink')
+        self.gst_queue0 = self.gst_pipeline.get_by_name("queue0")
+        self.gst_vconvert = self.gst_pipeline.get_by_name("vconvert")
+        self.gst_queue1 = self.gst_pipeline.get_by_name("queue1")
+        self.gst_appsink = self.gst_pipeline.get_by_name("appsink")
         log.debug("appsink: %s", str(self.gst_appsink))
-        log.debug("appsink will emit signals: %s",
-                  self.gst_appsink.props.emit_signals)
+        log.debug("appsink will emit signals: %s", self.gst_appsink.props.emit_signals)
         # register to receive new image sample events from gst
         self._gst_appsink_connect_id = self.gst_appsink.connect(
-            'new-sample', self._on_new_sample)
+            "new-sample", self._on_new_sample
+        )
         self.mainloop = GLib.MainLoop()
 
         self._set_gst_debug_level()
@@ -262,7 +268,7 @@ class GstService:
         # Set up a pipeline bus watch to catch errors.
         self.gst_bus = self.gst_pipeline.get_bus()
         self.gst_bus.add_signal_watch()
-        self.gst_bus.connect('message', self._on_bus_message, self.mainloop)
+        self.gst_bus.connect("message", self._on_bus_message, self.mainloop)
 
     def _gst_mainloop_run(self):
         log.debug("Entering main gstreamer loop")
@@ -283,10 +289,11 @@ class GstService:
         # https://gstreamer.freedesktop.org/documentation/tutorials/basic/streaming.html?gi-language=c
         # https://lazka.github.io/pgi-docs/Gst-1.0/classes/Pipeline.html
         # https://lazka.github.io/pgi-docs/Gst-1.0/enums.html#Gst.StateChangeReturn.NO_PREROLL
-        if (ret == Gst.StateChangeReturn.FAILURE):
-            raise RuntimeError('Unable to set pipeline to playing state ',
-                               self.source.uri)
-        elif (ret == Gst.StateChangeReturn.NO_PREROLL):
+        if ret == Gst.StateChangeReturn.FAILURE:
+            raise RuntimeError(
+                "Unable to set pipeline to playing state ", self.source.uri
+            )
+        elif ret == Gst.StateChangeReturn.NO_PREROLL:
             self.source.is_live = True
             log.info("Live streaming source detected: %r", self.source.uri)
         else:
@@ -296,10 +303,12 @@ class GstService:
     def _gst_cleanup(self):
         log.debug("GST cleaning up resources...")
         try:
-            if self.mainloop and \
-              self.mainloop.is_running() and \
-              self.gst_pipeline and \
-              self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL:
+            if (
+                self.mainloop
+                and self.mainloop.is_running()
+                and self.gst_pipeline
+                and self.gst_pipeline.get_state(timeout=1)[1] != Gst.State.NULL
+            ):
                 log.debug("gst pipeline still active. Terminating...")
                 self.gst_pipeline.set_state(Gst.State.PAUSED)
                 log.debug("self.gst_pipeline.set_state(Gst.State.PAUSED)")
@@ -350,28 +359,25 @@ class GstService:
             else:
                 log.debug("mainloop: None")
         except Exception as e:
-            log.warning('Error while cleaning up gstreamer resources: %s',
-                        str(e))
+            log.warning("Error while cleaning up gstreamer resources: %s", str(e))
             formatted_lines = traceback.format_exc().splitlines()
-            log.warning('Exception stack trace: %s',
-                        "\n".join(formatted_lines))
+            log.warning("Exception stack trace: %s", "\n".join(formatted_lines))
         log.debug("GST clean up exiting.")
 
     def _service_terminate(self, signum, frame):
-        log.info('GST service caught system terminate signal %d', signum)
+        log.info("GST service caught system terminate signal %d", signum)
         if not self._stop_signal.is_set():
             self._stop_signal.set()
 
     def _stop_handler(self):
         self._stop_signal.wait()
-        log.info('GST service received stop signal')
+        log.info("GST service received stop signal")
         self._gst_cleanup()
 
     def _register_stop_handler(self):
         stop_watch_thread = threading.Thread(
-            name='GST stop watch thread',
-            daemon=True,
-            target=self._stop_handler)
+            name="GST stop watch thread", daemon=True, target=self._stop_handler
+        )
         stop_watch_thread.start()
 
     def _register_sys_signal_handler(self):
@@ -387,27 +393,27 @@ class GstService:
         try:
             self._gst_loop()
         except Exception as e:
-            log.warning('GST loop exited with error: %s. ',
-                        str(e))
+            log.warning("GST loop exited with error: %s. ", str(e))
             log.warning(stacktrace())
         finally:
-            log.debug('Gst service cleaning up before exit...')
+            log.debug("Gst service cleaning up before exit...")
             self._gst_cleanup()
             # self._out_queue.close()
             log.debug("Gst service cleaned up and ready to exit.")
         log.info("Stopped %s", self.__class__.__name__)
 
 
-def start_gst_service(source_conf=None,
-                      out_queue=None,
-                      stop_signal=None,
-                      eos_reached=None):
-    svc = GstService(source_conf=source_conf,
-                     out_queue=out_queue,
-                     stop_signal=stop_signal,
-                     eos_reached=eos_reached)
+def start_gst_service(
+    source_conf=None, out_queue=None, stop_signal=None, eos_reached=None
+):
+    svc = GstService(
+        source_conf=source_conf,
+        out_queue=out_queue,
+        stop_signal=stop_signal,
+        eos_reached=eos_reached,
+    )
     # set priority level below parent process
     # in order to preserve UX responsiveness
     os.nice(10)
     svc.run()
-    log.info('Exiting GST process')
+    log.info("Exiting GST process")

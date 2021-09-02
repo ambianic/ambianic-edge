@@ -1,9 +1,10 @@
 """Test image detection pipe element."""
-import pytest
 import os
-from PIL import Image
+
+import pytest
 from ambianic.pipeline.ai.image_boundingBox_detection import TFBoundingBoxDetection
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
+from PIL import Image
 
 
 def test_inference_init_no_config():
@@ -13,12 +14,12 @@ def test_inference_init_no_config():
 
 def test_inference_init_bad_config():
     config = {
-        'model': {
-            'tflite': 'some_bad_tflite_model',
-            },
-        'labels': 'no_labels',
-        'top_k': 123,
-        'confidence_threshold': 654,
+        "model": {
+            "tflite": "some_bad_tflite_model",
+        },
+        "labels": "no_labels",
+        "top_k": 123,
+        "confidence_threshold": 654,
     }
     with pytest.raises(AssertionError):
         TFBoundingBoxDetection(**config)
@@ -27,22 +28,20 @@ def test_inference_init_bad_config():
 def _good_config():
     _dir = os.path.dirname(os.path.abspath(__file__))
     _good_tflite_model = os.path.join(
-        _dir,
-        'mobilenet_ssd_v2_coco_quant_postprocess.tflite'
-        )
+        _dir, "mobilenet_ssd_v2_coco_quant_postprocess.tflite"
+    )
     _good_edgetpu_model = os.path.join(
-        _dir,
-        'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
-        )
-    _good_labels = os.path.join(_dir, 'coco_labels.txt')
+        _dir, "mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite"
+    )
+    _good_labels = os.path.join(_dir, "coco_labels.txt")
     config = {
-        'model': {
-            'tflite': _good_tflite_model,
-            'edgetpu': _good_edgetpu_model,
-            },
-        'labels': _good_labels,
-        'top_k': 123,
-        'confidence_threshold': 0.654,
+        "model": {
+            "tflite": _good_tflite_model,
+            "edgetpu": _good_edgetpu_model,
+        },
+        "labels": _good_labels,
+        "top_k": 123,
+        "confidence_threshold": 0.654,
     }
     return config
 
@@ -52,12 +51,12 @@ def test_inference_init_good_config():
     img_detect = TFBoundingBoxDetection(**config)
     assert img_detect
     assert img_detect._tfengine
-    assert img_detect._tfengine._model_tflite_path.endswith('.tflite')
-    assert img_detect._tfengine._model_edgetpu_path.endswith('.tflite')
+    assert img_detect._tfengine._model_tflite_path.endswith(".tflite")
+    assert img_detect._tfengine._model_edgetpu_path.endswith(".tflite")
     assert img_detect._tfengine.confidence_threshold == 0.654
     assert img_detect._tfengine.top_k == 123
     assert img_detect._tfengine.is_quantized
-    assert img_detect._tfengine._model_labels_path.endswith('.txt')
+    assert img_detect._tfengine._model_labels_path.endswith(".txt")
 
 
 def test_model_inputs():
@@ -65,13 +64,13 @@ def test_model_inputs():
     config = _good_config()
     img_detect = TFBoundingBoxDetection(**config)
     tfe = img_detect._tfengine
-    samples = tfe.input_details[0]['shape'][0]
+    samples = tfe.input_details[0]["shape"][0]
     assert samples == 1
-    height = tfe.input_details[0]['shape'][1]
+    height = tfe.input_details[0]["shape"][1]
     assert height == 300
-    width = tfe.input_details[0]['shape'][2]
+    width = tfe.input_details[0]["shape"][2]
     assert width == 300
-    colors = tfe.input_details[0]['shape'][3]
+    colors = tfe.input_details[0]["shape"][3]
     assert colors == 3
 
 
@@ -80,22 +79,22 @@ def test_model_outputs():
     config = _good_config()
     img_detect = TFBoundingBoxDetection(**config)
     tfe = img_detect._tfengine
-    assert tfe.output_details[0]['shape'][0] == 1
-    scores = tfe.output_details[0]['shape'][1]
+    assert tfe.output_details[0]["shape"][0] == 1
+    scores = tfe.output_details[0]["shape"][1]
     assert scores == 20
-    assert tfe.output_details[1]['shape'][0] == 1
-    boxes = tfe.output_details[1]['shape'][1]
+    assert tfe.output_details[1]["shape"][0] == 1
+    boxes = tfe.output_details[1]["shape"][1]
     assert boxes == 20
-    assert tfe.output_details[2]['shape'][0] == 1
-    labels = tfe.output_details[2]['shape'][1]
+    assert tfe.output_details[2]["shape"][0] == 1
+    labels = tfe.output_details[2]["shape"][1]
     assert labels == 20
-    num = tfe.output_details[3]['shape'][0]
+    num = tfe.output_details[3]["shape"][0]
     assert num == 1
 
 
 def test_resize():
     _dir = os.path.dirname(os.path.abspath(__file__))
-    img_path = os.path.join(_dir, 'background.jpg')
+    img_path = os.path.join(_dir, "background.jpg")
     image = Image.open(img_path)
     orig_width = image.size[0]
     assert orig_width == 1280
@@ -111,7 +110,7 @@ def test_resize():
 
 def test_thumbnail():
     _dir = os.path.dirname(os.path.abspath(__file__))
-    img_path = os.path.join(_dir, 'background.jpg')
+    img_path = os.path.join(_dir, "background.jpg")
     image = Image.open(img_path)
     orig_width = image.size[0]
     assert orig_width == 1280
@@ -137,5 +136,5 @@ def test_load_labels():
     config = _good_config()
     img_detect = TFBoundingBoxDetection(**config)
     labels = img_detect._labels
-    assert labels[0] == 'person'
-    assert labels[15] == 'bird'
+    assert labels[0] == "person"
+    assert labels[15] == "bird"

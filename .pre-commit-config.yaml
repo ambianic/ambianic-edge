@@ -1,0 +1,68 @@
+# .pre-commit-config.yaml
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+        exclude: "tests/functional/t/trailing_whitespaces.py"
+      - id: end-of-file-fixer
+        exclude: "tests/functional/m/missing/missing_final_newline.py|tests/functional/t/trailing_newlines.py"
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        exclude: &fixtures tests/functional/|tests/input|tests/extensions/data|tests/regrtest_data/|tests/data/
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --expand-star-imports
+          - --remove-duplicate-keys
+          - --remove-unused-variables
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.25.0
+    hooks:
+      - id: pyupgrade
+        args: [--py36-plus]
+        exclude: *fixtures
+  # isort
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+  # black
+  - repo: https://github.com/psf/black
+    rev: 21.8b0
+    hooks:
+      - id: black
+        args: [--safe, --line-length=88]
+        exclude: *fixtures
+  - repo: https://github.com/Pierre-Sassoulas/black-disable-checker/
+    rev: 1.0.1
+    hooks:
+      - id: black-disable-checker
+  # flake8
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: flake8
+        args: # arguments to configure flake8
+          # making isort line length compatible with black
+          - "--max-line-length=88"
+          - "--max-complexity=18"
+          - "--select=B,C,E,F,W,T4,B9"
+
+          # these are errors that will be ignored by flake8
+          # check out their meaning here
+          # https://flake8.pycqa.org/en/latest/user/error-codes.html
+          - "--ignore=E203,E266,E501,W503,F403,F401,E402"
+  -   repo: https://github.com/pycqa/pylint
+      rev: pylint-2.6.0
+      hooks:
+      -   id: pylint
+          args:
+          - "--max-line-length=88"
+          - "--ignore-imports=yes"
+          - "--errors-only"
+          - "--disable=import-error,unsubscriptable-object,invalid-sequence-index,relative-beyond-top-level"

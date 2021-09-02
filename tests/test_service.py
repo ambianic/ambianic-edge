@@ -1,9 +1,8 @@
 import pytest
-from ambianic.util import ServiceExit, ManagedService, ThreadedJob
+from ambianic.util import ManagedService, ThreadedJob
 
 
 class MockManagedService(ManagedService):
-
     def __init__(self):
         super().__init__()
         self._healthcheck_called = False
@@ -20,12 +19,12 @@ class MockManagedService(ManagedService):
 
 def test_threaded_job_init_no_job():
     with pytest.raises(AssertionError):
-        tj = ThreadedJob(job=None)
+        ThreadedJob(job=None)
 
 
 def test_threaded_job_init_no_ms():
     with pytest.raises(AssertionError):
-        tj = ThreadedJob(job=[])
+        ThreadedJob(job=[])
 
 
 def test_threaded_job_init_ms():

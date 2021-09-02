@@ -1,9 +1,10 @@
 """Utilities to send notifications."""
 
 import logging
-import apprise
 import os
+
 import ambianic
+import apprise
 import pkg_resources
 import yaml
 from requests import post
@@ -16,40 +17,38 @@ UI_BASEURL = "https://ui.ambianic.ai"
 def sendCloudNotification(data):
     # r+ flag causes a permission error
     try:
-        premiumFile = pkg_resources.resource_filename(
-            "ambianic.webapp", "premium.yaml")
+        premiumFile = pkg_resources.resource_filename("ambianic.webapp", "premium.yaml")
 
-        with open(premiumFile, "r") as file:
+        with open(premiumFile) as file:
             configFile = yaml.safe_load(file)
 
-            userId = configFile['credentials']["USER_AUTH0_ID"]
-            endpoint = configFile['credentials']["NOTIFICATION_ENDPOINT"]
-            if (userId):
+            userId = configFile["credentials"]["USER_AUTH0_ID"]
+            endpoint = configFile["credentials"]["NOTIFICATION_ENDPOINT"]
+            if userId:
                 return post(
-                    url='{0}/notification'.format(endpoint),
+                    url=f"{endpoint}/notification",
                     json={
-                        'userId': userId,
-                        'notification': {
-                            'title': 'Ambianic.ai New {0} event'.format(
-                                data['label']),
-                            'message': 'New {0} detected with a {1} confidence level'.format(
-                                data['label'],
-                                data['confidence']),
-                        }})
+                        "userId": userId,
+                        "notification": {
+                            "title": "Ambianic.ai New {} event".format(data["label"]),
+                            "message": "New {} detected with a {} confidence level".format(
+                                data["label"], data["confidence"]
+                            ),
+                        },
+                    },
+                )
 
     except FileNotFoundError as err:
-        log.warning("Error locating file: {}".format(err))
+        log.warning(f"Error locating file: {err}")
 
     except Exception as error:
-        log.warning("Error sending email: {}".format(str(error)))
+        log.warning(f"Error sending email: {str(error)}")
 
 
 class Notification:
     def __init__(
-            self,
-            event: str = "detection",
-            data: dict = {},
-            providers: list = ["all"]):
+        self, event: str = "detection", data: dict = {}, providers: list = ["all"]
+    ):
         self.event: str = event
         self.providers: list = providers
         self.title: str = None
@@ -75,8 +74,7 @@ class NotificationHandler:
             for provider in providers:
                 if not self.apobj.add(provider, tag=name):
                     log.warning(
-                        "Failed to add notification provider: %s=%s"
-                        % (name, provider)
+                        f"Failed to add notification provider: {name}={provider}"
                     )
 
     def send(self, notification: Notification):
@@ -88,9 +86,7 @@ class NotificationHandler:
 
         message = notification.message
         if message is None:
-            message = templates.get(
-                "message", "New ${event} recognized"
-            )
+            message = templates.get("message", "New ${event} recognized")
 
         attachments = []
         for a in notification.attach:
@@ -101,14 +97,10 @@ class NotificationHandler:
 
         template_args = {
             "event_type": notification.event,
-            "event": notification.data.get(
-                "label",
-                notification.event),
-            "event_details_url": "%s/%s" %
-            (UI_BASEURL,
-             notification.data.get(
-                 "id",
-                 ""))}
+            "event": notification.data.get("label", notification.event),
+            "event_details_url": "%s/%s"
+            % (UI_BASEURL, notification.data.get("id", "")),
+        }
         template_args = {**template_args, **notification.data}
 
         for key, value in template_args.items():
@@ -130,12 +122,14 @@ class NotificationHandler:
                 )
                 if ok:
                     log.debug(
-                        "Sent notification for %s to %s" %
-                        (notification.event, provider)
+                        "Sent notification for %s to %s"
+                        % (notification.event, provider)
                     )
                 else:
-                    log.warning("Error sending notification for %s to %s" %
-                                (notification.event, provider))
+                    log.warning(
+                        "Error sending notification for %s to %s"
+                        % (notification.event, provider)
+                    )
             else:
                 log.warning("Skip unknown provider %s" % provider)
                 continue

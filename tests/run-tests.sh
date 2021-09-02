@@ -33,4 +33,3 @@ python3 -m pytest --cov=ambianic -c "dev/dev-config.yaml" --cov-report=xml --cov
 #   echo 'Uploading code coverage report to codecov.io'
 #    codecov
 # fi
-

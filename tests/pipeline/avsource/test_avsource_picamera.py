@@ -1,24 +1,21 @@
 """Test audio/video source pipeline element."""
-import pytest
-from ambianic.pipeline.avsource import picam
 import logging
-from io import BytesIO
-import time
 import os
+import time
+from io import BytesIO
+
+from ambianic.pipeline.avsource import picam
 from PIL import Image
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-class _TestPiCamera():
 
+class _TestPiCamera:
     def __init__(self, fail_read=False):
         _dir = os.path.dirname(os.path.abspath(__file__))
-        img_path = os.path.join(
-            _dir,
-            '../ai/person.jpg'
-        )
-        self.img = Image.open(img_path, mode='r')
+        img_path = os.path.join(_dir, "../ai/person.jpg")
+        self.img = Image.open(img_path, mode="r")
         self.fail_read = fail_read
         self.led = False
 
@@ -28,7 +25,6 @@ class _TestPiCamera():
 
     def __next__(self):
         log.debug("__next__")
-        pass
 
     def __enter__(self):
         log.debug("__enter__")
@@ -37,7 +33,6 @@ class _TestPiCamera():
     def __exit__(self, type, value, tb):
         log.debug("__exit__")
         self.close()
-        pass
 
     def start_preview(self):
         pass
@@ -53,7 +48,7 @@ class _TestPiCamera():
         stream.seek(0)
         log.debug("acquired image stream")
 
-    def close(self): 
+    def close(self):
         pass
 
 
@@ -61,17 +56,21 @@ class _TestPiCamera():
 #     def __init__(self):
 #         super().__init__(fail_read=True)
 
-class picamera_override():
+
+class picamera_override:
     PiCamera = _TestPiCamera
+
 
 # class picamera_override_failure():
 #     PiCamera = _TestPiCameraFailure
+
 
 def test_fail_import():
     picam.picamera_override = None
     with picam.Picamera() as cam:
         cam._get_camera()
         assert cam.has_failure()
+
 
 def test_acquire():
     picam.picamera_override = picamera_override
@@ -83,6 +82,7 @@ def test_acquire():
         assert raw is not None
 
     cam.stop()
+
 
 # def test_acquire_failure():
 #     picam.picamera_override = picamera_override_failure
