@@ -1,30 +1,31 @@
 import logging
-import os
-from ambianic import pipeline, config
+
+from ambianic import config, pipeline
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
-
 from dynaconf.utils import DynaconfDict
+
 # mocked_settings = DynaconfDict({'FOO': 'BAR'})
 
 log = logging.getLogger(__name__)
 
+
 def setup_module(module):
-    """ setup any state specific to the execution of the given module."""
+    """setup any state specific to the execution of the given module."""
     # Reset default class
     interpreter.PIPELINE_CLASS = None
-    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
-    _TestPipeline.PIPELINE_OPS['source'] = AVSourceElement
+    interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
+    _TestPipeline.PIPELINE_OPS["source"] = AVSourceElement
     config.reload()
 
 
 def teardown_module(module):
-    """ teardown any state that was previously setup with a setup_module
-     method."""
+    """teardown any state that was previously setup with a setup_module
+    method."""
     # Reset default class
     interpreter.PIPELINE_CLASS = None
-    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
-    _TestPipeline.PIPELINE_OPS['source'] = AVSourceElement
+    interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
+    _TestPipeline.PIPELINE_OPS["source"] = AVSourceElement
     config.reload()
 
 
@@ -44,7 +45,6 @@ class _TestPipeline(interpreter.Pipeline):
 
 
 class _TestSourceElement(pipeline.PipeElement):
-
     def __init__(self, **element_config):
         super().__init__()
         self.config = element_config
@@ -72,11 +72,7 @@ class _TestSourceElement(pipeline.PipeElement):
 
 
 def _get_pipelines_config():
-    return {
-        'pipeline_one': [
-            {'source': {'uri': 'test'}}
-        ]
-    }
+    return {"pipeline_one": [{"source": {"uri": "test"}}]}
 
 
 def _one_pipeline_setup(pipelines_config=None, set_source_el=True):
@@ -85,10 +81,8 @@ def _one_pipeline_setup(pipelines_config=None, set_source_el=True):
     # override source op with a mock test class
     if set_source_el:
         log.info("set source=_TestSourceElement")
-        interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
-    return interpreter.get_pipelines(
-        pipelines_config=DynaconfDict(pipelines_config)
-    )
+        interpreter.Pipeline.PIPELINE_OPS["source"] = _TestSourceElement
+    return interpreter.get_pipelines(pipelines_config=DynaconfDict(pipelines_config))
 
 
 def test_get_pipelines_none():
@@ -97,40 +91,36 @@ def test_get_pipelines_none():
 
 
 def test_derived_pipe_element():
-    derived_element = _TestSourceElement(element_config='something')
+    derived_element = _TestSourceElement(element_config="something")
     assert derived_element.state == pipeline.PIPE_STATE_STOPPED
 
 
 def test_get_pipelines_one():
     p = _one_pipeline_setup()
-    print('p[0]: {p0}'.format(p0=p[0]))
+    print(f"p[0]: {p[0]}")
     assert isinstance(p[0], interpreter.Pipeline)
-    assert p[0].name == 'pipeline_one'
+    assert p[0].name == "pipeline_one"
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
-    assert p[0]._pipe_elements[0].config['uri'] == 'test'
+    assert p[0]._pipe_elements[0].config["uri"] == "test"
 
 
 def test_get_pipelines_two():
     # override source op with a mock test class
-    interpreter.Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
+    interpreter.Pipeline.PIPELINE_OPS["source"] = _TestSourceElement
     p = interpreter.get_pipelines(
         pipelines_config={
-            'pipeline_one': [
-                {'source': {'uri': 'test'}}
-            ],
-            'pipeline_two': [
-                {'source': {'uri': 'test2'}}
-            ]
+            "pipeline_one": [{"source": {"uri": "test"}}],
+            "pipeline_two": [{"source": {"uri": "test2"}}],
         }
     )
     assert isinstance(p[0], interpreter.Pipeline)
-    assert p[0].name == 'pipeline_one'
+    assert p[0].name == "pipeline_one"
     assert isinstance(p[0]._pipe_elements[0], _TestSourceElement)
     assert isinstance(p[1], interpreter.Pipeline)
-    assert p[0]._pipe_elements[0].config['uri'] == 'test'
-    assert p[1].name == 'pipeline_two'
+    assert p[0]._pipe_elements[0].config["uri"] == "test"
+    assert p[1].name == "pipeline_two"
     assert isinstance(p[1]._pipe_elements[0], _TestSourceElement)
-    assert p[1]._pipe_elements[0].config['uri'] == 'test2'
+    assert p[1]._pipe_elements[0].config["uri"] == "test2"
 
 
 def test_pipeline_start():
@@ -159,24 +149,15 @@ def test_pipeline_stop():
     assert pe.state == pipeline.PIPE_STATE_STOPPED
 
 
-
 def test_pipeline_source_config():
     """Test the source ref is resolved"""
 
-    config.update({
-        "sources": {
-            "source1": {
-                "uri": "test",
-                "type": "video",
-                "live": False
-            }
-        },
-        "pipelines": {
-            "pipeline1": [
-                {"source": "source1"}
-            ]
+    config.update(
+        {
+            "sources": {"source1": {"uri": "test", "type": "video", "live": False}},
+            "pipelines": {"pipeline1": [{"source": "source1"}]},
         }
-    })
+    )
 
     p = _one_pipeline_setup(pipelines_config=config.pipelines)
     p[0].load_elements()
@@ -188,26 +169,30 @@ def test_pipeline_source_config():
 def test_pipeline_ai_model_config():
     """Test the source ref is resolved"""
 
-    config.update({
-        "ai_models": {
-            "test": {
-                "labels": "ai_models/coco_labels.txt",
-                "model": {
-                    "tflite": "ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite",
+    config.update(
+        {
+            "ai_models": {
+                "test": {
+                    "labels": "ai_models/coco_labels.txt",
+                    "model": {
+                        "tflite": "ai_models/mobilenet_ssd_v2_coco_quant_postprocess.tflite",
+                    },
                 }
-            }
-        },
-        "pipelines": {
-            "pipeline1": [
-                {"source": {"uri": "test"}},
-                {"detect_objects": {
-                    "ai_model": "test",
-                    "confidence_threshold": 0.0,
-                    "label_filter": ['person', 'car']
-                }}
-            ]
+            },
+            "pipelines": {
+                "pipeline1": [
+                    {"source": {"uri": "test"}},
+                    {
+                        "detect_objects": {
+                            "ai_model": "test",
+                            "confidence_threshold": 0.0,
+                            "label_filter": ["person", "car"],
+                        }
+                    },
+                ]
+            },
         }
-    })
+    )
 
     p = _one_pipeline_setup(pipelines_config=config.pipelines)
     p[0].load_elements()
@@ -215,4 +200,4 @@ def test_pipeline_ai_model_config():
     log.debug(p[0]._pipe_elements[1])
     assert len(p[0]._pipe_elements) == 2
     assert p[0]._pipe_elements[1]._tfengine._confidence_threshold == 0.0
-    assert p[0]._pipe_elements[1]._label_filter == ['person', 'car']
+    assert p[0]._pipe_elements[1]._label_filter == ["person", "car"]

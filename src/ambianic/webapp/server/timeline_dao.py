@@ -1,13 +1,10 @@
 """REST API for timeline events fired by pipelines."""
 import logging
-import uuid
+import os
 from datetime import datetime
 from pathlib import Path
-import os
-import json
-import yaml
 
-from ambianic import DEFAULT_DATA_DIR
+import yaml
 
 log = logging.getLogger()
 
@@ -17,6 +14,7 @@ def _remove_timeline(file_path):
         os.remove(file_path)
     except Exception:
         logging.exception("Error removing %s" % file_path)
+
 
 def get_timeline(before_datetime=None, page=1, data_dir=None):
     """Get stored pipeline timeline events.
@@ -49,21 +47,27 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
     if before_datetime:
         try:
             parsed_datetime = datetime.fromisoformat(before_datetime)
-            log.debug('Fetching samples saved before %s',
-                      parsed_datetime)
+            log.debug("Fetching samples saved before %s", parsed_datetime)
         except ValueError as e:
-            log.warning('Unable to parse before_datetime parameter: %s. '
-                        ' Error: %s', before_datetime, str(e))
-    page_start_position = (page-1)*page_size
+            log.warning(
+                "Unable to parse before_datetime parameter: %s. " " Error: %s",
+                before_datetime,
+                str(e),
+            )
+    page_start_position = (page - 1) * page_size
     page_end_position = page_start_position + page_size
 
     if not parsed_datetime:
-        log.debug('Fetching most recent saved samples')
-    log.debug('Fetching samples page %d. Page size %d. '
-              'Sample index range [%d:%d]. ',
-              page, page_size, page_start_position, page_end_position)
+        log.debug("Fetching most recent saved samples")
+    log.debug(
+        "Fetching samples page %d. Page size %d. " "Sample index range [%d:%d]. ",
+        page,
+        page_size,
+        page_start_position,
+        page_end_position,
+    )
 
-    files = list(Path(data_dir).glob('./timeline-event-log.yaml*'))
+    files = list(Path(data_dir).glob("./timeline-event-log.yaml*"))
     files = sorted(files, reverse=False)
 
     page_count = 1
@@ -80,7 +84,7 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
                 yaml.reader.ReaderError,
                 yaml.scanner.ScannerError,
                 yaml.composer.ComposerError,
-                yaml.constructor.ConstructorError
+                yaml.constructor.ConstructorError,
             ):
                 log.exception("Detected unreadable timeline, removing %s" % file_path)
                 _remove_timeline(file_path)
@@ -108,10 +112,9 @@ def get_timeline(before_datetime=None, page=1, data_dir=None):
                 # events are appended to the file as they arrive
                 # we need to read in reverse order to get the latest one first
 
-                return \
-                    timeline_events[-1*page_start_position - 1:
-                                    -1*page_end_position - 1:
-                                    -1]
+                return timeline_events[
+                    -1 * page_start_position - 1 : -1 * page_end_position - 1 : -1
+                ]
 
     page_count += 1
 

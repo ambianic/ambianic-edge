@@ -7,9 +7,21 @@ on:
 #    branches: [ master ]
 
 jobs:
-  test_x86:
+
+  formatting:
     # Skip CI if the commit message includes the string '[skip ci]'
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run formatting check
+        run: |
+          python3 -m pip install -U pylint isort mccabe pre-commit black flake8
+          pre-commit install
+          pre-commit run --all-files
+
+  test_x86:
+    needs: [formatting]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,8 +37,7 @@ jobs:
           ${GITHUB_WORKSPACE}/build/ci-test-job.sh
 
   test_arm:
-    # Skip CI if the commit message includes the string '[skip ci]'
-    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    needs: [formatting]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -46,7 +57,7 @@ jobs:
     needs: [test_x86, test_arm]
     # run this job only if its a push on the master(main) branch
     # and not a PR from a fork
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

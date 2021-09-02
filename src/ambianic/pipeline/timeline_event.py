@@ -1,15 +1,16 @@
 """Pipeline event timeline read/write/search functions."""
 
-from concurrent_log_handler import ConcurrentRotatingFileHandler
 import logging
-import yaml
-import uuid
 import os
 import pathlib
+import uuid
+
+import yaml
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 log = logging.getLogger(__name__)
-TIMELINE_EVENT_LOGGER_NAME = __name__ + '__timeline__event__logger__'
-PIPELINE_CONTEXT_KEY = 'pipeline_context'
+TIMELINE_EVENT_LOGGER_NAME = __name__ + "__timeline__event__logger__"
+PIPELINE_CONTEXT_KEY = "pipeline_context"
 
 
 class PipelineEvent:
@@ -29,8 +30,8 @@ class PipelineEvent:
         self.message = message
         self.kwargs = kwargs
         self.args = {}
-        self.args['message'] = self.message
-        self.args['args'] = self.kwargs
+        self.args["message"] = self.message
+        self.args["args"] = self.kwargs
 
     def __str__(self):
         """Format event as yaml string."""
@@ -92,19 +93,19 @@ class PipelineEventFormatter(logging.Formatter):
         # s = super().format(record)
         s = None
         e = {}
-        e['id'] = uuid.uuid4().hex
-        e['message'] = record.getMessage()
+        e["id"] = uuid.uuid4().hex
+        e["message"] = record.getMessage()
         # log.warning('record.message: %r', record.getMessage())
         # log.warning('record.args: %r', record.args)
-        e['created'] = record.created
-        e['priority'] = record.levelname
+        e["created"] = record.created
+        e["priority"] = record.levelname
 
-        e['args'] = record.args
+        e["args"] = record.args
 
-        e['source_code'] = {}
-        e['source_code']['pathname'] = record.pathname
-        e['source_code']['funcName'] = record.funcName
-        e['source_code']['lineno'] = record.lineno
+        e["source_code"] = {}
+        e["source_code"]["pathname"] = record.pathname
+        e["source_code"]["funcName"] = record.funcName
+        e["source_code"]["lineno"] = record.lineno
         ctx = record.args.get(PIPELINE_CONTEXT_KEY, None)
         if ctx:
             e[PIPELINE_CONTEXT_KEY] = ctx.toDict()
@@ -137,23 +138,22 @@ def configure_timeline(config: dict = None):
     """
     if config is None:
         config = {}
-    log_filename = config.get('event_log', None)
+    log_filename = config.get("event_log", None)
     if not log_filename:
-        log_filename = 'timeline-event-log.yaml'
+        log_filename = "timeline-event-log.yaml"
     log_directory = os.path.dirname(log_filename)
     with pathlib.Path(log_directory) as log_dir:
         log_dir.mkdir(parents=True, exist_ok=True)
-    log.debug("Timeline event log messages directed to {}".
-              format(log_filename))
+    log.debug(f"Timeline event log messages directed to {log_filename}")
     event_log = logging.getLogger(TIMELINE_EVENT_LOGGER_NAME)
     event_log.setLevel(logging.INFO)
     # Use rotating files as log message handler
     handler = ConcurrentRotatingFileHandler(
         log_filename,
         # each event file will keep up to 100K data
-        maxBytes=100*1024,
+        maxBytes=100 * 1024,
         # 100 backup files will be kept. Older will be erased.
-        backupCount=100
+        backupCount=100,
     )
     fmt = PipelineEventFormatter()
     handler.setFormatter(fmt)
@@ -164,8 +164,7 @@ def configure_timeline(config: dict = None):
     event_log.addHandler(handler)
 
 
-def get_event_log(pipeline_context: PipelineContext = None) \
-  -> logging.Logger:
+def get_event_log(pipeline_context: PipelineContext = None) -> logging.Logger:
     """Get an instance of pipeline event logger.
 
     :Parameters:
@@ -182,6 +181,6 @@ def get_event_log(pipeline_context: PipelineContext = None) \
     # wrap logger in an adapter that carries pipeline context
     # such as pipeline name and current pipe element.
     pipeline_event_log = logging.LoggerAdapter(
-        pipeline_event_log,
-        {PIPELINE_CONTEXT_KEY: pipeline_context})
+        pipeline_event_log, {PIPELINE_CONTEXT_KEY: pipeline_context}
+    )
     return pipeline_event_log

@@ -4,12 +4,15 @@ image:
 tasks:
   - init: |
       echo "Gitpod init. Setting up ambianic-edge dev environment."
-      python3 -m pip install --upgrade pip && \
-      python3 -m pip install --upgrade --upgrade setuptools && \
-      python3 -m pip install -U pytest && \
-      python3 -m pip install -U codecov && \
-      python3 -m pip install -U pytest-cov && \
-      python3 -m pip install -U pylint && \            
+      python3 -m pip install --upgrade pip
+      python3 -m pip install --upgrade setuptools
+      echo "Installing test frameworks"
+      python3 -m pip install -U pytest codecov pytest-cov
+      echo "Installing pre-commit hooks."
+      export PIP_USER=false
+      python3 -m pip install -U pylint isort mccabe pre-commit black flake8
+      pre-commit install
+      echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install -e ./src
     command: |
       pyenv global system

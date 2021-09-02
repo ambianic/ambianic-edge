@@ -14,7 +14,7 @@ currently being supported with security updates.
 
 Please report vulnerabilities as a [new issue](https://github.com/ambianic/ambianic-edge/issues) using the BUG template with `security vulnerability` label.
 
-<!-- 
+<!--
 Use this section to tell people how to report a vulnerability.
 
 Tell them where to go, how often they can expect to get an update on a

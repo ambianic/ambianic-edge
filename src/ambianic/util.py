@@ -1,10 +1,10 @@
 """Service classes for OS interaction and multithreading."""
-from threading import Thread, Event
-import logging
-import traceback
-import time
 import asyncio
+import logging
+import time
+import traceback
 from abc import abstractmethod
+from threading import Event, Thread
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class ManagedService:
             status_code should have a semantic mapping to the service health.
 
         """
-        return time.monotonic(), 'OK'
+        return time.monotonic(), "OK"
 
     def heal(self):
         """Inspect and repair the state of the job.
@@ -79,39 +79,44 @@ class ThreadedJob(Thread, ManagedService):
         self._stop_requested = Event()
 
     def run(self):
-        log.info('Thread #%s started with job: %s',
-                 self.ident,
-                 self.job.__class__.__name__)
+        log.info(
+            "Thread #%s started with job: %s", self.ident, self.job.__class__.__name__
+        )
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         self.job.start()
-        log.info('Thread #%s for job %s stopped',
-                 self.ident,
-                 self.job.__class__.__name__)
+        log.info(
+            "Thread #%s for job %s stopped", self.ident, self.job.__class__.__name__
+        )
 
     def stop(self):
-        log.debug('Thread #%s for job %s is signalled to stop'
-                  'Passing request to job.',
-                  self.ident,
-                  self.job.__class__.__name__)
+        log.debug(
+            "Thread #%s for job %s is signalled to stop" "Passing request to job.",
+            self.ident,
+            self.job.__class__.__name__,
+        )
         self._stop_requested.set()
         self.job.stop()
 
     def heal(self):
-        log.debug('Thread #%s for job %s is signalled to heal.'
-                  'Passing request to job.',
-                  self.ident,
-                  self.job.__class__.__name__)
+        log.debug(
+            "Thread #%s for job %s is signalled to heal." "Passing request to job.",
+            self.ident,
+            self.job.__class__.__name__,
+        )
         self.job.heal()
-        log.debug('Thread #%s for job %s completed heal request.',
-                  self.ident,
-                  self.job.__class__.__name__)
+        log.debug(
+            "Thread #%s for job %s completed heal request.",
+            self.ident,
+            self.job.__class__.__name__,
+        )
 
     def healthcheck(self):
-        log.debug('Thread #%s for job %s healthcheck requested.'
-                  'Passing request to job.',
-                  self.ident,
-                  self.job.__class__.__name__)
+        log.debug(
+            "Thread #%s for job %s healthcheck requested." "Passing request to job.",
+            self.ident,
+            self.job.__class__.__name__,
+        )
         health_status = self.job.healthcheck()
         return health_status
 
@@ -138,5 +143,5 @@ def stacktrace():
 
     """
     formatted_lines = traceback.format_exc().splitlines()
-    strace = 'Runtime stack trace:\n %s' + '\n'.join(formatted_lines)
+    strace = "Runtime stack trace:\n %s" + "\n".join(formatted_lines)
     return strace

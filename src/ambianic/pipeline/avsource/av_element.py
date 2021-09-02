@@ -1,17 +1,18 @@
 """Audio Video sourcing to an Ambianic pipeline."""
 
 import logging
-import time
-import threading
 import multiprocessing
 import queue
-from PIL import Image
+import threading
+import time
 from io import BytesIO
+
 import requests
-from ambianic.util import stacktrace
 from ambianic.pipeline import PipeElement
 from ambianic.pipeline.avsource import gst_process
 from ambianic.pipeline.avsource.picam import Picamera
+from ambianic.util import stacktrace
+from PIL import Image
 
 log = logging.getLogger(__name__)
 
@@ -49,9 +50,9 @@ class AVSourceElement(PipeElement):
         assert uri
 
         element_conf = dict(kwargs)
-        element_conf['uri'] = uri
-        element_conf['type'] = type
-        element_conf['live'] = live
+        element_conf["uri"] = uri
+        element_conf["type"] = type
+        element_conf["live"] = live
 
         # pipeline source info
         self._source_conf = element_conf
@@ -67,21 +68,20 @@ class AVSourceElement(PipeElement):
         self._latest_healing = time.monotonic()
 
     def _on_new_sample(self, sample=None):
-        log.debug('Input stream received new gst sample.')
+        log.debug("Input stream received new gst sample.")
         assert sample
-        sample_type = sample['type']
+        sample_type = sample["type"]
         # only image type supported at this time
-        assert sample_type == 'image'
+        assert sample_type == "image"
         # make sure the sample is in RGB format
-        sample_format = sample['format']
-        assert sample_format == 'RGB'
-        width = sample['width']
-        height = sample['height']
-        sample_bytes = sample['bytes']
-        img = Image.frombytes(sample_format, (width, height),
-                              sample_bytes, 'raw')
+        sample_format = sample["format"]
+        assert sample_format == "RGB"
+        width = sample["width"]
+        height = sample["height"]
+        sample_bytes = sample["bytes"]
+        img = Image.frombytes(sample_format, (width, height), sample_bytes, "raw")
         # pass image sample to next pipe element, e.g. ai inference
-        log.debug('Input stream sending sample to next element.')
+        log.debug("Input stream sending sample to next element.")
         self.receive_next_sample(image=img)
 
     def _get_gst_service_starter(self):
@@ -119,30 +119,38 @@ class AVSourceElement(PipeElement):
         log.debug("Fetching source uri sample over http: %r", url)
         assert url
         while not self._stop_requested:
-            img=None
+            img = None
             try:
                 img = self.fetch_img(url=url)
-                log.debug("""
+                log.debug(
+                    """
                     Image fetched: %r
                     From URL: %r
-                    """, img, url)
-                log.debug('Sending sample to next element.')
+                    """,
+                    img,
+                    url,
+                )
+                log.debug("Sending sample to next element.")
                 self.receive_next_sample(image=img)
             except Exception as e:
                 self._on_fetch_img_exception(_exception=e)
-                log.exception("""
+                log.exception(
+                    """
                     Failed to fetch image from pipeline source.
                     URL: %r
-                    """, url)
+                    """,
+                    url,
+                )
                 if continuous:
-                    log.warning("Will keep trying to fetch image from continuous source.")
+                    log.warning(
+                        "Will keep trying to fetch image from continuous source."
+                    )
                     self._fetch_img_exception_recovery()
             finally:
                 if not continuous:
                     # this is not a live (continuous) media source
                     # exit the image fetch loop
-                    log.debug('Completed one time http image fetch from URL: %r',
-                            url)
+                    log.debug("Completed one time http image fetch from URL: %r", url)
                     break
 
     def _run_gst_service(self):
@@ -153,14 +161,15 @@ class AVSourceElement(PipeElement):
         gst_service = self._get_gst_service_starter()
         self._gst_process = multiprocessing.Process(
             target=gst_service,
-            name='Gstreamer Service Process',
+            name="Gstreamer Service Process",
             daemon=True,
-            kwargs={'source_conf': self._source_conf,
-                    'out_queue': self._gst_out_queue,
-                    'stop_signal': self._gst_process_stop_signal,
-                    'eos_reached': self._gst_process_eos_reached,
-                    }
-            )
+            kwargs={
+                "source_conf": self._source_conf,
+                "out_queue": self._gst_out_queue,
+                "stop_signal": self._gst_process_stop_signal,
+                "eos_reached": self._gst_process_eos_reached,
+            },
+        )
         self._gst_process.daemon = True
         self._gst_process.start()
         gst_proc = self._gst_process
@@ -171,14 +180,13 @@ class AVSourceElement(PipeElement):
                 # print('next sample received from gst queue, _on_new_sample')
                 self._on_new_sample(sample=next_sample)
             except queue.Empty:
-                log.debug('no new sample available yet in gst out queue')
+                log.debug("no new sample available yet in gst out queue")
             except Exception as e:
-                log.warning('AVElement loop caught an error: %s. ',
-                            str(e))
+                log.warning("AVElement loop caught an error: %s. ", str(e))
                 log.warning(stacktrace())
                 # print('Exception caught from _on_new_sample %r' % e)
         # print('end of _run_gst_service.')
-        log.debug('exiting _run_gst_service')
+        log.debug("exiting _run_gst_service")
 
     def _clear_gst_out_queue(self):
         log.debug("Clearing _gst_out_queue.")
@@ -230,13 +238,13 @@ class AVSourceElement(PipeElement):
         stop_signal = self._gst_process_stop_signal
         if gst_proc and gst_proc.is_alive():
             # tell the OS we won't use this queue any more
-            log.debug('GST process still alive. Shutting it down.')
+            log.debug("GST process still alive. Shutting it down.")
             # log.debug('Closing out queue shared with GST proces.')
             # self._gst_out_queue.close()
             # send a polite request to the process to stop
-            log.debug('Sending stop signal to GST process.')
+            log.debug("Sending stop signal to GST process.")
             stop_signal.set()
-            log.debug('Signalled gst process to stop')
+            log.debug("Signalled gst process to stop")
             # give it a few seconds to stop cleanly
             for i in range(10):
                 # make sure a non-empty queue doesn't block
@@ -249,18 +257,19 @@ class AVSourceElement(PipeElement):
                     break
             # process did not stop, we need to be a bit more assertive
             if gst_proc.is_alive():
-                log.debug('Gst process did not stop. Terminating.')
+                log.debug("Gst process did not stop. Terminating.")
                 self._process_terminate(gst_proc)
                 if gst_proc.is_alive():
                     # last resort, force kill the process
-                    log.debug('Gst proess did not terminate.'
-                              ' Resorting to force kill.')
+                    log.debug(
+                        "Gst proess did not terminate." " Resorting to force kill."
+                    )
                     clean_kill = self._process_good_kill(gst_proc)
-                    log.debug('Gst process killed. Clean: %r.', clean_kill)
+                    log.debug("Gst process killed. Clean: %r.", clean_kill)
                 else:
-                    log.debug('Gst process stopped after terminate signal.')
+                    log.debug("Gst process stopped after terminate signal.")
             else:
-                log.debug('Gst process stopped after stop signal.')
+                log.debug("Gst process stopped after stop signal.")
 
     def start(self):
         """Start processing input from the configured audio or video source."""
@@ -268,33 +277,40 @@ class AVSourceElement(PipeElement):
         log.info("Starting %s", self.__class__.__name__)
         self._stop_requested = False
 
-        if self._source_conf['uri'] == "picamera":
+        if self._source_conf["uri"] == "picamera":
             log.debug("Input source is picamera")
             self._run_picamera_fetch()
-        elif self._source_conf['uri'].startswith('http') and \
-            self._source_conf['type'] == 'image':
-            log.debug("""
+        elif (
+            self._source_conf["uri"].startswith("http")
+            and self._source_conf["type"] == "image"
+        ):
+            log.debug(
+                """
                 Input source is an http still image: %r
                 Will use python requests lib for sampling.
-                """, self._source_conf['uri'])
+                """,
+                self._source_conf["uri"],
+            )
             # use http client library to fetch still images
-            self._run_http_fetch(
-                url=self._source_conf['uri'],
-                continuous=self._is_live)
+            self._run_http_fetch(url=self._source_conf["uri"], continuous=self._is_live)
         else:
-            log.debug("""
+            log.debug(
+                """
                 Input source is : %r
                 Will use gstreamer for sampling.
-                """, self._source_conf['uri'])
+                """,
+                self._source_conf["uri"],
+            )
             # use gstreamer for all other types of media sources
             while not self._stop_requested:
                 self._run_gst_service()
-                if (self._gst_process_eos_reached and not self._is_live):
+                if self._gst_process_eos_reached and not self._is_live:
                     # gst process reached end of its input stream
                     # and this is not a live (continuous) stream loop
                     # exit the avsource element loop
-                    log.debug('GST EOS reached for source uri: %r',
-                            self._source_conf['uri'])
+                    log.debug(
+                        "GST EOS reached for source uri: %r", self._source_conf["uri"]
+                    )
                     break
             self._stop_gst_service()
         super().stop()
@@ -303,17 +319,19 @@ class AVSourceElement(PipeElement):
     def heal(self):
         """Attempt to heal a damaged AV source processing service."""
         log.debug("Entering healing method... %s", self.__class__.__name__)
-        log.debug('Healing waiting for lock.')
+        log.debug("Healing waiting for lock.")
         self._healing_in_progress.acquire()
         try:
-            logging.debug('Healing lock acquired.')
+            logging.debug("Healing lock acquired.")
             now = time.monotonic()
             # Space out healing attempts.
             # No point in back to back healing runs when there are
             # blocking dependencies on external resources.
-            log.warning('latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r',
-                        self._latest_healing,
-                        now - MIN_HEALING_INTERVAL)
+            log.warning(
+                "latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r",
+                self._latest_healing,
+                now - MIN_HEALING_INTERVAL,
+            )
             if self._latest_healing < now - MIN_HEALING_INTERVAL:
                 # cause gst loop to exit and repair
                 self._latest_healing = now
@@ -323,10 +341,12 @@ class AVSourceElement(PipeElement):
                 time.sleep(1)
                 log.debug("AVElement healing completed.")
             else:
-                log.debug("Healing request ignored. "
-                          "Too soon after previous healing request.")
+                log.debug(
+                    "Healing request ignored. "
+                    "Too soon after previous healing request."
+                )
         finally:
-            logging.debug('Healing lock released.')
+            logging.debug("Healing lock released.")
             self._healing_in_progress.release()
         log.debug("Exiting healing method. %s", self.__class__.__name__)
 
