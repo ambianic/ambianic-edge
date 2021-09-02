@@ -1,5 +1,33 @@
 # Semantic Versioning Changelog
 
+## [1.15.5](https://github.com/ambianic/ambianic-edge/compare/v1.15.4...v1.15.5) (2021-08-20)
+
+
+### Bug Fixes
+
+* check docker container watchdog auto update ([530d35f](https://github.com/ambianic/ambianic-edge/commit/530d35fbccfe58ea47bddeebca2a861a45a116e0))
+
+## [1.15.4](https://github.com/ambianic/ambianic-edge/compare/v1.15.3...v1.15.4) (2021-08-20)
+
+
+### Bug Fixes
+
+* docker arm32 release script ([d2dec3d](https://github.com/ambianic/ambianic-edge/commit/d2dec3d39383255185272f3f9382c5ba2d21bc83))
+
+## [1.15.3](https://github.com/ambianic/ambianic-edge/compare/v1.15.2...v1.15.3) (2021-08-19)
+
+
+### Bug Fixes
+
+* docker build cache issue with multi arch ([90d5cba](https://github.com/ambianic/ambianic-edge/commit/90d5cba0f61ad771b105e86bec4f5941afd2140c))
+
+## [1.15.2](https://github.com/ambianic/ambianic-edge/compare/v1.15.1...v1.15.2) (2021-08-19)
+
+
+### Bug Fixes
+
+* release versioning script; closes 364 ([#367](https://github.com/ambianic/ambianic-edge/issues/367)) (PR Merge) ([e1e15d5](https://github.com/ambianic/ambianic-edge/commit/e1e15d5cde2871f52b67b96f337029b0d8ec0d6d))
+
 ## [1.15.1](https://github.com/ambianic/ambianic-edge/compare/v1.15.0...v1.15.1) (2021-08-19)
 
 
