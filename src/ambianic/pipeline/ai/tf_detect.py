@@ -1,13 +1,15 @@
 """Tensorflow image detection wrapper."""
 import logging
-import time
 import re
+import time
+
 import numpy as np
-# from importlib import import_module
-from PIL import ImageOps
-from .inference import TFInferenceEngine
 from ambianic.pipeline import PipeElement
 
+# from importlib import import_module
+from PIL import ImageOps
+
+from .inference import TFInferenceEngine
 
 log = logging.getLogger(__name__)
 
@@ -15,14 +17,15 @@ log = logging.getLogger(__name__)
 class TFDetectionModel(PipeElement):
     """Applies Tensorflow image detection."""
 
-    def __init__(self,
-                 model=None,
-                 labels=None,
-                 label_filter=None,
-                 confidence_threshold=0.6,
-                 top_k=3,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        model=None,
+        labels=None,
+        label_filter=None,
+        confidence_threshold=0.6,
+        top_k=3,
+        **kwargs,
+    ):
         """Initialize detector with config parameters.
         :Parameters:
         ----------
@@ -39,7 +42,8 @@ class TFDetectionModel(PipeElement):
             model=model,
             labels=labels,
             confidence_threshold=confidence_threshold,
-            top_k=top_k)
+            top_k=top_k,
+        )
         self._labels = self.load_labels(self._tfengine.labels_path)
         self._label_filter = label_filter
         self.last_time = time.monotonic()
@@ -56,8 +60,8 @@ class TFDetectionModel(PipeElement):
             {label_code, label_text}
         """
         assert label_path
-        p = re.compile(r'\s*(\d+)(.+)')
-        with open(label_path, 'r', encoding='utf-8') as f:
+        p = re.compile(r"\s*(\d+)(.+)")
+        with open(label_path, encoding="utf-8") as f:
             lines = (p.match(line).groups() for line in f.readlines())
             return {int(num): text.strip() for num, text in lines}
 
@@ -79,7 +83,7 @@ class TFDetectionModel(PipeElement):
         """
         assert image
         assert desired_size
-        log.debug('input image size = %r', image.size)
+        log.debug("input image size = %r", image.size)
         thumb = image.copy()
         w, h = desired_size
         try:
@@ -92,14 +96,15 @@ class TFDetectionModel(PipeElement):
                 h = int(h)
             thumb.thumbnail((w, h))
         except Exception as e:
-            msg = (f"Exception in "
-                   f"PIL.image.thumbnail(desired_size={desired_size}):"
-                   f"type(width)={type(w)}, type(height)={type(h)}"
-                   f"\n{e}"
-                   )
+            msg = (
+                f"Exception in "
+                f"PIL.image.thumbnail(desired_size={desired_size}):"
+                f"type(width)={type(w)}, type(height)={type(h)}"
+                f"\n{e}"
+            )
             log.exception(msg)
             raise RuntimeError(msg)
-        log.debug('thmubnail image size = %r', thumb.size)
+        log.debug("thmubnail image size = %r", thumb.size)
         return thumb
 
     @staticmethod
@@ -125,13 +130,13 @@ class TFDetectionModel(PipeElement):
         """
         assert image
         assert desired_size
-        log.debug('input image size = %r', image.size)
+        log.debug("input image size = %r", image.size)
         thumb = image.copy()
         delta_w = desired_size[0] - thumb.size[0]
         delta_h = desired_size[1] - thumb.size[1]
         padding = (0, 0, delta_w, delta_h)
         new_im = ImageOps.expand(thumb, padding)
-        log.debug('new image size = %r', new_im.size)
+        log.debug("new image size = %r", new_im.size)
         assert new_im.size == desired_size
         return new_im
 
@@ -168,12 +173,12 @@ class TFDetectionModel(PipeElement):
         log.debug("TF engine returned inference results")
         end_time = time.monotonic()
         inf_time = (end_time - start_time) * 1000
-        fps = 1.0/(end_time - self.last_time)
+        fps = 1.0 / (end_time - self.last_time)
         if self.context and self.context.unique_pipeline_name:
             pipeline_name = self.context.unique_pipeline_name
         else:
-            pipeline_name = 'unknown'
+            pipeline_name = "unknown"
         inference_type = type(self).__name__
-        inf_info = '%s inference time %.2f ms, %.2f fps in pipeline %s'
+        inf_info = "%s inference time %.2f ms, %.2f fps in pipeline %s"
         log.info(inf_info, inference_type, inf_time, fps, pipeline_name)
         self.last_time = end_time

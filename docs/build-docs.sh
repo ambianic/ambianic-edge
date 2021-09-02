@@ -15,7 +15,7 @@ set -ex
 # fi
 
 # Install python code documentation generator
-python3 -m pip install -U pdoc3 
+python3 -m pip install -U pdoc3
 BASEDIR=$(dirname $0)
 # Install the ambianic edge module
 python3 -m pip install -e $BASEDIR/../src

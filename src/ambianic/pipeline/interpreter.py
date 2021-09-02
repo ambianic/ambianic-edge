@@ -1,18 +1,17 @@
 """Ambianic pipeline interpreter module."""
 import logging
-from .avsource.av_element import AVSourceElement
-import time
 import threading
+import time
 
-from ambianic import DEFAULT_DATA_DIR
-from ambianic.pipeline.ai.object_detect import ObjectDetector
+from ambianic import DEFAULT_DATA_DIR, config
+from ambianic.pipeline import HealthChecker, PipeElement, timeline_event
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.ai.fall_detect import FallDetector
+from ambianic.pipeline.ai.object_detect import ObjectDetector
 from ambianic.pipeline.store import SaveDetectionSamples
-from ambianic.pipeline import PipeElement, HealthChecker
-from ambianic.pipeline import timeline_event
-from ambianic.util import ThreadedJob, ManagedService, stacktrace
-from ambianic import config
+from ambianic.util import ManagedService, ThreadedJob, stacktrace
+
+from .avsource.av_element import AVSourceElement
 
 log = logging.getLogger(__name__)
 
@@ -47,12 +46,12 @@ def get_pipelines(pipelines_config, data_dir=None):
             pipe = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
             pipelines.append(pipe)
     else:
-        log.warning('No pipelines configured.')
+        log.warning("No pipelines configured.")
     return pipelines
 
 
 class PipelineServer(ManagedService):
-    """ Thin wrapper around PipelineServer constructs.
+    """Thin wrapper around PipelineServer constructs.
 
     Allows controlled start and stop of the web app server
     in a separate process.
@@ -69,11 +68,11 @@ class PipelineServer(ManagedService):
         self.pipeline_server_job = None
 
     def start(self, **kwargs):
-        log.info('PipelineServer server job starting...')
+        log.info("PipelineServer server job starting...")
         f = PipelineServerJob(self.config)
         self.pipeline_server_job = ThreadedJob(f)
         self.pipeline_server_job.start()
-        log.info('Pipeline server job started')
+        log.info("Pipeline server job started")
 
     def healthcheck(self):
         return time.monotonic(), True
@@ -87,14 +86,14 @@ class PipelineServer(ManagedService):
 
     def stop(self):
         if self.pipeline_server_job:
-            log.info('Pipeline server job stopping...')
+            log.info("Pipeline server job stopping...")
             try:
                 self.pipeline_server_job.stop()
                 self.pipeline_server_job.join()
             except RuntimeError as err:
                 log.warning("Failed stopping: %s" % err)
             self.pipeline_server_job = None
-            log.info('Pipeline server job stopped.')
+            log.info("Pipeline server job stopped.")
 
 
 class PipelineServerJob(ManagedService):
@@ -106,7 +105,7 @@ class PipelineServerJob(ManagedService):
     """
 
     MAX_HEARTBEAT_INTERVAL = 40
-    TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL*3
+    TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL * 3
 
     def __init__(self, config=None):
         """Initialize and configure a PipelineServer.
@@ -137,27 +136,28 @@ class PipelineServerJob(ManagedService):
         if config is not None:
             self._config = config
         if self._config:
-            pipelines_config = self._config.get('pipelines', None)
+            pipelines_config = self._config.get("pipelines", None)
             if pipelines_config:
                 # get main data dir config and pass
                 # on to pipelines to use
-                data_dir = self._config.get('data_dir', DEFAULT_DATA_DIR)
+                data_dir = self._config.get("data_dir", DEFAULT_DATA_DIR)
                 self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
                 for pp in self._pipelines:
                     pj = ThreadedJob(pp)
                     self._threaded_jobs.append(pj)
 
     def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
-        log.error('Pipeline %s in terminal condition. '
-                  'Unable to recover.'
-                  'Latest heartbeat was %f seconds ago. ',
-                  pipeline.name, lapse)
+        log.error(
+            "Pipeline %s in terminal condition. "
+            "Unable to recover."
+            "Latest heartbeat was %f seconds ago. ",
+            pipeline.name,
+            lapse,
+        )
 
     def _on_pipeline_job_ended(self, threaded_job=None):
         p = threaded_job.job
-        log.debug('Pipeline "%s" has ended. '
-                  'Removing from health watch.',
-                  p.name)
+        log.debug('Pipeline "%s" has ended. ' "Removing from health watch.", p.name)
         self._threaded_jobs.remove(threaded_job)
 
     def healthcheck(self):
@@ -185,9 +185,13 @@ class PipelineServerJob(ManagedService):
                     # since the pipeline reported a heartbeat.
                     # Let's recycle it
                 elif lapse > self.MAX_HEARTBEAT_INTERVAL:
-                    log.warning('Pipeline "%s" is not responsive. '
-                                'Latest heartbeat was %f seconds ago. '
-                                'Will attempt to heal it.', p.name, lapse)
+                    log.warning(
+                        'Pipeline "%s" is not responsive. '
+                        "Latest heartbeat was %f seconds ago. "
+                        "Will attempt to heal it.",
+                        p.name,
+                        lapse,
+                    )
                     self.heal_pipeline_job(j)
                 if oldest_heartbeat > latest_heartbeat:
                     oldest_heartbeat = latest_heartbeat
@@ -206,52 +210,52 @@ class PipelineServerJob(ManagedService):
     def heal_pipeline_job(self, threaded_job=None):
         assert threaded_job
         pipeline = threaded_job.job
-        log.debug('pipline %s healing request...', pipeline.name)
+        log.debug("pipline %s healing request...", pipeline.name)
         threaded_job.heal()
-        log.debug('pipeline %s healing request completed.', pipeline.name)
+        log.debug("pipeline %s healing request completed.", pipeline.name)
 
     def start(self):
-        # Start pipeline interpreter threads        
-        log.info('pipeline jobs starting...')
+        # Start pipeline interpreter threads
+        log.info("pipeline jobs starting...")
         for tj in self._threaded_jobs:
             tj.start()
-        log.info('pipeline jobs started')
+        log.info("pipeline jobs started")
 
     def stop(self):
-        log.info('pipeline jobs stopping...')
+        log.info("pipeline jobs stopping...")
         # Signal pipeline interpreter threads to close
         for tj in self._threaded_jobs:
             tj.stop()
         # Wait for the pipeline interpreter threads to close...
         for tj in self._threaded_jobs:
             tj.join()
-        log.info('pipeline jobs stopped.')
+        log.info("pipeline jobs stopped.")
 
 
 class HealingThread(threading.Thread):
-    """ A thread focused on healing a broken pipeline. """
+    """A thread focused on healing a broken pipeline."""
 
     def __init__(self, target=None, on_finished=None):
-        assert target, 'Healing target required'
-        assert on_finished, 'on_finished callback required'
+        assert target, "Healing target required"
+        assert on_finished, "on_finished callback required"
         threading.Thread.__init__(self, daemon=True)
         self._target = target
         self._on_finished = on_finished
 
     def run(self):
-        log.debug('invoking healing target method %r', self._target)
+        log.debug("invoking healing target method %r", self._target)
         try:
             self._target()
         except Exception as e:
-            log.warning('Error %r while running healing method %r.',
-                        e, self._target)
+            log.warning("Error %r while running healing method %r.", e, self._target)
             log.warning(stacktrace())
-        log.debug('invoking healing on_finished method %r', self._on_finished)
+        log.debug("invoking healing on_finished method %r", self._on_finished)
         try:
             self._on_finished()
         except Exception as e:
-            log.warning('Error %r while calling on_finished method %r.',
-                        e, self._on_finished)
+            log.warning(
+                "Error %r while calling on_finished method %r.", e, self._on_finished
+            )
             log.warning(stacktrace())
 
 
@@ -263,18 +267,20 @@ class Pipeline(ManagedService):
 
     # valid pipeline operators
     PIPELINE_OPS = {
-        'source': AVSourceElement,
-        'detect_objects': ObjectDetector,
-        'save_detections': SaveDetectionSamples,
-        'detect_faces': FaceDetector,
-        'detect_falls': FallDetector,
+        "source": AVSourceElement,
+        "detect_objects": ObjectDetector,
+        "save_detections": SaveDetectionSamples,
+        "detect_faces": FaceDetector,
+        "detect_falls": FallDetector,
     }
 
     def _on_unknown_pipe_element(self, name=None):
-        log.warning('Pipeline definition has unknown '
-                    'pipeline element: %s .'
-                    ' Ignoring element and moving forward.',
-                    name)
+        log.warning(
+            "Pipeline definition has unknown "
+            "pipeline element: %s ."
+            " Ignoring element and moving forward.",
+            name,
+        )
 
     def __init__(self, pname=None, pconfig=None, data_dir=None):
         """Init and load pipeline config."""
@@ -288,26 +294,25 @@ class Pipeline(ManagedService):
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
         self._healing_thread = None
-        self._context = timeline_event.PipelineContext(
-            unique_pipeline_name=self.name)
+        self._context = timeline_event.PipelineContext(unique_pipeline_name=self.name)
         self._context.data_dir = self.data_dir
-        self._event_log = timeline_event.get_event_log(
-            pipeline_context=self._context)
+        self._event_log = timeline_event.get_event_log(pipeline_context=self._context)
         self.load_elements()
 
     def load_elements(self):
         """load pipeline elements based on configuration"""
         self._pipe_elements = []
 
-        log.debug('Pipeline starts with element %r', self.config[0])
+        log.debug("Pipeline starts with element %r", self.config[0])
         source_element_key = [*self.config[0]][0]
-        assert source_element_key == 'source', \
-            "Pipeline config must begin with a 'source' element instead of {}"\
-            .format(source_element_key)
+        assert (
+            source_element_key == "source"
+        ), "Pipeline config must begin with a 'source' element instead of {}".format(
+            source_element_key
+        )
 
         for element_def in self.config:
-            log.info('Pipeline %s loading next element: %s',
-                     self.name, element_def)
+            log.info("Pipeline %s loading next element: %s", self.name, element_def)
 
             is_valid = self.parse_source_config(element_def)
             if not is_valid:
@@ -331,18 +336,19 @@ class Pipeline(ManagedService):
             element_class = self.PIPELINE_OPS.get(element_name, None)
 
             if element_class:
-                log.info('Pipeline %s adding element name %s '
-                         'with class %s and config %s',
-                         self.name,
-                         element_name,
-                         element_class,
-                         element_config)
+                log.info(
+                    "Pipeline %s adding element name %s " "with class %s and config %s",
+                    self.name,
+                    element_name,
+                    element_class,
+                    element_config,
+                )
                 element = element_class(
                     **element_config,
                     element_name=element_name,
                     context=self._context,
                     event_log=self._event_log
-                    )
+                )
                 self._pipe_elements.append(element)
             else:
                 self._on_unknown_pipe_element(name=element_name)
@@ -365,7 +371,10 @@ class Pipeline(ManagedService):
         if isinstance(ai_element["ai_model"], str):
             ai_model_id = ai_element["ai_model"]
 
-        if ai_element["ai_model"] is not None and "ai_model_id" in ai_element["ai_model"]:
+        if (
+            ai_element["ai_model"] is not None
+            and "ai_model_id" in ai_element["ai_model"]
+        ):
             ai_model_id = ai_element["ai_model"]["ai_model_id"]
 
         if ai_model_id is None:
@@ -433,10 +442,10 @@ class Pipeline(ManagedService):
 
     def _heartbeat(self):
         """Set the heartbeat timestamp to time.monotonic()."""
-        log.debug('Pipeline %s heartbeat signal.', self.name)
+        log.debug("Pipeline %s heartbeat signal.", self.name)
         now = time.monotonic()
         lapse = now - self._latest_heartbeat_time
-        log.debug('Pipeline %s heartbeat lapse %f', self.name, lapse)
+        log.debug("Pipeline %s heartbeat lapse %f", self.name, lapse)
         self._latest_heartbeat_time = now
 
     def _on_start_no_elements(self):
@@ -458,13 +467,14 @@ class Pipeline(ManagedService):
         self._heartbeat()
         # connect pipeline elements as defined by user
         for i in range(1, len(self._pipe_elements)):
-            e = self._pipe_elements[i-1]
+            e = self._pipe_elements[i - 1]
             assert isinstance(e, PipeElement)
             e_next = self._pipe_elements[i]
             e.connect_to_next_element(e_next)
-        last_element = self._pipe_elements[len(self._pipe_elements)-1]
-        hc = HealthChecker(health_status_callback=self._heartbeat,
-                           element_name='health_check')
+        last_element = self._pipe_elements[len(self._pipe_elements) - 1]
+        hc = HealthChecker(
+            health_status_callback=self._heartbeat, element_name="health_check"
+        )
         last_element.connect_to_next_element(hc)
         self._pipe_elements[0].start()
         log.info("Started %s", self.__class__.__name__)
@@ -483,10 +493,13 @@ class Pipeline(ManagedService):
         return self._latest_heartbeat_time, self._latest_health_status
 
     def _on_healing_already_in_progress(self):
-        log.debug('pipeline %s healing thread in progress.'
-                  ' Skipping request. '
-                  'Thread id: %d. ',
-                  self.name, self._healing_thread.ident)
+        log.debug(
+            "pipeline %s healing thread in progress."
+            " Skipping request. "
+            "Thread id: %d. ",
+            self.name,
+            self._healing_thread.ident,
+        )
 
     def heal(self):
         """Nonblocking asynchronous heal function."""
@@ -496,32 +509,35 @@ class Pipeline(ManagedService):
         if self._healing_thread:
             self._on_healing_already_in_progress()
         else:
-            log.debug('pipeline %s launching healing thread...', self.name)
+            log.debug("pipeline %s launching healing thread...", self.name)
             heal_target = self._pipe_elements[0].heal
 
             def healing_finished():
-                log.debug('pipeline %s healing thread id: %d ended. ',
-                          self.name,
-                          self._healing_thread.ident)
+                log.debug(
+                    "pipeline %s healing thread id: %d ended. ",
+                    self.name,
+                    self._healing_thread.ident,
+                )
                 self._healing_thread = None
                 # let's notify healthchecker that progress is being made
                 self._heartbeat()
 
             # launch healing function in a non-blocking way
-            self._healing_thread = HealingThread(target=heal_target,
-                                                 on_finished=healing_finished)
+            self._healing_thread = HealingThread(
+                target=heal_target, on_finished=healing_finished
+            )
             self._healing_thread.start()
-            log.debug('pipeline %s launched healing thread.',
-                      self.name)
+            log.debug("pipeline %s launched healing thread.", self.name)
 
     def stop(self):
         """Stop pipeline processing.
 
         Disconnect from the source and all other external resources.
         """
-        log.info("Requesting pipeline elements to stop... %s",
-                 self.__class__.__name__)
+        log.info("Requesting pipeline elements to stop... %s", self.__class__.__name__)
         if len(self._pipe_elements) > 0:
             self._pipe_elements[0].stop()
-        log.info("Completed request to pipeline elements to stop. %s",
-                 self.__class__.__name__)
+        log.info(
+            "Completed request to pipeline elements to stop. %s",
+            self.__class__.__name__,
+        )

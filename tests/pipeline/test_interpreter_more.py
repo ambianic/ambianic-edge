@@ -1,31 +1,35 @@
 """More test cases for ambianic.interpreter module."""
+import logging
+import threading
+import time
+
 from ambianic import pipeline
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
-from ambianic.pipeline.interpreter import \
-    PipelineServer, Pipeline, HealingThread, PipelineServerJob
-import logging
-import time
-import threading
-
+from ambianic.pipeline.interpreter import (
+    HealingThread,
+    Pipeline,
+    PipelineServer,
+    PipelineServerJob,
+)
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def setup_module(module):
-    """ setup any state specific to the execution of the given module."""
+    """setup any state specific to the execution of the given module."""
     # Reset default class
     interpreter.PIPELINE_CLASS = None
-    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+    interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
 
 
 def teardown_module(module):
-    """ teardown any state that was previously setup with a setup_module
-     method."""
+    """teardown any state that was previously setup with a setup_module
+    method."""
     # Reset default class
     interpreter.PIPELINE_CLASS = None
-    interpreter.Pipeline.PIPELINE_OPS['source'] = AVSourceElement
+    interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
 
 
 class _TestSourceElement(pipeline.PipeElement):
@@ -50,13 +54,9 @@ class _TestSourceElement(pipeline.PipeElement):
 
 def _get_config(source_class=None):
     # override source op with a mock test class
-    Pipeline.PIPELINE_OPS['source'] = source_class
+    Pipeline.PIPELINE_OPS["source"] = source_class
     server_config = {
-        'pipelines': {
-            'pipeline_one': [
-                {'source': {'uri': 'test'}}
-            ]
-        },
+        "pipelines": {"pipeline_one": [{"source": {"uri": "test"}}]},
     }
     return server_config
 
@@ -70,16 +70,15 @@ def test_pipeline_server_init():
 
 def _get_config_invalid_element(source_class=None):
     # override source op with a mock test class
-    Pipeline.PIPELINE_OPS['source'] = source_class
+    Pipeline.PIPELINE_OPS["source"] = source_class
     pipeline_config = [
-        {'source': {'uri': 'test'}},
-        {'scifi': {'one': 'day soon'}},
+        {"source": {"uri": "test"}},
+        {"scifi": {"one": "day soon"}},
     ]
     return pipeline_config
 
 
 class _TestPipeline(Pipeline):
-
     def __init__(self, pname=None, pconfig=None):
         self._test_on_unknown_pipe_element_called = False
         self._test_on_healing_already_in_progress_called = False
@@ -88,7 +87,7 @@ class _TestPipeline(Pipeline):
 
     def _on_unknown_pipe_element(self, name=None):
         self._test_on_unknown_pipe_element_called = True
-        log.debug('_on_unknown_pipe_element called')
+        log.debug("_on_unknown_pipe_element called")
         super()._on_unknown_pipe_element(name=name)
 
     def _on_healing_already_in_progress(self):
@@ -102,7 +101,7 @@ class _TestPipeline(Pipeline):
 
 def test_pipeline_init_invalid_element():
     conf = _get_config_invalid_element(_TestSourceElement)
-    pipeline = _TestPipeline(pname='test', pconfig=conf)
+    pipeline = _TestPipeline(pname="test", pconfig=conf)
     assert pipeline._test_on_unknown_pipe_element_called
     assert len(pipeline._pipe_elements) == 1
     assert isinstance(pipeline._pipe_elements[0], _TestSourceElement)
@@ -148,7 +147,7 @@ def test_pipeline_server_config_change():
     conf = _get_config(_TestSourceElement2)
     PipelineServer(conf)
 
-    del conf['pipelines']["pipeline_one"][0]
+    del conf["pipelines"]["pipeline_one"][0]
 
 
 class _TestSourceElement3(pipeline.PipeElement):
@@ -158,11 +157,11 @@ class _TestSourceElement3(pipeline.PipeElement):
         super().__init__()
         self._test_heal_called = threading.Event()
         self._test_sample_released = threading.Event()
-        log.debug('heal() not called yet')
+        log.debug("heal() not called yet")
 
     def heal(self):
         self._test_heal_called.set()
-        log.debug('heal() called')
+        log.debug("heal() called")
 
     def start(self):
         super().start()
@@ -170,7 +169,7 @@ class _TestSourceElement3(pipeline.PipeElement):
         while self.state == pipeline.PIPE_STATE_RUNNING:
             self.receive_next_sample(sample=[1, 2, 3])
             # artifitial delay to force heal()
-            log.debug('delaying next sample to cause heal()')
+            log.debug("delaying next sample to cause heal()")
             time.sleep(2)
             self._test_sample_released.set()
             time.sleep(2)
@@ -197,13 +196,12 @@ def test_pipeline_server_heal():
 
 
 class _TestPipelineServer2(PipelineServerJob):
-
     def __init__(self, config=None):
         super().__init__(config=config)
         self._test_on_terminal_health_called = threading.Event()
 
     def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
-        log.debug('_on_terminal_pipeline_health called')
+        log.debug("_on_terminal_pipeline_health called")
         super()._on_terminal_pipeline_health(pipeline, lapse)
         self._test_on_terminal_health_called.set()
 
@@ -237,23 +235,20 @@ class _TestDummyElement(pipeline.PipeElement):
     def process_sample(self, sample=None):
         assert sample == [1, 2, 3]
         self._sample_processed = True
-        yield {'sample': sample}
+        yield {"sample": sample}
 
 
 def _get_pipeline_config_2_elements():
     # override source op with a mock test class
-    Pipeline.PIPELINE_OPS['source'] = _TestSourceElement
-    Pipeline.PIPELINE_OPS['dummy'] = _TestDummyElement
-    pipeline_config = [
-        {'source': {'uri': 'test'}},
-        {'dummy': {'dummy': 'config'}}
-        ]
+    Pipeline.PIPELINE_OPS["source"] = _TestSourceElement
+    Pipeline.PIPELINE_OPS["dummy"] = _TestDummyElement
+    pipeline_config = [{"source": {"uri": "test"}}, {"dummy": {"dummy": "config"}}]
     return pipeline_config
 
 
 def test_pipeline_start2():
     conf = _get_pipeline_config_2_elements()
-    pipeline = _TestPipeline(pname='test', pconfig=conf)
+    pipeline = _TestPipeline(pname="test", pconfig=conf)
     assert len(pipeline._pipe_elements) == 2
     assert isinstance(pipeline._pipe_elements[0], _TestSourceElement)
     assert isinstance(pipeline._pipe_elements[1], _TestDummyElement)
@@ -280,11 +275,11 @@ class _TestSourceElement4(pipeline.PipeElement):
 
 
 def test_pipeline_heal2():
-    Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
+    Pipeline.PIPELINE_OPS["source"] = _TestSourceElement4
     pipeline_config = [
-        {'source': {'uri': 'test'}},
-        ]
-    pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
+        {"source": {"uri": "test"}},
+    ]
+    pipeline = _TestPipeline(pname="test", pconfig=pipeline_config)
     assert len(pipeline._pipe_elements) == 1
     assert isinstance(pipeline._pipe_elements[0], _TestSourceElement4)
     pipeline.start()
@@ -296,9 +291,9 @@ def test_pipeline_heal2():
 
 
 def test_pipeline_start_no_elements():
-    Pipeline.PIPELINE_OPS['source'] = _TestSourceElement4
-    pipeline_config = [{'source': "unavailable"}]
-    pipeline = _TestPipeline(pname='test', pconfig=pipeline_config)
+    Pipeline.PIPELINE_OPS["source"] = _TestSourceElement4
+    pipeline_config = [{"source": "unavailable"}]
+    pipeline = _TestPipeline(pname="test", pconfig=pipeline_config)
     assert len(pipeline._pipe_elements) == 0
     pipeline.start()
     assert pipeline._test_on_start_no_elements_called

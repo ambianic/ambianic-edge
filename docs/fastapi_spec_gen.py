@@ -2,16 +2,25 @@
    ref: https://github.com/Redocly/redoc/issues/726#issuecomment-645414239
 """
 
-import json
 import argparse
+import json
 from importlib import import_module
 
-parser = argparse.ArgumentParser(description='Generate OpenAPI json spec file for a fastapi app.')
-parser.add_argument('--appmodule', type=str, required=True,
-                    help='Python module name with the fastapi app, e.g. my_fastapi . Must provide a package scoped app = FastAPI() variable.')
-parser.add_argument('--outfile', type=str, 
-                    default='fastapi-app-openapi-spec.json',
-                    help='Where to write the generated Open API json spec file.')
+parser = argparse.ArgumentParser(
+    description="Generate OpenAPI json spec file for a fastapi app."
+)
+parser.add_argument(
+    "--appmodule",
+    type=str,
+    required=True,
+    help="Python module name with the fastapi app, e.g. my_fastapi . Must provide a package scoped app = FastAPI() variable.",
+)
+parser.add_argument(
+    "--outfile",
+    type=str,
+    default="fastapi-app-openapi-spec.json",
+    help="Where to write the generated Open API json spec file.",
+)
 
 if __name__ == "__main__":
     cli_settings = parser.parse_args()
