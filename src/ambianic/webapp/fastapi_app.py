@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("uvicorn.error")
 
 app = FastAPI()
 
