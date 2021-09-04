@@ -8,7 +8,6 @@ from ambianic import config, get_config_file, get_secrets_file, load_config, log
 from ambianic.pipeline import timeline_event
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic.webapp.fastapi_server import FastapiServer
 from watchdog.observers import Observer
 
 log = logging.getLogger(__name__)
@@ -18,7 +17,8 @@ MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
     "pipelines": PipelineServer,
-    "web": FastapiServer,
+    # web server is now started as a separted uvicorn process from the OS shell
+    # "web": FastapiServer,
 }
 
 

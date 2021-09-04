@@ -14,5 +14,9 @@ then
   sudo apt-get install -y ca-certificates
 fi
 
+# start peerjs HTTP proxy
 python3 -m peerjs.ext.http_proxy   &
-python3 -m ambianic
+# start OpenAPI (fastapi/uvicorn) server
+python3 -m uvicorn ambianic.webapp.fastapi_app:app --port 8778 &
+# start ambianic-edge core
+python3 -m ambianic --config "config.yaml"
