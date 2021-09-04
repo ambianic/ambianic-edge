@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.16.1](https://github.com/ambianic/ambianic-edge/compare/v1.16.0...v1.16.1) (2021-09-04)
+
+
+### Bug Fixes
+
+* fastapi startup ([#377](https://github.com/ambianic/ambianic-edge/issues/377)) ([f89e5b2](https://github.com/ambianic/ambianic-edge/commit/f89e5b279df540499eaa6a2661547e5dc3b8ab1c))
+
 # [1.16.0](https://github.com/ambianic/ambianic-edge/compare/v1.15.5...v1.16.0) (2021-09-02)
 
 
