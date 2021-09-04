@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ambianic.pipeline.store API documentation</title>
+<meta name="description" content="Pipeline sample storage elements." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ambianic.pipeline.store</code></h1>
+</header>
+<section id="section-intro">
+<p>Pipeline sample storage elements.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Pipeline sample storage elements.&#34;&#34;&#34;
+import datetime
+import json
+import logging
+import pathlib
+import uuid
+from typing import Iterable
+
+import numpy as np
+from ambianic import DEFAULT_DATA_DIR
+from ambianic.notification import (
+    Notification,
+    NotificationHandler,
+    sendCloudNotification,
+)
+from ambianic.pipeline import PipeElement
+
+log = logging.getLogger(__name__)
+
+
+class SaveDetectionSamples(PipeElement):
+    &#34;&#34;&#34;Saves AI detection samples to an external storage location.&#34;&#34;&#34;
+
+    def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
+        &#34;&#34;&#34;Create SaveDetectionSamples element with the provided arguments.
+        :Parameters:
+        ----------
+        output_directory: *object_detect_dir
+        positive_interval: 2 # how often (in seconds) to save samples
+                with ANY results above the confidence threshold.
+                Default is 2 seconds.
+        idle_interval: 600 # how often (in seconds) to save samples
+                with NO results above the confidence threshold.
+                Default it 10 minutes (600 seconds.)
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+
+        log.info(&#34;Loading pipe element %r &#34;, self.__class__.__name__)
+        if self.context:
+            self._sys_data_dir = self.context.data_dir
+        else:
+            self._sys_data_dir = DEFAULT_DATA_DIR
+        self._output_directory = pathlib.Path(self._sys_data_dir)
+        assert self._output_directory, (
+            &#34;Pipe element %s: requires argument output_directory:&#34;
+            % self.__class__.__name__
+        )
+        # mkdir succeeds even if directory exists.
+        self._output_directory.mkdir(parents=True, exist_ok=True)
+        # add unique suffix to output dir to avvoid collisions
+        now = datetime.datetime.now()
+        dir_prefix = &#34;detections/&#34;
+        dir_time = now.strftime(&#34;%Y%m%d-%H%M%S.%f%z&#34;)
+        self._rel_data_dir = dir_prefix + dir_time
+        self._output_directory = self._output_directory / self._rel_data_dir
+        self._output_directory.mkdir(parents=True, exist_ok=True)
+        self._output_directory = self._output_directory.resolve()
+        log.debug(&#34;output_directory: %r&#34;, self._output_directory)
+        # os.makedirs(self._output_directory, exist_ok=True)
+        # by default save samples with detections every 2 seconds
+        di = positive_interval
+        self._positive_interval = datetime.timedelta(seconds=di)
+        # set the clock to sufficiently outdated timestamp to ensure
+        # that we won&#39;t miss saving the very first sample
+        self._time_latest_saved_detection = (
+            datetime.datetime.now() - datetime.timedelta(days=1)
+        )
+        # by default save samples without any detections every ten minutes
+        ii = idle_interval
+        self._idle_interval = datetime.timedelta(seconds=ii)
+        self._time_latest_saved_idle = self._time_latest_saved_detection
+
+        # setup notification handler
+        self.notification = None
+        self.notification_config = notify
+
+        if self.notification_config is not None and self.notification_config.get(
+            &#34;providers&#34;
+        ):
+            self.notification = NotificationHandler()
+
+    def _save_sample(
+        self,
+        inf_time=None,
+        image=None,
+        thumbnail=None,
+        inference_result=None,
+        inference_meta=None,
+    ):
+        time_prefix = inf_time.strftime(&#34;%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}&#34;)
+        image_file = time_prefix.format(suffix=&#34;image&#34;, fext=&#34;jpg&#34;)
+        image_path = self._output_directory / image_file
+        thumbnail_file = time_prefix.format(suffix=&#34;thumbnail&#34;, fext=&#34;jpg&#34;)
+        thumbnail_path = self._output_directory / thumbnail_file
+        json_file = time_prefix.format(suffix=&#34;inference&#34;, fext=&#34;json&#34;)
+        json_path = self._output_directory / json_file
+
+        save_json = {
+            &#34;id&#34;: uuid.uuid4().hex,
+            &#34;datetime&#34;: inf_time.isoformat(),
+            &#34;image_file_name&#34;: image_file,
+            &#34;thumbnail_file_name&#34;: thumbnail_file,
+            &#34;json_file_name&#34;: json_file,
+            # rel_dir is relative to system data dir
+            # this will be important when resloving REST API data
+            # file serving
+            &#34;rel_dir&#34;: self._rel_data_dir,
+            &#34;inference_result&#34;: inference_result,
+            &#34;inference_meta&#34;: inference_meta,
+        }
+
+        image.save(image_path)
+        thumbnail.save(thumbnail_path)
+        # save samples to local disk
+
+        json_str = json.dumps(save_json, cls=JsonEncoder)
+
+        with open(json_path, &#34;w&#34;, encoding=&#34;utf-8&#34;) as f:
+            f.write(json_str)
+        # e = PipelineEvent(&#39;Detected Objects&#39;, type=&#39;ObjectDetection&#39;)
+
+        json_encoded_obj = json.loads(json_str)
+        self.event_log.info(&#34;Detection Event&#34;, json_encoded_obj)
+
+        log.debug(&#34;Saved sample (detection event): %r &#34;, save_json)
+        self.notify(save_json)
+        return image_path, json_path
+
+    def process_sample(self, **sample) -&gt; Iterable[dict]:
+        &#34;&#34;&#34;Process next detection sample.&#34;&#34;&#34;
+        image = sample.get(&#34;image&#34;, None)
+        thumbnail = sample.get(&#34;thumbnail&#34;, None)
+        inference_result = sample.get(&#34;inference_result&#34;, None)
+        inference_meta = sample.get(&#34;inference_meta&#34;, None)
+        log.debug(
+            &#34;Pipe element %s received new sample with keys %s.&#34;,
+            self.__class__.__name__,
+            str([*sample]),
+        )
+        if not image:
+            # pass through empty samples to next element
+            yield None
+        else:
+            try:
+                log.debug(&#34;sample detections: %r&#34;, inference_result)
+                now = datetime.datetime.now()
+                if inference_result:
+                    # non-empty result, there is a detection
+                    # let&#39;s save it if its been longer than
+                    # the user specified positive_interval
+                    if (
+                        now - self._time_latest_saved_detection
+                        &gt;= self._positive_interval
+                    ):
+                        self._save_sample(
+                            inf_time=now,
+                            image=image,
+                            thumbnail=thumbnail,
+                            inference_result=inference_result,
+                            inference_meta=inference_meta,
+                        )
+                        self._time_latest_saved_detection = now
+                else:
+                    # empty result, there is no detection
+                    # let&#39;s save a sample if its been longer than
+                    #  the user specified idle_interval
+                    if now - self._time_latest_saved_idle &gt;= self._idle_interval:
+                        self._save_sample(
+                            inf_time=now,
+                            image=image,
+                            thumbnail=thumbnail,
+                            inference_result=inference_result,
+                            inference_meta=inference_meta,
+                        )
+                        self._time_latest_saved_idle = now
+            except Exception as e:
+                log.exception(&#34;Error %r while saving sample %r&#34;, e, sample)
+            finally:
+                # pass on the sample to the next pipe element if there is one
+                processed_sample = {
+                    &#34;image&#34;: image,
+                    &#34;inference_result&#34;: inference_result,
+                }
+                log.debug(&#34;Passing sample on: %r &#34;, processed_sample)
+                yield processed_sample
+
+    def notify(self, save_json: dict):
+        # TODO extract inference data
+        if save_json[&#34;inference_result&#34;] is None:
+            return
+
+        for inference_result in save_json[&#34;inference_result&#34;]:
+            data = {
+                &#34;id&#34;: save_json[&#34;id&#34;],
+                &#34;label&#34;: inference_result[&#34;label&#34;],
+                &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
+                &#34;datetime&#34;: save_json[&#34;datetime&#34;],
+            }
+
+            sendCloudNotification(data=data)
+
+            if self.notification is None:
+                return
+
+            notification = Notification(
+                data=data, providers=self.notification_config[&#34;providers&#34;]
+            )
+            self.notification.send(notification)
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        return super().default(obj)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ambianic.pipeline.store.JsonEncoder"><code class="flex name class">
+<span>class <span class="ident">JsonEncoder</span></span>
+<span>(</span><span>*, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, default=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extensible JSON <a href="http://json.org">http://json.org</a> encoder for Python data structures.</p>
+<p>Supports the following objects and types by default:</p>
+<p>+-------------------+---------------+
+| Python
+| JSON
+|
++===================+===============+
+| dict
+| object
+|
++-------------------+---------------+
+| list, tuple
+| array
+|
++-------------------+---------------+
+| str
+| string
+|
++-------------------+---------------+
+| int, float
+| number
+|
++-------------------+---------------+
+| True
+| true
+|
++-------------------+---------------+
+| False
+| false
+|
++-------------------+---------------+
+| None
+| null
+|
++-------------------+---------------+</p>
+<p>To extend this to recognize other objects, subclass and implement a
+<code>.default()</code> method with another method that returns a serializable
+object for <code>o</code> if possible, otherwise it should call the superclass
+implementation (to raise <code>TypeError</code>).</p>
+<p>Constructor for JSONEncoder, with sensible defaults.</p>
+<p>If skipkeys is false, then it is a TypeError to attempt
+encoding of keys that are not str, int, float or None.
+If
+skipkeys is True, such items are simply skipped.</p>
+<p>If ensure_ascii is true, the output is guaranteed to be str
+objects with all incoming non-ASCII characters escaped.
+If
+ensure_ascii is false, the output can contain non-ASCII characters.</p>
+<p>If check_circular is true, then lists, dicts, and custom encoded
+objects will be checked for circular references during encoding to
+prevent an infinite recursion (which would cause an OverflowError).
+Otherwise, no such check takes place.</p>
+<p>If allow_nan is true, then NaN, Infinity, and -Infinity will be
+encoded as such.
+This behavior is not JSON specification compliant,
+but is consistent with most JavaScript based encoders and decoders.
+Otherwise, it will be a ValueError to encode such floats.</p>
+<p>If sort_keys is true, then the output of dictionaries will be
+sorted by key; this is useful for regression tests to ensure
+that JSON serializations can be compared on a day-to-day basis.</p>
+<p>If indent is a non-negative integer, then JSON array
+elements and object members will be pretty-printed with that
+indent level.
+An indent level of 0 will only insert newlines.
+None is the most compact representation.</p>
+<p>If specified, separators should be an (item_separator, key_separator)
+tuple.
+The default is (', ', ': ') if <em>indent</em> is <code>None</code> and
+(',', ': ') otherwise.
+To get the most compact JSON representation,
+you should specify (',', ':') to eliminate whitespace.</p>
+<p>If specified, default is a function that gets called for objects
+that can't otherwise be serialized.
+It should return a JSON encodable
+version of the object or raise a <code>TypeError</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        return super().default(obj)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>json.encoder.JSONEncoder</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.store.JsonEncoder.default"><code class="name flex">
+<span>def <span class="ident">default</span></span>(<span>self, obj)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implement this method in a subclass such that it returns
+a serializable object for <code>o</code>, or calls the base implementation
+(to raise a <code>TypeError</code>).</p>
+<p>For example, to support arbitrary iterators, you could
+implement default like this::</p>
+<pre><code>def default(self, o):
+    try:
+        iterable = iter(o)
+    except TypeError:
+        pass
+    else:
+        return list(iterable)
+    # Let the base class default method raise the TypeError
+    return JSONEncoder.default(self, o)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default(self, obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+
+    return super().default(obj)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ambianic.pipeline.store.SaveDetectionSamples"><code class="flex name class">
+<span>class <span class="ident">SaveDetectionSamples</span></span>
+<span>(</span><span>positive_interval=2, idle_interval=600, notify=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Saves AI detection samples to an external storage location.</p>
+<p>Create SaveDetectionSamples element with the provided arguments.
+:Parameters:</p>
+<hr>
+<p>output_directory: *object_detect_dir
+positive_interval: 2 # how often (in seconds) to save samples
+with ANY results above the confidence threshold.
+Default is 2 seconds.
+idle_interval: 600 # how often (in seconds) to save samples
+with NO results above the confidence threshold.
+Default it 10 minutes (600 seconds.)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SaveDetectionSamples(PipeElement):
+    &#34;&#34;&#34;Saves AI detection samples to an external storage location.&#34;&#34;&#34;
+
+    def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
+        &#34;&#34;&#34;Create SaveDetectionSamples element with the provided arguments.
+        :Parameters:
+        ----------
+        output_directory: *object_detect_dir
+        positive_interval: 2 # how often (in seconds) to save samples
+                with ANY results above the confidence threshold.
+                Default is 2 seconds.
+        idle_interval: 600 # how often (in seconds) to save samples
+                with NO results above the confidence threshold.
+                Default it 10 minutes (600 seconds.)
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+
+        log.info(&#34;Loading pipe element %r &#34;, self.__class__.__name__)
+        if self.context:
+            self._sys_data_dir = self.context.data_dir
+        else:
+            self._sys_data_dir = DEFAULT_DATA_DIR
+        self._output_directory = pathlib.Path(self._sys_data_dir)
+        assert self._output_directory, (
+            &#34;Pipe element %s: requires argument output_directory:&#34;
+            % self.__class__.__name__
+        )
+        # mkdir succeeds even if directory exists.
+        self._output_directory.mkdir(parents=True, exist_ok=True)
+        # add unique suffix to output dir to avvoid collisions
+        now = datetime.datetime.now()
+        dir_prefix = &#34;detections/&#34;
+        dir_time = now.strftime(&#34;%Y%m%d-%H%M%S.%f%z&#34;)
+        self._rel_data_dir = dir_prefix + dir_time
+        self._output_directory = self._output_directory / self._rel_data_dir
+        self._output_directory.mkdir(parents=True, exist_ok=True)
+        self._output_directory = self._output_directory.resolve()
+        log.debug(&#34;output_directory: %r&#34;, self._output_directory)
+        # os.makedirs(self._output_directory, exist_ok=True)
+        # by default save samples with detections every 2 seconds
+        di = positive_interval
+        self._positive_interval = datetime.timedelta(seconds=di)
+        # set the clock to sufficiently outdated timestamp to ensure
+        # that we won&#39;t miss saving the very first sample
+        self._time_latest_saved_detection = (
+            datetime.datetime.now() - datetime.timedelta(days=1)
+        )
+        # by default save samples without any detections every ten minutes
+        ii = idle_interval
+        self._idle_interval = datetime.timedelta(seconds=ii)
+        self._time_latest_saved_idle = self._time_latest_saved_detection
+
+        # setup notification handler
+        self.notification = None
+        self.notification_config = notify
+
+        if self.notification_config is not None and self.notification_config.get(
+            &#34;providers&#34;
+        ):
+            self.notification = NotificationHandler()
+
+    def _save_sample(
+        self,
+        inf_time=None,
+        image=None,
+        thumbnail=None,
+        inference_result=None,
+        inference_meta=None,
+    ):
+        time_prefix = inf_time.strftime(&#34;%Y%m%d-%H%M%S.%f%z-{suffix}.{fext}&#34;)
+        image_file = time_prefix.format(suffix=&#34;image&#34;, fext=&#34;jpg&#34;)
+        image_path = self._output_directory / image_file
+        thumbnail_file = time_prefix.format(suffix=&#34;thumbnail&#34;, fext=&#34;jpg&#34;)
+        thumbnail_path = self._output_directory / thumbnail_file
+        json_file = time_prefix.format(suffix=&#34;inference&#34;, fext=&#34;json&#34;)
+        json_path = self._output_directory / json_file
+
+        save_json = {
+            &#34;id&#34;: uuid.uuid4().hex,
+            &#34;datetime&#34;: inf_time.isoformat(),
+            &#34;image_file_name&#34;: image_file,
+            &#34;thumbnail_file_name&#34;: thumbnail_file,
+            &#34;json_file_name&#34;: json_file,
+            # rel_dir is relative to system data dir
+            # this will be important when resloving REST API data
+            # file serving
+            &#34;rel_dir&#34;: self._rel_data_dir,
+            &#34;inference_result&#34;: inference_result,
+            &#34;inference_meta&#34;: inference_meta,
+        }
+
+        image.save(image_path)
+        thumbnail.save(thumbnail_path)
+        # save samples to local disk
+
+        json_str = json.dumps(save_json, cls=JsonEncoder)
+
+        with open(json_path, &#34;w&#34;, encoding=&#34;utf-8&#34;) as f:
+            f.write(json_str)
+        # e = PipelineEvent(&#39;Detected Objects&#39;, type=&#39;ObjectDetection&#39;)
+
+        json_encoded_obj = json.loads(json_str)
+        self.event_log.info(&#34;Detection Event&#34;, json_encoded_obj)
+
+        log.debug(&#34;Saved sample (detection event): %r &#34;, save_json)
+        self.notify(save_json)
+        return image_path, json_path
+
+    def process_sample(self, **sample) -&gt; Iterable[dict]:
+        &#34;&#34;&#34;Process next detection sample.&#34;&#34;&#34;
+        image = sample.get(&#34;image&#34;, None)
+        thumbnail = sample.get(&#34;thumbnail&#34;, None)
+        inference_result = sample.get(&#34;inference_result&#34;, None)
+        inference_meta = sample.get(&#34;inference_meta&#34;, None)
+        log.debug(
+            &#34;Pipe element %s received new sample with keys %s.&#34;,
+            self.__class__.__name__,
+            str([*sample]),
+        )
+        if not image:
+            # pass through empty samples to next element
+            yield None
+        else:
+            try:
+                log.debug(&#34;sample detections: %r&#34;, inference_result)
+                now = datetime.datetime.now()
+                if inference_result:
+                    # non-empty result, there is a detection
+                    # let&#39;s save it if its been longer than
+                    # the user specified positive_interval
+                    if (
+                        now - self._time_latest_saved_detection
+                        &gt;= self._positive_interval
+                    ):
+                        self._save_sample(
+                            inf_time=now,
+                            image=image,
+                            thumbnail=thumbnail,
+                            inference_result=inference_result,
+                            inference_meta=inference_meta,
+                        )
+                        self._time_latest_saved_detection = now
+                else:
+                    # empty result, there is no detection
+                    # let&#39;s save a sample if its been longer than
+                    #  the user specified idle_interval
+                    if now - self._time_latest_saved_idle &gt;= self._idle_interval:
+                        self._save_sample(
+                            inf_time=now,
+                            image=image,
+                            thumbnail=thumbnail,
+                            inference_result=inference_result,
+                            inference_meta=inference_meta,
+                        )
+                        self._time_latest_saved_idle = now
+            except Exception as e:
+                log.exception(&#34;Error %r while saving sample %r&#34;, e, sample)
+            finally:
+                # pass on the sample to the next pipe element if there is one
+                processed_sample = {
+                    &#34;image&#34;: image,
+                    &#34;inference_result&#34;: inference_result,
+                }
+                log.debug(&#34;Passing sample on: %r &#34;, processed_sample)
+                yield processed_sample
+
+    def notify(self, save_json: dict):
+        # TODO extract inference data
+        if save_json[&#34;inference_result&#34;] is None:
+            return
+
+        for inference_result in save_json[&#34;inference_result&#34;]:
+            data = {
+                &#34;id&#34;: save_json[&#34;id&#34;],
+                &#34;label&#34;: inference_result[&#34;label&#34;],
+                &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
+                &#34;datetime&#34;: save_json[&#34;datetime&#34;],
+            }
+
+            sendCloudNotification(data=data)
+
+            if self.notification is None:
+                return
+
+            notification = Notification(
+                data=data, providers=self.notification_config[&#34;providers&#34;]
+            )
+            self.notification.send(notification)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.pipeline.PipeElement" href="index.html#ambianic.pipeline.PipeElement">PipeElement</a></li>
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.store.SaveDetectionSamples.notify"><code class="name flex">
+<span>def <span class="ident">notify</span></span>(<span>self, save_json: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def notify(self, save_json: dict):
+    # TODO extract inference data
+    if save_json[&#34;inference_result&#34;] is None:
+        return
+
+    for inference_result in save_json[&#34;inference_result&#34;]:
+        data = {
+            &#34;id&#34;: save_json[&#34;id&#34;],
+            &#34;label&#34;: inference_result[&#34;label&#34;],
+            &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
+            &#34;datetime&#34;: save_json[&#34;datetime&#34;],
+        }
+
+        sendCloudNotification(data=data)
+
+        if self.notification is None:
+            return
+
+        notification = Notification(
+            data=data, providers=self.notification_config[&#34;providers&#34;]
+        )
+        self.notification.send(notification)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.store.SaveDetectionSamples.process_sample"><code class="name flex">
+<span>def <span class="ident">process_sample</span></span>(<span>self, **sample) ‑> Iterable[dict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process next detection sample.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_sample(self, **sample) -&gt; Iterable[dict]:
+    &#34;&#34;&#34;Process next detection sample.&#34;&#34;&#34;
+    image = sample.get(&#34;image&#34;, None)
+    thumbnail = sample.get(&#34;thumbnail&#34;, None)
+    inference_result = sample.get(&#34;inference_result&#34;, None)
+    inference_meta = sample.get(&#34;inference_meta&#34;, None)
+    log.debug(
+        &#34;Pipe element %s received new sample with keys %s.&#34;,
+        self.__class__.__name__,
+        str([*sample]),
+    )
+    if not image:
+        # pass through empty samples to next element
+        yield None
+    else:
+        try:
+            log.debug(&#34;sample detections: %r&#34;, inference_result)
+            now = datetime.datetime.now()
+            if inference_result:
+                # non-empty result, there is a detection
+                # let&#39;s save it if its been longer than
+                # the user specified positive_interval
+                if (
+                    now - self._time_latest_saved_detection
+                    &gt;= self._positive_interval
+                ):
+                    self._save_sample(
+                        inf_time=now,
+                        image=image,
+                        thumbnail=thumbnail,
+                        inference_result=inference_result,
+                        inference_meta=inference_meta,
+                    )
+                    self._time_latest_saved_detection = now
+            else:
+                # empty result, there is no detection
+                # let&#39;s save a sample if its been longer than
+                #  the user specified idle_interval
+                if now - self._time_latest_saved_idle &gt;= self._idle_interval:
+                    self._save_sample(
+                        inf_time=now,
+                        image=image,
+                        thumbnail=thumbnail,
+                        inference_result=inference_result,
+                        inference_meta=inference_meta,
+                    )
+                    self._time_latest_saved_idle = now
+        except Exception as e:
+            log.exception(&#34;Error %r while saving sample %r&#34;, e, sample)
+        finally:
+            # pass on the sample to the next pipe element if there is one
+            processed_sample = {
+                &#34;image&#34;: image,
+                &#34;inference_result&#34;: inference_result,
+            }
+            log.debug(&#34;Passing sample on: %r &#34;, processed_sample)
+            yield processed_sample</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ambianic.pipeline.PipeElement" href="index.html#ambianic.pipeline.PipeElement">PipeElement</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ambianic.pipeline.PipeElement.connect_to_next_element" href="index.html#ambianic.pipeline.PipeElement.connect_to_next_element">connect_to_next_element</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.context" href="index.html#ambianic.pipeline.PipeElement.context">context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.event_log" href="index.html#ambianic.pipeline.PipeElement.event_log">event_log</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heal" href="index.html#ambianic.pipeline.PipeElement.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.healthcheck" href="index.html#ambianic.pipeline.PipeElement.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heartbeat" href="index.html#ambianic.pipeline.PipeElement.heartbeat">heartbeat</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.name" href="index.html#ambianic.pipeline.PipeElement.name">name</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.pop_context" href="index.html#ambianic.pipeline.PipeElement.pop_context">pop_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.push_context" href="index.html#ambianic.pipeline.PipeElement.push_context">push_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.receive_next_sample" href="index.html#ambianic.pipeline.PipeElement.receive_next_sample">receive_next_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.start" href="index.html#ambianic.pipeline.PipeElement.start">start</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.state" href="index.html#ambianic.pipeline.PipeElement.state">state</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.stop" href="index.html#ambianic.pipeline.PipeElement.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ambianic.pipeline" href="index.html">ambianic.pipeline</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ambianic.pipeline.store.JsonEncoder" href="#ambianic.pipeline.store.JsonEncoder">JsonEncoder</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.store.JsonEncoder.default" href="#ambianic.pipeline.store.JsonEncoder.default">default</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.pipeline.store.SaveDetectionSamples" href="#ambianic.pipeline.store.SaveDetectionSamples">SaveDetectionSamples</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.store.SaveDetectionSamples.notify" href="#ambianic.pipeline.store.SaveDetectionSamples.notify">notify</a></code></li>
+<li><code><a title="ambianic.pipeline.store.SaveDetectionSamples.process_sample" href="#ambianic.pipeline.store.SaveDetectionSamples.process_sample">process_sample</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

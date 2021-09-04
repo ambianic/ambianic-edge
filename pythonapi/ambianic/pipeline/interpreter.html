@@ -1,0 +1,1827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ambianic.pipeline.interpreter API documentation</title>
+<meta name="description" content="Ambianic pipeline interpreter module." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ambianic.pipeline.interpreter</code></h1>
+</header>
+<section id="section-intro">
+<p>Ambianic pipeline interpreter module.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Ambianic pipeline interpreter module.&#34;&#34;&#34;
+import logging
+import threading
+import time
+
+from ambianic import DEFAULT_DATA_DIR, config
+from ambianic.pipeline import HealthChecker, PipeElement, timeline_event
+from ambianic.pipeline.ai.face_detect import FaceDetector
+from ambianic.pipeline.ai.fall_detect import FallDetector
+from ambianic.pipeline.ai.object_detect import ObjectDetector
+from ambianic.pipeline.store import SaveDetectionSamples
+from ambianic.util import ManagedService, ThreadedJob, stacktrace
+
+from .avsource.av_element import AVSourceElement
+
+log = logging.getLogger(__name__)
+
+# Pipeline class, overridden by test
+PIPELINE_CLASS = None
+
+
+def get_pipelines(pipelines_config, data_dir=None):
+    &#34;&#34;&#34;Initialize and return pipelines given config parameters.
+
+    :Parameters:
+    ----------
+    pipelines_config : dict
+        Example:
+        daytime_front_door_watch:
+        - source: *src_front_door_cam
+          ...
+        - detect_objects: # run ai inference on the input data
+          ...
+
+    :Returns:
+    -------
+    list
+        List of configured pipelines.
+
+    &#34;&#34;&#34;
+    pipelines = []
+    if pipelines_config:
+        for pname, pdef in pipelines_config.items():
+            log.info(&#34;loading %s pipeline configuration&#34;, pname)
+            pipeline_class = Pipeline if PIPELINE_CLASS is None else PIPELINE_CLASS
+            pipe = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
+            pipelines.append(pipe)
+    else:
+        log.warning(&#34;No pipelines configured.&#34;)
+    return pipelines
+
+
+class PipelineServer(ManagedService):
+    &#34;&#34;&#34;Thin wrapper around PipelineServer constructs.
+
+    Allows controlled start and stop of the web app server
+    in a separate process.
+
+    Parameters
+    ----------
+    config : yaml
+        reference to the yaml configuration file
+
+    &#34;&#34;&#34;
+
+    def __init__(self, config):
+        self.config = config
+        self.pipeline_server_job = None
+
+    def start(self, **kwargs):
+        log.info(&#34;PipelineServer server job starting...&#34;)
+        f = PipelineServerJob(self.config)
+        self.pipeline_server_job = ThreadedJob(f)
+        self.pipeline_server_job.start()
+        log.info(&#34;Pipeline server job started&#34;)
+
+    def healthcheck(self):
+        return time.monotonic(), True
+
+    def heal(self):
+        &#34;&#34;&#34;Heal the server.
+
+        TODO: Keep an eye for potential scenarios that cause this server to
+         become unresponsive.
+        &#34;&#34;&#34;
+
+    def stop(self):
+        if self.pipeline_server_job:
+            log.info(&#34;Pipeline server job stopping...&#34;)
+            try:
+                self.pipeline_server_job.stop()
+                self.pipeline_server_job.join()
+            except RuntimeError as err:
+                log.warning(&#34;Failed stopping: %s&#34; % err)
+            self.pipeline_server_job = None
+            log.info(&#34;Pipeline server job stopped.&#34;)
+
+
+class PipelineServerJob(ManagedService):
+    &#34;&#34;&#34;Main pipeline interpreter class.
+
+    Responsible for loading, running and overseeing the health
+    of all Ambianic pipelines.
+
+    &#34;&#34;&#34;
+
+    MAX_HEARTBEAT_INTERVAL = 40
+    TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL * 3
+
+    def __init__(self, config=None):
+        &#34;&#34;&#34;Initialize and configure a PipelineServer.
+
+        :Parameters:
+        ----------
+        config : dict
+            Python representation of the yaml configuration file. Example:
+            pipelines:
+              # sequence of piped operations for use on front door cam
+              daytime_front_door_watch:
+                - source: *src_front_door_cam
+                  ...
+                - detect_objects: # run ai inference on the input data
+                  ...
+                - save_detections: # save samples from the inference results
+                  ...
+
+        &#34;&#34;&#34;
+        self._threaded_jobs = []
+        self._pipelines = []
+        self._config = None
+        self.reset(config)
+
+    def reset(self, config=None):
+        self._threaded_jobs = []
+        self._pipelines = []
+        if config is not None:
+            self._config = config
+        if self._config:
+            pipelines_config = self._config.get(&#34;pipelines&#34;, None)
+            if pipelines_config:
+                # get main data dir config and pass
+                # on to pipelines to use
+                data_dir = self._config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
+                self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
+                for pp in self._pipelines:
+                    pj = ThreadedJob(pp)
+                    self._threaded_jobs.append(pj)
+
+    def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
+        log.error(
+            &#34;Pipeline %s in terminal condition. &#34;
+            &#34;Unable to recover.&#34;
+            &#34;Latest heartbeat was %f seconds ago. &#34;,
+            pipeline.name,
+            lapse,
+        )
+
+    def _on_pipeline_job_ended(self, threaded_job=None):
+        p = threaded_job.job
+        log.debug(&#39;Pipeline &#34;%s&#34; has ended. &#39; &#34;Removing from health watch.&#34;, p.name)
+        self._threaded_jobs.remove(threaded_job)
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Check the health of all managed pipelines.
+
+        Return the oldest heartbeat among all managed pipeline heartbeats.
+        Try to heal pipelines that haven&#39;t reported a heartbeat and awhile.
+
+        :returns: (timestamp, status) tuple with most outdated heartbeat
+            and worst known status among managed pipelines
+        &#34;&#34;&#34;
+        oldest_heartbeat = time.monotonic()
+        # iterate over a copy of jobs, because
+        # we may need to remove dead jobs in the loop
+        for j in list(self._threaded_jobs):
+            # get the pipeline object out of the threaded job wrapper
+            p = j.job
+            if j.is_alive():
+                latest_heartbeat, status = p.healthcheck()
+                now = time.monotonic()
+                lapse = now - latest_heartbeat
+                if lapse &gt; self.TERMINAL_HEALTH_INTERVAL:
+                    self._on_terminal_pipeline_health(p, lapse)
+                    # more than a reasonable amount of time has passed
+                    # since the pipeline reported a heartbeat.
+                    # Let&#39;s recycle it
+                elif lapse &gt; self.MAX_HEARTBEAT_INTERVAL:
+                    log.warning(
+                        &#39;Pipeline &#34;%s&#34; is not responsive. &#39;
+                        &#34;Latest heartbeat was %f seconds ago. &#34;
+                        &#34;Will attempt to heal it.&#34;,
+                        p.name,
+                        lapse,
+                    )
+                    self.heal_pipeline_job(j)
+                if oldest_heartbeat &gt; latest_heartbeat:
+                    oldest_heartbeat = latest_heartbeat
+            else:
+                self._on_pipeline_job_ended(threaded_job=j)
+        status = True  # At some point status may carry richer information
+        return oldest_heartbeat, status
+
+    def heal(self):
+        &#34;&#34;&#34;Heal the PipelineServer.
+
+        PipelineServer manages its own health as best possible.
+        Not much to do here at this time.
+        &#34;&#34;&#34;
+
+    def heal_pipeline_job(self, threaded_job=None):
+        assert threaded_job
+        pipeline = threaded_job.job
+        log.debug(&#34;pipline %s healing request...&#34;, pipeline.name)
+        threaded_job.heal()
+        log.debug(&#34;pipeline %s healing request completed.&#34;, pipeline.name)
+
+    def start(self):
+        # Start pipeline interpreter threads
+        log.info(&#34;pipeline jobs starting...&#34;)
+        for tj in self._threaded_jobs:
+            tj.start()
+        log.info(&#34;pipeline jobs started&#34;)
+
+    def stop(self):
+        log.info(&#34;pipeline jobs stopping...&#34;)
+        # Signal pipeline interpreter threads to close
+        for tj in self._threaded_jobs:
+            tj.stop()
+        # Wait for the pipeline interpreter threads to close...
+        for tj in self._threaded_jobs:
+            tj.join()
+        log.info(&#34;pipeline jobs stopped.&#34;)
+
+
+class HealingThread(threading.Thread):
+    &#34;&#34;&#34;A thread focused on healing a broken pipeline.&#34;&#34;&#34;
+
+    def __init__(self, target=None, on_finished=None):
+        assert target, &#34;Healing target required&#34;
+        assert on_finished, &#34;on_finished callback required&#34;
+        threading.Thread.__init__(self, daemon=True)
+        self._target = target
+        self._on_finished = on_finished
+
+    def run(self):
+        log.debug(&#34;invoking healing target method %r&#34;, self._target)
+        try:
+            self._target()
+        except Exception as e:
+            log.warning(&#34;Error %r while running healing method %r.&#34;, e, self._target)
+            log.warning(stacktrace())
+        log.debug(&#34;invoking healing on_finished method %r&#34;, self._on_finished)
+        try:
+            self._on_finished()
+        except Exception as e:
+            log.warning(
+                &#34;Error %r while calling on_finished method %r.&#34;, e, self._on_finished
+            )
+            log.warning(stacktrace())
+
+
+class Pipeline(ManagedService):
+    &#34;&#34;&#34;The main Ambianic data processing structure.
+
+    Data flow is arranged in independent pipelines.
+    &#34;&#34;&#34;
+
+    # valid pipeline operators
+    PIPELINE_OPS = {
+        &#34;source&#34;: AVSourceElement,
+        &#34;detect_objects&#34;: ObjectDetector,
+        &#34;save_detections&#34;: SaveDetectionSamples,
+        &#34;detect_faces&#34;: FaceDetector,
+        &#34;detect_falls&#34;: FallDetector,
+    }
+
+    def _on_unknown_pipe_element(self, name=None):
+        log.warning(
+            &#34;Pipeline definition has unknown &#34;
+            &#34;pipeline element: %s .&#34;
+            &#34; Ignoring element and moving forward.&#34;,
+            name,
+        )
+
+    def __init__(self, pname=None, pconfig=None, data_dir=None):
+        &#34;&#34;&#34;Init and load pipeline config.&#34;&#34;&#34;
+        assert pname, &#34;Pipeline name required&#34;
+        self.name = pname
+        assert pconfig, &#34;Pipeline config required&#34;
+        self.config = pconfig
+        self.data_dir = data_dir
+        self._pipe_elements = []
+        self._latest_heartbeat_time = time.monotonic()
+        # in the future status may represent a spectrum of health issues
+        self._latest_health_status = True
+        self._healing_thread = None
+        self._context = timeline_event.PipelineContext(unique_pipeline_name=self.name)
+        self._context.data_dir = self.data_dir
+        self._event_log = timeline_event.get_event_log(pipeline_context=self._context)
+        self.load_elements()
+
+    def load_elements(self):
+        &#34;&#34;&#34;load pipeline elements based on configuration&#34;&#34;&#34;
+        self._pipe_elements = []
+
+        log.debug(&#34;Pipeline starts with element %r&#34;, self.config[0])
+        source_element_key = [*self.config[0]][0]
+        assert (
+            source_element_key == &#34;source&#34;
+        ), &#34;Pipeline config must begin with a &#39;source&#39; element instead of {}&#34;.format(
+            source_element_key
+        )
+
+        for element_def in self.config:
+            log.info(&#34;Pipeline %s loading next element: %s&#34;, self.name, element_def)
+
+            is_valid = self.parse_source_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
+            is_valid = self.parse_ai_model_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
+            element_name = [*element_def][0]
+            assert element_name
+            element_config = element_def[element_name]
+
+            # if dealing with a static reference, pass the whole object
+            # eg. { [source]: [source-name] }
+            if isinstance(element_config, str):
+                element_config = {element_name: element_config}
+
+            element_class = self.PIPELINE_OPS.get(element_name, None)
+
+            if element_class:
+                log.info(
+                    &#34;Pipeline %s adding element name %s &#34; &#34;with class %s and config %s&#34;,
+                    self.name,
+                    element_name,
+                    element_class,
+                    element_config,
+                )
+                element = element_class(
+                    **element_config,
+                    element_name=element_name,
+                    context=self._context,
+                    event_log=self._event_log
+                )
+                self._pipe_elements.append(element)
+            else:
+                self._on_unknown_pipe_element(name=element_name)
+
+    def parse_ai_model_config(self, element_def: dict):
+        &#34;&#34;&#34;parse AI model configuration&#34;&#34;&#34;
+
+        # its one
+        ai_element = None
+        for element_name in element_def:
+            # ai_model: accept just a source_id and take it from sources
+            if &#34;ai_model&#34; in element_def[element_name]:
+                ai_element = element_def[element_name]
+                break
+
+        if ai_element is None:
+            return True
+
+        ai_model_id = None
+        if isinstance(ai_element[&#34;ai_model&#34;], str):
+            ai_model_id = ai_element[&#34;ai_model&#34;]
+
+        if (
+            ai_element[&#34;ai_model&#34;] is not None
+            and &#34;ai_model_id&#34; in ai_element[&#34;ai_model&#34;]
+        ):
+            ai_model_id = ai_element[&#34;ai_model&#34;][&#34;ai_model_id&#34;]
+
+        if ai_model_id is None:
+            return True
+
+        ai_model = config.ai_models[ai_model_id]
+        if ai_model is None:
+            log.warning(
+                &#34;AI model id %s not found, cannot start pipeline %s&#34;,
+                ai_model_id,
+                self.name,
+            )
+            return False
+
+        # merge the model config but keep the pipe element specific one
+        for key, val in ai_model.items():
+            if key not in ai_element:
+                ai_element[key] = val
+
+        # track the id
+        ai_element[&#34;ai_model_id&#34;] = ai_model_id
+
+        return True
+
+    def parse_source_config(self, element_def: dict):
+        &#34;&#34;&#34;parse source configuration&#34;&#34;&#34;
+        # source: accept just a source_id and take it from sources
+        if &#34;source&#34; not in element_def:
+            return True
+
+        source_id = None
+        if isinstance(element_def[&#34;source&#34;], str):
+            source_id = element_def[&#34;source&#34;]
+        if &#34;source_id&#34; in element_def[&#34;source&#34;]:
+            source_id = element_def[&#34;source&#34;][&#34;source_id&#34;]
+
+        if source_id is None:
+            return True
+
+        # track the source_id
+        source = config.sources.get(source_id, None)
+        if source is None:
+            log.warning(
+                &#34;Source id %s not found, cannot start pipeline %s&#34;,
+                source_id,
+                self.name,
+            )
+            return False
+
+        element_def[&#34;source&#34;] = source
+        element_def[&#34;source&#34;][&#34;source_id&#34;] = source_id
+
+        return True
+
+    def restart(self):
+        &#34;&#34;&#34;Restart a pipeline&#34;&#34;&#34;
+        self.stop()
+        self.reset()
+        self.start()
+        log.info(&#34;Pipeline restarted&#34;)
+
+    def reset(self):
+        &#34;&#34;&#34;Reset the pipeline elements&#34;&#34;&#34;
+        self._pipe_elements = []
+
+    def _heartbeat(self):
+        &#34;&#34;&#34;Set the heartbeat timestamp to time.monotonic().&#34;&#34;&#34;
+        log.debug(&#34;Pipeline %s heartbeat signal.&#34;, self.name)
+        now = time.monotonic()
+        lapse = now - self._latest_heartbeat_time
+        log.debug(&#34;Pipeline %s heartbeat lapse %f&#34;, self.name, lapse)
+        self._latest_heartbeat_time = now
+
+    def _on_start_no_elements(self):
+        return
+
+    def start(self):
+        &#34;&#34;&#34;Start the pipeline loop.
+
+        Run until the pipeline has input from its configured source
+        or until a stop() signal is received.
+        &#34;&#34;&#34;
+        if len(self._pipe_elements) == 0:
+            self.load_elements()
+
+        log.info(&#34;Starting %s main pipeline loop&#34;, self.__class__.__name__)
+        if not self._pipe_elements:
+            return self._on_start_no_elements()
+
+        self._heartbeat()
+        # connect pipeline elements as defined by user
+        for i in range(1, len(self._pipe_elements)):
+            e = self._pipe_elements[i - 1]
+            assert isinstance(e, PipeElement)
+            e_next = self._pipe_elements[i]
+            e.connect_to_next_element(e_next)
+        last_element = self._pipe_elements[len(self._pipe_elements) - 1]
+        hc = HealthChecker(
+            health_status_callback=self._heartbeat, element_name=&#34;health_check&#34;
+        )
+        last_element.connect_to_next_element(hc)
+        self._pipe_elements[0].start()
+        log.info(&#34;Started %s&#34;, self.__class__.__name__)
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Return health vitals status report.
+
+        :Returns:
+        -------
+        (timestamp, status)
+            a tuple of
+                monotonically increasing timestamp of the last known healthy
+                heartbeat and a status with additional health information.
+
+        &#34;&#34;&#34;
+        return self._latest_heartbeat_time, self._latest_health_status
+
+    def _on_healing_already_in_progress(self):
+        log.debug(
+            &#34;pipeline %s healing thread in progress.&#34;
+            &#34; Skipping request. &#34;
+            &#34;Thread id: %d. &#34;,
+            self.name,
+            self._healing_thread.ident,
+        )
+
+    def heal(self):
+        &#34;&#34;&#34;Nonblocking asynchronous heal function.&#34;&#34;&#34;
+        # register a heartbeat to prevent looping back
+        # into heal while healing
+        self._heartbeat()
+        if self._healing_thread:
+            self._on_healing_already_in_progress()
+        else:
+            log.debug(&#34;pipeline %s launching healing thread...&#34;, self.name)
+            heal_target = self._pipe_elements[0].heal
+
+            def healing_finished():
+                log.debug(
+                    &#34;pipeline %s healing thread id: %d ended. &#34;,
+                    self.name,
+                    self._healing_thread.ident,
+                )
+                self._healing_thread = None
+                # let&#39;s notify healthchecker that progress is being made
+                self._heartbeat()
+
+            # launch healing function in a non-blocking way
+            self._healing_thread = HealingThread(
+                target=heal_target, on_finished=healing_finished
+            )
+            self._healing_thread.start()
+            log.debug(&#34;pipeline %s launched healing thread.&#34;, self.name)
+
+    def stop(self):
+        &#34;&#34;&#34;Stop pipeline processing.
+
+        Disconnect from the source and all other external resources.
+        &#34;&#34;&#34;
+        log.info(&#34;Requesting pipeline elements to stop... %s&#34;, self.__class__.__name__)
+        if len(self._pipe_elements) &gt; 0:
+            self._pipe_elements[0].stop()
+        log.info(
+            &#34;Completed request to pipeline elements to stop. %s&#34;,
+            self.__class__.__name__,
+        )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ambianic.pipeline.interpreter.get_pipelines"><code class="name flex">
+<span>def <span class="ident">get_pipelines</span></span>(<span>pipelines_config, data_dir=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Initialize and return pipelines given config parameters.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>pipelines_config : dict
+Example:
+daytime_front_door_watch:
+- source: *src_front_door_cam
+&hellip;
+- detect_objects: # run ai inference on the input data
+&hellip;</p>
+<h2 id="returns">:Returns:</h2>
+<p>list
+List of configured pipelines.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_pipelines(pipelines_config, data_dir=None):
+    &#34;&#34;&#34;Initialize and return pipelines given config parameters.
+
+    :Parameters:
+    ----------
+    pipelines_config : dict
+        Example:
+        daytime_front_door_watch:
+        - source: *src_front_door_cam
+          ...
+        - detect_objects: # run ai inference on the input data
+          ...
+
+    :Returns:
+    -------
+    list
+        List of configured pipelines.
+
+    &#34;&#34;&#34;
+    pipelines = []
+    if pipelines_config:
+        for pname, pdef in pipelines_config.items():
+            log.info(&#34;loading %s pipeline configuration&#34;, pname)
+            pipeline_class = Pipeline if PIPELINE_CLASS is None else PIPELINE_CLASS
+            pipe = pipeline_class(pname=pname, pconfig=pdef, data_dir=data_dir)
+            pipelines.append(pipe)
+    else:
+        log.warning(&#34;No pipelines configured.&#34;)
+    return pipelines</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ambianic.pipeline.interpreter.HealingThread"><code class="flex name class">
+<span>class <span class="ident">HealingThread</span></span>
+<span>(</span><span>target=None, on_finished=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A thread focused on healing a broken pipeline.</p>
+<p>This constructor should always be called with keyword arguments. Arguments are:</p>
+<p><em>group</em> should be None; reserved for future extension when a ThreadGroup
+class is implemented.</p>
+<p><em>target</em> is the callable object to be invoked by the run()
+method. Defaults to None, meaning nothing is called.</p>
+<p><em>name</em> is the thread name. By default, a unique name is constructed of
+the form "Thread-N" where N is a small decimal number.</p>
+<p><em>args</em> is the argument tuple for the target invocation. Defaults to ().</p>
+<p><em>kwargs</em> is a dictionary of keyword arguments for the target
+invocation. Defaults to {}.</p>
+<p>If a subclass overrides the constructor, it must make sure to invoke
+the base class constructor (Thread.<strong>init</strong>()) before doing anything
+else to the thread.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HealingThread(threading.Thread):
+    &#34;&#34;&#34;A thread focused on healing a broken pipeline.&#34;&#34;&#34;
+
+    def __init__(self, target=None, on_finished=None):
+        assert target, &#34;Healing target required&#34;
+        assert on_finished, &#34;on_finished callback required&#34;
+        threading.Thread.__init__(self, daemon=True)
+        self._target = target
+        self._on_finished = on_finished
+
+    def run(self):
+        log.debug(&#34;invoking healing target method %r&#34;, self._target)
+        try:
+            self._target()
+        except Exception as e:
+            log.warning(&#34;Error %r while running healing method %r.&#34;, e, self._target)
+            log.warning(stacktrace())
+        log.debug(&#34;invoking healing on_finished method %r&#34;, self._on_finished)
+        try:
+            self._on_finished()
+        except Exception as e:
+            log.warning(
+                &#34;Error %r while calling on_finished method %r.&#34;, e, self._on_finished
+            )
+            log.warning(stacktrace())</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>threading.Thread</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.HealingThread.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method representing the thread's activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object's constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self):
+    log.debug(&#34;invoking healing target method %r&#34;, self._target)
+    try:
+        self._target()
+    except Exception as e:
+        log.warning(&#34;Error %r while running healing method %r.&#34;, e, self._target)
+        log.warning(stacktrace())
+    log.debug(&#34;invoking healing on_finished method %r&#34;, self._on_finished)
+    try:
+        self._on_finished()
+    except Exception as e:
+        log.warning(
+            &#34;Error %r while calling on_finished method %r.&#34;, e, self._on_finished
+        )
+        log.warning(stacktrace())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline"><code class="flex name class">
+<span>class <span class="ident">Pipeline</span></span>
+<span>(</span><span>pname=None, pconfig=None, data_dir=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The main Ambianic data processing structure.</p>
+<p>Data flow is arranged in independent pipelines.</p>
+<p>Init and load pipeline config.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pipeline(ManagedService):
+    &#34;&#34;&#34;The main Ambianic data processing structure.
+
+    Data flow is arranged in independent pipelines.
+    &#34;&#34;&#34;
+
+    # valid pipeline operators
+    PIPELINE_OPS = {
+        &#34;source&#34;: AVSourceElement,
+        &#34;detect_objects&#34;: ObjectDetector,
+        &#34;save_detections&#34;: SaveDetectionSamples,
+        &#34;detect_faces&#34;: FaceDetector,
+        &#34;detect_falls&#34;: FallDetector,
+    }
+
+    def _on_unknown_pipe_element(self, name=None):
+        log.warning(
+            &#34;Pipeline definition has unknown &#34;
+            &#34;pipeline element: %s .&#34;
+            &#34; Ignoring element and moving forward.&#34;,
+            name,
+        )
+
+    def __init__(self, pname=None, pconfig=None, data_dir=None):
+        &#34;&#34;&#34;Init and load pipeline config.&#34;&#34;&#34;
+        assert pname, &#34;Pipeline name required&#34;
+        self.name = pname
+        assert pconfig, &#34;Pipeline config required&#34;
+        self.config = pconfig
+        self.data_dir = data_dir
+        self._pipe_elements = []
+        self._latest_heartbeat_time = time.monotonic()
+        # in the future status may represent a spectrum of health issues
+        self._latest_health_status = True
+        self._healing_thread = None
+        self._context = timeline_event.PipelineContext(unique_pipeline_name=self.name)
+        self._context.data_dir = self.data_dir
+        self._event_log = timeline_event.get_event_log(pipeline_context=self._context)
+        self.load_elements()
+
+    def load_elements(self):
+        &#34;&#34;&#34;load pipeline elements based on configuration&#34;&#34;&#34;
+        self._pipe_elements = []
+
+        log.debug(&#34;Pipeline starts with element %r&#34;, self.config[0])
+        source_element_key = [*self.config[0]][0]
+        assert (
+            source_element_key == &#34;source&#34;
+        ), &#34;Pipeline config must begin with a &#39;source&#39; element instead of {}&#34;.format(
+            source_element_key
+        )
+
+        for element_def in self.config:
+            log.info(&#34;Pipeline %s loading next element: %s&#34;, self.name, element_def)
+
+            is_valid = self.parse_source_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
+            is_valid = self.parse_ai_model_config(element_def)
+            if not is_valid:
+                self._pipe_elements = []
+                break
+
+            element_name = [*element_def][0]
+            assert element_name
+            element_config = element_def[element_name]
+
+            # if dealing with a static reference, pass the whole object
+            # eg. { [source]: [source-name] }
+            if isinstance(element_config, str):
+                element_config = {element_name: element_config}
+
+            element_class = self.PIPELINE_OPS.get(element_name, None)
+
+            if element_class:
+                log.info(
+                    &#34;Pipeline %s adding element name %s &#34; &#34;with class %s and config %s&#34;,
+                    self.name,
+                    element_name,
+                    element_class,
+                    element_config,
+                )
+                element = element_class(
+                    **element_config,
+                    element_name=element_name,
+                    context=self._context,
+                    event_log=self._event_log
+                )
+                self._pipe_elements.append(element)
+            else:
+                self._on_unknown_pipe_element(name=element_name)
+
+    def parse_ai_model_config(self, element_def: dict):
+        &#34;&#34;&#34;parse AI model configuration&#34;&#34;&#34;
+
+        # its one
+        ai_element = None
+        for element_name in element_def:
+            # ai_model: accept just a source_id and take it from sources
+            if &#34;ai_model&#34; in element_def[element_name]:
+                ai_element = element_def[element_name]
+                break
+
+        if ai_element is None:
+            return True
+
+        ai_model_id = None
+        if isinstance(ai_element[&#34;ai_model&#34;], str):
+            ai_model_id = ai_element[&#34;ai_model&#34;]
+
+        if (
+            ai_element[&#34;ai_model&#34;] is not None
+            and &#34;ai_model_id&#34; in ai_element[&#34;ai_model&#34;]
+        ):
+            ai_model_id = ai_element[&#34;ai_model&#34;][&#34;ai_model_id&#34;]
+
+        if ai_model_id is None:
+            return True
+
+        ai_model = config.ai_models[ai_model_id]
+        if ai_model is None:
+            log.warning(
+                &#34;AI model id %s not found, cannot start pipeline %s&#34;,
+                ai_model_id,
+                self.name,
+            )
+            return False
+
+        # merge the model config but keep the pipe element specific one
+        for key, val in ai_model.items():
+            if key not in ai_element:
+                ai_element[key] = val
+
+        # track the id
+        ai_element[&#34;ai_model_id&#34;] = ai_model_id
+
+        return True
+
+    def parse_source_config(self, element_def: dict):
+        &#34;&#34;&#34;parse source configuration&#34;&#34;&#34;
+        # source: accept just a source_id and take it from sources
+        if &#34;source&#34; not in element_def:
+            return True
+
+        source_id = None
+        if isinstance(element_def[&#34;source&#34;], str):
+            source_id = element_def[&#34;source&#34;]
+        if &#34;source_id&#34; in element_def[&#34;source&#34;]:
+            source_id = element_def[&#34;source&#34;][&#34;source_id&#34;]
+
+        if source_id is None:
+            return True
+
+        # track the source_id
+        source = config.sources.get(source_id, None)
+        if source is None:
+            log.warning(
+                &#34;Source id %s not found, cannot start pipeline %s&#34;,
+                source_id,
+                self.name,
+            )
+            return False
+
+        element_def[&#34;source&#34;] = source
+        element_def[&#34;source&#34;][&#34;source_id&#34;] = source_id
+
+        return True
+
+    def restart(self):
+        &#34;&#34;&#34;Restart a pipeline&#34;&#34;&#34;
+        self.stop()
+        self.reset()
+        self.start()
+        log.info(&#34;Pipeline restarted&#34;)
+
+    def reset(self):
+        &#34;&#34;&#34;Reset the pipeline elements&#34;&#34;&#34;
+        self._pipe_elements = []
+
+    def _heartbeat(self):
+        &#34;&#34;&#34;Set the heartbeat timestamp to time.monotonic().&#34;&#34;&#34;
+        log.debug(&#34;Pipeline %s heartbeat signal.&#34;, self.name)
+        now = time.monotonic()
+        lapse = now - self._latest_heartbeat_time
+        log.debug(&#34;Pipeline %s heartbeat lapse %f&#34;, self.name, lapse)
+        self._latest_heartbeat_time = now
+
+    def _on_start_no_elements(self):
+        return
+
+    def start(self):
+        &#34;&#34;&#34;Start the pipeline loop.
+
+        Run until the pipeline has input from its configured source
+        or until a stop() signal is received.
+        &#34;&#34;&#34;
+        if len(self._pipe_elements) == 0:
+            self.load_elements()
+
+        log.info(&#34;Starting %s main pipeline loop&#34;, self.__class__.__name__)
+        if not self._pipe_elements:
+            return self._on_start_no_elements()
+
+        self._heartbeat()
+        # connect pipeline elements as defined by user
+        for i in range(1, len(self._pipe_elements)):
+            e = self._pipe_elements[i - 1]
+            assert isinstance(e, PipeElement)
+            e_next = self._pipe_elements[i]
+            e.connect_to_next_element(e_next)
+        last_element = self._pipe_elements[len(self._pipe_elements) - 1]
+        hc = HealthChecker(
+            health_status_callback=self._heartbeat, element_name=&#34;health_check&#34;
+        )
+        last_element.connect_to_next_element(hc)
+        self._pipe_elements[0].start()
+        log.info(&#34;Started %s&#34;, self.__class__.__name__)
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Return health vitals status report.
+
+        :Returns:
+        -------
+        (timestamp, status)
+            a tuple of
+                monotonically increasing timestamp of the last known healthy
+                heartbeat and a status with additional health information.
+
+        &#34;&#34;&#34;
+        return self._latest_heartbeat_time, self._latest_health_status
+
+    def _on_healing_already_in_progress(self):
+        log.debug(
+            &#34;pipeline %s healing thread in progress.&#34;
+            &#34; Skipping request. &#34;
+            &#34;Thread id: %d. &#34;,
+            self.name,
+            self._healing_thread.ident,
+        )
+
+    def heal(self):
+        &#34;&#34;&#34;Nonblocking asynchronous heal function.&#34;&#34;&#34;
+        # register a heartbeat to prevent looping back
+        # into heal while healing
+        self._heartbeat()
+        if self._healing_thread:
+            self._on_healing_already_in_progress()
+        else:
+            log.debug(&#34;pipeline %s launching healing thread...&#34;, self.name)
+            heal_target = self._pipe_elements[0].heal
+
+            def healing_finished():
+                log.debug(
+                    &#34;pipeline %s healing thread id: %d ended. &#34;,
+                    self.name,
+                    self._healing_thread.ident,
+                )
+                self._healing_thread = None
+                # let&#39;s notify healthchecker that progress is being made
+                self._heartbeat()
+
+            # launch healing function in a non-blocking way
+            self._healing_thread = HealingThread(
+                target=heal_target, on_finished=healing_finished
+            )
+            self._healing_thread.start()
+            log.debug(&#34;pipeline %s launched healing thread.&#34;, self.name)
+
+    def stop(self):
+        &#34;&#34;&#34;Stop pipeline processing.
+
+        Disconnect from the source and all other external resources.
+        &#34;&#34;&#34;
+        log.info(&#34;Requesting pipeline elements to stop... %s&#34;, self.__class__.__name__)
+        if len(self._pipe_elements) &gt; 0:
+            self._pipe_elements[0].stop()
+        log.info(
+            &#34;Completed request to pipeline elements to stop. %s&#34;,
+            self.__class__.__name__,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.Pipeline.PIPELINE_OPS"><code class="name">var <span class="ident">PIPELINE_OPS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.Pipeline.heal"><code class="name flex">
+<span>def <span class="ident">heal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Nonblocking asynchronous heal function.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal(self):
+    &#34;&#34;&#34;Nonblocking asynchronous heal function.&#34;&#34;&#34;
+    # register a heartbeat to prevent looping back
+    # into heal while healing
+    self._heartbeat()
+    if self._healing_thread:
+        self._on_healing_already_in_progress()
+    else:
+        log.debug(&#34;pipeline %s launching healing thread...&#34;, self.name)
+        heal_target = self._pipe_elements[0].heal
+
+        def healing_finished():
+            log.debug(
+                &#34;pipeline %s healing thread id: %d ended. &#34;,
+                self.name,
+                self._healing_thread.ident,
+            )
+            self._healing_thread = None
+            # let&#39;s notify healthchecker that progress is being made
+            self._heartbeat()
+
+        # launch healing function in a non-blocking way
+        self._healing_thread = HealingThread(
+            target=heal_target, on_finished=healing_finished
+        )
+        self._healing_thread.start()
+        log.debug(&#34;pipeline %s launched healing thread.&#34;, self.name)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.healthcheck"><code class="name flex">
+<span>def <span class="ident">healthcheck</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return health vitals status report.</p>
+<h2 id="returns">:Returns:</h2>
+<p>(timestamp, status)
+a tuple of
+monotonically increasing timestamp of the last known healthy
+heartbeat and a status with additional health information.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def healthcheck(self):
+    &#34;&#34;&#34;Return health vitals status report.
+
+    :Returns:
+    -------
+    (timestamp, status)
+        a tuple of
+            monotonically increasing timestamp of the last known healthy
+            heartbeat and a status with additional health information.
+
+    &#34;&#34;&#34;
+    return self._latest_heartbeat_time, self._latest_health_status</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.load_elements"><code class="name flex">
+<span>def <span class="ident">load_elements</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>load pipeline elements based on configuration</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_elements(self):
+    &#34;&#34;&#34;load pipeline elements based on configuration&#34;&#34;&#34;
+    self._pipe_elements = []
+
+    log.debug(&#34;Pipeline starts with element %r&#34;, self.config[0])
+    source_element_key = [*self.config[0]][0]
+    assert (
+        source_element_key == &#34;source&#34;
+    ), &#34;Pipeline config must begin with a &#39;source&#39; element instead of {}&#34;.format(
+        source_element_key
+    )
+
+    for element_def in self.config:
+        log.info(&#34;Pipeline %s loading next element: %s&#34;, self.name, element_def)
+
+        is_valid = self.parse_source_config(element_def)
+        if not is_valid:
+            self._pipe_elements = []
+            break
+
+        is_valid = self.parse_ai_model_config(element_def)
+        if not is_valid:
+            self._pipe_elements = []
+            break
+
+        element_name = [*element_def][0]
+        assert element_name
+        element_config = element_def[element_name]
+
+        # if dealing with a static reference, pass the whole object
+        # eg. { [source]: [source-name] }
+        if isinstance(element_config, str):
+            element_config = {element_name: element_config}
+
+        element_class = self.PIPELINE_OPS.get(element_name, None)
+
+        if element_class:
+            log.info(
+                &#34;Pipeline %s adding element name %s &#34; &#34;with class %s and config %s&#34;,
+                self.name,
+                element_name,
+                element_class,
+                element_config,
+            )
+            element = element_class(
+                **element_config,
+                element_name=element_name,
+                context=self._context,
+                event_log=self._event_log
+            )
+            self._pipe_elements.append(element)
+        else:
+            self._on_unknown_pipe_element(name=element_name)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.parse_ai_model_config"><code class="name flex">
+<span>def <span class="ident">parse_ai_model_config</span></span>(<span>self, element_def: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>parse AI model configuration</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_ai_model_config(self, element_def: dict):
+    &#34;&#34;&#34;parse AI model configuration&#34;&#34;&#34;
+
+    # its one
+    ai_element = None
+    for element_name in element_def:
+        # ai_model: accept just a source_id and take it from sources
+        if &#34;ai_model&#34; in element_def[element_name]:
+            ai_element = element_def[element_name]
+            break
+
+    if ai_element is None:
+        return True
+
+    ai_model_id = None
+    if isinstance(ai_element[&#34;ai_model&#34;], str):
+        ai_model_id = ai_element[&#34;ai_model&#34;]
+
+    if (
+        ai_element[&#34;ai_model&#34;] is not None
+        and &#34;ai_model_id&#34; in ai_element[&#34;ai_model&#34;]
+    ):
+        ai_model_id = ai_element[&#34;ai_model&#34;][&#34;ai_model_id&#34;]
+
+    if ai_model_id is None:
+        return True
+
+    ai_model = config.ai_models[ai_model_id]
+    if ai_model is None:
+        log.warning(
+            &#34;AI model id %s not found, cannot start pipeline %s&#34;,
+            ai_model_id,
+            self.name,
+        )
+        return False
+
+    # merge the model config but keep the pipe element specific one
+    for key, val in ai_model.items():
+        if key not in ai_element:
+            ai_element[key] = val
+
+    # track the id
+    ai_element[&#34;ai_model_id&#34;] = ai_model_id
+
+    return True</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.parse_source_config"><code class="name flex">
+<span>def <span class="ident">parse_source_config</span></span>(<span>self, element_def: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>parse source configuration</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_source_config(self, element_def: dict):
+    &#34;&#34;&#34;parse source configuration&#34;&#34;&#34;
+    # source: accept just a source_id and take it from sources
+    if &#34;source&#34; not in element_def:
+        return True
+
+    source_id = None
+    if isinstance(element_def[&#34;source&#34;], str):
+        source_id = element_def[&#34;source&#34;]
+    if &#34;source_id&#34; in element_def[&#34;source&#34;]:
+        source_id = element_def[&#34;source&#34;][&#34;source_id&#34;]
+
+    if source_id is None:
+        return True
+
+    # track the source_id
+    source = config.sources.get(source_id, None)
+    if source is None:
+        log.warning(
+            &#34;Source id %s not found, cannot start pipeline %s&#34;,
+            source_id,
+            self.name,
+        )
+        return False
+
+    element_def[&#34;source&#34;] = source
+    element_def[&#34;source&#34;][&#34;source_id&#34;] = source_id
+
+    return True</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reset the pipeline elements</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset(self):
+    &#34;&#34;&#34;Reset the pipeline elements&#34;&#34;&#34;
+    self._pipe_elements = []</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.restart"><code class="name flex">
+<span>def <span class="ident">restart</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Restart a pipeline</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def restart(self):
+    &#34;&#34;&#34;Restart a pipeline&#34;&#34;&#34;
+    self.stop()
+    self.reset()
+    self.start()
+    log.info(&#34;Pipeline restarted&#34;)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Start the pipeline loop.</p>
+<p>Run until the pipeline has input from its configured source
+or until a stop() signal is received.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self):
+    &#34;&#34;&#34;Start the pipeline loop.
+
+    Run until the pipeline has input from its configured source
+    or until a stop() signal is received.
+    &#34;&#34;&#34;
+    if len(self._pipe_elements) == 0:
+        self.load_elements()
+
+    log.info(&#34;Starting %s main pipeline loop&#34;, self.__class__.__name__)
+    if not self._pipe_elements:
+        return self._on_start_no_elements()
+
+    self._heartbeat()
+    # connect pipeline elements as defined by user
+    for i in range(1, len(self._pipe_elements)):
+        e = self._pipe_elements[i - 1]
+        assert isinstance(e, PipeElement)
+        e_next = self._pipe_elements[i]
+        e.connect_to_next_element(e_next)
+    last_element = self._pipe_elements[len(self._pipe_elements) - 1]
+    hc = HealthChecker(
+        health_status_callback=self._heartbeat, element_name=&#34;health_check&#34;
+    )
+    last_element.connect_to_next_element(hc)
+    self._pipe_elements[0].start()
+    log.info(&#34;Started %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.Pipeline.stop"><code class="name flex">
+<span>def <span class="ident">stop</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Stop pipeline processing.</p>
+<p>Disconnect from the source and all other external resources.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stop(self):
+    &#34;&#34;&#34;Stop pipeline processing.
+
+    Disconnect from the source and all other external resources.
+    &#34;&#34;&#34;
+    log.info(&#34;Requesting pipeline elements to stop... %s&#34;, self.__class__.__name__)
+    if len(self._pipe_elements) &gt; 0:
+        self._pipe_elements[0].stop()
+    log.info(
+        &#34;Completed request to pipeline elements to stop. %s&#34;,
+        self.__class__.__name__,
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServer"><code class="flex name class">
+<span>class <span class="ident">PipelineServer</span></span>
+<span>(</span><span>config)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Thin wrapper around PipelineServer constructs.</p>
+<p>Allows controlled start and stop of the web app server
+in a separate process.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>config</code></strong> :&ensp;<code>yaml</code></dt>
+<dd>reference to the yaml configuration file</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PipelineServer(ManagedService):
+    &#34;&#34;&#34;Thin wrapper around PipelineServer constructs.
+
+    Allows controlled start and stop of the web app server
+    in a separate process.
+
+    Parameters
+    ----------
+    config : yaml
+        reference to the yaml configuration file
+
+    &#34;&#34;&#34;
+
+    def __init__(self, config):
+        self.config = config
+        self.pipeline_server_job = None
+
+    def start(self, **kwargs):
+        log.info(&#34;PipelineServer server job starting...&#34;)
+        f = PipelineServerJob(self.config)
+        self.pipeline_server_job = ThreadedJob(f)
+        self.pipeline_server_job.start()
+        log.info(&#34;Pipeline server job started&#34;)
+
+    def healthcheck(self):
+        return time.monotonic(), True
+
+    def heal(self):
+        &#34;&#34;&#34;Heal the server.
+
+        TODO: Keep an eye for potential scenarios that cause this server to
+         become unresponsive.
+        &#34;&#34;&#34;
+
+    def stop(self):
+        if self.pipeline_server_job:
+            log.info(&#34;Pipeline server job stopping...&#34;)
+            try:
+                self.pipeline_server_job.stop()
+                self.pipeline_server_job.join()
+            except RuntimeError as err:
+                log.warning(&#34;Failed stopping: %s&#34; % err)
+            self.pipeline_server_job = None
+            log.info(&#34;Pipeline server job stopped.&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.PipelineServer.heal"><code class="name flex">
+<span>def <span class="ident">heal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Heal the server.</p>
+<p>TODO: Keep an eye for potential scenarios that cause this server to
+become unresponsive.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal(self):
+    &#34;&#34;&#34;Heal the server.
+
+    TODO: Keep an eye for potential scenarios that cause this server to
+     become unresponsive.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ambianic.util.ManagedService.healthcheck" href="../util.html#ambianic.util.ManagedService.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.util.ManagedService.start" href="../util.html#ambianic.util.ManagedService.start">start</a></code></li>
+<li><code><a title="ambianic.util.ManagedService.stop" href="../util.html#ambianic.util.ManagedService.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob"><code class="flex name class">
+<span>class <span class="ident">PipelineServerJob</span></span>
+<span>(</span><span>config=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Main pipeline interpreter class.</p>
+<p>Responsible for loading, running and overseeing the health
+of all Ambianic pipelines.</p>
+<p>Initialize and configure a PipelineServer.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>config : dict
+Python representation of the yaml configuration file. Example:
+pipelines:
+# sequence of piped operations for use on front door cam
+daytime_front_door_watch:
+- source: *src_front_door_cam
+&hellip;
+- detect_objects: # run ai inference on the input data
+&hellip;
+- save_detections: # save samples from the inference results
+&hellip;</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PipelineServerJob(ManagedService):
+    &#34;&#34;&#34;Main pipeline interpreter class.
+
+    Responsible for loading, running and overseeing the health
+    of all Ambianic pipelines.
+
+    &#34;&#34;&#34;
+
+    MAX_HEARTBEAT_INTERVAL = 40
+    TERMINAL_HEALTH_INTERVAL = MAX_HEARTBEAT_INTERVAL * 3
+
+    def __init__(self, config=None):
+        &#34;&#34;&#34;Initialize and configure a PipelineServer.
+
+        :Parameters:
+        ----------
+        config : dict
+            Python representation of the yaml configuration file. Example:
+            pipelines:
+              # sequence of piped operations for use on front door cam
+              daytime_front_door_watch:
+                - source: *src_front_door_cam
+                  ...
+                - detect_objects: # run ai inference on the input data
+                  ...
+                - save_detections: # save samples from the inference results
+                  ...
+
+        &#34;&#34;&#34;
+        self._threaded_jobs = []
+        self._pipelines = []
+        self._config = None
+        self.reset(config)
+
+    def reset(self, config=None):
+        self._threaded_jobs = []
+        self._pipelines = []
+        if config is not None:
+            self._config = config
+        if self._config:
+            pipelines_config = self._config.get(&#34;pipelines&#34;, None)
+            if pipelines_config:
+                # get main data dir config and pass
+                # on to pipelines to use
+                data_dir = self._config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
+                self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
+                for pp in self._pipelines:
+                    pj = ThreadedJob(pp)
+                    self._threaded_jobs.append(pj)
+
+    def _on_terminal_pipeline_health(self, pipeline=None, lapse=None):
+        log.error(
+            &#34;Pipeline %s in terminal condition. &#34;
+            &#34;Unable to recover.&#34;
+            &#34;Latest heartbeat was %f seconds ago. &#34;,
+            pipeline.name,
+            lapse,
+        )
+
+    def _on_pipeline_job_ended(self, threaded_job=None):
+        p = threaded_job.job
+        log.debug(&#39;Pipeline &#34;%s&#34; has ended. &#39; &#34;Removing from health watch.&#34;, p.name)
+        self._threaded_jobs.remove(threaded_job)
+
+    def healthcheck(self):
+        &#34;&#34;&#34;Check the health of all managed pipelines.
+
+        Return the oldest heartbeat among all managed pipeline heartbeats.
+        Try to heal pipelines that haven&#39;t reported a heartbeat and awhile.
+
+        :returns: (timestamp, status) tuple with most outdated heartbeat
+            and worst known status among managed pipelines
+        &#34;&#34;&#34;
+        oldest_heartbeat = time.monotonic()
+        # iterate over a copy of jobs, because
+        # we may need to remove dead jobs in the loop
+        for j in list(self._threaded_jobs):
+            # get the pipeline object out of the threaded job wrapper
+            p = j.job
+            if j.is_alive():
+                latest_heartbeat, status = p.healthcheck()
+                now = time.monotonic()
+                lapse = now - latest_heartbeat
+                if lapse &gt; self.TERMINAL_HEALTH_INTERVAL:
+                    self._on_terminal_pipeline_health(p, lapse)
+                    # more than a reasonable amount of time has passed
+                    # since the pipeline reported a heartbeat.
+                    # Let&#39;s recycle it
+                elif lapse &gt; self.MAX_HEARTBEAT_INTERVAL:
+                    log.warning(
+                        &#39;Pipeline &#34;%s&#34; is not responsive. &#39;
+                        &#34;Latest heartbeat was %f seconds ago. &#34;
+                        &#34;Will attempt to heal it.&#34;,
+                        p.name,
+                        lapse,
+                    )
+                    self.heal_pipeline_job(j)
+                if oldest_heartbeat &gt; latest_heartbeat:
+                    oldest_heartbeat = latest_heartbeat
+            else:
+                self._on_pipeline_job_ended(threaded_job=j)
+        status = True  # At some point status may carry richer information
+        return oldest_heartbeat, status
+
+    def heal(self):
+        &#34;&#34;&#34;Heal the PipelineServer.
+
+        PipelineServer manages its own health as best possible.
+        Not much to do here at this time.
+        &#34;&#34;&#34;
+
+    def heal_pipeline_job(self, threaded_job=None):
+        assert threaded_job
+        pipeline = threaded_job.job
+        log.debug(&#34;pipline %s healing request...&#34;, pipeline.name)
+        threaded_job.heal()
+        log.debug(&#34;pipeline %s healing request completed.&#34;, pipeline.name)
+
+    def start(self):
+        # Start pipeline interpreter threads
+        log.info(&#34;pipeline jobs starting...&#34;)
+        for tj in self._threaded_jobs:
+            tj.start()
+        log.info(&#34;pipeline jobs started&#34;)
+
+    def stop(self):
+        log.info(&#34;pipeline jobs stopping...&#34;)
+        # Signal pipeline interpreter threads to close
+        for tj in self._threaded_jobs:
+            tj.stop()
+        # Wait for the pipeline interpreter threads to close...
+        for tj in self._threaded_jobs:
+            tj.join()
+        log.info(&#34;pipeline jobs stopped.&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.MAX_HEARTBEAT_INTERVAL"><code class="name">var <span class="ident">MAX_HEARTBEAT_INTERVAL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.TERMINAL_HEALTH_INTERVAL"><code class="name">var <span class="ident">TERMINAL_HEALTH_INTERVAL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.heal"><code class="name flex">
+<span>def <span class="ident">heal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Heal the PipelineServer.</p>
+<p>PipelineServer manages its own health as best possible.
+Not much to do here at this time.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal(self):
+    &#34;&#34;&#34;Heal the PipelineServer.
+
+    PipelineServer manages its own health as best possible.
+    Not much to do here at this time.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.heal_pipeline_job"><code class="name flex">
+<span>def <span class="ident">heal_pipeline_job</span></span>(<span>self, threaded_job=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal_pipeline_job(self, threaded_job=None):
+    assert threaded_job
+    pipeline = threaded_job.job
+    log.debug(&#34;pipline %s healing request...&#34;, pipeline.name)
+    threaded_job.heal()
+    log.debug(&#34;pipeline %s healing request completed.&#34;, pipeline.name)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.healthcheck"><code class="name flex">
+<span>def <span class="ident">healthcheck</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check the health of all managed pipelines.</p>
+<p>Return the oldest heartbeat among all managed pipeline heartbeats.
+Try to heal pipelines that haven't reported a heartbeat and awhile.</p>
+<p>:returns: (timestamp, status) tuple with most outdated heartbeat
+and worst known status among managed pipelines</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def healthcheck(self):
+    &#34;&#34;&#34;Check the health of all managed pipelines.
+
+    Return the oldest heartbeat among all managed pipeline heartbeats.
+    Try to heal pipelines that haven&#39;t reported a heartbeat and awhile.
+
+    :returns: (timestamp, status) tuple with most outdated heartbeat
+        and worst known status among managed pipelines
+    &#34;&#34;&#34;
+    oldest_heartbeat = time.monotonic()
+    # iterate over a copy of jobs, because
+    # we may need to remove dead jobs in the loop
+    for j in list(self._threaded_jobs):
+        # get the pipeline object out of the threaded job wrapper
+        p = j.job
+        if j.is_alive():
+            latest_heartbeat, status = p.healthcheck()
+            now = time.monotonic()
+            lapse = now - latest_heartbeat
+            if lapse &gt; self.TERMINAL_HEALTH_INTERVAL:
+                self._on_terminal_pipeline_health(p, lapse)
+                # more than a reasonable amount of time has passed
+                # since the pipeline reported a heartbeat.
+                # Let&#39;s recycle it
+            elif lapse &gt; self.MAX_HEARTBEAT_INTERVAL:
+                log.warning(
+                    &#39;Pipeline &#34;%s&#34; is not responsive. &#39;
+                    &#34;Latest heartbeat was %f seconds ago. &#34;
+                    &#34;Will attempt to heal it.&#34;,
+                    p.name,
+                    lapse,
+                )
+                self.heal_pipeline_job(j)
+            if oldest_heartbeat &gt; latest_heartbeat:
+                oldest_heartbeat = latest_heartbeat
+        else:
+            self._on_pipeline_job_ended(threaded_job=j)
+    status = True  # At some point status may carry richer information
+    return oldest_heartbeat, status</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.interpreter.PipelineServerJob.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self, config=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset(self, config=None):
+    self._threaded_jobs = []
+    self._pipelines = []
+    if config is not None:
+        self._config = config
+    if self._config:
+        pipelines_config = self._config.get(&#34;pipelines&#34;, None)
+        if pipelines_config:
+            # get main data dir config and pass
+            # on to pipelines to use
+            data_dir = self._config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
+            self._pipelines = get_pipelines(pipelines_config, data_dir=data_dir)
+            for pp in self._pipelines:
+                pj = ThreadedJob(pp)
+                self._threaded_jobs.append(pj)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ambianic.util.ManagedService" href="../util.html#ambianic.util.ManagedService">ManagedService</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ambianic.util.ManagedService.start" href="../util.html#ambianic.util.ManagedService.start">start</a></code></li>
+<li><code><a title="ambianic.util.ManagedService.stop" href="../util.html#ambianic.util.ManagedService.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ambianic.pipeline" href="index.html">ambianic.pipeline</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="ambianic.pipeline.interpreter.get_pipelines" href="#ambianic.pipeline.interpreter.get_pipelines">get_pipelines</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ambianic.pipeline.interpreter.HealingThread" href="#ambianic.pipeline.interpreter.HealingThread">HealingThread</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.interpreter.HealingThread.run" href="#ambianic.pipeline.interpreter.HealingThread.run">run</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.pipeline.interpreter.Pipeline" href="#ambianic.pipeline.interpreter.Pipeline">Pipeline</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.PIPELINE_OPS" href="#ambianic.pipeline.interpreter.Pipeline.PIPELINE_OPS">PIPELINE_OPS</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.heal" href="#ambianic.pipeline.interpreter.Pipeline.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.healthcheck" href="#ambianic.pipeline.interpreter.Pipeline.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.load_elements" href="#ambianic.pipeline.interpreter.Pipeline.load_elements">load_elements</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.parse_ai_model_config" href="#ambianic.pipeline.interpreter.Pipeline.parse_ai_model_config">parse_ai_model_config</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.parse_source_config" href="#ambianic.pipeline.interpreter.Pipeline.parse_source_config">parse_source_config</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.reset" href="#ambianic.pipeline.interpreter.Pipeline.reset">reset</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.restart" href="#ambianic.pipeline.interpreter.Pipeline.restart">restart</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.start" href="#ambianic.pipeline.interpreter.Pipeline.start">start</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.Pipeline.stop" href="#ambianic.pipeline.interpreter.Pipeline.stop">stop</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.pipeline.interpreter.PipelineServer" href="#ambianic.pipeline.interpreter.PipelineServer">PipelineServer</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServer.heal" href="#ambianic.pipeline.interpreter.PipelineServer.heal">heal</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.pipeline.interpreter.PipelineServerJob" href="#ambianic.pipeline.interpreter.PipelineServerJob">PipelineServerJob</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.MAX_HEARTBEAT_INTERVAL" href="#ambianic.pipeline.interpreter.PipelineServerJob.MAX_HEARTBEAT_INTERVAL">MAX_HEARTBEAT_INTERVAL</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.TERMINAL_HEALTH_INTERVAL" href="#ambianic.pipeline.interpreter.PipelineServerJob.TERMINAL_HEALTH_INTERVAL">TERMINAL_HEALTH_INTERVAL</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.heal" href="#ambianic.pipeline.interpreter.PipelineServerJob.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.heal_pipeline_job" href="#ambianic.pipeline.interpreter.PipelineServerJob.heal_pipeline_job">heal_pipeline_job</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.healthcheck" href="#ambianic.pipeline.interpreter.PipelineServerJob.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.interpreter.PipelineServerJob.reset" href="#ambianic.pipeline.interpreter.PipelineServerJob.reset">reset</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ambianic.pipeline.avsource.av_element API documentation</title>
+<meta name="description" content="Audio Video sourcing to an Ambianic pipeline." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ambianic.pipeline.avsource.av_element</code></h1>
+</header>
+<section id="section-intro">
+<p>Audio Video sourcing to an Ambianic pipeline.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Audio Video sourcing to an Ambianic pipeline.&#34;&#34;&#34;
+
+import logging
+import multiprocessing
+import queue
+import threading
+import time
+from io import BytesIO
+
+import requests
+from ambianic.pipeline import PipeElement
+from ambianic.pipeline.avsource import gst_process
+from ambianic.pipeline.avsource.picam import Picamera
+from ambianic.util import stacktrace
+from PIL import Image
+
+log = logging.getLogger(__name__)
+
+
+MIN_HEALING_INTERVAL = 5
+
+
+class AVSourceElement(PipeElement):
+    &#34;&#34;&#34;
+    Pipe element that handles a wide range of media input sources.
+
+    Detects media input source, processes and passes on normalized raw
+    image samples to the next pipe element.
+    &#34;&#34;&#34;
+
+    def __init__(self, uri=None, type=None, live=False, **kwargs):
+        &#34;&#34;&#34;Create an av source element with given configuration.
+
+        :Parameters:
+        ----------
+        source_conf : dict
+            uri: string (examples
+                uri: rtsp://somehost/ipcam/channel0
+                uri: http://somehost/ipcam/sample.jpg
+                )
+            type: string (video, audio or image)
+            live: boolean (True if the source is a live stream)
+                When live is True AVSourceElement source element will
+                keep trying to reconnect
+                in case there is disruption of the source stream
+                until explicit stop() is requested of the element.
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+
+        assert uri
+
+        element_conf = dict(kwargs)
+        element_conf[&#34;uri&#34;] = uri
+        element_conf[&#34;type&#34;] = type
+        element_conf[&#34;live&#34;] = live
+
+        # pipeline source info
+        self._source_conf = element_conf
+        self._is_live = live
+        self._gst_process = None
+        self._gst_out_queue = None
+        self._gst_process_stop_signal = None
+        self._gst_process_eos_reached = None
+        # protects access to gstreamer resources in rare cases
+        # such as supervised healing requests
+        self._healing_in_progress = threading.RLock()
+        # ensure healing requests are reasonably spaced out
+        self._latest_healing = time.monotonic()
+
+    def _on_new_sample(self, sample=None):
+        log.debug(&#34;Input stream received new gst sample.&#34;)
+        assert sample
+        sample_type = sample[&#34;type&#34;]
+        # only image type supported at this time
+        assert sample_type == &#34;image&#34;
+        # make sure the sample is in RGB format
+        sample_format = sample[&#34;format&#34;]
+        assert sample_format == &#34;RGB&#34;
+        width = sample[&#34;width&#34;]
+        height = sample[&#34;height&#34;]
+        sample_bytes = sample[&#34;bytes&#34;]
+        img = Image.frombytes(sample_format, (width, height), sample_bytes, &#34;raw&#34;)
+        # pass image sample to next pipe element, e.g. ai inference
+        log.debug(&#34;Input stream sending sample to next element.&#34;)
+        self.receive_next_sample(image=img)
+
+    def _get_gst_service_starter(self):
+        return gst_process.start_gst_service
+
+    def _get_sample_queue(self):
+        q = multiprocessing.Queue(3)
+        return q
+
+    def fetch_img(self, session=None, url=None) -&gt; Image:
+        assert url
+        r = requests.get(url)
+        r.raise_for_status()
+        img = Image.open(BytesIO(r.content))
+        return img
+
+    def _on_fetch_img_exception(self, _exception=None):
+        pass
+
+    def _fetch_img_exception_recovery(self):
+        log.debug(&#34;Pausing for a moment to let remote network issues settle&#34;)
+        time.sleep(1)
+
+    def _run_picamera_fetch(self):
+        with Picamera() as picamera:
+            while not self._stop_requested:
+                if picamera.has_failure():
+                    log.warning(picamera.error)
+                    break
+                image = picamera.acquire()
+                if image is not None:
+                    self.receive_next_sample(image=image)
+
+    def _run_http_fetch(self, url=None, continuous=False):
+        log.debug(&#34;Fetching source uri sample over http: %r&#34;, url)
+        assert url
+        while not self._stop_requested:
+            img = None
+            try:
+                img = self.fetch_img(url=url)
+                log.debug(
+                    &#34;&#34;&#34;
+                    Image fetched: %r
+                    From URL: %r
+                    &#34;&#34;&#34;,
+                    img,
+                    url,
+                )
+                log.debug(&#34;Sending sample to next element.&#34;)
+                self.receive_next_sample(image=img)
+            except Exception as e:
+                self._on_fetch_img_exception(_exception=e)
+                log.exception(
+                    &#34;&#34;&#34;
+                    Failed to fetch image from pipeline source.
+                    URL: %r
+                    &#34;&#34;&#34;,
+                    url,
+                )
+                if continuous:
+                    log.warning(
+                        &#34;Will keep trying to fetch image from continuous source.&#34;
+                    )
+                    self._fetch_img_exception_recovery()
+            finally:
+                if not continuous:
+                    # this is not a live (continuous) media source
+                    # exit the image fetch loop
+                    log.debug(&#34;Completed one time http image fetch from URL: %r&#34;, url)
+                    break
+
+    def _run_gst_service(self):
+        log.debug(&#34;Starting Gst service process...&#34;)
+        self._gst_out_queue = self._get_sample_queue()
+        self._gst_process_stop_signal = multiprocessing.Event()
+        self._gst_process_eos_reached = multiprocessing.Event()
+        gst_service = self._get_gst_service_starter()
+        self._gst_process = multiprocessing.Process(
+            target=gst_service,
+            name=&#34;Gstreamer Service Process&#34;,
+            daemon=True,
+            kwargs={
+                &#34;source_conf&#34;: self._source_conf,
+                &#34;out_queue&#34;: self._gst_out_queue,
+                &#34;stop_signal&#34;: self._gst_process_stop_signal,
+                &#34;eos_reached&#34;: self._gst_process_eos_reached,
+            },
+        )
+        self._gst_process.daemon = True
+        self._gst_process.start()
+        gst_proc = self._gst_process
+        while not self._stop_requested and gst_proc.is_alive():
+            # do not use process.join() to avoid deadlock due to shared queue
+            try:
+                next_sample = self._gst_out_queue.get(timeout=1)
+                # print(&#39;next sample received from gst queue, _on_new_sample&#39;)
+                self._on_new_sample(sample=next_sample)
+            except queue.Empty:
+                log.debug(&#34;no new sample available yet in gst out queue&#34;)
+            except Exception as e:
+                log.warning(&#34;AVElement loop caught an error: %s. &#34;, str(e))
+                log.warning(stacktrace())
+                # print(&#39;Exception caught from _on_new_sample %r&#39; % e)
+        # print(&#39;end of _run_gst_service.&#39;)
+        log.debug(&#34;exiting _run_gst_service&#34;)
+
+    def _clear_gst_out_queue(self):
+        log.debug(&#34;Clearing _gst_out_queue.&#34;)
+        while not self._gst_out_queue.empty():
+            try:
+                self._gst_out_queue.get_nowait()
+            except queue.Empty:
+                log.debug(&#34;_gst_out_queue already empty.&#34;)
+        log.debug(&#34;Cleared _gst_out_queue.&#34;)
+
+    def _process_terminate(self, proc=None):
+        proc.terminate()
+        # give it a few seconds to terminate cleanly
+        for i in range(10):
+            self._clear_gst_out_queue()
+            # do not use process.join() to avoid deadlock
+            # due to shared queue. Use sleep instead.
+            time.sleep(1)
+            if not proc.is_alive():
+                break
+
+    def _process_good_kill(self, proc=None):
+        # print(&#39;AVElement: Killing Gst process PID %r&#39; % proc.pid)
+        proc.kill()
+        return True
+        # time.sleep(3)
+        # if proc.exitcode is None:
+        #    # process is still alive
+        #    log.warning(&#39;GST process kill was not clean. Process still alive.&#39;
+        #                &#39;PID %r&#39;,
+        #                proc.pid)
+        #    # print(&#39;GST process kill was not clean. Process still alive. &#39;
+        #    #      &#39;PID %r&#39; %
+        #    #      proc.pid)
+        #    return False
+        # else:
+        #    log.warning(&#39;GST process killed. &#39;
+        #                &#39;PID %r , exit code: %r&#39;,
+        #                proc.pid,
+        #                proc.exitcode)
+        #    # print(&#39;GST process killed. &#39;
+        #    #      &#39;PID %r , exit code: %r&#39; %
+        #    #      (proc.pid, proc.exitcode))
+        #    return True
+
+    def _stop_gst_service(self):
+        log.debug(&#34;Stopping Gst service process.&#34;)
+        gst_proc = self._gst_process
+        stop_signal = self._gst_process_stop_signal
+        if gst_proc and gst_proc.is_alive():
+            # tell the OS we won&#39;t use this queue any more
+            log.debug(&#34;GST process still alive. Shutting it down.&#34;)
+            # log.debug(&#39;Closing out queue shared with GST proces.&#39;)
+            # self._gst_out_queue.close()
+            # send a polite request to the process to stop
+            log.debug(&#34;Sending stop signal to GST process.&#34;)
+            stop_signal.set()
+            log.debug(&#34;Signalled gst process to stop&#34;)
+            # give it a few seconds to stop cleanly
+            for i in range(10):
+                # make sure a non-empty queue doesn&#39;t block
+                # the gst process from stopping
+                self._clear_gst_out_queue()
+                # do not use process.join() to avoid deadlock
+                # due to shared queue.  Use sleep instead.
+                time.sleep(1)
+                if not gst_proc.is_alive():
+                    break
+            # process did not stop, we need to be a bit more assertive
+            if gst_proc.is_alive():
+                log.debug(&#34;Gst process did not stop. Terminating.&#34;)
+                self._process_terminate(gst_proc)
+                if gst_proc.is_alive():
+                    # last resort, force kill the process
+                    log.debug(
+                        &#34;Gst proess did not terminate.&#34; &#34; Resorting to force kill.&#34;
+                    )
+                    clean_kill = self._process_good_kill(gst_proc)
+                    log.debug(&#34;Gst process killed. Clean: %r.&#34;, clean_kill)
+                else:
+                    log.debug(&#34;Gst process stopped after terminate signal.&#34;)
+            else:
+                log.debug(&#34;Gst process stopped after stop signal.&#34;)
+
+    def start(self):
+        &#34;&#34;&#34;Start processing input from the configured audio or video source.&#34;&#34;&#34;
+        super().start()
+        log.info(&#34;Starting %s&#34;, self.__class__.__name__)
+        self._stop_requested = False
+
+        if self._source_conf[&#34;uri&#34;] == &#34;picamera&#34;:
+            log.debug(&#34;Input source is picamera&#34;)
+            self._run_picamera_fetch()
+        elif (
+            self._source_conf[&#34;uri&#34;].startswith(&#34;http&#34;)
+            and self._source_conf[&#34;type&#34;] == &#34;image&#34;
+        ):
+            log.debug(
+                &#34;&#34;&#34;
+                Input source is an http still image: %r
+                Will use python requests lib for sampling.
+                &#34;&#34;&#34;,
+                self._source_conf[&#34;uri&#34;],
+            )
+            # use http client library to fetch still images
+            self._run_http_fetch(url=self._source_conf[&#34;uri&#34;], continuous=self._is_live)
+        else:
+            log.debug(
+                &#34;&#34;&#34;
+                Input source is : %r
+                Will use gstreamer for sampling.
+                &#34;&#34;&#34;,
+                self._source_conf[&#34;uri&#34;],
+            )
+            # use gstreamer for all other types of media sources
+            while not self._stop_requested:
+                self._run_gst_service()
+                if self._gst_process_eos_reached and not self._is_live:
+                    # gst process reached end of its input stream
+                    # and this is not a live (continuous) stream loop
+                    # exit the avsource element loop
+                    log.debug(
+                        &#34;GST EOS reached for source uri: %r&#34;, self._source_conf[&#34;uri&#34;]
+                    )
+                    break
+            self._stop_gst_service()
+        super().stop()
+        log.info(&#34;Stopped %s&#34;, self.__class__.__name__)
+
+    def heal(self):
+        &#34;&#34;&#34;Attempt to heal a damaged AV source processing service.&#34;&#34;&#34;
+        log.debug(&#34;Entering healing method... %s&#34;, self.__class__.__name__)
+        log.debug(&#34;Healing waiting for lock.&#34;)
+        self._healing_in_progress.acquire()
+        try:
+            logging.debug(&#34;Healing lock acquired.&#34;)
+            now = time.monotonic()
+            # Space out healing attempts.
+            # No point in back to back healing runs when there are
+            # blocking dependencies on external resources.
+            log.warning(
+                &#34;latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r&#34;,
+                self._latest_healing,
+                now - MIN_HEALING_INTERVAL,
+            )
+            if self._latest_healing &lt; now - MIN_HEALING_INTERVAL:
+                # cause gst loop to exit and repair
+                self._latest_healing = now
+                self._stop_gst_service()
+                # lets give external resources a chance to recover
+                # for example wifi connection is down temporarily
+                time.sleep(1)
+                log.debug(&#34;AVElement healing completed.&#34;)
+            else:
+                log.debug(
+                    &#34;Healing request ignored. &#34;
+                    &#34;Too soon after previous healing request.&#34;
+                )
+        finally:
+            logging.debug(&#34;Healing lock released.&#34;)
+            self._healing_in_progress.release()
+        log.debug(&#34;Exiting healing method. %s&#34;, self.__class__.__name__)
+
+    def stop(self):
+        &#34;&#34;&#34;Stop the AV source processing loop.&#34;&#34;&#34;
+        log.info(&#34;Entering stop method ... %s&#34;, self.__class__.__name__)
+        self._stop_requested = True
+        super().stop()
+        log.info(&#34;Exiting stop method. %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ambianic.pipeline.avsource.av_element.AVSourceElement"><code class="flex name class">
+<span>class <span class="ident">AVSourceElement</span></span>
+<span>(</span><span>uri=None, type=None, live=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Pipe element that handles a wide range of media input sources.</p>
+<p>Detects media input source, processes and passes on normalized raw
+image samples to the next pipe element.</p>
+<p>Create an av source element with given configuration.</p>
+<h2 id="parameters">:Parameters:</h2>
+<p>source_conf : dict
+uri: string (examples
+uri: rtsp://somehost/ipcam/channel0
+uri: <a href="http://somehost/ipcam/sample.jpg">http://somehost/ipcam/sample.jpg</a>
+)
+type: string (video, audio or image)
+live: boolean (True if the source is a live stream)
+When live is True AVSourceElement source element will
+keep trying to reconnect
+in case there is disruption of the source stream
+until explicit stop() is requested of the element.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AVSourceElement(PipeElement):
+    &#34;&#34;&#34;
+    Pipe element that handles a wide range of media input sources.
+
+    Detects media input source, processes and passes on normalized raw
+    image samples to the next pipe element.
+    &#34;&#34;&#34;
+
+    def __init__(self, uri=None, type=None, live=False, **kwargs):
+        &#34;&#34;&#34;Create an av source element with given configuration.
+
+        :Parameters:
+        ----------
+        source_conf : dict
+            uri: string (examples
+                uri: rtsp://somehost/ipcam/channel0
+                uri: http://somehost/ipcam/sample.jpg
+                )
+            type: string (video, audio or image)
+            live: boolean (True if the source is a live stream)
+                When live is True AVSourceElement source element will
+                keep trying to reconnect
+                in case there is disruption of the source stream
+                until explicit stop() is requested of the element.
+        &#34;&#34;&#34;
+        super().__init__(**kwargs)
+
+        assert uri
+
+        element_conf = dict(kwargs)
+        element_conf[&#34;uri&#34;] = uri
+        element_conf[&#34;type&#34;] = type
+        element_conf[&#34;live&#34;] = live
+
+        # pipeline source info
+        self._source_conf = element_conf
+        self._is_live = live
+        self._gst_process = None
+        self._gst_out_queue = None
+        self._gst_process_stop_signal = None
+        self._gst_process_eos_reached = None
+        # protects access to gstreamer resources in rare cases
+        # such as supervised healing requests
+        self._healing_in_progress = threading.RLock()
+        # ensure healing requests are reasonably spaced out
+        self._latest_healing = time.monotonic()
+
+    def _on_new_sample(self, sample=None):
+        log.debug(&#34;Input stream received new gst sample.&#34;)
+        assert sample
+        sample_type = sample[&#34;type&#34;]
+        # only image type supported at this time
+        assert sample_type == &#34;image&#34;
+        # make sure the sample is in RGB format
+        sample_format = sample[&#34;format&#34;]
+        assert sample_format == &#34;RGB&#34;
+        width = sample[&#34;width&#34;]
+        height = sample[&#34;height&#34;]
+        sample_bytes = sample[&#34;bytes&#34;]
+        img = Image.frombytes(sample_format, (width, height), sample_bytes, &#34;raw&#34;)
+        # pass image sample to next pipe element, e.g. ai inference
+        log.debug(&#34;Input stream sending sample to next element.&#34;)
+        self.receive_next_sample(image=img)
+
+    def _get_gst_service_starter(self):
+        return gst_process.start_gst_service
+
+    def _get_sample_queue(self):
+        q = multiprocessing.Queue(3)
+        return q
+
+    def fetch_img(self, session=None, url=None) -&gt; Image:
+        assert url
+        r = requests.get(url)
+        r.raise_for_status()
+        img = Image.open(BytesIO(r.content))
+        return img
+
+    def _on_fetch_img_exception(self, _exception=None):
+        pass
+
+    def _fetch_img_exception_recovery(self):
+        log.debug(&#34;Pausing for a moment to let remote network issues settle&#34;)
+        time.sleep(1)
+
+    def _run_picamera_fetch(self):
+        with Picamera() as picamera:
+            while not self._stop_requested:
+                if picamera.has_failure():
+                    log.warning(picamera.error)
+                    break
+                image = picamera.acquire()
+                if image is not None:
+                    self.receive_next_sample(image=image)
+
+    def _run_http_fetch(self, url=None, continuous=False):
+        log.debug(&#34;Fetching source uri sample over http: %r&#34;, url)
+        assert url
+        while not self._stop_requested:
+            img = None
+            try:
+                img = self.fetch_img(url=url)
+                log.debug(
+                    &#34;&#34;&#34;
+                    Image fetched: %r
+                    From URL: %r
+                    &#34;&#34;&#34;,
+                    img,
+                    url,
+                )
+                log.debug(&#34;Sending sample to next element.&#34;)
+                self.receive_next_sample(image=img)
+            except Exception as e:
+                self._on_fetch_img_exception(_exception=e)
+                log.exception(
+                    &#34;&#34;&#34;
+                    Failed to fetch image from pipeline source.
+                    URL: %r
+                    &#34;&#34;&#34;,
+                    url,
+                )
+                if continuous:
+                    log.warning(
+                        &#34;Will keep trying to fetch image from continuous source.&#34;
+                    )
+                    self._fetch_img_exception_recovery()
+            finally:
+                if not continuous:
+                    # this is not a live (continuous) media source
+                    # exit the image fetch loop
+                    log.debug(&#34;Completed one time http image fetch from URL: %r&#34;, url)
+                    break
+
+    def _run_gst_service(self):
+        log.debug(&#34;Starting Gst service process...&#34;)
+        self._gst_out_queue = self._get_sample_queue()
+        self._gst_process_stop_signal = multiprocessing.Event()
+        self._gst_process_eos_reached = multiprocessing.Event()
+        gst_service = self._get_gst_service_starter()
+        self._gst_process = multiprocessing.Process(
+            target=gst_service,
+            name=&#34;Gstreamer Service Process&#34;,
+            daemon=True,
+            kwargs={
+                &#34;source_conf&#34;: self._source_conf,
+                &#34;out_queue&#34;: self._gst_out_queue,
+                &#34;stop_signal&#34;: self._gst_process_stop_signal,
+                &#34;eos_reached&#34;: self._gst_process_eos_reached,
+            },
+        )
+        self._gst_process.daemon = True
+        self._gst_process.start()
+        gst_proc = self._gst_process
+        while not self._stop_requested and gst_proc.is_alive():
+            # do not use process.join() to avoid deadlock due to shared queue
+            try:
+                next_sample = self._gst_out_queue.get(timeout=1)
+                # print(&#39;next sample received from gst queue, _on_new_sample&#39;)
+                self._on_new_sample(sample=next_sample)
+            except queue.Empty:
+                log.debug(&#34;no new sample available yet in gst out queue&#34;)
+            except Exception as e:
+                log.warning(&#34;AVElement loop caught an error: %s. &#34;, str(e))
+                log.warning(stacktrace())
+                # print(&#39;Exception caught from _on_new_sample %r&#39; % e)
+        # print(&#39;end of _run_gst_service.&#39;)
+        log.debug(&#34;exiting _run_gst_service&#34;)
+
+    def _clear_gst_out_queue(self):
+        log.debug(&#34;Clearing _gst_out_queue.&#34;)
+        while not self._gst_out_queue.empty():
+            try:
+                self._gst_out_queue.get_nowait()
+            except queue.Empty:
+                log.debug(&#34;_gst_out_queue already empty.&#34;)
+        log.debug(&#34;Cleared _gst_out_queue.&#34;)
+
+    def _process_terminate(self, proc=None):
+        proc.terminate()
+        # give it a few seconds to terminate cleanly
+        for i in range(10):
+            self._clear_gst_out_queue()
+            # do not use process.join() to avoid deadlock
+            # due to shared queue. Use sleep instead.
+            time.sleep(1)
+            if not proc.is_alive():
+                break
+
+    def _process_good_kill(self, proc=None):
+        # print(&#39;AVElement: Killing Gst process PID %r&#39; % proc.pid)
+        proc.kill()
+        return True
+        # time.sleep(3)
+        # if proc.exitcode is None:
+        #    # process is still alive
+        #    log.warning(&#39;GST process kill was not clean. Process still alive.&#39;
+        #                &#39;PID %r&#39;,
+        #                proc.pid)
+        #    # print(&#39;GST process kill was not clean. Process still alive. &#39;
+        #    #      &#39;PID %r&#39; %
+        #    #      proc.pid)
+        #    return False
+        # else:
+        #    log.warning(&#39;GST process killed. &#39;
+        #                &#39;PID %r , exit code: %r&#39;,
+        #                proc.pid,
+        #                proc.exitcode)
+        #    # print(&#39;GST process killed. &#39;
+        #    #      &#39;PID %r , exit code: %r&#39; %
+        #    #      (proc.pid, proc.exitcode))
+        #    return True
+
+    def _stop_gst_service(self):
+        log.debug(&#34;Stopping Gst service process.&#34;)
+        gst_proc = self._gst_process
+        stop_signal = self._gst_process_stop_signal
+        if gst_proc and gst_proc.is_alive():
+            # tell the OS we won&#39;t use this queue any more
+            log.debug(&#34;GST process still alive. Shutting it down.&#34;)
+            # log.debug(&#39;Closing out queue shared with GST proces.&#39;)
+            # self._gst_out_queue.close()
+            # send a polite request to the process to stop
+            log.debug(&#34;Sending stop signal to GST process.&#34;)
+            stop_signal.set()
+            log.debug(&#34;Signalled gst process to stop&#34;)
+            # give it a few seconds to stop cleanly
+            for i in range(10):
+                # make sure a non-empty queue doesn&#39;t block
+                # the gst process from stopping
+                self._clear_gst_out_queue()
+                # do not use process.join() to avoid deadlock
+                # due to shared queue.  Use sleep instead.
+                time.sleep(1)
+                if not gst_proc.is_alive():
+                    break
+            # process did not stop, we need to be a bit more assertive
+            if gst_proc.is_alive():
+                log.debug(&#34;Gst process did not stop. Terminating.&#34;)
+                self._process_terminate(gst_proc)
+                if gst_proc.is_alive():
+                    # last resort, force kill the process
+                    log.debug(
+                        &#34;Gst proess did not terminate.&#34; &#34; Resorting to force kill.&#34;
+                    )
+                    clean_kill = self._process_good_kill(gst_proc)
+                    log.debug(&#34;Gst process killed. Clean: %r.&#34;, clean_kill)
+                else:
+                    log.debug(&#34;Gst process stopped after terminate signal.&#34;)
+            else:
+                log.debug(&#34;Gst process stopped after stop signal.&#34;)
+
+    def start(self):
+        &#34;&#34;&#34;Start processing input from the configured audio or video source.&#34;&#34;&#34;
+        super().start()
+        log.info(&#34;Starting %s&#34;, self.__class__.__name__)
+        self._stop_requested = False
+
+        if self._source_conf[&#34;uri&#34;] == &#34;picamera&#34;:
+            log.debug(&#34;Input source is picamera&#34;)
+            self._run_picamera_fetch()
+        elif (
+            self._source_conf[&#34;uri&#34;].startswith(&#34;http&#34;)
+            and self._source_conf[&#34;type&#34;] == &#34;image&#34;
+        ):
+            log.debug(
+                &#34;&#34;&#34;
+                Input source is an http still image: %r
+                Will use python requests lib for sampling.
+                &#34;&#34;&#34;,
+                self._source_conf[&#34;uri&#34;],
+            )
+            # use http client library to fetch still images
+            self._run_http_fetch(url=self._source_conf[&#34;uri&#34;], continuous=self._is_live)
+        else:
+            log.debug(
+                &#34;&#34;&#34;
+                Input source is : %r
+                Will use gstreamer for sampling.
+                &#34;&#34;&#34;,
+                self._source_conf[&#34;uri&#34;],
+            )
+            # use gstreamer for all other types of media sources
+            while not self._stop_requested:
+                self._run_gst_service()
+                if self._gst_process_eos_reached and not self._is_live:
+                    # gst process reached end of its input stream
+                    # and this is not a live (continuous) stream loop
+                    # exit the avsource element loop
+                    log.debug(
+                        &#34;GST EOS reached for source uri: %r&#34;, self._source_conf[&#34;uri&#34;]
+                    )
+                    break
+            self._stop_gst_service()
+        super().stop()
+        log.info(&#34;Stopped %s&#34;, self.__class__.__name__)
+
+    def heal(self):
+        &#34;&#34;&#34;Attempt to heal a damaged AV source processing service.&#34;&#34;&#34;
+        log.debug(&#34;Entering healing method... %s&#34;, self.__class__.__name__)
+        log.debug(&#34;Healing waiting for lock.&#34;)
+        self._healing_in_progress.acquire()
+        try:
+            logging.debug(&#34;Healing lock acquired.&#34;)
+            now = time.monotonic()
+            # Space out healing attempts.
+            # No point in back to back healing runs when there are
+            # blocking dependencies on external resources.
+            log.warning(
+                &#34;latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r&#34;,
+                self._latest_healing,
+                now - MIN_HEALING_INTERVAL,
+            )
+            if self._latest_healing &lt; now - MIN_HEALING_INTERVAL:
+                # cause gst loop to exit and repair
+                self._latest_healing = now
+                self._stop_gst_service()
+                # lets give external resources a chance to recover
+                # for example wifi connection is down temporarily
+                time.sleep(1)
+                log.debug(&#34;AVElement healing completed.&#34;)
+            else:
+                log.debug(
+                    &#34;Healing request ignored. &#34;
+                    &#34;Too soon after previous healing request.&#34;
+                )
+        finally:
+            logging.debug(&#34;Healing lock released.&#34;)
+            self._healing_in_progress.release()
+        log.debug(&#34;Exiting healing method. %s&#34;, self.__class__.__name__)
+
+    def stop(self):
+        &#34;&#34;&#34;Stop the AV source processing loop.&#34;&#34;&#34;
+        log.info(&#34;Entering stop method ... %s&#34;, self.__class__.__name__)
+        self._stop_requested = True
+        super().stop()
+        log.info(&#34;Exiting stop method. %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.pipeline.PipeElement" href="../index.html#ambianic.pipeline.PipeElement">PipeElement</a></li>
+<li><a title="ambianic.util.ManagedService" href="../../util.html#ambianic.util.ManagedService">ManagedService</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ambianic.pipeline.avsource.av_element.AVSourceElement.fetch_img"><code class="name flex">
+<span>def <span class="ident">fetch_img</span></span>(<span>self, session=None, url=None) ‑> <module 'PIL.Image' from '/usr/local/lib/python3.7/dist-packages/PIL/Image.py'></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fetch_img(self, session=None, url=None) -&gt; Image:
+    assert url
+    r = requests.get(url)
+    r.raise_for_status()
+    img = Image.open(BytesIO(r.content))
+    return img</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.avsource.av_element.AVSourceElement.heal"><code class="name flex">
+<span>def <span class="ident">heal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Attempt to heal a damaged AV source processing service.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def heal(self):
+    &#34;&#34;&#34;Attempt to heal a damaged AV source processing service.&#34;&#34;&#34;
+    log.debug(&#34;Entering healing method... %s&#34;, self.__class__.__name__)
+    log.debug(&#34;Healing waiting for lock.&#34;)
+    self._healing_in_progress.acquire()
+    try:
+        logging.debug(&#34;Healing lock acquired.&#34;)
+        now = time.monotonic()
+        # Space out healing attempts.
+        # No point in back to back healing runs when there are
+        # blocking dependencies on external resources.
+        log.warning(
+            &#34;latest healing ts: %r, now-MIN_HEALING_INTERVAL: %r&#34;,
+            self._latest_healing,
+            now - MIN_HEALING_INTERVAL,
+        )
+        if self._latest_healing &lt; now - MIN_HEALING_INTERVAL:
+            # cause gst loop to exit and repair
+            self._latest_healing = now
+            self._stop_gst_service()
+            # lets give external resources a chance to recover
+            # for example wifi connection is down temporarily
+            time.sleep(1)
+            log.debug(&#34;AVElement healing completed.&#34;)
+        else:
+            log.debug(
+                &#34;Healing request ignored. &#34;
+                &#34;Too soon after previous healing request.&#34;
+            )
+    finally:
+        logging.debug(&#34;Healing lock released.&#34;)
+        self._healing_in_progress.release()
+    log.debug(&#34;Exiting healing method. %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.avsource.av_element.AVSourceElement.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Start processing input from the configured audio or video source.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self):
+    &#34;&#34;&#34;Start processing input from the configured audio or video source.&#34;&#34;&#34;
+    super().start()
+    log.info(&#34;Starting %s&#34;, self.__class__.__name__)
+    self._stop_requested = False
+
+    if self._source_conf[&#34;uri&#34;] == &#34;picamera&#34;:
+        log.debug(&#34;Input source is picamera&#34;)
+        self._run_picamera_fetch()
+    elif (
+        self._source_conf[&#34;uri&#34;].startswith(&#34;http&#34;)
+        and self._source_conf[&#34;type&#34;] == &#34;image&#34;
+    ):
+        log.debug(
+            &#34;&#34;&#34;
+            Input source is an http still image: %r
+            Will use python requests lib for sampling.
+            &#34;&#34;&#34;,
+            self._source_conf[&#34;uri&#34;],
+        )
+        # use http client library to fetch still images
+        self._run_http_fetch(url=self._source_conf[&#34;uri&#34;], continuous=self._is_live)
+    else:
+        log.debug(
+            &#34;&#34;&#34;
+            Input source is : %r
+            Will use gstreamer for sampling.
+            &#34;&#34;&#34;,
+            self._source_conf[&#34;uri&#34;],
+        )
+        # use gstreamer for all other types of media sources
+        while not self._stop_requested:
+            self._run_gst_service()
+            if self._gst_process_eos_reached and not self._is_live:
+                # gst process reached end of its input stream
+                # and this is not a live (continuous) stream loop
+                # exit the avsource element loop
+                log.debug(
+                    &#34;GST EOS reached for source uri: %r&#34;, self._source_conf[&#34;uri&#34;]
+                )
+                break
+        self._stop_gst_service()
+    super().stop()
+    log.info(&#34;Stopped %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.pipeline.avsource.av_element.AVSourceElement.stop"><code class="name flex">
+<span>def <span class="ident">stop</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Stop the AV source processing loop.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stop(self):
+    &#34;&#34;&#34;Stop the AV source processing loop.&#34;&#34;&#34;
+    log.info(&#34;Entering stop method ... %s&#34;, self.__class__.__name__)
+    self._stop_requested = True
+    super().stop()
+    log.info(&#34;Exiting stop method. %s&#34;, self.__class__.__name__)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ambianic.pipeline.PipeElement" href="../index.html#ambianic.pipeline.PipeElement">PipeElement</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ambianic.pipeline.PipeElement.connect_to_next_element" href="../index.html#ambianic.pipeline.PipeElement.connect_to_next_element">connect_to_next_element</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.context" href="../index.html#ambianic.pipeline.PipeElement.context">context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.event_log" href="../index.html#ambianic.pipeline.PipeElement.event_log">event_log</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.healthcheck" href="../index.html#ambianic.pipeline.PipeElement.healthcheck">healthcheck</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.heartbeat" href="../index.html#ambianic.pipeline.PipeElement.heartbeat">heartbeat</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.name" href="../index.html#ambianic.pipeline.PipeElement.name">name</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.pop_context" href="../index.html#ambianic.pipeline.PipeElement.pop_context">pop_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.process_sample" href="../index.html#ambianic.pipeline.PipeElement.process_sample">process_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.push_context" href="../index.html#ambianic.pipeline.PipeElement.push_context">push_context</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.receive_next_sample" href="../index.html#ambianic.pipeline.PipeElement.receive_next_sample">receive_next_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.PipeElement.state" href="../index.html#ambianic.pipeline.PipeElement.state">state</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ambianic.pipeline.avsource" href="index.html">ambianic.pipeline.avsource</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ambianic.pipeline.avsource.av_element.AVSourceElement" href="#ambianic.pipeline.avsource.av_element.AVSourceElement">AVSourceElement</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.pipeline.avsource.av_element.AVSourceElement.fetch_img" href="#ambianic.pipeline.avsource.av_element.AVSourceElement.fetch_img">fetch_img</a></code></li>
+<li><code><a title="ambianic.pipeline.avsource.av_element.AVSourceElement.heal" href="#ambianic.pipeline.avsource.av_element.AVSourceElement.heal">heal</a></code></li>
+<li><code><a title="ambianic.pipeline.avsource.av_element.AVSourceElement.start" href="#ambianic.pipeline.avsource.av_element.AVSourceElement.start">start</a></code></li>
+<li><code><a title="ambianic.pipeline.avsource.av_element.AVSourceElement.stop" href="#ambianic.pipeline.avsource.av_element.AVSourceElement.stop">stop</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
