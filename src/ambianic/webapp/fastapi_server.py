@@ -40,25 +40,24 @@ class FastapiJob(ManagedService):
         """Start service."""
         log.debug("Fastapi starting main loop")
         self.fastapi_stopped = False
-        log.info(
-            f"starting fastapi/uvicorn web server on {self.uvi_ip_address}:{self.uvi_port}"
-        )
+        uvi_conf = {
+            # "host": self.uvi_ip_address,
+            "port": self.uvi_port,
+            # "reload": self.uvi_reload,
+            # "reload_dirs": "src",
+            # "debug": self.uvi_debug,
+            # "log_level": log.level,
+            # "workers": 3,
+        }
+        log.info(f"starting fastapi/uvicorn web server: {uvi_conf}")
         # there are open discussions on programmtically starting and shutting down uvicorn
         # ref: https://github.com/encode/uvicorn/discussions/1103
         # ref: https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest
         self.uvi = Process(
             target=uvicorn.run,
             args=("ambianic.webapp.fastapi_app",),
-            kwargs={
-                "host": self.uvi_ip_address,
-                "port": self.uvi_port,
-                "reload": self.uvi_reload,
-                "reload_dirs": "src",
-                "debug": self.uvi_debug,
-                "log_level": log.level,
-                "workers": 3,
-            },
-            daemon=False,
+            kwargs=uvi_conf,
+            daemon=True,
         )
         self.uvi.start()
 
@@ -66,9 +65,7 @@ class FastapiJob(ManagedService):
         """Stop service."""
         self.fastapi_stopped = True
         self.uvi.terminate()
-        log.debug(
-            "Fastapi/uvicorn exited. $$$$$$$\n$$$$$$$\n$$$$$$$\n$$$$$$$\n$$$$$$$\n$$$$$$$\n"
-        )
+        log.debug("Fastapi/uvicorn exited.")
 
     def healthcheck(self):
         """Report health status."""
