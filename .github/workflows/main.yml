@@ -39,6 +39,7 @@ jobs:
   test_arm:
     needs: [formatting]
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v2
       - name: Run test script

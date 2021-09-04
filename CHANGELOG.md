@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.16.0](https://github.com/ambianic/ambianic-edge/compare/v1.15.5...v1.16.0) (2021-09-02)
+
+
+### Features
+
+* move to fastapi and publish OpenAPI docs; closes [#335](https://github.com/ambianic/ambianic-edge/issues/335) ([#374](https://github.com/ambianic/ambianic-edge/issues/374)) ([0e3fc4a](https://github.com/ambianic/ambianic-edge/commit/0e3fc4a7fbcd0ef802271d5cb45ff1d1631d2ee3))
+
 ## [1.15.5](https://github.com/ambianic/ambianic-edge/compare/v1.15.4...v1.15.5) (2021-08-20)
 
 
