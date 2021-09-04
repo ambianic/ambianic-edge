@@ -11,23 +11,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+log = logging.getLogger("uvicorn.error")
+
 app = FastAPI()
+
+
+def _mount_data_dir(data_dir: str):
+    # serve static files from the data directory
+    data_path = Path(data_dir).resolve()
+    log.info(f"Serving /api/data from {data_path.as_posix()}")
+    app.mount("/api/data", StaticFiles(directory=data_path), name="static")
 
 
 def set_data_dir(data_dir: str = None) -> None:
     app.data_dir = data_dir
-    # serve static files from the data directory
-    data_path = Path(data_dir).resolve()
-    app.mount("/api/data", StaticFiles(directory=data_path), name="static")
+    _mount_data_dir(data_dir=data_dir)
 
-
-# set an initial data dir location
-if config:
-    data_dir = config.get("data_dir", None)
-if not data_dir:
-    data_dir = DEFAULT_DATA_DIR
-
-log = logging.getLogger(__name__)
 
 # CORS (Cross-Origin Resource Sharing) Section
 # ref: https://fastapi.tiangolo.com/tutorial/cors/
@@ -42,6 +41,16 @@ app.add_middleware(
 
 # [Sitemap]
 # sitemap definitions follow
+
+
+@app.on_event("startup")
+async def startup_event():
+    # set an initial data dir location
+    if config:
+        cfg_data_dir = config.get("data_dir", DEFAULT_DATA_DIR)
+        set_data_dir(data_dir=cfg_data_dir)
+    if not app.data_dir:
+        set_data_dir(data_dir=DEFAULT_DATA_DIR)
 
 
 # a simple page that says hello
@@ -126,4 +135,4 @@ def ping():
     return "pong"
 
 
-log.info("REST API deployed (as a Fastapi app).")
+log.info("Ambianc Edge OpenAPI deployed via fastapi/uvicorn.")
