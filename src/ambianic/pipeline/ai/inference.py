@@ -1,9 +1,9 @@
 """Tensorflow inference engine wrapper."""
 import logging
 import os
-
 import numpy as np
-from tflite_runtime.interpreter import Interpreter, load_delegate
+from tflite_runtime.interpreter import Interpreter
+from tflite_runtime.interpreter import load_delegate
 
 log = logging.getLogger(__name__)
 
@@ -14,14 +14,15 @@ def _get_edgetpu_interpreter(model=None):  # pragma: no cover
     tf_interpreter = None
     if model:
         try:
-            edgetpu_delegate = load_delegate("libedgetpu.so.1.0")
+            edgetpu_delegate = load_delegate('libedgetpu.so.1.0')
             assert edgetpu_delegate
             tf_interpreter = Interpreter(
-                model_path=model, experimental_delegates=[edgetpu_delegate]
-            )
-            log.debug("EdgeTPU available. Will use EdgeTPU model.")
+                model_path=model,
+                experimental_delegates=[edgetpu_delegate]
+                )
+            log.debug('EdgeTPU available. Will use EdgeTPU model.')
         except Exception as e:
-            log.debug("EdgeTPU init error: %r", e)
+            log.debug('EdgeTPU init error: %r', e)
             # log.debug(stacktrace())
     return tf_interpreter
 
@@ -36,9 +37,13 @@ class TFInferenceEngine:
     Otherwise falls back to TFLite Runtime.
     """
 
-    def __init__(
-        self, model=None, labels=None, confidence_threshold=0.8, top_k=10, **kwargs
-    ):
+    def __init__(self,
+                 model=None,
+                 labels=None,
+                 confidence_threshold=0.8,
+                 top_k=10,
+                 **kwargs
+                 ):
         """Create an instance of Tensorflow inference engine.
 
         :Parameters:
@@ -59,54 +64,53 @@ class TFInferenceEngine:
 
         """
         assert model
-        assert model["tflite"], "TFLite AI model path required."
-        model_tflite = model["tflite"]
-        assert os.path.isfile(
-            model_tflite
-        ), f"TFLite AI model file does not exist: {model_tflite}"
+        assert model['tflite'], 'TFLite AI model path required.'
+        model_tflite = model['tflite']
+        assert os.path.isfile(model_tflite), \
+            'TFLite AI model file does not exist: {}' \
+            .format(model_tflite)
         self._model_tflite_path = model_tflite
-        model_edgetpu = model.get("edgetpu", None)
+        model_edgetpu = model.get('edgetpu', None)
         if model_edgetpu:
-            assert os.path.isfile(
-                model_edgetpu
-            ), f"EdgeTPU AI model file does not exist: {model_edgetpu}"
+            assert os.path.isfile(model_edgetpu), \
+                'EdgeTPU AI model file does not exist: {}' \
+                .format(model_edgetpu)
         self._model_edgetpu_path = model_edgetpu
-        assert labels, "AI model labels path required."
-        assert os.path.isfile(labels), "AI model labels file does not exist: {}".format(
-            labels
-        )
+        assert labels, 'AI model labels path required.'
+        assert os.path.isfile(labels), \
+            'AI model labels file does not exist: {}' \
+            .format(labels)
         self._model_labels_path = labels
         self._confidence_threshold = confidence_threshold
         self._top_k = top_k
-        log.info(
-            "Loading AI model:\n"
-            "TFLite graph: %r\n"
-            "EdgeTPU graph: %r\n"
-            "Labels %r."
-            "Condidence threshod: %.0f%%"
-            "top-k: %d",
-            model_tflite,
-            model_edgetpu,
-            labels,
-            confidence_threshold * 100,
-            top_k,
-        )
+        log.info('Loading AI model:\n'
+                  'TFLite graph: %r\n'
+                  'EdgeTPU graph: %r\n'
+                  'Labels %r.'
+                  'Condidence threshod: %.0f%%'
+                  'top-k: %d',
+                  model_tflite,
+                  model_edgetpu,
+                  labels,
+                  confidence_threshold*100,
+                  top_k)
         # EdgeTPU is not available in testing and other environments
         # load dynamically as needed
-        #        edgetpu_class = 'DetectionEngine'
-        #        module_object = import_module('edgetpu.detection.engine',
-        #                                      packaage=edgetpu_class)
-        #        target_class = getattr(module_object, edgetpu_class)
+#        edgetpu_class = 'DetectionEngine'
+#        module_object = import_module('edgetpu.detection.engine',
+#                                      packaage=edgetpu_class)
+#        target_class = getattr(module_object, edgetpu_class)
         self._tf_interpreter = _get_edgetpu_interpreter(model=model_edgetpu)
         if not self._tf_interpreter:
-            log.debug("EdgeTPU not available. Will use TFLite CPU runtime.")
+            log.debug('EdgeTPU not available. Will use TFLite CPU runtime.')
             self._tf_interpreter = Interpreter(model_path=model_tflite)
         assert self._tf_interpreter
         self._tf_interpreter.allocate_tensors()
         # check the type of the input tensor
         self._tf_input_details = self._tf_interpreter.get_input_details()
         self._tf_output_details = self._tf_interpreter.get_output_details()
-        self._tf_is_quantized_model = self.input_details[0]["dtype"] != np.float32
+        self._tf_is_quantized_model = \
+            self.input_details[0]['dtype'] != np.float32
 
     @property
     def input_details(self):

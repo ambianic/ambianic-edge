@@ -1,6 +1,5 @@
 """Face detection pipe element."""
 import logging
-
 from .image_boundingBox_detection import TFBoundingBoxDetection
 
 log = logging.getLogger(__name__)
@@ -17,10 +16,10 @@ class FaceDetector(TFBoundingBoxDetection):
         width, height = image.size
 
         # Setting the points for cropped image
-        left = box["xmin"] * width
-        top = box["ymin"] * height
-        right = box["xmax"] * width
-        bottom = box["ymax"] * height
+        left = box['xmin']*width
+        top = box['ymin']*height
+        right = box['xmax']*width
+        bottom = box['ymax']*height
 
         # Cropped image of above dimension
         # (It will not change orginal image)
@@ -29,22 +28,18 @@ class FaceDetector(TFBoundingBoxDetection):
 
     def process_sample(self, **sample):
         """Detect faces in the given image sample."""
-        log.debug(
-            "Pipe element %s received new sample with keys %s.",
-            self.__class__.__name__,
-            str([*sample]),
-        )
+        log.debug("Pipe element %s received new sample with keys %s.",
+                  self.__class__.__name__,
+                  str([*sample]))
         if not sample:
             # pass through empty samples to next element
             yield None
         else:
             try:
-                image = sample["image"]
-                prev_inference_result = sample.get("inference_result", None)
-                log.debug(
-                    "Received sample with inference_result: %s",
-                    str(prev_inference_result),
-                )
+                image = sample['image']
+                prev_inference_result = sample.get('inference_result', None)
+                log.debug("Received sample with inference_result: %s",
+                          str(prev_inference_result))
                 person_regions = []
                 if not prev_inference_result:
                     yield None
@@ -52,49 +47,39 @@ class FaceDetector(TFBoundingBoxDetection):
                     # - apply face detection to cropped person areas
                     # - pass face detections on to next pipe element
                     for e_result in prev_inference_result:
-                        label, confidence, box = (
-                            e_result["label"],
-                            e_result["confidence"],
-                            e_result["box"],
-                        )
+                        label, confidence, box = e_result['label'], \
+                                                 e_result['confidence'], \
+                                                 e_result['box']
 
-                        if (
-                            label == "person"
-                            and confidence >= self._tfengine.confidence_threshold
-                        ):
+                        if label == 'person' and \
+                           confidence >= self._tfengine.confidence_threshold:
                             person_regions.append(box)
-                    log.debug(
-                        "Received %d person boxes for face detection",
-                        len(person_regions),
-                    )
+                    log.debug('Received %d person boxes for face detection',
+                              len(person_regions))
                     for box in person_regions:
                         person_image = self.crop_image(image, box)
-                        thumbnail, tensor_image, inference_result = self.detect(
-                            image=person_image
-                        )
+                        thumbnail, tensor_image, inference_result = \
+                            self.detect(image=person_image)
 
                         inference_result = self.convert_inference_result(
-                            inference_result
-                        )
-                        log.debug(
-                            "Face detection inference_result: %r", inference_result
-                        )
+                            inference_result)
+                        log.debug('Face detection inference_result: %r',
+                                  inference_result)
                         inf_meta = {
-                            "display": "Face Detection",
+                            'display': 'Face Detection',
                         }
                         processed_sample = {
-                            "image": person_image,
-                            "thumbnail": thumbnail,
-                            "inference_result": inference_result,
-                            "inference_meta": inf_meta,
-                        }
+                            'image': person_image,
+                            'thumbnail': thumbnail,
+                            'inference_result': inference_result,
+                            'inference_meta': inf_meta
+                            }
                         yield processed_sample
             except Exception as e:
-                log.exception(
-                    "Error %r while processing sample. " "Dropping sample: %r",
-                    e,
-                    sample,
-                )
+                log.exception('Error %r while processing sample. '
+                              'Dropping sample: %r',
+                              e,
+                              sample)
 
     def convert_inference_result(self, inference_result):
 
@@ -102,18 +87,19 @@ class FaceDetector(TFBoundingBoxDetection):
         if inference_result:
             for inf in inference_result:
                 label, confidence, box = inf[0:3]
-                log.info(
-                    "label: %s , confidence: %.0f, box: %s", label, confidence, box
-                )
+                log.info('label: %s , confidence: %.0f, box: %s',
+                         label,
+                         confidence,
+                         box)
                 one_inf = {
-                    "label": label,
-                    "confidence": confidence,
-                    "box": {
-                        "xmin": box[0],
-                        "ymin": box[1],
-                        "xmax": box[2],
-                        "ymax": box[3],
-                    },
+                    'label': label,
+                    'confidence': confidence,
+                    'box': {
+                        'xmin': box[0],
+                        'ymin': box[1],
+                        'xmax': box[2],
+                        'ymax': box[3],
+                    }
                 }
                 inf_json.append(one_inf)
 

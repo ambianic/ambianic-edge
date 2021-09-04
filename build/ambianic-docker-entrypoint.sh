@@ -8,7 +8,7 @@ set -ex
 if $(arch | grep -q arm)
 then
   echo "Re-Installing ca-certifcates on Raspberry Pi / ARM CPU"
-  sudo dpkg --configure -a
+  sudo dpkg --configure -a  
   sudo apt-get remove -y ca-certificates
   sudo apt-get update
   sudo apt-get install -y ca-certificates

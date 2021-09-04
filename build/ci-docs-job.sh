@@ -19,3 +19,4 @@ docker run --rm \
   --entrypoint 'bash' \
   -e CODECOV_TOKEN \
   ambianic/ambianic-edge:$TAG /workspace/docs/build-docs.sh -u
+

@@ -1,18 +1,18 @@
 import logging
-import queue
-import threading
+from io import BytesIO, StringIO
 import time
-from io import BytesIO
-
 from PIL import Image
+import threading
+import queue
 
 log = logging.getLogger(__name__)
 
 picamera_override = None
 
 
-class Picamera:
-    def __init__(self, image_format="jpeg", queue_max_size=10):
+class Picamera():
+
+    def __init__(self, image_format='jpeg', queue_max_size=10):
         self.error = None
         self.format = image_format
         self.queue = queue.Queue(queue_max_size)
@@ -38,7 +38,6 @@ class Picamera:
         if picamera_override is None:
             try:
                 import picamera
-
                 return picamera.PiCamera()
             except Exception as err:
                 log.warning("Error loading picamera module: %s" % err)
@@ -70,7 +69,8 @@ class Picamera:
                 if not self.queue.full():
                     try:
                         self.queue.put(
-                            Image.open(BytesIO(stream.getvalue())), block=False
+                            Image.open(BytesIO(stream.getvalue())), 
+                            block=False
                         )
                         log.debug("Queued capture")
                     except queue.Full:

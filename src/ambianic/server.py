@@ -3,13 +3,14 @@ import logging
 import logging.handlers
 import os
 import time
+from watchdog.observers import Observer
 
-from ambianic import config, get_config_file, get_secrets_file, load_config, logger
-from ambianic.pipeline import timeline_event
+from ambianic.pipeline import timeline
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
-from ambianic.webapp.fastapi_server import FastapiServer
-from watchdog.observers import Observer
+from ambianic import logger, config, get_config_file, \
+    get_secrets_file, load_config
+from ambianic.webapp.flaskr import FlaskServer
 
 log = logging.getLogger(__name__)
 
@@ -17,10 +18,9 @@ AI_MODELS_DIR = "ai_models"
 MANAGED_SERVICE_HEARTBEAT_THRESHOLD = 180  # seconds
 MAIN_HEARTBEAT_LOG_INTERVAL = 5
 ROOT_SERVERS = {
-    "pipelines": PipelineServer,
-    "web": FastapiServer,
+    'pipelines': PipelineServer,
+    'web': FlaskServer,
 }
-
 
 class AmbianicServer:
     """Ambianic main server."""
@@ -60,15 +60,24 @@ class AmbianicServer:
         ]
         for filepath in config_paths:
             if not os.path.exists(filepath):
-                log.warning("File %s not found, skip changes watch" % filepath)
+                log.warning(
+                    "File %s not found, skip changes watch" %
+                    filepath
+                )
                 continue
-            log.info("Watching %s for changes" % filepath)
-            self._config_observer.schedule(self, filepath, recursive=False)
+            log.info(
+                    "Watching %s for changes" % filepath
+                )
+            self._config_observer.schedule(
+                self,
+                filepath,
+                recursive=False
+            )
 
         self._config_observer.start()
 
     def _stop_servers(self, servers):
-        log.debug("Stopping servers...")
+        log.debug('Stopping servers...')
         for name, srv in servers.items():
             srv.stop()
             srv = None
@@ -84,15 +93,12 @@ class AmbianicServer:
                 # log only if lapse is over 1 second long.
                 # otherwise things are OK and we don't want
                 # unnecessary log noise
-                log.debug("lapse for %s is %f", s.__class__.__name__, lapse)
+                log.debug('lapse for %s is %f', s.__class__.__name__, lapse)
             if lapse > MANAGED_SERVICE_HEARTBEAT_THRESHOLD:
-                log.warning(
-                    'Server "%s" is not responsive. '
-                    "Latest heart beat was %f seconds ago. "
-                    "Will send heal signal.",
-                    s.__class__.__name__,
-                    lapse,
-                )
+                log.warning('Server "%s" is not responsive. '
+                            'Latest heart beat was %f seconds ago. '
+                            'Will send heal signal.',
+                            s.__class__.__name__, lapse)
                 s.heal()
 
     def _log_heartbeat(self):
@@ -126,12 +132,12 @@ class AmbianicServer:
         # reload configuration
         load_config(get_config_file())
         logger.configure(config.get("logging"))
-        timeline_event.configure_timeline(config.get("timeline"))
+        timeline.configure_timeline(config.get("timeline"))
 
         # watch configuration changes
         self.start_watch_config()
 
-        log.info("Starting Ambianic server...")
+        log.info('Starting Ambianic server...')
 
         # Register the signal handlers
         servers = {}
@@ -152,7 +158,7 @@ class AmbianicServer:
                 self._heartbeat()
         except ServiceExit:
 
-            log.info("Service exit requested.")
+            log.info('Service exit requested.')
 
             # stop servers and cleanup references
             self._stop_servers(servers)
@@ -164,10 +170,10 @@ class AmbianicServer:
 
         if self._service_restart_requested:
             self._service_restart_requested = False
-            log.info("Restarting Ambianic server.")
+            log.info('Restarting Ambianic server.')
             return self.start()
 
-        log.info("Exiting Ambianic server.")
+        log.info('Exiting Ambianic server.')
         return True
 
     def stop(self):

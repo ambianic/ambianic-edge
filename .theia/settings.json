@@ -7,5 +7,6 @@
     "python.testing.pytestEnabled": true,
     "editor.autoSave": "on",
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": false,
+    "python.linting.pylamaEnabled": true
 }

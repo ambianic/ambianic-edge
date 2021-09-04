@@ -1,9 +1,7 @@
 """Tensorflow image detection wrapper."""
 import logging
 import time
-
 import numpy as np
-
 # from importlib import import_module
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 
@@ -13,7 +11,10 @@ log = logging.getLogger(__name__)
 class TFBoundingBoxDetection(TFDetectionModel):
     """Applies Tensorflow image detection."""
 
-    def __init__(self, model=None, **kwargs):
+    def __init__(self,
+                 model=None,
+                 **kwargs
+                 ):
         """Initialize detector with config parameters.
         :Parameters:
         ----------
@@ -43,14 +44,13 @@ class TFBoundingBoxDetection(TFDetectionModel):
         tfe = self._tfengine
 
         # NxHxWxC, H:1, W:2
-        height = tfe.input_details[0]["shape"][1]
-        width = tfe.input_details[0]["shape"][2]
+        height = tfe.input_details[0]['shape'][1]
+        width = tfe.input_details[0]['shape'][2]
 
         desired_size = (width, height)
 
-        new_im, thumbnail = self.resize_to_input_tensor(
-            image=image, desired_size=desired_size
-        )
+        new_im, thumbnail = self.resize_to_input_tensor(image=image,
+                                                        desired_size=desired_size)
 
         # calculate what fraction of the new image is the thumbnail size
         # we will use these factors to adjust detection box coordinates
@@ -73,9 +73,10 @@ class TFBoundingBoxDetection(TFDetectionModel):
             # normalize floating point values
             input_mean = 127.5
             input_std = 127.5
-            input_data = (np.float32(input_data) - input_mean) / input_std
+            input_data = \
+                (np.float32(input_data) - input_mean) / input_std
 
-        tfe.set_tensor(tfe.input_details[0]["index"], input_data)
+        tfe.set_tensor(tfe.input_details[0]['index'], input_data)
 
         # invoke inference on the new input data
         # with the configured model
@@ -91,10 +92,11 @@ class TFBoundingBoxDetection(TFDetectionModel):
         #             tfe._tf_interpreter.get_tensor(od))
 
         # get output tensor
-        boxes = tfe.get_tensor(tfe.output_details[0]["index"])
-        label_codes = tfe.get_tensor(tfe.output_details[1]["index"])
-        scores = tfe.get_tensor(tfe.output_details[2]["index"])
-        num = tfe.get_tensor(tfe.output_details[3]["index"])
+        boxes = tfe.get_tensor(tfe.output_details[0]['index'])
+        label_codes = tfe.get_tensor(
+            tfe.output_details[1]['index'])
+        scores = tfe.get_tensor(tfe.output_details[2]['index'])
+        num = tfe.get_tensor(tfe.output_details[3]['index'])
         # log.warning('Detections:\n num: %r\n label_codes: %r\n scores: %r\n',
         #             num, label_codes, scores)
         # log.warning('Required confidence: %r',
@@ -108,7 +110,7 @@ class TFBoundingBoxDetection(TFDetectionModel):
         indices_of_sorted_scores = np.argsort(scores[0, :detections_count])
         # log.warning('Indices of sorted scores: %r:',
         #             indices_of_sorted_scores)
-        top_k_indices = indices_of_sorted_scores[-1 * tfe.top_k :][::-1]
+        top_k_indices = indices_of_sorted_scores[-1*tfe.top_k:][::-1]
         # log.warning('Indices of top_k scores: %r:', top_k_indices)
         # from the top_k results, only take the ones that score
         # above the confidence threshold criteria.
@@ -120,10 +122,10 @@ class TFBoundingBoxDetection(TFDetectionModel):
                 li = int(label_codes[0, i])
                 # protect against models that return arbitrary labels
                 # when the confidence is low
-                if li < len(self._labels):
+                if (li < len(self._labels)):
                     label = self._labels[li]
                     # If a label filter is specified, apply it.
-                    if not self._label_filter or label in self._label_filter:
+                    if (not self._label_filter or label in self._label_filter):
                         box = boxes[0, i, :]
                         # refit detections into original image size
                         # without overflowing outside image borders
@@ -131,15 +133,16 @@ class TFBoundingBoxDetection(TFDetectionModel):
                         y0 = box[0] / h_factor
                         x1 = min(box[3] / w_factor, 1)
                         y1 = min(box[2] / h_factor, 1)
-                        log.debug(
-                            "thumbnail image size: %r , " "tensor image size: %r",
-                            thumbnail.size,
-                            new_im.size,
-                        )
-                        log.debug(
-                            "resizing detection box (x0, y0, x1, y1) " "from: %r to %r",
-                            (box[1], box[0], box[3], box[2]),
-                            (x0, y0, x1, y1),
-                        )
-                        inference_result.append((label, confidence, (x0, y0, x1, y1)))
+                        log.debug('thumbnail image size: %r , '
+                                  'tensor image size: %r',
+                                  thumbnail.size,
+                                  new_im.size)
+                        log.debug('resizing detection box (x0, y0, x1, y1) '
+                                  'from: %r to %r',
+                                  (box[1], box[0], box[3], box[2]),
+                                  (x0, y0, x1, y1))
+                        inference_result.append((
+                            label,
+                            confidence,
+                            (x0, y0, x1, y1)))
         return thumbnail, new_im, inference_result

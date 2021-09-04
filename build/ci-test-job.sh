@@ -53,3 +53,4 @@ docker run --rm \
 if [[ ${ARCH} == *"amd64"* ]]; then
     bash <(curl -s https://codecov.io/bash)
 fi
+
