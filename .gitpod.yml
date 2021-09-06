@@ -3,6 +3,7 @@ image:
   file: .gitpod.Dockerfile
 tasks:
   - init: |
+      pyenv global system
       echo "Gitpod init. Setting up ambianic-edge dev environment."
       pyenv global system
       python3 -m pip install --upgrade pip
