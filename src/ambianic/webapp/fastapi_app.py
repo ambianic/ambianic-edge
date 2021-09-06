@@ -1,6 +1,7 @@
-"""FASTAPI web/REST app."""
+"""FASTAPI OpenAPI/REST app."""
 import logging
 from pathlib import Path
+from typing import List
 
 import pkg_resources
 import yaml
@@ -10,10 +11,38 @@ from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 log = logging.getLogger("uvicorn.error")
 
-app = FastAPI()
+description = """
+Ambianic Edge API provides OpenAPI(REST) functions for management and access to detection events.
+This API is mainly intended for secure remote access via [peer.fetch()](https://github.com/ambianic/peerfetch).
+This API is not intended to be exposed as a public web service.
+🚀
+"""
+
+app = FastAPI(
+    # FastAPI OpenAPI docs metadata
+    # ref: https://fastapi.tiangolo.com/tutorial/metadata/
+    title="Ambianic Edge OpenAPI",
+    description=description,
+    version=__version__,
+    # terms_of_service="http://example.com/terms/",
+    # contact={
+    #    "name": "Deadpoolio the Amazing",
+    #    "url": "http://x-force.example.com/contact/",
+    #    "email": "dp@x-force.example.com",
+    # },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    },
+)
+
+
+class BaseResponse(BaseModel):
+    status: str = "OK"
 
 
 def _mount_data_dir(data_dir: str):
@@ -54,27 +83,32 @@ async def startup_event():
 
 
 # a simple page that says hello
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def hello():
     return "Ambianic Edge! Helpful AI for home and business automation."
 
 
-# healthcheck page available to docker-compose
-# and other health monitoring tools
-@app.get("/healthcheck")
+# Deprecated healthcheck page available to docker-compose
+# and other health monitoring tools.
+# /api/status is the new preferred method.
+@app.get("/healthcheck", include_in_schema=False)
 def health_check():
     return "Ambianic Edge is running in a cheerful healthy state!"
 
 
-# healthcheck page available to docker-compose
-# and other health monitoring tools
-@app.get("/api/status")
+class StatusResponse(BaseResponse):
+    version: str = Field(None, description="Ambianic Edge software version")
+
+
+@app.get("/api/status", response_model=StatusResponse)
 def get_status():
+    """Returns overall status of the Ambianic Edge device along with other device details such as release version."""
     response_object = {"status": "OK", "version": __version__}
     return response_object
 
 
-@app.get("/api/auth/premium-notification")
+# Method under development for future support of premium instant notifications
+@app.get("/api/auth/premium-notification", include_in_schema=False)
 def initialize_premium_notification(userId: str, notification_endpoint: str):
     userAuth0Id = userId
     endpoint = notification_endpoint
@@ -85,19 +119,25 @@ def initialize_premium_notification(userId: str, notification_endpoint: str):
             "NOTIFICATION_ENDPOINT": endpoint,
         },
     }
-
     directory = pkg_resources.resource_filename("ambianic.webapp", "premium.yaml")
-
     file = open(directory, "w+")
     yaml.dump(auth_file, file)
     file.close()
-
     return {"status": "OK", "message": "AUTH0_ID SAVED"}
 
 
-@app.get("/api/timeline")
-@app.get("/api/timeline.json")
+class TimelineResponse(BaseResponse):
+    timeline: List[dict] = Field(None, description="List of detection events")
+
+
+@app.get("/api/timeline.json", response_model=TimelineResponse)
+@app.get("/api/timeline", response_model=TimelineResponse)
 def get_timeline(page: int = 1):
+    """
+    Get timeline items in groups of 5 in reverse chronographical order.
+
+    For example **page**=1 returns the latest 5 detected events, **page**=2 gets the previous 5 and so on.
+    """
     response_object = {"status": "success"}
     log.debug('Requested timeline events page" %d', page)
     resp = timeline_dao.get_timeline(page=page, data_dir=app.data_dir)
@@ -107,30 +147,33 @@ def get_timeline(page: int = 1):
     return response_object
 
 
-@app.get("/api/config")
+@app.get("/api/config", response_model=dict)
 def get_config():
+    """
+    Get the configuration settings for this Ambianic Edge device.
+    """
     return config.as_dict()
 
 
-@app.get("/api/config/source/{source_id}")
+@app.get("/api/config/source/{source_id}", include_in_schema=False)
 def get_config_source(source_id: str):
     return config_sources.get(source_id)
 
 
-@app.put("/api/config/source")
+@app.put("/api/config/source", include_in_schema=False)
 def update_config_source(source: SensorSource):
     config_sources.save(source=source)
     return config_sources.get(source.id)
 
 
-@app.delete("/api/config/source/{source_id}")
+@app.delete("/api/config/source/{source_id}", include_in_schema=False)
 def delete_config_source(source_id: str):
     config_sources.remove(source_id)
     return {"status": "success"}
 
 
 # sanity check route
-@app.get("/api/ping")
+@app.get("/api/ping", include_in_schema=False)
 def ping():
     return "pong"
 
