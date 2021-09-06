@@ -5,6 +5,7 @@ tasks:
   - init: |
       pyenv global system
       echo "Gitpod init. Setting up ambianic-edge dev environment."
+      pyenv global system
       python3 -m pip install --upgrade pip
       python3 -m pip install --upgrade setuptools
       echo "Installing test frameworks"
@@ -16,18 +17,23 @@ tasks:
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
   - command: |
+      echo "Starting amgianic-edge core"
+      pyenv global system
       sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
-      echo "Starting amgianic-edge core"
       python3 -m ambianic --config "dev/dev-config.yaml"
   - command: |
       echo "Starting WebRTC to HTTP proxy"
+      pyenv global system
       python3 -m peerjs.ext.http_proxy
   - command: |
       echo "Starting OpenAPI server (fastapi/uvicorn)"
+      pyenv global system
       python3 -m uvicorn ambianic.webapp.fastapi_app:app --reload --port 8778 --log-level debug
   - command: |
       echo "Running ambianic-edge testsuite:"
+      pyenv global system
+      export PIP_USER=false
       python3 -m pytest --log-cli-level=DEBUG --cov=ambianic --cov-report=term tests/
 
 vscode:
