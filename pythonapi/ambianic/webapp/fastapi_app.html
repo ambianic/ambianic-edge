@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>ambianic.webapp.fastapi_app API documentation</title>
-<meta name="description" content="FASTAPI web/REST app." />
+<meta name="description" content="FASTAPI OpenAPI/REST app." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,14 +22,15 @@
 <h1 class="title">Module <code>ambianic.webapp.fastapi_app</code></h1>
 </header>
 <section id="section-intro">
-<p>FASTAPI web/REST app.</p>
+<p>FASTAPI OpenAPI/REST app.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;FASTAPI web/REST app.&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;FASTAPI OpenAPI/REST app.&#34;&#34;&#34;
 import logging
 from pathlib import Path
+from typing import List
 
 import pkg_resources
 import yaml
@@ -39,10 +40,38 @@ from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 log = logging.getLogger(&#34;uvicorn.error&#34;)
 
-app = FastAPI()
+description = &#34;&#34;&#34;
+Ambianic Edge API provides OpenAPI(REST) functions for management and access to detection events.
+This API is mainly intended for secure remote access via [peer.fetch()](https://github.com/ambianic/peerfetch).
+This API is not intended to be exposed as a public web service.
+🚀
+&#34;&#34;&#34;
+
+app = FastAPI(
+    # FastAPI OpenAPI docs metadata
+    # ref: https://fastapi.tiangolo.com/tutorial/metadata/
+    title=&#34;Ambianic Edge OpenAPI&#34;,
+    description=description,
+    version=__version__,
+    # terms_of_service=&#34;http://example.com/terms/&#34;,
+    # contact={
+    #    &#34;name&#34;: &#34;Deadpoolio the Amazing&#34;,
+    #    &#34;url&#34;: &#34;http://x-force.example.com/contact/&#34;,
+    #    &#34;email&#34;: &#34;dp@x-force.example.com&#34;,
+    # },
+    license_info={
+        &#34;name&#34;: &#34;Apache 2.0&#34;,
+        &#34;url&#34;: &#34;https://www.apache.org/licenses/LICENSE-2.0.html&#34;,
+    },
+)
+
+
+class BaseResponse(BaseModel):
+    status: str = &#34;OK&#34;
 
 
 def _mount_data_dir(data_dir: str):
@@ -83,27 +112,32 @@ async def startup_event():
 
 
 # a simple page that says hello
-@app.get(&#34;/&#34;)
+@app.get(&#34;/&#34;, include_in_schema=False)
 def hello():
     return &#34;Ambianic Edge! Helpful AI for home and business automation.&#34;
 
 
-# healthcheck page available to docker-compose
-# and other health monitoring tools
-@app.get(&#34;/healthcheck&#34;)
+# Deprecated healthcheck page available to docker-compose
+# and other health monitoring tools.
+# /api/status is the new preferred method.
+@app.get(&#34;/healthcheck&#34;, include_in_schema=False)
 def health_check():
     return &#34;Ambianic Edge is running in a cheerful healthy state!&#34;
 
 
-# healthcheck page available to docker-compose
-# and other health monitoring tools
-@app.get(&#34;/api/status&#34;)
+class StatusResponse(BaseResponse):
+    version: str = Field(None, description=&#34;Ambianic Edge software version&#34;)
+
+
+@app.get(&#34;/api/status&#34;, response_model=StatusResponse)
 def get_status():
+    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with other device details such as release version.&#34;&#34;&#34;
     response_object = {&#34;status&#34;: &#34;OK&#34;, &#34;version&#34;: __version__}
     return response_object
 
 
-@app.get(&#34;/api/auth/premium-notification&#34;)
+# Method under development for future support of premium instant notifications
+@app.get(&#34;/api/auth/premium-notification&#34;, include_in_schema=False)
 def initialize_premium_notification(userId: str, notification_endpoint: str):
     userAuth0Id = userId
     endpoint = notification_endpoint
@@ -114,19 +148,25 @@ def initialize_premium_notification(userId: str, notification_endpoint: str):
             &#34;NOTIFICATION_ENDPOINT&#34;: endpoint,
         },
     }
-
     directory = pkg_resources.resource_filename(&#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
-
     file = open(directory, &#34;w+&#34;)
     yaml.dump(auth_file, file)
     file.close()
-
     return {&#34;status&#34;: &#34;OK&#34;, &#34;message&#34;: &#34;AUTH0_ID SAVED&#34;}
 
 
-@app.get(&#34;/api/timeline&#34;)
-@app.get(&#34;/api/timeline.json&#34;)
+class TimelineResponse(BaseResponse):
+    timeline: List[dict] = Field(None, description=&#34;List of detection events&#34;)
+
+
+@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse)
+@app.get(&#34;/api/timeline&#34;, response_model=TimelineResponse)
 def get_timeline(page: int = 1):
+    &#34;&#34;&#34;
+    Get timeline items in groups of 5 in reverse chronographical order.
+
+    For example **page**=1 returns the latest 5 detected events, **page**=2 gets the previous 5 and so on.
+    &#34;&#34;&#34;
     response_object = {&#34;status&#34;: &#34;success&#34;}
     log.debug(&#39;Requested timeline events page&#34; %d&#39;, page)
     resp = timeline_dao.get_timeline(page=page, data_dir=app.data_dir)
@@ -136,30 +176,33 @@ def get_timeline(page: int = 1):
     return response_object
 
 
-@app.get(&#34;/api/config&#34;)
+@app.get(&#34;/api/config&#34;, response_model=dict)
 def get_config():
+    &#34;&#34;&#34;
+    Get the configuration settings for this Ambianic Edge device.
+    &#34;&#34;&#34;
     return config.as_dict()
 
 
-@app.get(&#34;/api/config/source/{source_id}&#34;)
+@app.get(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
 def get_config_source(source_id: str):
     return config_sources.get(source_id)
 
 
-@app.put(&#34;/api/config/source&#34;)
+@app.put(&#34;/api/config/source&#34;, include_in_schema=False)
 def update_config_source(source: SensorSource):
     config_sources.save(source=source)
     return config_sources.get(source.id)
 
 
-@app.delete(&#34;/api/config/source/{source_id}&#34;)
+@app.delete(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
 def delete_config_source(source_id: str):
     config_sources.remove(source_id)
     return {&#34;status&#34;: &#34;success&#34;}
 
 
 # sanity check route
-@app.get(&#34;/api/ping&#34;)
+@app.get(&#34;/api/ping&#34;, include_in_schema=False)
 def ping():
     return &#34;pong&#34;
 
@@ -183,7 +226,7 @@ log.info(&#34;Ambianc Edge OpenAPI deployed via fastapi/uvicorn.&#34;)</code></p
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.delete(&#34;/api/config/source/{source_id}&#34;)
+<pre><code class="python">@app.delete(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
 def delete_config_source(source_id: str):
     config_sources.remove(source_id)
     return {&#34;status&#34;: &#34;success&#34;}</code></pre>
@@ -193,13 +236,16 @@ def delete_config_source(source_id: str):
 <span>def <span class="ident">get_config</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get the configuration settings for this Ambianic Edge device.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/config&#34;)
+<pre><code class="python">@app.get(&#34;/api/config&#34;, response_model=dict)
 def get_config():
+    &#34;&#34;&#34;
+    Get the configuration settings for this Ambianic Edge device.
+    &#34;&#34;&#34;
     return config.as_dict()</code></pre>
 </details>
 </dd>
@@ -212,7 +258,7 @@ def get_config():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/config/source/{source_id}&#34;)
+<pre><code class="python">@app.get(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
 def get_config_source(source_id: str):
     return config_sources.get(source_id)</code></pre>
 </details>
@@ -221,13 +267,14 @@ def get_config_source(source_id: str):
 <span>def <span class="ident">get_status</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns overall status of the Ambianic Edge device along with other device details such as release version.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/status&#34;)
+<pre><code class="python">@app.get(&#34;/api/status&#34;, response_model=StatusResponse)
 def get_status():
+    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with other device details such as release version.&#34;&#34;&#34;
     response_object = {&#34;status&#34;: &#34;OK&#34;, &#34;version&#34;: __version__}
     return response_object</code></pre>
 </details>
@@ -236,14 +283,20 @@ def get_status():
 <span>def <span class="ident">get_timeline</span></span>(<span>page: int = 1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get timeline items in groups of 5 in reverse chronographical order.</p>
+<p>For example <strong>page</strong>=1 returns the latest 5 detected events, <strong>page</strong>=2 gets the previous 5 and so on.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/timeline&#34;)
-@app.get(&#34;/api/timeline.json&#34;)
+<pre><code class="python">@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse)
+@app.get(&#34;/api/timeline&#34;, response_model=TimelineResponse)
 def get_timeline(page: int = 1):
+    &#34;&#34;&#34;
+    Get timeline items in groups of 5 in reverse chronographical order.
+
+    For example **page**=1 returns the latest 5 detected events, **page**=2 gets the previous 5 and so on.
+    &#34;&#34;&#34;
     response_object = {&#34;status&#34;: &#34;success&#34;}
     log.debug(&#39;Requested timeline events page&#34; %d&#39;, page)
     resp = timeline_dao.get_timeline(page=page, data_dir=app.data_dir)
@@ -262,7 +315,7 @@ def get_timeline(page: int = 1):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/healthcheck&#34;)
+<pre><code class="python">@app.get(&#34;/healthcheck&#34;, include_in_schema=False)
 def health_check():
     return &#34;Ambianic Edge is running in a cheerful healthy state!&#34;</code></pre>
 </details>
@@ -276,7 +329,7 @@ def health_check():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/&#34;)
+<pre><code class="python">@app.get(&#34;/&#34;, include_in_schema=False)
 def hello():
     return &#34;Ambianic Edge! Helpful AI for home and business automation.&#34;</code></pre>
 </details>
@@ -290,7 +343,7 @@ def hello():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/auth/premium-notification&#34;)
+<pre><code class="python">@app.get(&#34;/api/auth/premium-notification&#34;, include_in_schema=False)
 def initialize_premium_notification(userId: str, notification_endpoint: str):
     userAuth0Id = userId
     endpoint = notification_endpoint
@@ -301,13 +354,10 @@ def initialize_premium_notification(userId: str, notification_endpoint: str):
             &#34;NOTIFICATION_ENDPOINT&#34;: endpoint,
         },
     }
-
     directory = pkg_resources.resource_filename(&#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
-
     file = open(directory, &#34;w+&#34;)
     yaml.dump(auth_file, file)
     file.close()
-
     return {&#34;status&#34;: &#34;OK&#34;, &#34;message&#34;: &#34;AUTH0_ID SAVED&#34;}</code></pre>
 </details>
 </dd>
@@ -320,7 +370,7 @@ def initialize_premium_notification(userId: str, notification_endpoint: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/ping&#34;)
+<pre><code class="python">@app.get(&#34;/api/ping&#34;, include_in_schema=False)
 def ping():
     return &#34;pong&#34;</code></pre>
 </details>
@@ -367,7 +417,7 @@ async def startup_event():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.put(&#34;/api/config/source&#34;)
+<pre><code class="python">@app.put(&#34;/api/config/source&#34;, include_in_schema=False)
 def update_config_source(source: SensorSource):
     config_sources.save(source=source)
     return config_sources.get(source.id)</code></pre>
@@ -376,6 +426,106 @@ def update_config_source(source: SensorSource):
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ambianic.webapp.fastapi_app.BaseResponse"><code class="flex name class">
+<span>class <span class="ident">BaseResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BaseResponse(BaseModel):
+    status: str = &#34;OK&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ambianic.webapp.fastapi_app.StatusResponse" href="#ambianic.webapp.fastapi_app.StatusResponse">StatusResponse</a></li>
+<li><a title="ambianic.webapp.fastapi_app.TimelineResponse" href="#ambianic.webapp.fastapi_app.TimelineResponse">TimelineResponse</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ambianic.webapp.fastapi_app.BaseResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="ambianic.webapp.fastapi_app.StatusResponse"><code class="flex name class">
+<span>class <span class="ident">StatusResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StatusResponse(BaseResponse):
+    version: str = Field(None, description=&#34;Ambianic Edge software version&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.webapp.fastapi_app.BaseResponse" href="#ambianic.webapp.fastapi_app.BaseResponse">BaseResponse</a></li>
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>pydantic.main.StatusResponse</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ambianic.webapp.fastapi_app.StatusResponse.version"><code class="name">var <span class="ident">version</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="ambianic.webapp.fastapi_app.TimelineResponse"><code class="flex name class">
+<span>class <span class="ident">TimelineResponse</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TimelineResponse(BaseResponse):
+    timeline: List[dict] = Field(None, description=&#34;List of detection events&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ambianic.webapp.fastapi_app.BaseResponse" href="#ambianic.webapp.fastapi_app.BaseResponse">BaseResponse</a></li>
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>pydantic.main.TimelineResponse</li>
+<li>pydantic.main.TimelineResponse</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ambianic.webapp.fastapi_app.TimelineResponse.timeline"><code class="name">var <span class="ident">timeline</span> : List[dict]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -403,6 +553,28 @@ def update_config_source(source: SensorSource):
 <li><code><a title="ambianic.webapp.fastapi_app.set_data_dir" href="#ambianic.webapp.fastapi_app.set_data_dir">set_data_dir</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.startup_event" href="#ambianic.webapp.fastapi_app.startup_event">startup_event</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.update_config_source" href="#ambianic.webapp.fastapi_app.update_config_source">update_config_source</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ambianic.webapp.fastapi_app.BaseResponse" href="#ambianic.webapp.fastapi_app.BaseResponse">BaseResponse</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.webapp.fastapi_app.BaseResponse.status" href="#ambianic.webapp.fastapi_app.BaseResponse.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.webapp.fastapi_app.StatusResponse" href="#ambianic.webapp.fastapi_app.StatusResponse">StatusResponse</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.webapp.fastapi_app.StatusResponse.version" href="#ambianic.webapp.fastapi_app.StatusResponse.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ambianic.webapp.fastapi_app.TimelineResponse" href="#ambianic.webapp.fastapi_app.TimelineResponse">TimelineResponse</a></code></h4>
+<ul class="">
+<li><code><a title="ambianic.webapp.fastapi_app.TimelineResponse.timeline" href="#ambianic.webapp.fastapi_app.TimelineResponse.timeline">timeline</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
