@@ -48,6 +48,7 @@ class BaseResponse(BaseModel):
 def _mount_data_dir(data_dir: str):
     # serve static files from the data directory
     data_path = Path(data_dir).resolve()
+    data_path.mkdir(parents=True, exist_ok=True)
     log.info(f"Serving /api/data from {data_path.as_posix()}")
     app.mount("/api/data", StaticFiles(directory=data_path), name="static")
 
@@ -130,7 +131,7 @@ class TimelineResponse(BaseResponse):
     timeline: List[dict] = Field(None, description="List of detection events")
 
 
-@app.get("/api/timeline.json", response_model=TimelineResponse)
+@app.get("/api/timeline.json", response_model=TimelineResponse, include_in_schema=False)
 @app.get("/api/timeline", response_model=TimelineResponse)
 def get_timeline(page: int = 1):
     """
