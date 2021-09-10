@@ -6,9 +6,10 @@ from typing import List
 import pkg_resources
 import yaml
 from ambianic import DEFAULT_DATA_DIR, __version__, config
+from ambianic.device import DeviceInfo
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -97,14 +98,17 @@ def health_check():
     return "Ambianic Edge is running in a cheerful healthy state!"
 
 
-class StatusResponse(BaseResponse):
-    version: str = Field(None, description="Ambianic Edge software version")
+class StatusResponse(BaseResponse, DeviceInfo):
+    """Combines API status response and device info to reduce remote calls in common use cases."""
 
 
 @app.get("/api/status", response_model=StatusResponse)
 def get_status():
-    """Returns overall status of the Ambianic Edge device along with other device details such as release version."""
-    response_object = {"status": "OK", "version": __version__}
+    """Returns overall status of the Ambianic Edge device along with
+    other device details such as release version."""
+    response_object = StatusResponse(
+        status="OK", version=__version__, display_name="My Ambianic Edge device"
+    )
     return response_object
 
 
@@ -154,6 +158,35 @@ def get_config():
     Get the configuration settings for this Ambianic Edge device.
     """
     return config.as_dict()
+
+
+@app.get("/api/device/display_name")
+def get_device_display_name():
+    """
+    Get the user friendly display name for this Ambianic Edge device.
+    """
+    display_name = config.get("display_name", None)
+    return display_name
+
+
+@app.put(
+    "/api/device/display_name/{display_name}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_device_display_name(display_name: str):
+    """
+    Set the user friendly dispaly name for this Ambianic Edge device.
+    """
+    if display_name:
+        config["display_name"] = display_name
+        config.save()
+        log.debug(f"saved device display_name: {display_name}")
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Empty string not allowed as device display name value.",
+        )
 
 
 @app.get("/api/config/source/{source_id}", include_in_schema=False)

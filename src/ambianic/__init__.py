@@ -3,8 +3,26 @@ from argparse import ArgumentParser
 from typing import Union
 
 import importlib_metadata as metadata
-from dynaconf import Dynaconf
+from dynaconf import Dynaconf, loaders
 from dynaconf.utils.boxing import DynaBox
+
+
+class AmbianicConfig(Dynaconf):
+
+    """Configuration settings loading and persistence."""
+
+    def __init__(self, file_to_save: str, **kwargs):
+        super().__init__(**kwargs)
+        self.file_to_save: str = file_to_save
+
+    def save(self):
+        """Persist configuration settings to disk."""
+        # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
+        # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
+        assert self.file_to_save, "file_to_save path must be provided."
+        data = self.as_dict()
+        loaders.write(self.file_to_save, DynaBox(data).to_dict())
+
 
 parser = ArgumentParser()
 parser.add_argument("-c", "--config", help="Specify config YAML file location")
@@ -50,11 +68,12 @@ def __merge_secrets(config: Union[Dynaconf, DynaBox], src_config: Dynaconf = Non
 
 
 def __init_config() -> Dynaconf:
-    config = Dynaconf(
+    config = AmbianicConfig(
         settings_files=[get_config_file(), get_secrets_file()],
         # secrets=[],
         merge=True,
         environments=False,
+        file_to_save=get_config_file(),
     )
     __merge_secrets(config)
     return config
@@ -83,4 +102,4 @@ def get_work_dir() -> str:
 server_instance = None
 
 __CONFIG_FILE = os.path.join(get_work_dir(), DEFAULT_CONFIG_FILE)
-config: Dynaconf = __init_config()
+config: AmbianicConfig = __init_config()

@@ -4,8 +4,9 @@ import os
 import pkg_resources
 import pytest
 import yaml
-from ambianic import __version__, config, load_config
+from ambianic import __version__, config, get_config_file, load_config
 from ambianic.webapp.fastapi_app import app, set_data_dir
+from fastapi import status
 from fastapi.testclient import TestClient
 
 log = logging.getLogger(__name__)
@@ -46,7 +47,12 @@ def test_health_check(client):
 def test_status(client):
     rv = client.get("/api/status")
     data = rv.json()
-    assert (data["status"], data["version"]) == ("OK", __version__)
+    log.debug(data)
+    assert (data["status"], data["version"], data["display_name"]) == (
+        "OK",
+        __version__,
+        "My Ambianic Edge device",
+    )
 
 
 def test_get_timeline(client):
@@ -136,3 +142,40 @@ def test_delete_source(client):
 def test_ping(client):
     rv = client.get("/api/ping")
     assert rv.json() == "pong"
+
+
+def test_get_device_display_name(client):
+    current_device_display_name = config.get("display_name", None)
+    rv = client.get("/api/device/display_name")
+    data = rv.json()
+    log.debug(f"get -> /api/device/display_name: JSON response: {data}")
+    assert data == current_device_display_name
+
+
+def test_set_device_display_name(client):
+    config["display_name"] = "Some Random Display Name"
+    # this API call should change the display name in the saved config
+    new_name = "Kitchen Device"
+    rv = client.put(f"/api/device/display_name/{new_name}")
+    # log.debug(f"put -> /api/device/display_name: JSON response: {rv.json()}")
+    assert rv.status_code == status.HTTP_204_NO_CONTENT
+    assert config["display_name"] == new_name
+    config_filename = get_config_file()
+    log.debug(f"saving config to file: {config_filename}")
+    load_config(filename=config_filename, clean=True)
+    saved_device_display_name = config.get("display_name", None)
+    rv = client.get("/api/device/display_name")
+    data = rv.json()
+    log.debug(f"get -> /api/device/display_name: JSON response: {data}")
+    assert data == saved_device_display_name
+
+
+def test_set_device_display_name_empty(client):
+    config["display_name"] = "Some Random Display Name"
+    new_name = ""
+    saved_name = config["display_name"]
+    # this API call should NOT change the display name to empty
+    rv = client.put(f"/api/device/display_name?display_name={new_name}")
+    # log.debug(f"put -> /api/device/display_name: JSON response: {rv.json()}")
+    assert rv.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert config["display_name"] == saved_name
