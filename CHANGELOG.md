@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.16.2](https://github.com/ambianic/ambianic-edge/compare/v1.16.1...v1.16.2) (2021-09-07)
+
+
+### Bug Fixes
+
+* cleanup openapi docs ([#380](https://github.com/ambianic/ambianic-edge/issues/380)) ([4bbb108](https://github.com/ambianic/ambianic-edge/commit/4bbb108fdb3b2556e408406c4e67eea80831124d))
+
 ## [1.16.1](https://github.com/ambianic/ambianic-edge/compare/v1.16.0...v1.16.1) (2021-09-04)
 
 

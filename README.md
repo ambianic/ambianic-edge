@@ -62,8 +62,6 @@ If you are interested to try the development version, follow [this guide](https:
 
 An introduction to the project with user journey, architecture and other high level artifacts are [now available here](https://ambianic.github.io/ambianic-docs/).
 
-Additional content is coming in daily as the project advances to its official release.
-
 # Community Support
 
 If you have questions, ideas or cool projects you'd like to share with the Ambianic team and community, please use the [Ambianic Twitter channel](https://twitter.com/ambianicai).
