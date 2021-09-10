@@ -56,8 +56,8 @@ jobs:
     needs: [test_x86, test_arm]
     # run this job only if its a push on the master(main) branch
     # of the upstream ambianic repo.
-    if: github.repository_owner == "ambianic" && \
-      github.event_name == 'push' && \
+    if: github.repository_owner == 'ambianic' &&
+      github.event_name == 'push' &&
       github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
