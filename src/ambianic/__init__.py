@@ -6,24 +6,6 @@ import importlib_metadata as metadata
 from dynaconf import Dynaconf, loaders
 from dynaconf.utils.boxing import DynaBox
 
-
-class AmbianicConfig(Dynaconf):
-
-    """Configuration settings loading and persistence."""
-
-    def __init__(self, file_to_save: str, **kwargs):
-        super().__init__(**kwargs)
-        self.file_to_save: str = file_to_save
-
-    def save(self):
-        """Persist configuration settings to disk."""
-        # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
-        # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
-        assert self.file_to_save, "file_to_save path must be provided."
-        data = self.as_dict()
-        loaders.write(self.file_to_save, DynaBox(data).to_dict())
-
-
 parser = ArgumentParser()
 parser.add_argument("-c", "--config", help="Specify config YAML file location")
 
@@ -68,18 +50,20 @@ def __merge_secrets(config: Union[Dynaconf, DynaBox], src_config: Dynaconf = Non
 
 
 def __init_config() -> Dynaconf:
-    config = AmbianicConfig(
+    config = Dynaconf(
         settings_files=[get_config_file(), get_secrets_file()],
         # secrets=[],
         merge=True,
         environments=False,
-        file_to_save=get_config_file(),
     )
     __merge_secrets(config)
     return config
 
 
 def load_config(filename: str, clean: bool = False) -> Dynaconf:
+    """Loads configuration settings from the given filename.
+    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
+    Otherwise save() will persist to the filename path (where the settings are to be loaded from)."""
     if clean:
         config.clean()
     if filename:
@@ -88,6 +72,15 @@ def load_config(filename: str, clean: bool = False) -> Dynaconf:
         global __CONFIG_FILE
         __CONFIG_FILE = filename
     return config
+
+
+def save_config():
+    """Persist configuration settings to disk."""
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
+    file_to_save = get_config_file()
+    data = config.as_dict()
+    loaders.write(file_to_save, DynaBox(data).to_dict())
 
 
 def get_work_dir() -> str:
@@ -102,4 +95,4 @@ def get_work_dir() -> str:
 server_instance = None
 
 __CONFIG_FILE = os.path.join(get_work_dir(), DEFAULT_CONFIG_FILE)
-config: AmbianicConfig = __init_config()
+config: Dynaconf = __init_config()

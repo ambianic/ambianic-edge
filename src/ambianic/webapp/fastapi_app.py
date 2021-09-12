@@ -5,7 +5,7 @@ from typing import List
 
 import pkg_resources
 import yaml
-from ambianic import DEFAULT_DATA_DIR, __version__, config
+from ambianic import DEFAULT_DATA_DIR, __version__, config, save_config
 from ambianic.device import DeviceInfo
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
@@ -180,7 +180,7 @@ def set_device_display_name(display_name: str):
     """
     if display_name:
         config["display_name"] = display_name
-        config.save()
+        save_config()
         log.debug(f"saved device display_name: {display_name}")
     else:
         raise HTTPException(
