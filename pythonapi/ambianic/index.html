@@ -31,7 +31,7 @@ from argparse import ArgumentParser
 from typing import Union
 
 import importlib_metadata as metadata
-from dynaconf import Dynaconf
+from dynaconf import Dynaconf, loaders
 from dynaconf.utils.boxing import DynaBox
 
 parser = ArgumentParser()
@@ -89,6 +89,9 @@ def __init_config() -&gt; Dynaconf:
 
 
 def load_config(filename: str, clean: bool = False) -&gt; Dynaconf:
+    &#34;&#34;&#34;Loads configuration settings from the given filename.
+    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
+    Otherwise save() will persist to the filename path (where the settings are to be loaded from).&#34;&#34;&#34;
     if clean:
         config.clean()
     if filename:
@@ -97,6 +100,15 @@ def load_config(filename: str, clean: bool = False) -&gt; Dynaconf:
         global __CONFIG_FILE
         __CONFIG_FILE = filename
     return config
+
+
+def save_config():
+    &#34;&#34;&#34;Persist configuration settings to disk.&#34;&#34;&#34;
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
+    file_to_save = get_config_file()
+    data = config.as_dict()
+    loaders.write(file_to_save, DynaBox(data).to_dict())
 
 
 def get_work_dir() -&gt; str:
@@ -117,6 +129,10 @@ config: Dynaconf = __init_config()</code></pre>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="ambianic.device" href="device.html">ambianic.device</a></code></dt>
+<dd>
+<div class="desc"><p>Base classes for an Ambianic Edge device abstraction</p></div>
+</dd>
 <dt><code class="name"><a title="ambianic.logger" href="logger.html">ambianic.logger</a></code></dt>
 <dd>
 <div class="desc"><p>Logging functionalities wrapper</p></div>
@@ -197,12 +213,17 @@ config: Dynaconf = __init_config()</code></pre>
 <span>def <span class="ident">load_config</span></span>(<span>filename: str, clean: bool = False) ‑> dynaconf.base.LazySettings</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Loads configuration settings from the given filename.
+If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
+Otherwise save() will persist to the filename path (where the settings are to be loaded from).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load_config(filename: str, clean: bool = False) -&gt; Dynaconf:
+    &#34;&#34;&#34;Loads configuration settings from the given filename.
+    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
+    Otherwise save() will persist to the filename path (where the settings are to be loaded from).&#34;&#34;&#34;
     if clean:
         config.clean()
     if filename:
@@ -211,6 +232,24 @@ config: Dynaconf = __init_config()</code></pre>
         global __CONFIG_FILE
         __CONFIG_FILE = filename
     return config</code></pre>
+</details>
+</dd>
+<dt id="ambianic.save_config"><code class="name flex">
+<span>def <span class="ident">save_config</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Persist configuration settings to disk.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_config():
+    &#34;&#34;&#34;Persist configuration settings to disk.&#34;&#34;&#34;
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
+    file_to_save = get_config_file()
+    data = config.as_dict()
+    loaders.write(file_to_save, DynaBox(data).to_dict())</code></pre>
 </details>
 </dd>
 </dl>
@@ -226,6 +265,7 @@ config: Dynaconf = __init_config()</code></pre>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="ambianic.device" href="device.html">ambianic.device</a></code></li>
 <li><code><a title="ambianic.logger" href="logger.html">ambianic.logger</a></code></li>
 <li><code><a title="ambianic.notification" href="notification.html">ambianic.notification</a></code></li>
 <li><code><a title="ambianic.pipeline" href="pipeline/index.html">ambianic.pipeline</a></code></li>
@@ -240,6 +280,7 @@ config: Dynaconf = __init_config()</code></pre>
 <li><code><a title="ambianic.get_secrets_file" href="#ambianic.get_secrets_file">get_secrets_file</a></code></li>
 <li><code><a title="ambianic.get_work_dir" href="#ambianic.get_work_dir">get_work_dir</a></code></li>
 <li><code><a title="ambianic.load_config" href="#ambianic.load_config">load_config</a></code></li>
+<li><code><a title="ambianic.save_config" href="#ambianic.save_config">save_config</a></code></li>
 </ul>
 </li>
 </ul>

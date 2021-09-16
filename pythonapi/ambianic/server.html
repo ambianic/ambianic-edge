@@ -139,7 +139,7 @@ class AmbianicServer:
             raise ServiceExit
 
     def dispatch(self, event):
-        &#34;&#34;&#34;Callback called when a config file changes&#34;&#34;&#34;
+        &#34;&#34;&#34;Callback called by watchdog.Observer when a config file changes&#34;&#34;&#34;
         log.info(&#34;Configuration file changed, stopping Ambianic server&#34;)
         self.restart()
 
@@ -316,7 +316,7 @@ The working directory where config and data reside.</p></div>
             raise ServiceExit
 
     def dispatch(self, event):
-        &#34;&#34;&#34;Callback called when a config file changes&#34;&#34;&#34;
+        &#34;&#34;&#34;Callback called by watchdog.Observer when a config file changes&#34;&#34;&#34;
         log.info(&#34;Configuration file changed, stopping Ambianic server&#34;)
         self.restart()
 
@@ -387,13 +387,13 @@ The working directory where config and data reside.</p></div>
 <span>def <span class="ident">dispatch</span></span>(<span>self, event)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Callback called when a config file changes</p></div>
+<div class="desc"><p>Callback called by watchdog.Observer when a config file changes</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def dispatch(self, event):
-    &#34;&#34;&#34;Callback called when a config file changes&#34;&#34;&#34;
+    &#34;&#34;&#34;Callback called by watchdog.Observer when a config file changes&#34;&#34;&#34;
     log.info(&#34;Configuration file changed, stopping Ambianic server&#34;)
     self.restart()</code></pre>
 </details>

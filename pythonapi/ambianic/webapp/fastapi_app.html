@@ -34,10 +34,11 @@ from typing import List
 
 import pkg_resources
 import yaml
-from ambianic import DEFAULT_DATA_DIR, __version__, config
+from ambianic import DEFAULT_DATA_DIR, __version__, config, save_config
+from ambianic.device import DeviceInfo
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -77,6 +78,7 @@ class BaseResponse(BaseModel):
 def _mount_data_dir(data_dir: str):
     # serve static files from the data directory
     data_path = Path(data_dir).resolve()
+    data_path.mkdir(parents=True, exist_ok=True)
     log.info(f&#34;Serving /api/data from {data_path.as_posix()}&#34;)
     app.mount(&#34;/api/data&#34;, StaticFiles(directory=data_path), name=&#34;static&#34;)
 
@@ -125,14 +127,17 @@ def health_check():
     return &#34;Ambianic Edge is running in a cheerful healthy state!&#34;
 
 
-class StatusResponse(BaseResponse):
-    version: str = Field(None, description=&#34;Ambianic Edge software version&#34;)
+class StatusResponse(BaseResponse, DeviceInfo):
+    &#34;&#34;&#34;Combines API status response and device info to reduce remote calls in common use cases.&#34;&#34;&#34;
 
 
 @app.get(&#34;/api/status&#34;, response_model=StatusResponse)
 def get_status():
-    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with other device details such as release version.&#34;&#34;&#34;
-    response_object = {&#34;status&#34;: &#34;OK&#34;, &#34;version&#34;: __version__}
+    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
+    other device details such as release version.&#34;&#34;&#34;
+    response_object = StatusResponse(
+        status=&#34;OK&#34;, version=__version__, display_name=&#34;My Ambianic Edge device&#34;
+    )
     return response_object
 
 
@@ -159,7 +164,7 @@ class TimelineResponse(BaseResponse):
     timeline: List[dict] = Field(None, description=&#34;List of detection events&#34;)
 
 
-@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse)
+@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse, include_in_schema=False)
 @app.get(&#34;/api/timeline&#34;, response_model=TimelineResponse)
 def get_timeline(page: int = 1):
     &#34;&#34;&#34;
@@ -182,6 +187,35 @@ def get_config():
     Get the configuration settings for this Ambianic Edge device.
     &#34;&#34;&#34;
     return config.as_dict()
+
+
+@app.get(&#34;/api/device/display_name&#34;)
+def get_device_display_name():
+    &#34;&#34;&#34;
+    Get the user friendly display name for this Ambianic Edge device.
+    &#34;&#34;&#34;
+    display_name = config.get(&#34;display_name&#34;, None)
+    return display_name
+
+
+@app.put(
+    &#34;/api/device/display_name/{display_name}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_device_display_name(display_name: str):
+    &#34;&#34;&#34;
+    Set the user friendly dispaly name for this Ambianic Edge device.
+    &#34;&#34;&#34;
+    if display_name:
+        config[&#34;display_name&#34;] = display_name
+        save_config()
+        log.debug(f&#34;saved device display_name: {display_name}&#34;)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=&#34;Empty string not allowed as device display name value.&#34;,
+        )
 
 
 @app.get(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
@@ -263,19 +297,41 @@ def get_config_source(source_id: str):
     return config_sources.get(source_id)</code></pre>
 </details>
 </dd>
+<dt id="ambianic.webapp.fastapi_app.get_device_display_name"><code class="name flex">
+<span>def <span class="ident">get_device_display_name</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get the user friendly display name for this Ambianic Edge device.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.get(&#34;/api/device/display_name&#34;)
+def get_device_display_name():
+    &#34;&#34;&#34;
+    Get the user friendly display name for this Ambianic Edge device.
+    &#34;&#34;&#34;
+    display_name = config.get(&#34;display_name&#34;, None)
+    return display_name</code></pre>
+</details>
+</dd>
 <dt id="ambianic.webapp.fastapi_app.get_status"><code class="name flex">
 <span>def <span class="ident">get_status</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns overall status of the Ambianic Edge device along with other device details such as release version.</p></div>
+<div class="desc"><p>Returns overall status of the Ambianic Edge device along with
+other device details such as release version.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@app.get(&#34;/api/status&#34;, response_model=StatusResponse)
 def get_status():
-    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with other device details such as release version.&#34;&#34;&#34;
-    response_object = {&#34;status&#34;: &#34;OK&#34;, &#34;version&#34;: __version__}
+    &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
+    other device details such as release version.&#34;&#34;&#34;
+    response_object = StatusResponse(
+        status=&#34;OK&#34;, version=__version__, display_name=&#34;My Ambianic Edge device&#34;
+    )
     return response_object</code></pre>
 </details>
 </dd>
@@ -289,7 +345,7 @@ def get_status():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse)
+<pre><code class="python">@app.get(&#34;/api/timeline.json&#34;, response_model=TimelineResponse, include_in_schema=False)
 @app.get(&#34;/api/timeline&#34;, response_model=TimelineResponse)
 def get_timeline(page: int = 1):
     &#34;&#34;&#34;
@@ -389,6 +445,35 @@ def ping():
     _mount_data_dir(data_dir=data_dir)</code></pre>
 </details>
 </dd>
+<dt id="ambianic.webapp.fastapi_app.set_device_display_name"><code class="name flex">
+<span>def <span class="ident">set_device_display_name</span></span>(<span>display_name: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set the user friendly dispaly name for this Ambianic Edge device.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.put(
+    &#34;/api/device/display_name/{display_name}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_device_display_name(display_name: str):
+    &#34;&#34;&#34;
+    Set the user friendly dispaly name for this Ambianic Edge device.
+    &#34;&#34;&#34;
+    if display_name:
+        config[&#34;display_name&#34;] = display_name
+        save_config()
+        log.debug(f&#34;saved device display_name: {display_name}&#34;)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=&#34;Empty string not allowed as device display name value.&#34;,
+        )</code></pre>
+</details>
+</dd>
 <dt id="ambianic.webapp.fastapi_app.startup_event"><code class="name flex">
 <span>async def <span class="ident">startup_event</span></span>(<span>)</span>
 </code></dt>
@@ -465,18 +550,20 @@ def update_config_source(source: SensorSource):
 <span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<div class="desc"><p>Combines API status response and device info to reduce remote calls in common use cases.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
 <p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class StatusResponse(BaseResponse):
-    version: str = Field(None, description=&#34;Ambianic Edge software version&#34;)</code></pre>
+<pre><code class="python">class StatusResponse(BaseResponse, DeviceInfo):
+    &#34;&#34;&#34;Combines API status response and device info to reduce remote calls in common use cases.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="ambianic.webapp.fastapi_app.BaseResponse" href="#ambianic.webapp.fastapi_app.BaseResponse">BaseResponse</a></li>
+<li><a title="ambianic.device.DeviceInfo" href="../device.html#ambianic.device.DeviceInfo">DeviceInfo</a></li>
 <li>pydantic.main.BaseModel</li>
 <li>pydantic.utils.Representation</li>
 </ul>
@@ -486,7 +573,7 @@ def update_config_source(source: SensorSource):
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="ambianic.webapp.fastapi_app.StatusResponse.version"><code class="name">var <span class="ident">version</span> : str</code></dt>
+<dt id="ambianic.webapp.fastapi_app.StatusResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -544,6 +631,7 @@ def update_config_source(source: SensorSource):
 <li><code><a title="ambianic.webapp.fastapi_app.delete_config_source" href="#ambianic.webapp.fastapi_app.delete_config_source">delete_config_source</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_config" href="#ambianic.webapp.fastapi_app.get_config">get_config</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_config_source" href="#ambianic.webapp.fastapi_app.get_config_source">get_config_source</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.get_device_display_name" href="#ambianic.webapp.fastapi_app.get_device_display_name">get_device_display_name</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_status" href="#ambianic.webapp.fastapi_app.get_status">get_status</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_timeline" href="#ambianic.webapp.fastapi_app.get_timeline">get_timeline</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.health_check" href="#ambianic.webapp.fastapi_app.health_check">health_check</a></code></li>
@@ -551,6 +639,7 @@ def update_config_source(source: SensorSource):
 <li><code><a title="ambianic.webapp.fastapi_app.initialize_premium_notification" href="#ambianic.webapp.fastapi_app.initialize_premium_notification">initialize_premium_notification</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.ping" href="#ambianic.webapp.fastapi_app.ping">ping</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.set_data_dir" href="#ambianic.webapp.fastapi_app.set_data_dir">set_data_dir</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.set_device_display_name" href="#ambianic.webapp.fastapi_app.set_device_display_name">set_device_display_name</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.startup_event" href="#ambianic.webapp.fastapi_app.startup_event">startup_event</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.update_config_source" href="#ambianic.webapp.fastapi_app.update_config_source">update_config_source</a></code></li>
 </ul>
@@ -566,7 +655,7 @@ def update_config_source(source: SensorSource):
 <li>
 <h4><code><a title="ambianic.webapp.fastapi_app.StatusResponse" href="#ambianic.webapp.fastapi_app.StatusResponse">StatusResponse</a></code></h4>
 <ul class="">
-<li><code><a title="ambianic.webapp.fastapi_app.StatusResponse.version" href="#ambianic.webapp.fastapi_app.StatusResponse.version">version</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.StatusResponse.status" href="#ambianic.webapp.fastapi_app.StatusResponse.status">status</a></code></li>
 </ul>
 </li>
 <li>
