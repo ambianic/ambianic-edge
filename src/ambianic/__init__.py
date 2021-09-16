@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from typing import Union
 
 import importlib_metadata as metadata
-from dynaconf import Dynaconf
+from dynaconf import Dynaconf, loaders
 from dynaconf.utils.boxing import DynaBox
 
 parser = ArgumentParser()
@@ -61,6 +61,9 @@ def __init_config() -> Dynaconf:
 
 
 def load_config(filename: str, clean: bool = False) -> Dynaconf:
+    """Loads configuration settings from the given filename.
+    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
+    Otherwise save() will persist to the filename path (where the settings are to be loaded from)."""
     if clean:
         config.clean()
     if filename:
@@ -69,6 +72,15 @@ def load_config(filename: str, clean: bool = False) -> Dynaconf:
         global __CONFIG_FILE
         __CONFIG_FILE = filename
     return config
+
+
+def save_config():
+    """Persist configuration settings to disk."""
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
+    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
+    file_to_save = get_config_file()
+    data = config.as_dict()
+    loaders.write(file_to_save, DynaBox(data).to_dict())
 
 
 def get_work_dir() -> str:

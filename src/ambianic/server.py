@@ -110,7 +110,7 @@ class AmbianicServer:
             raise ServiceExit
 
     def dispatch(self, event):
-        """Callback called when a config file changes"""
+        """Callback called by watchdog.Observer when a config file changes"""
         log.info("Configuration file changed, stopping Ambianic server")
         self.restart()
 
