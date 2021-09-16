@@ -1,5 +1,34 @@
 # Semantic Versioning Changelog
 
+# [1.17.0](https://github.com/ambianic/ambianic-edge/compare/v1.16.2...v1.17.0) (2021-09-16)
+
+
+### Bug Fixes
+
+* check docker container watchdog auto update ([aef682f](https://github.com/ambianic/ambianic-edge/commit/aef682f9b4c3f4a8fdc542d2a857c7497018e45b))
+* docker arm32 release script ([81af17d](https://github.com/ambianic/ambianic-edge/commit/81af17d8056a11aae45ac9e588b33b964ce9874c))
+* docker build cache issue with multi arch ([036f0a6](https://github.com/ambianic/ambianic-edge/commit/036f0a6ae10fb481683be027130da22ae646dbd0))
+* fastapi startup ([9ceb2f5](https://github.com/ambianic/ambianic-edge/commit/9ceb2f5e1537f7a1219b106adfddf3fa69118837))
+* fastapi startup ([0c28239](https://github.com/ambianic/ambianic-edge/commit/0c282399f2f1440bca09edf3b8c32741259095d6))
+* formatting ([14c7624](https://github.com/ambianic/ambianic-edge/commit/14c7624e6f42eab1a000cf6394d9ed7dc3d9a03b))
+* formatting ([bfc89f8](https://github.com/ambianic/ambianic-edge/commit/bfc89f8a20a3821179ddea840b47066ba98cc35f))
+* get and set display name API ([91e3538](https://github.com/ambianic/ambianic-edge/commit/91e3538ef5210425b7ff97d5b2088da68fe56e91))
+* release versioning ([907d258](https://github.com/ambianic/ambianic-edge/commit/907d258d93a689346cbee3097a0649f8ab4eb8a5))
+* release versioning ([867347e](https://github.com/ambianic/ambianic-edge/commit/867347e117ec2617d83280788035d2ef0749dab0))
+* release versioning script ([ebcbf6d](https://github.com/ambianic/ambianic-edge/commit/ebcbf6db5e051feb86c04bd8a31faac07d357efb))
+* release versioning script ([e7cbf06](https://github.com/ambianic/ambianic-edge/commit/e7cbf0649573f3971c3aed1a860d634805342aa9))
+* rust install for arm ([d5e1901](https://github.com/ambianic/ambianic-edge/commit/d5e1901c399ed3046c3e8017fe93bdc4f13fc7e3))
+* rust install for arm ([e5d8fdd](https://github.com/ambianic/ambianic-edge/commit/e5d8fdd27e2088d268a0bc3741065b493f733f27))
+* rust install for arm ([95271fa](https://github.com/ambianic/ambianic-edge/commit/95271fa36c29db345ca3dac82ccf25e4d5c9af33))
+* rust install for arm ([db7c3dc](https://github.com/ambianic/ambianic-edge/commit/db7c3dc3ac8811400fb88f11f4b397b30e3a7205))
+* rust install for arm ([de4494c](https://github.com/ambianic/ambianic-edge/commit/de4494c64f4950898c3ed1be8b64a6b5c6ed09e5))
+* rust install for arm ([b1c8fba](https://github.com/ambianic/ambianic-edge/commit/b1c8fbaad2b624a18775fed2f50cf1100f5c6737))
+
+
+### Features
+
+* add API for setting custom device display name ([6959817](https://github.com/ambianic/ambianic-edge/commit/6959817162521949284fafcdeb162f5c78473736))
+
 ## [1.16.2](https://github.com/ambianic/ambianic-edge/compare/v1.16.1...v1.16.2) (2021-09-07)
 
 
