@@ -106,8 +106,9 @@ class StatusResponse(BaseResponse, DeviceInfo):
 def get_status():
     """Returns overall status of the Ambianic Edge device along with
     other device details such as release version."""
+    name = config.get("display_name", "My Ambianic Edge device")
     response_object = StatusResponse(
-        status="OK", version=__version__, display_name="My Ambianic Edge device"
+        status="OK", version=__version__, display_name=name
     )
     return response_object
 
@@ -160,7 +161,7 @@ def get_config():
     return config.as_dict()
 
 
-@app.get("/api/device/display_name")
+@app.get("/api/device/display_name", response_model=str)
 def get_device_display_name():
     """
     Get the user friendly display name for this Ambianic Edge device.
@@ -176,7 +177,7 @@ def get_device_display_name():
 )
 def set_device_display_name(display_name: str):
     """
-    Set the user friendly dispaly name for this Ambianic Edge device.
+    Set a user friendly dispaly name for this Ambianic Edge device.
     """
     if display_name:
         config["display_name"] = display_name

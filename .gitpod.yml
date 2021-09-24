@@ -40,3 +40,4 @@ vscode:
   extensions:
     - ms-python.python
     - github.vscode-pull-request-github
+    - eamodio.gitlens
