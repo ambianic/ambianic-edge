@@ -135,8 +135,9 @@ class StatusResponse(BaseResponse, DeviceInfo):
 def get_status():
     &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
     other device details such as release version.&#34;&#34;&#34;
+    name = config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
     response_object = StatusResponse(
-        status=&#34;OK&#34;, version=__version__, display_name=&#34;My Ambianic Edge device&#34;
+        status=&#34;OK&#34;, version=__version__, display_name=name
     )
     return response_object
 
@@ -189,7 +190,7 @@ def get_config():
     return config.as_dict()
 
 
-@app.get(&#34;/api/device/display_name&#34;)
+@app.get(&#34;/api/device/display_name&#34;, response_model=str)
 def get_device_display_name():
     &#34;&#34;&#34;
     Get the user friendly display name for this Ambianic Edge device.
@@ -205,7 +206,7 @@ def get_device_display_name():
 )
 def set_device_display_name(display_name: str):
     &#34;&#34;&#34;
-    Set the user friendly dispaly name for this Ambianic Edge device.
+    Set a user friendly dispaly name for this Ambianic Edge device.
     &#34;&#34;&#34;
     if display_name:
         config[&#34;display_name&#34;] = display_name
@@ -306,7 +307,7 @@ def get_config_source(source_id: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.get(&#34;/api/device/display_name&#34;)
+<pre><code class="python">@app.get(&#34;/api/device/display_name&#34;, response_model=str)
 def get_device_display_name():
     &#34;&#34;&#34;
     Get the user friendly display name for this Ambianic Edge device.
@@ -329,8 +330,9 @@ other device details such as release version.</p></div>
 def get_status():
     &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
     other device details such as release version.&#34;&#34;&#34;
+    name = config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
     response_object = StatusResponse(
-        status=&#34;OK&#34;, version=__version__, display_name=&#34;My Ambianic Edge device&#34;
+        status=&#34;OK&#34;, version=__version__, display_name=name
     )
     return response_object</code></pre>
 </details>
@@ -449,7 +451,7 @@ def ping():
 <span>def <span class="ident">set_device_display_name</span></span>(<span>display_name: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set the user friendly dispaly name for this Ambianic Edge device.</p></div>
+<div class="desc"><p>Set a user friendly dispaly name for this Ambianic Edge device.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -461,7 +463,7 @@ def ping():
 )
 def set_device_display_name(display_name: str):
     &#34;&#34;&#34;
-    Set the user friendly dispaly name for this Ambianic Edge device.
+    Set a user friendly dispaly name for this Ambianic Edge device.
     &#34;&#34;&#34;
     if display_name:
         config[&#34;display_name&#34;] = display_name
