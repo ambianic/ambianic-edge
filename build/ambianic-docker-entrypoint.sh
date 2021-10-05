@@ -7,10 +7,11 @@ set -ex
 # Which otherwise cause SSL Certificate Verification problems.
 if $(arch | grep -q arm)
 then
-  echo "Re-Installing ca-certifcates on Raspberry Pi / ARM CPU"
   sudo dpkg --configure -a
+  ## update local package info db
+  # sudo apt-get update
+  echo "Re-Installing ca-certifcates on Raspberry Pi / ARM CPU due to unresolved cert validation errors."
   sudo apt-get remove -y ca-certificates
-  sudo apt-get update
   sudo apt-get install -y ca-certificates
 fi
 
