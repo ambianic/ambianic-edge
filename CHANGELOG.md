@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.18.1](https://github.com/ambianic/ambianic-edge/compare/v1.18.0...v1.18.1) (2021-10-06)
+
+
+### Bug Fixes
+
+* accomodate use of debian buster ([#390](https://github.com/ambianic/ambianic-edge/issues/390)) ([2ac2806](https://github.com/ambianic/ambianic-edge/commit/2ac2806f2355f00cf1f689eb33e87aa937456fbf))
+
 # [1.18.0](https://github.com/ambianic/ambianic-edge/compare/v1.17.0...v1.18.0) (2021-10-05)
 
 
