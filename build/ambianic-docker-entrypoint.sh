@@ -9,9 +9,13 @@ if $(arch | grep -q arm)
 then
   sudo dpkg --configure -a
   ## update local package info db
-  # sudo apt-get update
   echo "Re-Installing ca-certifcates on Raspberry Pi / ARM CPU due to unresolved cert validation errors."
   sudo apt-get remove -y ca-certificates
+  # update references to new package version info
+  sudo apt-get update
+  # allow use of previous stable linux image in case a new version became the default
+  sudo apt update --allow-releaseinfo-change
+  # reinstall ca-certificates to pick up any updates
   sudo apt-get install -y ca-certificates
 fi
 
