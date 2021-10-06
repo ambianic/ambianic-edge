@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.18.0](https://github.com/ambianic/ambianic-edge/compare/v1.17.0...v1.18.0) (2021-10-05)
+
+
+### Features
+
+* enable user friendly device display name ([#389](https://github.com/ambianic/ambianic-edge/issues/389)) ([f86afd3](https://github.com/ambianic/ambianic-edge/commit/f86afd34f04423d1ed95c3c5ced429a5ea7e9f18)), closes [/github.com/ivelin/ambianic-edge/blob/d51fe19f132c439b48f175d4ec3241fe23c58577/src/ambianic/webapp/fastapi_app.py#L173](https://github.com//github.com/ivelin/ambianic-edge/blob/d51fe19f132c439b48f175d4ec3241fe23c58577/src/ambianic/webapp/fastapi_app.py/issues/L173)
+
 # [1.17.0](https://github.com/ambianic/ambianic-edge/compare/v1.16.2...v1.17.0) (2021-09-16)
 
 
