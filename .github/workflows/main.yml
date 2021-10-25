@@ -17,6 +17,10 @@ jobs:
           python3 -m pip install -U pre-commit
           pre-commit install
           pre-commit run --all-files
+      - name: Show diff on on failure
+        if: ${{ failure() }}
+        run: |
+          git diff
 
   test_x86:
     needs: [formatting]
