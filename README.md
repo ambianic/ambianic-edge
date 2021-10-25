@@ -17,4 +17,3 @@
 ![Container Security Scan](https://github.com/ambianic/ambianic-edge/workflows/Container%20Security%20Scan/badge.svg)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ambianic/ambianic-edge.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ambianic/ambianic-edge/context:python)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5198/badge)](https://bestpractices.coreinfrastructure.org/projects/5198)
-
