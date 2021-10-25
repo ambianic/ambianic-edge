@@ -1,6 +1,8 @@
 # Ambianic Edge
 
-[Ambianic Edge](https://github.com/ambianic/ambianic-edge) turns your Raspberry Pi into a smart camera device. [Read the docs](https://docs.ambianic.ai/users/ambianicedge/) to learn how to run, configure and develop with Ambianic Edge.
+[Ambianic Edge](https://github.com/ambianic/ambianic-edge) turns your Raspberry Pi into a smart camera device. 
+
+[Read the docs](https://docs.ambianic.ai/users/ambianicedge/) to learn how to run, configure and develop with Ambianic Edge.
 
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ambianic/ambianic-edge)
