@@ -5,6 +5,7 @@ import os
 import pathlib
 import uuid
 
+import ambianic
 import yaml
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 
@@ -91,6 +92,7 @@ class PipelineEventFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord = None) -> str:
         """Populate event information and return as yaml formatted string."""
         # s = super().format(record)
+
         s = None
         e = {}
         e["id"] = uuid.uuid4().hex
@@ -98,10 +100,25 @@ class PipelineEventFormatter(logging.Formatter):
         # log.warning('record.message: %r', record.getMessage())
         # log.warning('record.args: %r', record.args)
         e["created"] = record.created
-        e["priority"] = record.levelname
+        configpath = os.path.join(
+            ambianic.DEFAULT_WORK_DIR, "ambianic-edge/config.yaml"
+        )
+        try:
+            with open(configpath) as file:
+                parsefile = yaml.safe_load(file)
+
+                try:
+                    priority = parsefile.get("pipelines").get("area_watch")[3][
+                        "detect_falls"
+                    ]["priority"]
+                    e["priority"] = priority
+
+                except KeyError:
+                    e["priority"] = record.levelname
+        except OSError as error:
+            log.debug("Error: %s" % error)
 
         e["args"] = record.args
-
         e["source_code"] = {}
         e["source_code"]["pathname"] = record.pathname
         e["source_code"]["funcName"] = record.funcName

@@ -88,6 +88,7 @@ pipelines:
      - detect_falls: # look for falls
         ai_model: fall_detection
         confidence_threshold: 0.6
+        priority: WARNING # default priority for all event detections.
      - save_detections: # save samples from the inference results
         positive_interval: 10
         idle_interval: 600000
