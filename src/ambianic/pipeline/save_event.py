@@ -8,18 +8,14 @@ from typing import Iterable
 
 import numpy as np
 from ambianic import DEFAULT_DATA_DIR
-from ambianic.notification import (
-    Notification,
-    NotificationHandler,
-    sendCloudNotification,
-)
+from ambianic.notification import Notification, NotificationHandler
 from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
 
-class SaveDetectionSamples(PipeElement):
-    """Saves AI detection samples to an external storage location."""
+class SaveDetectionEvents(PipeElement):
+    """Saves AI detection events(inference samples) to an external storage location."""
 
     def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
         """Create SaveDetectionSamples element with the provided arguments.
@@ -185,7 +181,7 @@ class SaveDetectionSamples(PipeElement):
                 yield processed_sample
 
     def notify(self, save_json: dict):
-        # TODO extract inference data
+        """Send out a notification with an event payload"""
         if save_json["inference_result"] is None:
             return
 
@@ -197,7 +193,9 @@ class SaveDetectionSamples(PipeElement):
                 "datetime": save_json["datetime"],
             }
 
-            sendCloudNotification(data=data)
+            # premium notifications disabled
+            # due to lack of user interest
+            # sendCloudNotification(data=data)
 
             if self.notification is None:
                 return
