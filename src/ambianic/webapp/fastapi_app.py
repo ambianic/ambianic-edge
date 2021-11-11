@@ -207,7 +207,19 @@ def set_ifttt_api_key(api_key: str):
     """
     Set API_KEY for the IFTTT integration.
     """
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    if api_key:
+        integrations = config.get("integrations", {})
+        ifttt = integrations.get("ifttt", {})
+        ifttt["API_KEY"] = api_key
+        integrations["ifttt"] = ifttt
+        config["integrations"] = integrations
+        save_config()
+        log.debug(f"saved IFTTT Webhook API_KEY: {api_key}")
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Empty string not allowed for IFTTT Webhooks API_KEY.",
+        )
 
 
 @app.put(
