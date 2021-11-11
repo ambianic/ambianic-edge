@@ -190,6 +190,38 @@ def set_device_display_name(display_name: str):
         )
 
 
+@app.get("/api/integrations/ifttt/test", response_model=str)
+def test_ifttt():
+    """
+    Run a live ifttt integration test and return status result.
+    """
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@app.put(
+    "/api/integrations/ifttt/api_key/{api_key}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_ifttt_api_key(api_key: str):
+    """
+    Set API_KEY for the IFTTT integration.
+    """
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@app.put(
+    "/api/notifications/enable/{enable}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def enable_notifications(enable: bool):
+    """
+    Enable or disable all notifications.
+    """
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+
+
 @app.get("/api/config/source/{source_id}", include_in_schema=False)
 def get_config_source(source_id: str):
     return config_sources.get(source_id)
