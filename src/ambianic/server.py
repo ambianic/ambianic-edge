@@ -4,8 +4,14 @@ import logging.handlers
 import os
 import time
 
-from ambianic import config, get_config_file, get_secrets_file, load_config, logger
-from ambianic.pipeline import timeline_event
+from ambianic import logger
+from ambianic.configuration import (
+    get_config_file,
+    get_root_config,
+    get_secrets_file,
+    load_config,
+)
+from ambianic.pipeline import pipeline_event
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from watchdog.observers import Observer
@@ -125,8 +131,9 @@ class AmbianicServer:
 
         # reload configuration
         load_config(get_config_file())
+        config = get_root_config()
         logger.configure(config.get("logging"))
-        timeline_event.configure_timeline(config.get("timeline"))
+        pipeline_event.configure_timeline(config.get("timeline"))
 
         # watch configuration changes
         self.start_watch_config()

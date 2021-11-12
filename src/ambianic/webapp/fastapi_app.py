@@ -5,7 +5,13 @@ from typing import List
 
 import pkg_resources
 import yaml
-from ambianic import DEFAULT_DATA_DIR, __version__, config, save_config
+from ambianic.configuration import (
+    DEFAULT_DATA_DIR,
+    __version__,
+    config,
+    get_root_config,
+    save_config,
+)
 from ambianic.device import DeviceInfo
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
@@ -156,7 +162,7 @@ def get_timeline(page: int = 1):
 @app.get("/api/config", response_model=dict)
 def get_config():
     """
-    Get the configuration settings for this Ambianic Edge device.
+    Get the root level configuration settings for this Ambianic Edge device.
     """
     return config.as_dict()
 
@@ -208,13 +214,10 @@ def set_ifttt_api_key(api_key: str):
     Set API_KEY for the IFTTT integration.
     """
     if api_key:
-        integrations = config.get("integrations", {})
-        ifttt = integrations.get("ifttt", {})
-        ifttt["API_KEY"] = api_key
-        integrations["ifttt"] = ifttt
-        config["integrations"] = integrations
+        root_config = get_root_config()
+        root_config.set("ifttt_webhook_id", api_key)
         save_config()
-        log.debug(f"saved IFTTT Webhook API_KEY: {api_key}")
+        log.debug(f"saved IFTTT WebhookID / API_KEY: {api_key}")
     else:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

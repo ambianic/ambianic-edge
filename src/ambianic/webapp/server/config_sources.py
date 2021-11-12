@@ -1,6 +1,6 @@
 import logging
 
-from ambianic import config
+from ambianic.configuration import config
 from dynaconf.vendor.box.exceptions import BoxKeyError
 from fastapi import HTTPException, status
 from pydantic import BaseModel

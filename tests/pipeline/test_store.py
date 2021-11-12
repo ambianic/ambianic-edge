@@ -1,12 +1,12 @@
-"""Test cases for SaveDetectionSamples."""
+"""Test cases for SaveDetectionEvents."""
 import json
 import logging
 import os
 import shutil
 
 import numpy as np
-from ambianic.pipeline.store import JsonEncoder, SaveDetectionSamples
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
+from ambianic.pipeline.store import JsonEncoder, SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def test_json_encoder_arrayData():
 
 
 def test_process_sample_none():
-    store = SaveDetectionSamples()
+    store = SaveDetectionEvents()
     processed_samples = store.process_sample(image=None, inference_result=None)
     processed_samples = list(processed_samples)
     assert len(processed_samples) == 1
@@ -136,7 +136,7 @@ def test_process_sample():
     shutil.rmtree(out_dir)
 
 
-class _TestSaveDetectionSamples(SaveDetectionSamples):
+class _TestSaveDetectionSamples(SaveDetectionEvents):
     _save_sample_called = False
     _img_path = None
     _json_path = None
@@ -335,7 +335,7 @@ def test_store_negative_detection_no_inference():
     shutil.rmtree(out_dir)
 
 
-class _TestSaveDetectionSamples2(SaveDetectionSamples):
+class _TestSaveDetectionSamples2(SaveDetectionEvents):
     _save_sample_called = False
     result = {
         "id": "140343867415240",

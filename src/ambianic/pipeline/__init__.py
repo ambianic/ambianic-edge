@@ -3,7 +3,7 @@ import logging
 import time
 from typing import Iterable
 
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
 from ambianic.util import ManagedService
 
 log = logging.getLogger(__name__)

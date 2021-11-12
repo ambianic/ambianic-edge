@@ -1,4 +1,4 @@
-"""Test cases for SaveDetectionSamples."""
+"""Test cases for SaveDetectionEvents."""
 
 import json
 import logging
@@ -10,8 +10,8 @@ from threading import Event, Thread
 import httpretty
 from ambianic import config
 from ambianic.notification import sendCloudNotification
-from ambianic.pipeline.store import SaveDetectionSamples
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
+from ambianic.pipeline.store import SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class HTTPMockServer:
         self.thread.join()
 
 
-class _TestSaveDetectionSamples(SaveDetectionSamples):
+class _TestSaveDetectionSamples(SaveDetectionEvents):
     _save_sample_called = False
     _img_path = None
     _json_path = None

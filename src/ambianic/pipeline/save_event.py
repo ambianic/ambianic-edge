@@ -7,7 +7,7 @@ import uuid
 from typing import Iterable
 
 import numpy as np
-from ambianic import DEFAULT_DATA_DIR
+from ambianic.configuration import DEFAULT_DATA_DIR
 from ambianic.notification import Notification, NotificationHandler
 from ambianic.pipeline import PipeElement
 
@@ -18,7 +18,7 @@ class SaveDetectionEvents(PipeElement):
     """Saves AI detection events(inference samples) to an external storage location."""
 
     def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
-        """Create SaveDetectionSamples element with the provided arguments.
+        """Create SaveDetectionEvents element with the provided arguments.
         :Parameters:
         ----------
         output_directory: *object_detect_dir
@@ -67,13 +67,16 @@ class SaveDetectionEvents(PipeElement):
         self._time_latest_saved_idle = self._time_latest_saved_detection
 
         # setup notification handler
-        self.notification = None
-        self.notification_config = notify
+        self.notifier = None
+        self.notification_config = notify or {}
 
-        if self.notification_config is not None and self.notification_config.get(
-            "providers"
-        ):
-            self.notification = NotificationHandler()
+        notification_providers = self.notification_config.get("providers")
+        if notification_providers is None or len(notification_providers) == 0:
+            # if no notification providers are explicitly configured
+            # use a default provider
+            self.notification_config["providers"] = ["default"]
+
+        self.notifier = NotificationHandler()
 
     def _save_sample(
         self,
@@ -193,17 +196,17 @@ class SaveDetectionEvents(PipeElement):
                 "datetime": save_json["datetime"],
             }
 
-            # premium notifications disabled
-            # due to lack of user interest
+            # paid premium notifications disabled for the time being
+            # in favor of FREE 3rd party integrations such as IFTTT
             # sendCloudNotification(data=data)
 
-            if self.notification is None:
+            if self.notifier is None:
                 return
 
             notification = Notification(
                 data=data, providers=self.notification_config["providers"]
             )
-            self.notification.send(notification)
+            self.notifier.send(notification)
 
 
 class JsonEncoder(json.JSONEncoder):

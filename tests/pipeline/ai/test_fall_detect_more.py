@@ -3,7 +3,7 @@ from pathlib import Path
 
 from ambianic import DEFAULT_DATA_DIR, logger
 from ambianic.pipeline.ai.fall_detect import FallDetector
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
 from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement
 
 _data_dir = Path(DEFAULT_DATA_DIR)

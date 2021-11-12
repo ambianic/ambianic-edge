@@ -66,7 +66,7 @@ class Notification:
 class NotificationHandler:
     def __init__(self, config: dict = None):
         if config is None:
-            config = ambianic.config
+            config = ambianic.configuration.get_root_config()
         self.apobj = apprise.Apprise(debug=True)
         self.config = config.get("notifications", {})
         for name, cfg in self.config.items():
@@ -78,6 +78,10 @@ class NotificationHandler:
                     )
 
     def send(self, notification: Notification):
+        enabled = self.config.get("enabled", True)
+        if not enabled:
+            return
+
         templates = self.config.get("templates", {})
 
         title = notification.title
