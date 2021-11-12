@@ -8,8 +8,8 @@ import yaml
 from ambianic.configuration import (
     DEFAULT_DATA_DIR,
     __version__,
-    config,
     get_root_config,
+    init_config,
     save_config,
 )
 from ambianic.device import DeviceInfo
@@ -82,9 +82,11 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    init_config()
     # set an initial data dir location
-    if config:
-        cfg_data_dir = config.get("data_dir", DEFAULT_DATA_DIR)
+    root_config = get_root_config()
+    if root_config:
+        cfg_data_dir = root_config.get("data_dir", DEFAULT_DATA_DIR)
         set_data_dir(data_dir=cfg_data_dir)
     if not app.data_dir:
         set_data_dir(data_dir=DEFAULT_DATA_DIR)
@@ -112,7 +114,8 @@ class StatusResponse(BaseResponse, DeviceInfo):
 def get_status():
     """Returns overall status of the Ambianic Edge device along with
     other device details such as release version."""
-    name = config.get("display_name", "My Ambianic Edge device")
+    root_config = get_root_config()
+    name = root_config.get("display_name", "My Ambianic Edge device")
     response_object = StatusResponse(
         status="OK", version=__version__, display_name=name
     )
@@ -164,7 +167,8 @@ def get_config():
     """
     Get the root level configuration settings for this Ambianic Edge device.
     """
-    return config.as_dict()
+    root_config = get_root_config()
+    return root_config.as_dict()
 
 
 @app.get("/api/device/display_name", response_model=str)
@@ -172,7 +176,8 @@ def get_device_display_name():
     """
     Get the user friendly display name for this Ambianic Edge device.
     """
-    display_name = config.get("display_name", None)
+    root_config = get_root_config()
+    display_name = root_config.get("display_name", None)
     return display_name
 
 
@@ -186,7 +191,8 @@ def set_device_display_name(display_name: str):
     Set a user friendly dispaly name for this Ambianic Edge device.
     """
     if display_name:
-        config["display_name"] = display_name
+        root_config = get_root_config()
+        root_config["display_name"] = display_name
         save_config()
         log.debug(f"saved device display_name: {display_name}")
     else:

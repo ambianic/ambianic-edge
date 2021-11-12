@@ -1,6 +1,6 @@
 import logging
 
-from ambianic.configuration import config
+from ambianic.configuration import get_root_config
 from dynaconf.vendor.box.exceptions import BoxKeyError
 from fastapi import HTTPException, status
 from pydantic import BaseModel
@@ -23,7 +23,8 @@ def get(source_id):
     """Retrieve a source by id"""
     log.info("Get source_id=%s", source_id)
     try:
-        source = config.sources[source_id]
+        root_config = get_root_config()
+        source = root_config.sources[source_id]
     except BoxKeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="source id not found"
@@ -35,11 +36,13 @@ def remove(source_id):
     """Remove source by id"""
     log.info("Removing source_id=%s", source_id)
     get(source_id)
-    del config.sources[source_id]
+    root_config = get_root_config()
+    del root_config.sources[source_id]
 
 
 def save(source: SensorSource):
     """Save source configuration information"""
     log.info("Saving source_id=%s", source.id)
-    config.sources[source.id] = source
-    return config.sources[source.id]
+    root_config = get_root_config()
+    root_config.sources[source.id] = source
+    return root_config.sources[source.id]
