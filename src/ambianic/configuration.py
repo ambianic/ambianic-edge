@@ -1,13 +1,20 @@
+import logging
 import os
 from argparse import ArgumentParser
-from typing import Union
 
 import importlib_metadata as metadata
 from dynaconf import Dynaconf, loaders
 from dynaconf.utils.boxing import DynaBox
 
+log = logging.getLogger()
+
 parser = ArgumentParser()
-parser.add_argument("-c", "--config", help="Specify config YAML file location")
+parser.add_argument("-c", "--config", help="Specify config YAML file location.")
+parser.add_argument(
+    "-p",
+    "--peerfile",
+    help="Specify file location with peerfetch values such as current peerid.",
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -16,6 +23,7 @@ DEFAULT_WORK_DIR: str = "/workspace"
 DEFAULT_DATA_DIR: str = "./data"
 
 CONFIG_FILE_PATH: str = args.config or "config.yaml"
+PEER_FILE_PATH: str = args.peerfile or ".peerjsrc"
 SECRETS_FILE_PATH: str = "secrets.yaml"
 
 CONFIG_DEFAULTS_FILE_PATH: str = "config.defaults.yaml"
@@ -40,7 +48,22 @@ def get_config_defaults_file() -> str:
 
 
 def get_config_file() -> str:
+    """Return path to main config file for this instance.
+    This is the file where config changes via API calls are saved."""
     return __config_file
+
+
+def get_peerid_file():
+    """Return path to the file where peerfetch Peer ID for this device is stored."""
+    return __peer_file
+
+
+def get_local_config_file() -> str:
+    """Return path to local custom config file. E.g. config.local.yaml.
+    This is the file where manual local changes are saved and override values from other config files."""
+    (cfg_file_head, cfg_file_ext) = os.path.splitext(get_config_file())
+    local_file_path = cfg_file_head + ".local." + cfg_file_ext
+    return local_file_path
 
 
 def get_secrets_file() -> str:
@@ -49,51 +72,36 @@ def get_secrets_file() -> str:
     return os.path.join(get_work_dir(), SECRETS_FILE_PATH)
 
 
-def __merge_secrets(config: Union[Dynaconf, DynaBox], src_config: Dynaconf = None):
-    if src_config is None:
-        src_config = config
-    for key, val in config.items():
-        if isinstance(val, dict):
-            __merge_secrets(val, src_config)
-            continue
-        # NOTE value must be an exact match to avoid interfering
-        # with other templates
-        if isinstance(val, str) and (val[0:2] == "${" and val[-1] == "}"):
-            ref_key = val[2:-1]
-            ref_val = src_config.get(ref_key, None)
-            if ref_val is not None:
-                config[key] = ref_val
-            continue
-
-
 def init_config() -> Dynaconf:
+    log.info("Configuration: begin init_config()")
     global __config
     __config = Dynaconf(
         settings_files=[
             get_config_defaults_file(),
-            get_config_file(),
             get_secrets_file(),
+            get_peerid_file(),
+            get_config_file(),
         ],
-        # secrets=[],
         merge=True,
         environments=False,
     )
-    __merge_secrets(__config)
+    log.debug("Configuration: merging secrets into config string templates")
     return __config
 
 
+def reload_config() -> Dynaconf:
+    """Reloads settings with latest config file updates."""
+    __config.reload()
+    log.info("Configuration: reloaded.")
+
+
 def load_config(filename: str, clean: bool = False) -> Dynaconf:
-    """Loads configuration settings from the given filename.
-    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
-    Otherwise save() will persist to the filename path (where the settings are to be loaded from)."""
+    """Loads configuration settings from the given filename."""
     root_config = get_root_config()
     if clean:
         root_config.clean()
     if filename:
-        root_config.load_file(
-            path=[get_config_defaults_file(), filename, get_secrets_file()]
-        )
-        __merge_secrets(root_config)
+        root_config.load_file(path=[filename, get_secrets_file()])
         global __config_file
         __config_file = filename
     return root_config
@@ -118,3 +126,4 @@ def get_work_dir() -> str:
 
 
 __config_file = os.path.join(get_work_dir(), CONFIG_FILE_PATH)
+__peer_file = os.path.join(get_work_dir(), PEER_FILE_PATH)

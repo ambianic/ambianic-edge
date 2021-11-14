@@ -1,5 +1,5 @@
 aiofiles>=0.7
-apprise>=0.8.9pip
+apprise>=0.9.5
 absl-py>=0.7.1
 appdirs>=1.4.3
 asn1crypto>=0.24.0

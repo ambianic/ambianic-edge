@@ -15,15 +15,23 @@ logging:
   # set a less noisy log level for the console output
   # console_level: WARNING
 
+# settings related to PWA UI
+ui:
+  baseurl: "https://ui.ambianic.ai"
 
 # Notification provider settings
 # see https://github.com/caronc/apprise#popular-notification-services for syntax examples
 notifications:
   default:
     enabled: false  # boolean; default = true; enables / disables notifications with 'default' tag
+    templates:
+      title: ${event}
+      message: ${event_details_url}
     include_attachments: false
     providers:
-      ifttt: //${ifttt_webhook_id}@ambianic
+      # Using Dynaconf template substitutions
+      # ref: https://www.dynaconf.com/dynamic/#template-substitutions
+      - "@format ifttt://{this.ifttt_webhook_id}@ambianic"
 #   catch_all_email:
 #     enabled: false  # boolean; default = true; enables / disables notifications with 'catch_all_email' tag
 #     include_attachments: true; default = false

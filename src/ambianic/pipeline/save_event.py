@@ -188,12 +188,16 @@ class SaveDetectionEvents(PipeElement):
         if save_json["inference_result"] is None:
             return
 
+        log.debug(f"Preparing notification with event payload: {save_json}")
+
         for inference_result in save_json["inference_result"]:
             data = {
                 "id": save_json["id"],
                 "label": inference_result["label"],
                 "confidence": inference_result["confidence"],
                 "datetime": save_json["datetime"],
+                "rel_dir": save_json["rel_dir"],
+                "json_file_name": save_json["json_file_name"],
             }
 
             # paid premium notifications disabled for the time being
@@ -201,6 +205,7 @@ class SaveDetectionEvents(PipeElement):
             # sendCloudNotification(data=data)
 
             if self.notifier is None:
+                log.debug("No notifier specified. Skipping notification send.")
                 return
 
             notification = Notification(

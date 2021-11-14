@@ -1,7 +1,7 @@
-######################################
-#  Ambianic main configuration file  #
-######################################
-version: '2020.12.11'
+###################################
+#  Ambianic dev mode config file  #
+###################################
+version: '2021.11.11'
 
 # path to the data directory
 data_dir: ./data

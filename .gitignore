@@ -16,7 +16,7 @@ ambianic/webapp/bower_components/paper/
 _mdwriter.cson
 **/timeline-event-log.yaml
 .pytest_cache/
-**/.peerjsrc
+**/.peerjsrc*
 **/ambianic_edge.egg-info/
 ambianic-debug2.sh
 config.yaml.local
@@ -25,3 +25,4 @@ premium.yaml
 tmp*.jpg
 src/Ambianic.egg-info/**
 /docs/dist
+**/*.local.yaml
