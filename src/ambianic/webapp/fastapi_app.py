@@ -8,6 +8,7 @@ import yaml
 from ambianic.configuration import (
     DEFAULT_DATA_DIR,
     __version__,
+    get_all_config_files,
     get_root_config,
     init_config,
     save_config,
@@ -83,6 +84,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     init_config()
+    conf_files = get_all_config_files()
+    log.info(f"Loaded config from files: {conf_files}")
     # set an initial data dir location
     root_config = get_root_config()
     if root_config:
@@ -116,8 +119,14 @@ def get_status():
     other device details such as release version."""
     root_config = get_root_config()
     name = root_config.get("display_name", "My Ambianic Edge device")
+    notifications_config = root_config.get("notifications", {})
+    default_config = notifications_config.get("default", {})
+    notify_enabled = default_config.get("enabled", True)
     response_object = StatusResponse(
-        status="OK", version=__version__, display_name=name
+        status="OK",
+        version=__version__,
+        display_name=name,
+        notifications_enabled=notify_enabled,
     )
     return response_object
 
@@ -202,10 +211,10 @@ def set_device_display_name(display_name: str):
         )
 
 
-@app.get("/api/integrations/ifttt/test", response_model=str)
-def test_ifttt():
+@app.get("/api/notifications/test", response_model=str)
+def test_notifications():
     """
-    Run a live ifttt integration test and return status result.
+    Run a live test with configured notification providers and return status result.
     """
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
 
@@ -221,9 +230,9 @@ def set_ifttt_api_key(api_key: str):
     """
     if api_key:
         root_config = get_root_config()
-        root_config.set("ifttt_webhook_id", api_key)
+        root_config["ifttt_webhook_id"] = api_key
         save_config()
-        log.debug(f"saved IFTTT WebhookID / API_KEY: {api_key}")
+        log.debug(f"saved IFTTT API_KEY (WebhookID): {api_key}")
     else:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -240,7 +249,15 @@ def enable_notifications(enable: bool):
     """
     Enable or disable all notifications.
     """
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    root_config = get_root_config()
+    notifications_config = root_config.get("notifications", {})
+    default_config = notifications_config.get("default", {})
+    default_config["enabled"] = enable
+    notifications_config["default"] = default_config
+    root_config.set("notifications", notifications_config)
+    save_config()
+    log.debug(f"Saved notifications enabled setting: {enable}")
+    return
 
 
 @app.get("/api/config/source/{source_id}", include_in_schema=False)

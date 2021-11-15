@@ -7,3 +7,6 @@ class DeviceInfo(BaseModel):
     display_name: str = Field(
         None, description="User friendly display name for this device."
     )
+    notifications_enabled: bool = Field(
+        False, description="Indicates whether device notifications are enabled."
+    )

@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 
 import importlib_metadata as metadata
 from dynaconf import Dynaconf, loaders
-from dynaconf.utils.boxing import DynaBox
 
 log = logging.getLogger()
 
@@ -49,21 +48,24 @@ def get_config_defaults_file() -> str:
 
 def get_config_file() -> str:
     """Return path to main config file for this instance.
-    This is the file where config changes via API calls are saved."""
+    This is typically the file with baseline configuration settings
+    across a fleet of similar devices.
+    """
     return __config_file
+
+
+def get_local_config_file() -> str:
+    """Return path to local custom config file. E.g. config.local.yaml.
+    This is the file where config changes via API calls are saved.
+    This is also the file where manual local changes can be applied and saved to override values from other config files."""
+    (cfg_file_head, cfg_file_ext) = os.path.splitext(get_config_file())
+    local_file_path = cfg_file_head + ".local" + cfg_file_ext
+    return local_file_path
 
 
 def get_peerid_file():
     """Return path to the file where peerfetch Peer ID for this device is stored."""
     return __peer_file
-
-
-def get_local_config_file() -> str:
-    """Return path to local custom config file. E.g. config.local.yaml.
-    This is the file where manual local changes are saved and override values from other config files."""
-    (cfg_file_head, cfg_file_ext) = os.path.splitext(get_config_file())
-    local_file_path = cfg_file_head + ".local." + cfg_file_ext
-    return local_file_path
 
 
 def get_secrets_file() -> str:
@@ -72,17 +74,30 @@ def get_secrets_file() -> str:
     return os.path.join(get_work_dir(), SECRETS_FILE_PATH)
 
 
+def get_all_config_files() -> []:
+    """Return a list of all config file locations."""
+    conf_files = os.environ.get("AMBIANIC_CONFIG_FILES", None)
+    return conf_files
+
+
 def init_config() -> Dynaconf:
     log.info("Configuration: begin init_config()")
     global __config
+    conf_files = os.environ.get("AMBIANIC_CONFIG_FILES", None)
+    if conf_files is None:
+        conf_files = ",".join(
+            [
+                get_config_defaults_file(),
+                get_secrets_file(),
+                get_peerid_file(),
+                get_config_file(),
+            ]
+        )
+    os.environ["AMBIANIC_CONFIG_FILES"] = conf_files
+    os.environ["DYNACONF_SETTINGS"] = conf_files
+    log.info(f"Config files: {conf_files}")
     __config = Dynaconf(
-        settings_files=[
-            get_config_defaults_file(),
-            get_secrets_file(),
-            get_peerid_file(),
-            get_config_file(),
-        ],
-        merge=True,
+        # settings_files=conf_files.split(','), # passed via DYNACONF_SETTINGS instead
         environments=False,
     )
     log.debug("Configuration: merging secrets into config string templates")
@@ -91,6 +106,7 @@ def init_config() -> Dynaconf:
 
 def reload_config() -> Dynaconf:
     """Reloads settings with latest config file updates."""
+    get_all_config_files()
     __config.reload()
     log.info("Configuration: reloaded.")
 
@@ -108,13 +124,15 @@ def load_config(filename: str, clean: bool = False) -> Dynaconf:
 
 
 def save_config():
-    """Persist configuration settings to disk."""
+    """Persist configuration settings to local config file."""
     # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
     # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
-    file_to_save = get_config_file()
+    file_to_save = os.environ.get("AMBIANIC_SAVE_CONFIG_TO", None)
+    if not file_to_save:
+        file_to_save = get_local_config_file()
     root_config = get_root_config()
     data = root_config.as_dict()
-    loaders.write(file_to_save, DynaBox(data).to_dict())
+    loaders.write(file_to_save, data)
 
 
 def get_work_dir() -> str:

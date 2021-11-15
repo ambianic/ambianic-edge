@@ -16,6 +16,9 @@ tasks:
       pre-commit install
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
+      # set local config file list for ambianic env settings
+      AMBIANIC_CONFIG_FILES="/workspace/ambianic-edge/config.defaults.yaml, /workspace/ambianic-edge/.peerjsrc.json, /workspace/ambianic-edge/dev/dev-config.yaml, /workspace/ambianic-edge/dev/dev-config.local.yaml"
+      AMBIANIC_SAVE_CONFIG_TO="/workspace/ambianic-edge/dev/dev-config-save.local.yaml"
       rm /tmp/.gitpod-init-lock
   - init: |
       echo "Waiting for main init to complete"
@@ -24,7 +27,8 @@ tasks:
       echo "Starting amgianic-edge core"
       sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
-      python3 -m ambianic --config "dev/dev-config.yaml" --peerfile ".peerjsrc"
+      sudo ln -s /workspace/ambianic-edge/.peerjsrc /workspace/ambianic-edge/.peerjsrc.json
+      python3 -m ambianic
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
