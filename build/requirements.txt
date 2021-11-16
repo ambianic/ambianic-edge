@@ -31,6 +31,7 @@ httpretty>=1.1
 Pillow>=5.4.1
 pyOpenSSL>=19.0.0
 PyYAML>=5.1.2
+peerjs>1.5
 requests>=2.25
 requests-oauthlib>=1.0.0
 responses>=0.9.0
