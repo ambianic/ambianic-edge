@@ -18,12 +18,13 @@ tasks:
       sudo python3 -m pip install -r build/requirements.txt --upgrade
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
+      source ./.gitpod.env.sh
       # set local config file list for ambianic env settings
       rm /tmp/.gitpod-init-lock
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
-      ./.gitpod.env.sh
+      source ./.gitpod.env.sh
     command: |
       echo "Starting amgianic-edge core"
       pyenv global system
@@ -34,7 +35,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
-      ./.gitpod.env.sh
+      source ./.gitpod.env.sh
     command: |
       echo "Starting WebRTC to HTTP proxy"
       pyenv global system
@@ -42,7 +43,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
-      ./.gitpod.env.sh
+      source ./.gitpod.env.sh
     command: |
       echo "Starting OpenAPI server (fastapi/uvicorn)"
       pyenv global system
@@ -50,7 +51,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
-      ./.gitpod.env.sh
+      source ./.gitpod.env.sh
     command: |
       echo "Running ambianic-edge testsuite:"
       pyenv global system
@@ -61,3 +62,4 @@ vscode:
     - ms-python.python
     - github.vscode-pull-request-github
     - eamodio.gitlens
+    #
