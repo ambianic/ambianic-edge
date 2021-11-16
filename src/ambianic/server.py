@@ -5,13 +5,7 @@ import os
 import time
 
 from ambianic import logger
-from ambianic.configuration import (
-    get_config_file,
-    get_local_config_file,
-    get_root_config,
-    get_secrets_file,
-    reload_config,
-)
+from ambianic.configuration import get_all_config_files, get_root_config, reload_config
 from ambianic.pipeline import pipeline_event
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
@@ -61,11 +55,7 @@ class AmbianicServer:
         if self._config_observer:
             self.stop_watch_config()
         self._config_observer = Observer()
-        config_paths = [
-            get_config_file(),
-            get_local_config_file(),
-            get_secrets_file(),
-        ]
+        config_paths = get_all_config_files()
         for filepath in config_paths:
             if not os.path.exists(filepath):
                 log.warning("File %s not found, skip changes watch" % filepath)
@@ -134,9 +124,9 @@ class AmbianicServer:
         config = get_root_config()
         logger.configure(config.get("logging"))
         # dynamically (re)load fresh configuration settings
-        log.info("start: before reload")
+        log.debug("server start: before config reload")
         reload_config()
-        log.info("start: after reload")
+        log.debug("server start: after config reload")
         # Re-configure logging in case config file just changed
         # on disk and caused config reload.
         logger.configure(config.get("logging"))

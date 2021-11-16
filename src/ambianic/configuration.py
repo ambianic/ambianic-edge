@@ -74,6 +74,14 @@ def get_secrets_file() -> str:
     return os.path.join(get_work_dir(), SECRETS_FILE_PATH)
 
 
+def get_all_config_files():
+    conf_files = os.environ.get("AMBIANIC_CONFIG_FILES")
+    if conf_files:
+        file_list = conf_files.split(",")
+        file_list = list(map(lambda s: s.strip(), file_list))
+        return file_list
+
+
 def init_config() -> Dynaconf:
     log.debug("Configuration: begin init_config()")
     global __config
@@ -100,7 +108,7 @@ def init_config() -> Dynaconf:
 
 def reload_config() -> Dynaconf:
     """Reloads settings with latest config file updates."""
-    conf_files = os.environ["AMBIANIC_CONFIG_FILES"]
+    conf_files = get_all_config_files()
     log.info(f"Reloading config settings from: {conf_files}")
     __config.reload()
     log.info("Configuration: reloaded.")

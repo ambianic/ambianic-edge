@@ -80,5 +80,4 @@ def configure(config=None):
     assert numeric_level == effective_level
     log.info("Logging configured with level %s", logging.getLevelName(effective_level))
     if effective_level <= logging.DEBUG:
-        log.debug("Configuration yaml dump:")
-        log.debug(config)
+        log.debug(f"Configuration yaml dump: {config.to_dict()}")
