@@ -74,18 +74,8 @@ def get_secrets_file() -> str:
     return os.path.join(get_work_dir(), SECRETS_FILE_PATH)
 
 
-def get_all_config_files() -> []:
-    """Return a list of all config file locations."""
-    conf_files_str = os.environ.get("AMBIANIC_CONFIG_FILES", None)
-    if conf_files_str is not None:
-        conf_files = conf_files_str.split(",")
-    else:
-        conf_files_str = []
-    return conf_files
-
-
 def init_config() -> Dynaconf:
-    log.info("Configuration: begin init_config()")
+    log.debug("Configuration: begin init_config()")
     global __config
     conf_files = os.environ.get("AMBIANIC_CONFIG_FILES", None)
     if conf_files is None:
@@ -99,7 +89,7 @@ def init_config() -> Dynaconf:
         )
     os.environ["AMBIANIC_CONFIG_FILES"] = conf_files
     os.environ["DYNACONF_SETTINGS"] = conf_files
-    log.info(f"Config files: {conf_files}")
+    log.info(f"Loading config settings from: {conf_files}")
     __config = Dynaconf(
         # settings_files=conf_files.split(','), # passed via DYNACONF_SETTINGS instead
         environments=False,
@@ -110,7 +100,8 @@ def init_config() -> Dynaconf:
 
 def reload_config() -> Dynaconf:
     """Reloads settings with latest config file updates."""
-    get_all_config_files()
+    conf_files = os.environ["AMBIANIC_CONFIG_FILES"]
+    log.info(f"Reloading config settings from: {conf_files}")
     __config.reload()
     log.info("Configuration: reloaded.")
 
@@ -136,6 +127,7 @@ def save_config():
         file_to_save = get_local_config_file()
     root_config = get_root_config()
     data = root_config.as_dict()
+    log.info(f"Saving config settings to: {file_to_save}")
     loaders.write(file_to_save, data)
 
 

@@ -15,19 +15,15 @@ tasks:
       python3 -m pip install -U --user pylint isort mccabe pre-commit black flake8
       pre-commit install
       # installing and upgrading requirements.txt packages
-      python3 -m pip install -r build/requirements.txt --upgrade
+      sudo python3 -m pip install -r build/requirements.txt --upgrade
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
       # set local config file list for ambianic env settings
-      AMBIANIC_CONFIG_FILES="/workspace/ambianic-edge/config.defaults.yaml, \
-        /workspace/ambianic-edge/.peerjsrc.json,  \
-        /workspace/ambianic-edge/dev/dev-config.yaml, \
-        /workspace/ambianic-edge/dev/dev-config.local.yaml"
-      AMBIANIC_SAVE_CONFIG_TO="/workspace/ambianic-edge/dev/dev-config.local.yaml"
       rm /tmp/.gitpod-init-lock
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+      ./.gitpod.env.sh
     command: |
       echo "Starting amgianic-edge core"
       pyenv global system
@@ -38,6 +34,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+      ./.gitpod.env.sh
     command: |
       echo "Starting WebRTC to HTTP proxy"
       pyenv global system
@@ -45,6 +42,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+      ./.gitpod.env.sh
     command: |
       echo "Starting OpenAPI server (fastapi/uvicorn)"
       pyenv global system
@@ -52,6 +50,7 @@ tasks:
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+      ./.gitpod.env.sh
     command: |
       echo "Running ambianic-edge testsuite:"
       pyenv global system
