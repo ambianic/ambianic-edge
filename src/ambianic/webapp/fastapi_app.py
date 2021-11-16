@@ -14,6 +14,7 @@ from ambianic.configuration import (
     save_config,
 )
 from ambianic.device import DeviceInfo
+from ambianic.notification import Notification, NotificationHandler
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI, HTTPException, Response, status
@@ -216,7 +217,15 @@ def test_notifications():
     """
     Run a live test with configured notification providers and return status result.
     """
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    data = {
+        "id": "test_event_id",
+        "label": "test_event_label",
+        "confidence": 0.9,
+    }
+    notifier = NotificationHandler()
+    notification = Notification(data=data, providers=["default"])
+    notifier.send(notification)
+    log.info("Test notification sent.")
 
 
 @app.put(

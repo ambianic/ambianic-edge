@@ -76,7 +76,11 @@ def get_secrets_file() -> str:
 
 def get_all_config_files() -> []:
     """Return a list of all config file locations."""
-    conf_files = os.environ.get("AMBIANIC_CONFIG_FILES", None)
+    conf_files_str = os.environ.get("AMBIANIC_CONFIG_FILES", None)
+    if conf_files_str is not None:
+        conf_files = conf_files_str.split(",")
+    else:
+        conf_files_str = []
     return conf_files
 
 

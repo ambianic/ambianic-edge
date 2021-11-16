@@ -17,8 +17,11 @@ tasks:
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
       # set local config file list for ambianic env settings
-      AMBIANIC_CONFIG_FILES="/workspace/ambianic-edge/config.defaults.yaml, /workspace/ambianic-edge/.peerjsrc.json, /workspace/ambianic-edge/dev/dev-config.yaml, /workspace/ambianic-edge/dev/dev-config.local.yaml"
-      AMBIANIC_SAVE_CONFIG_TO="/workspace/ambianic-edge/dev/dev-config-save.local.yaml"
+      AMBIANIC_CONFIG_FILES="/workspace/ambianic-edge/config.defaults.yaml, \
+        /workspace/ambianic-edge/.peerjsrc.json,  \
+        /workspace/ambianic-edge/dev/dev-config.yaml, \
+        /workspace/ambianic-edge/dev/dev-config.local.yaml"
+      AMBIANIC_SAVE_CONFIG_TO="/workspace/ambianic-edge/dev/dev-config.local.yaml"
       rm /tmp/.gitpod-init-lock
   - init: |
       echo "Waiting for main init to complete"
