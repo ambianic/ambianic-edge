@@ -119,10 +119,18 @@ class SaveDetectionEvents(PipeElement):
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
 
         json_encoded_obj = json.loads(json_str)
-        self.event_log.info("Detection Event", json_encoded_obj)
-
+        log_message = "Detection Event"
+        event_priority = logging.INFO
+        self.event_log.log(event_priority, log_message, json_encoded_obj)
         log.debug("Saved sample (detection event): %r ", save_json)
-        self.notify(save_json)
+        # format notification message in a way consistent with event log file formatting
+        # used by PipelineEventFormatter
+        event_data = {
+            "message": log_message,
+            "priority": logging.getLevelName(event_priority),
+            "args": save_json,
+        }
+        self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:
@@ -183,35 +191,24 @@ class SaveDetectionEvents(PipeElement):
                 log.debug("Passing sample on: %r ", processed_sample)
                 yield processed_sample
 
-    def notify(self, save_json: dict):
+    def notify(self, event_data: dict):
         """Send out a notification with an event payload"""
-        if save_json["inference_result"] is None:
+
+        log.debug(f"Preparing notification with event payload: {event_data}")
+
+        # paid premium notifications disabled for the time being
+        # in favor of FREE 3rd party integrations such as IFTTT
+        # sendCloudNotification(data=data)
+
+        if self.notifier is None:
+            log.debug("No notifier specified. Skipping notification send.")
             return
 
-        log.debug(f"Preparing notification with event payload: {save_json}")
-
-        for inference_result in save_json["inference_result"]:
-            data = {
-                "id": save_json["id"],
-                "label": inference_result["label"],
-                "confidence": inference_result["confidence"],
-                "datetime": save_json["datetime"],
-                "rel_dir": save_json["rel_dir"],
-                "json_file_name": save_json["json_file_name"],
-            }
-
-            # paid premium notifications disabled for the time being
-            # in favor of FREE 3rd party integrations such as IFTTT
-            # sendCloudNotification(data=data)
-
-            if self.notifier is None:
-                log.debug("No notifier specified. Skipping notification send.")
-                return
-
-            notification = Notification(
-                data=data, providers=self.notification_config["providers"]
-            )
-            self.notifier.send(notification)
+        notification = Notification(
+            envelope=event_data,
+            providers=self.notification_config["providers"],
+        )
+        self.notifier.send(notification)
 
 
 class JsonEncoder(json.JSONEncoder):

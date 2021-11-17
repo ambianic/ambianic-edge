@@ -50,15 +50,12 @@ def sendCloudNotification(data):
 
 
 class Notification:
-    def __init__(
-        self, event: str = "detection", data: dict = {}, providers: list = ["all"]
-    ):
-        self.event: str = event
+    def __init__(self, envelope: dict = {}, providers: list = ["all"]):
         self.providers: list = providers
         self.title: str = None
         self.message: str = None
         self.attach: list = []
-        self.data: dict = data
+        self.envelope: dict = envelope
 
     def add_attachments(self, *args):
         self.attach.append(*args)
@@ -101,13 +98,18 @@ class NotificationHandler:
 
                 title = notification.title
                 if title is None:
-                    title = templates.get("title", "[Ambianic.ai] New ${event} event")
+                    title = templates.get(
+                        "title",
+                        "[Ambianic.ai] New event - ${event_type}: ${event_label}",
+                    )
 
                 log.debug(f"template title: {title}")
 
                 message = notification.message
                 if message is None:
-                    message = templates.get("message", "New ${event} recognized")
+                    message = templates.get(
+                        "message", "New event\n ${event_type}: ${event_label}"
+                    )
 
                 log.debug(f"template message: {message}")
 
@@ -118,7 +120,7 @@ class NotificationHandler:
                         continue
                     attachments.append(a)
 
-                url_params = {**notification.data}
+                url_params = {**notification.envelope}
 
                 peer_id = get_root_config().get("peerId", None)
                 if peer_id is None:
@@ -126,7 +128,7 @@ class NotificationHandler:
                         "peerId not found. Notification will not include link bank to peer."
                     )
                 else:
-                    peerid_hash_input = peer_id + notification.data["id"]
+                    peerid_hash_input = peer_id + notification.envelope["id"]
                     peerid_hash = hashlib.sha256(
                         peerid_hash_input.encode("utf-8")
                     ).hexdigest()
@@ -144,11 +146,14 @@ class NotificationHandler:
                 ui_base_url = ui_config["baseurl"]
 
                 template_args = {
-                    "event_type": notification.event,
-                    "event": notification.data.get("label", notification.event),
+                    "event_type": notification.envelope["args"]["inference_meta"][
+                        "display"
+                    ],
+                    "event_label": notification.envelope["args"]["inference_result"][
+                        "label"
+                    ],
                     "event_details_url": f"{ui_base_url}/event?{url_query}",
                 }
-                template_args = {**template_args, **notification.data}
 
                 log.debug(f"template_args: {template_args}")
 

@@ -26,8 +26,8 @@ notifications:
   default:
     enabled: false  # boolean; default = true; enables / disables notifications with 'default' tag
     templates:
-      title: ${event}
-      message: ${event_details_url}
+      title: "${event_type}: ${event_label}"
+      message: "${event_details_url}"
     include_attachments: false
     providers:
       # Using Dynaconf template substitutions
