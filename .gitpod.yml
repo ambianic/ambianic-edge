@@ -18,7 +18,7 @@ tasks:
       sudo
       # convoluted way to install and upgrade requirements.txt packages without failing if one errors
       # ref: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt
-      cat requirements.txt | sudo xargs -n 1 python3 -m pip install --upgrade
+      cat ./build/requirements.txt | sudo xargs -n 1 python3 -m pip install --upgrade
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
       # set local config file list for ambianic env settings

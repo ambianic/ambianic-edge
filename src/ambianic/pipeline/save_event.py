@@ -194,7 +194,7 @@ class SaveDetectionEvents(PipeElement):
     def notify(self, event_data: dict):
         """Send out a notification with an event payload"""
 
-        log.debug(f"Preparing notification with event payload: {event_data}")
+        log.warn(f"Preparing notification with event payload: {event_data}")
 
         # paid premium notifications disabled for the time being
         # in favor of FREE 3rd party integrations such as IFTTT

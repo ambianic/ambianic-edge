@@ -432,7 +432,7 @@ class FallDetector(TFDetectionModel):
             log.debug(
                 "Received an image frame too soon after the previous \
                 frame. Only %.2f ms apart.\
-                Minimum %.2f ms distance required for fall detection.",
+                Minimum %.2f ms period required for fall detection.",
                 lapse,
                 self.min_time_between_frames,
             )

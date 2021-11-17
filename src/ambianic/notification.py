@@ -100,7 +100,7 @@ class NotificationHandler:
                 if title is None:
                     title = templates.get(
                         "title",
-                        "[Ambianic.ai] New event - ${event_type}: ${event_label}",
+                        "[Ambianic.ai] New event - ${event_type}: ${event_labels}",
                     )
 
                 log.debug(f"template title: {title}")
@@ -108,7 +108,7 @@ class NotificationHandler:
                 message = notification.message
                 if message is None:
                     message = templates.get(
-                        "message", "New event\n ${event_type}: ${event_label}"
+                        "message", "New event\n ${event_type}: ${event_labels}"
                     )
 
                 log.debug(f"template message: {message}")
@@ -128,7 +128,7 @@ class NotificationHandler:
                         "peerId not found. Notification will not include link bank to peer."
                     )
                 else:
-                    peerid_hash_input = peer_id + notification.envelope["id"]
+                    peerid_hash_input = peer_id + notification.envelope["args"]["id"]
                     peerid_hash = hashlib.sha256(
                         peerid_hash_input.encode("utf-8")
                     ).hexdigest()
@@ -145,13 +145,19 @@ class NotificationHandler:
                 )
                 ui_base_url = ui_config["baseurl"]
 
+                event_labels = list(
+                    map(
+                        lambda i: i["label"],
+                        notification.envelope["args"]["inference_result"],
+                    )
+                )
+                event_labels_str = ",".join(event_labels)
+
                 template_args = {
                     "event_type": notification.envelope["args"]["inference_meta"][
                         "display"
                     ],
-                    "event_label": notification.envelope["args"]["inference_result"][
-                        "label"
-                    ],
+                    "event_labels": event_labels_str,
                     "event_details_url": f"{ui_base_url}/event?{url_query}",
                 }
 
@@ -172,14 +178,10 @@ class NotificationHandler:
                     attach=attachments if include_attachments else [],
                 )
                 if ok:
-                    log.debug(
-                        "Sent notification for %s to %s"
-                        % (notification.event, provider)
-                    )
+                    log.debug(f"Sent notification {template_args} to {provider}")
                 else:
                     log.warning(
-                        "Error sending notification for %s to %s"
-                        % (notification.event, provider)
+                        f"Error sending notification {template_args} to {provider}"
                     )
             else:
                 log.warning("Skipping unknown provider %s" % provider)

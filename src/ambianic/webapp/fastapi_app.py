@@ -217,13 +217,17 @@ def test_notifications():
     """
     Run a live test with configured notification providers and return status result.
     """
-    data = {
-        "id": "test_event_id",
-        "label": "test_event_label",
-        "confidence": 0.9,
+    notification_envelope = {
+        "message": "Ambianic Test Event",
+        "priority": logging.getLevelName(logging.INFO),
+        "args": {
+            "id": "test_id",
+            "inference_meta": {"display": "Test Detection"},
+            "inference_result": [{"label": "test_person"}],
+        },
     }
     notifier = NotificationHandler()
-    notification = Notification(data=data, providers=["default"])
+    notification = Notification(envelope=notification_envelope, providers=["default"])
     notifier.send(notification)
     log.info("Test notification sent.")
 

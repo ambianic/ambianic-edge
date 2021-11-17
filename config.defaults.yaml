@@ -26,7 +26,7 @@ notifications:
   default:
     enabled: false  # boolean; default = true; enables / disables notifications with 'default' tag
     templates:
-      title: "${event_type}: ${event_label}"
+      title: "${event_labels}"
       message: "${event_details_url}"
     include_attachments: false
     providers:
