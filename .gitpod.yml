@@ -21,9 +21,10 @@ tasks:
       cat requirements.txt | sudo xargs -n 1 python3 -m pip install --upgrade
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
-      source ./.gitpod.env.sh
       # set local config file list for ambianic env settings
       rm /tmp/.gitpod-init-lock
+    command: |
+      source ./.gitpod.env.sh
   - init: |
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done

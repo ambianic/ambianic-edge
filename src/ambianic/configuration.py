@@ -102,7 +102,6 @@ def init_config() -> Dynaconf:
         # settings_files=conf_files.split(','), # passed via DYNACONF_SETTINGS instead
         environments=False,
     )
-    log.debug("Configuration: merging secrets into config string templates")
     return __config
 
 
