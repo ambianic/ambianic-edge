@@ -244,9 +244,11 @@ def set_ifttt_api_key(api_key: str):
     if api_key:
         root_config = get_root_config()
         root_config["ifttt_webhook_id"] = api_key
-        root_config["notifications"]["default"]["providers"] = [
-            f"ifttt://{api_key}@ambianic"
-        ]
+        notifications_config = root_config.get("notifications", {})
+        default_config = notifications_config.get("default", {})
+        default_config["providers"] = [f"ifttt://{api_key}@ambianic"]
+        notifications_config["default"] = default_config
+        root_config.set("notifications", notifications_config)
         save_config()
         log.debug(f"saved IFTTT API_KEY (WebhookID): {api_key}")
     else:

@@ -11,6 +11,7 @@ from ambianic.configuration import (
     init_config,
     reload_config,
 )
+from ambianic.notification import NotificationHandler
 from ambianic.webapp.fastapi_app import app, set_data_dir
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -215,10 +216,54 @@ def test_set_device_display_name(client, request, config):
 
 
 def test_set_device_display_name_empty(client):
-    pass
     # this API call should NOT change the display name to empty
     rv = client.put("/api/device/display_name/")
     log.debug(f"put -> /api/device/display_name: JSON response: {rv})")
     # FASTPI responds with 307 when the path ends in a slash without any parameter value after it
     # Instead of the expected 422 error code. Both prevent successul put with empty display name.
     assert rv.status_code >= 300
+
+
+def test_enable_notifications(client, config):
+    # this API call should NOT change the display name to empty
+    rv = client.put("/api/notifications/enable/true")
+    log.debug(f"put -> /api/notifications/enable: JSON response: {rv})")
+    assert rv.status_code == status.HTTP_204_NO_CONTENT
+    # reload config and see if the value set through the API was persisted
+    reload_config()
+    assert config["notifications"]["default"]["enabled"] is True
+    rv = client.put("/api/notifications/enable/false")
+    log.debug(f"put -> /api/notifications/enable: JSON response: {rv})")
+    assert rv.status_code == status.HTTP_204_NO_CONTENT
+    # reload config and see if the value set through the API was persisted
+    reload_config()
+    assert config["notifications"]["default"]["enabled"] is False
+
+
+def test_set_ifttt_api_key(client, config):
+    # this API call should NOT change the display name to empty
+    key = "1235"
+    rv = client.put(f"/api/integrations/ifttt/api_key/{key}")
+    log.debug(f"put -> /api/integrations/ifttt/api_key/: JSON response: {rv})")
+    assert rv.status_code == status.HTTP_204_NO_CONTENT
+    # reload config and see if the value set through the API was persisted
+    reload_config()
+    assert config["ifttt_webhook_id"] == key
+    assert config["notifications"]["default"]["providers"] == [
+        f"ifttt://{key}@ambianic"
+    ]
+
+
+def test_test_notifications(client, config):
+    # this API call should NOT change the display name to empty
+    sent = False
+
+    def fake_send(_, notification):
+        nonlocal sent
+        sent = True
+
+    NotificationHandler.send = fake_send
+    rv = client.get("/api/notifications/test")
+    log.debug(f"put -> /api/integrations/ifttt/api_key/: JSON response: {rv})")
+    assert rv.status_code == status.HTTP_200_OK
+    assert sent is True
