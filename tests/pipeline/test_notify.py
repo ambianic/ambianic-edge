@@ -8,13 +8,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Event, Thread
 
 import httpretty
-from ambianic import config
+from ambianic.configuration import get_root_config
 from ambianic.notification import sendCloudNotification
 from ambianic.pipeline.pipeline_event import PipelineContext
-from ambianic.pipeline.store import SaveDetectionEvents
+from ambianic.pipeline.save_event import SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
+
+inf_meta = {"display": "Test Detection"}
 
 
 class MockRequestHandler(BaseHTTPRequestHandler):
@@ -104,6 +106,7 @@ def test_notification_with_attachments():
     mock_server = HTTPMockServer(called)
 
     # register the mock server endpoint
+    config = get_root_config()
     config.update(
         {
             "notifications": {
@@ -137,7 +140,12 @@ def test_notification_with_attachments():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()
@@ -149,6 +157,7 @@ def test_notification_without_attachments():
     called: Event = Event()
     mock_server = HTTPMockServer(called)
 
+    config = get_root_config()
     # register the mock server endpoint
     config.update(
         {
@@ -183,7 +192,12 @@ def test_notification_without_attachments():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()
@@ -194,6 +208,7 @@ def test_plain_notification():
     called: Event = Event()
     mock_server = HTTPMockServer(called)
 
+    config = get_root_config()
     # register the mock server endpoint
     config.update(
         {
@@ -228,7 +243,12 @@ def test_plain_notification():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()

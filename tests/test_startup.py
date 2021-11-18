@@ -6,7 +6,8 @@ from pathlib import Path
 
 import ambianic
 import pytest
-from ambianic import __main__, config, load_config
+from ambianic import __main__
+from ambianic.configuration import get_root_config, load_config
 from ambianic.server import AmbianicServer
 from ambianic.util import ManagedService, ServiceExit
 
@@ -47,6 +48,10 @@ class MockAmbianicServer(AmbianicServer):
         super().dispatch(event)
         self.config_changed = True
 
+    def start(self):
+        # watch configuration changes
+        self.start_watch_config()
+
 
 def _start_mock_server(**kwargs):
     srv = MockAmbianicServer(**kwargs)
@@ -65,6 +70,7 @@ def _stop_mock_server(server=None, thread=None):
 
 def test_no_pipelines(my_dir):
     load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), clean=True)
+    config = get_root_config()
     assert config.get("pipelines") is None
     hb_flag = threading.Event()
     srv, t = None, None
@@ -84,11 +90,11 @@ def test_no_pipelines(my_dir):
 def test_main(my_dir):
 
     os.environ["AMBIANIC_DIR"] = my_dir
-
+    config = get_root_config()
     config.clean()
     load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), clean=True)
 
-    t = threading.Thread(target=__main__.main, daemon=True)
+    t = threading.Thread(target=__main__.start, daemon=True)
     t.start()
     t.join(timeout=1)
     __main__.stop()
