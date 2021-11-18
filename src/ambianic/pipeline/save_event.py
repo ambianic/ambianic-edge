@@ -194,7 +194,12 @@ class SaveDetectionEvents(PipeElement):
     def notify(self, event_data: dict):
         """Send out a notification with an event payload"""
 
-        log.warn(f"Preparing notification with event payload: {event_data}")
+        # don't bother sending notifications for idle events
+        # used as history log markers
+        if event_data["args"]["inference_result"] is None:
+            return
+
+        log.warning(f"Preparing notification with event payload: {event_data}")
 
         # paid premium notifications disabled for the time being
         # in favor of FREE 3rd party integrations such as IFTTT

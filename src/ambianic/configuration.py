@@ -96,10 +96,10 @@ def init_config() -> Dynaconf:
             ]
         )
     os.environ["AMBIANIC_CONFIG_FILES"] = conf_files
-    os.environ["DYNACONF_SETTINGS"] = conf_files
+    os.environ["SETTINGS_FILE_FOR_DYNACONF"] = conf_files
     log.info(f"Loading config settings from: {conf_files}")
     __config = Dynaconf(
-        # settings_files=conf_files.split(','), # passed via DYNACONF_SETTINGS instead
+        # settings_files=conf_files.split(','), # passed via SETTINGS_FILE_FOR_DYNACONF instead
         environments=False,
     )
     return __config
@@ -119,7 +119,10 @@ def load_config(filename: str, clean: bool = False) -> Dynaconf:
     if clean:
         root_config.clean()
     if filename:
-        root_config.load_file(path=[filename, get_secrets_file()])
+        files = [get_secrets_file(), filename]
+        log.debug(f"Loading config from files: {files}")
+        root_config.load_file(path=get_secrets_file())
+        root_config.load_file(path=filename)
         global __config_file
         __config_file = filename
     return root_config
@@ -148,3 +151,7 @@ def get_work_dir() -> str:
 
 __config_file = os.path.join(get_work_dir(), CONFIG_FILE_PATH)
 __peer_file = os.path.join(get_work_dir(), PEER_FILE_PATH)
+
+
+# initial config init
+init_config()

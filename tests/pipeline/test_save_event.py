@@ -6,10 +6,12 @@ import shutil
 
 import numpy as np
 from ambianic.pipeline.pipeline_event import PipelineContext
-from ambianic.pipeline.store import JsonEncoder, SaveDetectionEvents
+from ambianic.pipeline.save_event import JsonEncoder, SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
+
+inf_meta = {"display": "Test Detection"}
 
 
 def test_json_encoder():
@@ -157,7 +159,7 @@ class _TestSaveDetectionSamples(SaveDetectionEvents):
             image=image,
             thumbnail=thumbnail,
             inference_result=inference_result,
-            inference_meta=inference_meta,
+            inference_meta=inf_meta,
         )
 
 
@@ -180,7 +182,12 @@ def test_store_positive_detection():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -245,7 +252,12 @@ def test_store_negative_detection():
     img = Image.new("RGB", (60, 30), color="red")
     detections = []
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -297,7 +309,12 @@ def test_store_negative_detection_no_inference():
     img = Image.new("RGB", (60, 30), color="red")
     detections = None
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -348,11 +365,13 @@ class _TestSaveDetectionSamples2(SaveDetectionEvents):
                 "id": "140343867415240",
             }
         ],
+        "inference_meta": {"display": "Test Object Detection"},
     }
     context = PipelineContext(unique_pipeline_name="test pipeline")
     context.data_dir = "./tmp/"
     store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
-    store.notify(save_json=result)
+    data = {"message": "Test Event", "priority": "INFO", "args": result}
+    store.notify(event_data=data)
 
     def _save_sample(
         self,
@@ -382,7 +401,7 @@ def test_process_sample_exception():
 
     processed_samples = list(
         store.process_sample(
-            image=img, inference_result=detections, inference_meta=None
+            image=img, inference_result=detections, inference_meta=inf_meta
         )
     )
     assert store._save_sample_called
