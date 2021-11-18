@@ -1,12 +1,16 @@
 import logging
 import os
 from pathlib import Path
-from shutil import copy
 
 import pkg_resources
 import pytest
 import yaml
-from ambianic import __version__, config, load_config
+from ambianic.configuration import (
+    __version__,
+    get_root_config,
+    init_config,
+    reload_config,
+)
 from ambianic.webapp.fastapi_app import app, set_data_dir
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -16,16 +20,11 @@ log = logging.getLogger(__name__)
 my_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-def reset_config():
-    config.reload()
-
-
 # session scoped test setup
 # ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
 @pytest.fixture(autouse=True, scope="session")
 def setup_session(tmp_path_factory):
     """setup any state specific to the execution of the given module."""
-    reset_config()
     data_dir = tmp_path_factory.mktemp("data")
     # convert from Path object to str
     data_dir_str = data_dir.as_posix()
@@ -43,10 +42,44 @@ def change_test_dir(request):
     os.chdir(request.config.invocation_dir)
 
 
+# module scoped test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="function")
+def setup_module(request, tmp_path):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    saved_amb_dir = os.environ.get("AMBIANIC_DIR", "")
+    saved_amb_config_save = os.environ.get("AMBIANIC_SAVE_CONFIG_TO", "")
+    # change env settings
+    save_config_path = str(Path(tmp_path / "test-restapi-config.save.yaml"))
+    os.environ["AMBIANIC_CONFIG_FILES"] = (
+        str(Path(request.fspath.dirname) / "test-restapi-config.yaml")
+        + ","
+        + save_config_path
+    )
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = save_config_path
+    log.debug(
+        f'os.environ["AMBIANIC_CONFIG_FILES"] = {os.environ["AMBIANIC_CONFIG_FILES"]}'
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = saved_amb_config_save
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+
+
 @pytest.fixture
 def client():
     test_client = TestClient(app)
     return test_client
+
+
+@pytest.fixture(scope="function")
+def config():
+    return get_root_config()
 
 
 def test_hello(client):
@@ -108,8 +141,6 @@ def test_initialize_premium_notification(client):
 
 
 def test_get_config(client):
-    _dir = os.path.dirname(os.path.abspath(__file__))
-    load_config(os.path.join(_dir, "test-config.yaml"), True)
     rv = client.get("/api/config")
     data = rv.json()
     # dynaconf conversts to uppercase all root level json keys
@@ -159,7 +190,7 @@ def test_ping(client):
     assert rv.json() == "pong"
 
 
-def test_get_device_display_name(client):
+def test_get_device_display_name(client, config):
     current_device_display_name = config.get("display_name", None)
     rv = client.get("/api/device/display_name")
     data = rv.json()
@@ -167,23 +198,14 @@ def test_get_device_display_name(client):
     assert data == current_device_display_name
 
 
-def test_set_device_display_name(client, request, tmp_path):
-    config_filepath = Path(request.fspath.dirname) / "test-config.yaml"
-    log.debug(f"current config file is: {config_filepath}")
-    # copy config file to a temp location to test saving changes
-    tmp_config_path = copy(config_filepath, tmp_path)
-    log.debug(f"temp config file is: {tmp_config_path}")
-    load_config(filename=tmp_config_path, clean=True)
-    log.debug(f"config:{config.to_dict()}")
+def test_set_device_display_name(client, request, config):
     config["display_name"] = "Some Random Display Name"
     # this API call should change the display name in the saved config
     new_name = "Kitchen Device"
     rv = client.put(f"/api/device/display_name/{new_name}")
     assert rv.status_code == status.HTTP_204_NO_CONTENT
-    # log.debug(f"put -> /api/device/display_name: JSON response: {rv.json()}")
     # reload config and see if the value set through the API was persisted
-    log.debug(f"config:{config.to_dict()}")
-    load_config(filename=tmp_config_path, clean=True)
+    reload_config()
     assert config["display_name"] == new_name
     # now check that the API will return the new value
     rv = client.get("/api/device/display_name")

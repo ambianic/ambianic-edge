@@ -99,33 +99,18 @@ def init_config() -> Dynaconf:
     os.environ["SETTINGS_FILE_FOR_DYNACONF"] = conf_files
     log.info(f"Loading config settings from: {conf_files}")
     __config = Dynaconf(
-        # settings_files=conf_files.split(','), # passed via SETTINGS_FILE_FOR_DYNACONF instead
+        # settings_files read from SETTINGS_FILE_FOR_DYNACONF
         environments=False,
     )
+    log.debug(f"Config settings: {get_root_config().as_dict()}")
     return __config
 
 
 def reload_config() -> Dynaconf:
     """Reloads settings with latest config file updates."""
-    conf_files = get_all_config_files()
-    log.info(f"Reloading config settings from: {conf_files}")
     __config.reload()
     log.info("Configuration: reloaded.")
-
-
-def load_config(filename: str, clean: bool = False) -> Dynaconf:
-    """Loads configuration settings from the given filename."""
-    root_config = get_root_config()
-    if clean:
-        root_config.clean()
-    if filename:
-        files = [get_secrets_file(), filename]
-        log.debug(f"Loading config from files: {files}")
-        root_config.load_file(path=get_secrets_file())
-        root_config.load_file(path=filename)
-        global __config_file
-        __config_file = filename
-    return root_config
+    log.debug(f"Config settings: {get_root_config().as_dict()}")
 
 
 def save_config():
