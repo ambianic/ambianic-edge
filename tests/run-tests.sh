@@ -25,7 +25,8 @@ echo "Script location: ${BASEDIR}"
 # where codecov can find the generated reports
 cd $BASEDIR/../
 echo PWD=$PWD
-python3 -m pytest --cov=ambianic -c "dev/dev-config.yaml" --cov-report=xml --cov-report=term tests/
+COV_MIN_THRESHOLD=94
+python3 -m pytest -v --log-cli-level=DEBUG --cov=ambianic -c "dev/dev-config.yaml" --cov-report=xml --cov-report=term --cov-fail-under=$COV_MIN_THRESHOLD tests/
 
 # if -u command line argument is passed, submit code coverage report to codecov.io
 # parse command line arguments
