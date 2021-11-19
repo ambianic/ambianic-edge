@@ -1,6 +1,7 @@
 import logging
 
-from ambianic import config, pipeline
+from ambianic import pipeline
+from ambianic.configuration import get_root_config
 from ambianic.pipeline import interpreter
 from ambianic.pipeline.avsource.av_element import AVSourceElement
 from dynaconf.utils import DynaconfDict
@@ -16,7 +17,7 @@ def setup_module(module):
     interpreter.PIPELINE_CLASS = None
     interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
     _TestPipeline.PIPELINE_OPS["source"] = AVSourceElement
-    config.reload()
+    get_root_config().reload()
 
 
 def teardown_module(module):
@@ -26,7 +27,7 @@ def teardown_module(module):
     interpreter.PIPELINE_CLASS = None
     interpreter.Pipeline.PIPELINE_OPS["source"] = AVSourceElement
     _TestPipeline.PIPELINE_OPS["source"] = AVSourceElement
-    config.reload()
+    get_root_config().reload()
 
 
 class _TestPipeline(interpreter.Pipeline):
@@ -152,6 +153,7 @@ def test_pipeline_stop():
 def test_pipeline_source_config():
     """Test the source ref is resolved"""
 
+    config = get_root_config()
     config.update(
         {
             "sources": {"source1": {"uri": "test", "type": "video", "live": False}},
@@ -169,6 +171,7 @@ def test_pipeline_source_config():
 def test_pipeline_ai_model_config():
     """Test the source ref is resolved"""
 
+    config = get_root_config()
     config.update(
         {
             "ai_models": {

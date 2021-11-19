@@ -23,5 +23,8 @@ fi
 python3 -m peerjs.ext.http_proxy   &
 # start OpenAPI (fastapi/uvicorn) server
 python3 -m uvicorn ambianic.webapp.fastapi_app:app --port 8778 &
+# set list of config files
+AMBIANIC_CONFIG_FILES=/opt/ambianic-edge/config.defaults.yaml, config.yaml, config.local.yaml
+AMBIANIC_SAVE_CONFIG_TO=config.local.yaml
 # start ambianic-edge core
-python3 -m ambianic --config "config.yaml"
+python3 -m ambianic

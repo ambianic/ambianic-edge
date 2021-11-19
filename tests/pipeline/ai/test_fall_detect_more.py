@@ -1,9 +1,11 @@
 """Test fall detection pipe element."""
 from pathlib import Path
 
-from ambianic import DEFAULT_DATA_DIR, logger
+from ambianic import logger
+from ambianic.configuration import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.fall_detect import FallDetector
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
+from dynaconf.utils.boxing import DynaBox
 from test_fall_detect import _fall_detect_config, _get_image, _OutPipeElement
 
 _data_dir = Path(DEFAULT_DATA_DIR)
@@ -46,7 +48,7 @@ def test_config_confidence_threshold():
 
 
 def _helper_test_debug_image_save(context: PipelineContext = None):
-    log_config = {"level": "DEBUG"}
+    log_config = DynaBox({"level": "DEBUG"})
     logger.configure(config=log_config)
 
     # Expect to receive thumnail in result if image is provided and

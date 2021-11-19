@@ -2,36 +2,58 @@
 import logging
 import logging.handlers
 import os
+from pathlib import Path
 
 import ambianic
-from ambianic import config, load_config
+import pytest
+from ambianic.configuration import get_root_config, get_work_dir, init_config
 
 log = logging.getLogger(__name__)
 
-_dir = os.path.dirname(os.path.abspath(__file__))
 
-
-def setup_module(module):
+# module scoped test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="module")
+def setup(request):
     """setup any state specific to the execution of the given module."""
-    config.reload()
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    saved_amb_dir = os.environ.get("AMBIANIC_DIR", "")
+    # change env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = (
+        str(Path(request.fspath.dirname) / "test-config-no-pipelines.yaml")
+        + ","
+        + str(Path(request.fspath.dirname) / "test-config-secrets.yaml")
+        + ","
+        + str(Path(request.fspath.dirname) / "test-secrets.yaml")
+    )
+    log.debug(
+        f'os.environ["AMBIANIC_CONFIG_FILES"] = {os.environ["AMBIANIC_CONFIG_FILES"]}'
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+
+
+@pytest.fixture(scope="function")
+def config():
+    return get_root_config()
 
 
 def test_get_workdir_env():
     os.environ["AMBIANIC_DIR"] = "/foo"
-    assert ambianic.get_work_dir() == "/foo"
+    assert get_work_dir() == "/foo"
     os.environ["AMBIANIC_DIR"] = ""
-    assert ambianic.get_work_dir() == ambianic.DEFAULT_WORK_DIR
+    assert get_work_dir() == ambianic.configuration.DEFAULT_WORK_DIR
 
 
-def test_no_pipelines():
-    load_config(os.path.join(_dir, "test-config-no-pipelines.yaml"), True)
+def test_no_pipelines(config):
     assert config.get("pipelines", None) is None
 
 
-def test_secrets():
-    default_secret = ambianic.__SECRETS_FILE
-    ambianic.__SECRETS_FILE = os.path.join(_dir, "secrets.yaml")
-    cfg = load_config(os.path.join(_dir, "test-config-secrets.yaml"), True)
-    ambianic.__SECRETS_FILE = default_secret
-    assert cfg.get("question") == 42
-    assert cfg.deeeper.question.on.life == 42
+def test_secrets(config):
+    assert config.get("question") == "question answer is 42"
+    assert config.deeeper.question.on.life == "42"

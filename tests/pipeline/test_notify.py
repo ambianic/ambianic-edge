@@ -1,20 +1,41 @@
-"""Test cases for SaveDetectionSamples."""
+"""Test cases for SaveDetectionEvents."""
 
 import json
 import logging
 import os
 import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
 from threading import Event, Thread
 
 import httpretty
-from ambianic import config
-from ambianic.notification import sendCloudNotification
-from ambianic.pipeline.store import SaveDetectionSamples
-from ambianic.pipeline.timeline_event import PipelineContext
+import pytest
+from ambianic.configuration import get_root_config, init_config
+from ambianic.pipeline.pipeline_event import PipelineContext
+from ambianic.pipeline.save_event import SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
+
+inf_meta = {"display": "Test Detection"}
+
+
+# module scoped test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="module")
+def setup_module(request):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    # change env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = str(
+        Path(request.fspath.dirname) / "test-config-no-pipelines.yaml"
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    init_config()
 
 
 class MockRequestHandler(BaseHTTPRequestHandler):
@@ -58,7 +79,7 @@ class HTTPMockServer:
         self.thread.join()
 
 
-class _TestSaveDetectionSamples(SaveDetectionSamples):
+class _TestSaveDetectionSamples(SaveDetectionEvents):
     _save_sample_called = False
     _img_path = None
     _json_path = None
@@ -95,8 +116,6 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
         status=200,
     )
 
-    sendCloudNotification(data=data)
-
 
 def test_notification_with_attachments():
     """Ensure a positive detection is notified"""
@@ -104,6 +123,7 @@ def test_notification_with_attachments():
     mock_server = HTTPMockServer(called)
 
     # register the mock server endpoint
+    config = get_root_config()
     config.update(
         {
             "notifications": {
@@ -137,7 +157,12 @@ def test_notification_with_attachments():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()
@@ -149,6 +174,7 @@ def test_notification_without_attachments():
     called: Event = Event()
     mock_server = HTTPMockServer(called)
 
+    config = get_root_config()
     # register the mock server endpoint
     config.update(
         {
@@ -183,7 +209,12 @@ def test_notification_without_attachments():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()
@@ -194,6 +225,7 @@ def test_plain_notification():
     called: Event = Event()
     mock_server = HTTPMockServer(called)
 
+    config = get_root_config()
     # register the mock server endpoint
     config.update(
         {
@@ -228,7 +260,12 @@ def test_plain_notification():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     mock_server.stop()

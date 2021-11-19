@@ -3,12 +3,12 @@ import logging
 import threading
 import time
 
-from ambianic import DEFAULT_DATA_DIR, config
-from ambianic.pipeline import HealthChecker, PipeElement, timeline_event
+from ambianic.configuration import DEFAULT_DATA_DIR, get_root_config
+from ambianic.pipeline import HealthChecker, PipeElement, pipeline_event
 from ambianic.pipeline.ai.face_detect import FaceDetector
 from ambianic.pipeline.ai.fall_detect import FallDetector
 from ambianic.pipeline.ai.object_detect import ObjectDetector
-from ambianic.pipeline.store import SaveDetectionSamples
+from ambianic.pipeline.save_event import SaveDetectionEvents
 from ambianic.util import ManagedService, ThreadedJob, stacktrace
 
 from .avsource.av_element import AVSourceElement
@@ -269,7 +269,7 @@ class Pipeline(ManagedService):
     PIPELINE_OPS = {
         "source": AVSourceElement,
         "detect_objects": ObjectDetector,
-        "save_detections": SaveDetectionSamples,
+        "save_detections": SaveDetectionEvents,
         "detect_faces": FaceDetector,
         "detect_falls": FallDetector,
     }
@@ -294,9 +294,9 @@ class Pipeline(ManagedService):
         # in the future status may represent a spectrum of health issues
         self._latest_health_status = True
         self._healing_thread = None
-        self._context = timeline_event.PipelineContext(unique_pipeline_name=self.name)
+        self._context = pipeline_event.PipelineContext(unique_pipeline_name=self.name)
         self._context.data_dir = self.data_dir
-        self._event_log = timeline_event.get_event_log(pipeline_context=self._context)
+        self._event_log = pipeline_event.get_event_log(pipeline_context=self._context)
         self.load_elements()
 
     def load_elements(self):
@@ -380,7 +380,8 @@ class Pipeline(ManagedService):
         if ai_model_id is None:
             return True
 
-        ai_model = config.ai_models[ai_model_id]
+        root_config = get_root_config()
+        ai_model = root_config.ai_models[ai_model_id]
         if ai_model is None:
             log.warning(
                 "AI model id %s not found, cannot start pipeline %s",
@@ -415,7 +416,8 @@ class Pipeline(ManagedService):
             return True
 
         # track the source_id
-        source = config.sources.get(source_id, None)
+        root_config = get_root_config()
+        source = root_config.sources.get(source_id, None)
         if source is None:
             log.warning(
                 "Source id %s not found, cannot start pipeline %s",

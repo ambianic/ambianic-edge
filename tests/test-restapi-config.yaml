@@ -1,7 +1,7 @@
-###################################
-#  Ambianic dev mode config file  #
-###################################
-version: '2021.11.11'
+######################################
+#  Ambianic main configuration file  #
+######################################
+version: '2021.08.30.test'
 
 # path to the data directory
 data_dir: ./data
@@ -9,7 +9,7 @@ data_dir: ./data
 # Set logging level to one of DEBUG, INFO, WARNING, ERROR
 logging:
   file: ./data/ambianic-log.txt
-  level: DEBUG
+  level: INFO
   # set a less noisy log level for the console output
   # console_level: WARNING
 
@@ -46,12 +46,9 @@ sources:
 #    live: true
 
   recorded_cam_feed:
-    # location of the recorded video file in a gitpod (or local) dev environment
-    uri: file:///workspace/ambianic-edge/tests/pipeline/avsource/test2-cam-person1.mkv
+    uri: file:///workspace/tests/pipeline/avsource/test2-cam-person1.mkv
     type: video
-    # live: true when we want the pipeline to keep looping over the same video file.
-    # live: false when we want the pipeline to go through the video file once and stop.
-    live: false
+#    live: true
 
 ai_models:
   image_detection:

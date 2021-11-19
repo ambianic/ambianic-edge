@@ -2,7 +2,7 @@
 import logging
 import os
 
-from ambianic import config
+from ambianic.configuration import get_root_config
 from ambianic.pipeline.interpreter import PipelineServer
 
 # mocked_settings = DynaconfDict({'FOO': 'BAR'})
@@ -15,6 +15,8 @@ log.setLevel(logging.DEBUG)
 def test_pipeline_server_start_stop():
 
     _dir = os.path.dirname(os.path.abspath(__file__))
+
+    config = get_root_config()
 
     config.update(
         {

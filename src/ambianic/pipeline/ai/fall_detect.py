@@ -4,7 +4,7 @@ import math
 import time
 from pathlib import Path
 
-from ambianic import DEFAULT_DATA_DIR
+from ambianic.configuration import DEFAULT_DATA_DIR
 from ambianic.pipeline.ai.pose_engine import PoseEngine
 from ambianic.pipeline.ai.tf_detect import TFDetectionModel
 from PIL import Image, ImageDraw
@@ -432,7 +432,7 @@ class FallDetector(TFDetectionModel):
             log.debug(
                 "Received an image frame too soon after the previous \
                 frame. Only %.2f ms apart.\
-                Minimum %.2f ms distance required for fall detection.",
+                Minimum %.2f ms period required for fall detection.",
                 lapse,
                 self.min_time_between_frames,
             )

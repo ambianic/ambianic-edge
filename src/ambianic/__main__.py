@@ -2,13 +2,14 @@
 import os
 import signal
 
-import ambianic
 import ambianic.server
+from ambianic import configuration
 
 
-def main():
+def start():
     """Start the main app executable in the hosting OS environment."""
-    env_work_dir = ambianic.get_work_dir()
+    configuration.init_config()
+    env_work_dir = configuration.get_work_dir()
     ambianic.server_instance = ambianic.server.AmbianicServer(work_dir=env_work_dir)
     # run with a little lower priority
     # to avoid delaying docker container from syncing with OS resources
@@ -41,4 +42,4 @@ def _register_sys_handlers():  # pragma: no cover
 
 if __name__ == "__main__":  # pragma: no cover
     _register_sys_handlers()
-    main()
+    start()

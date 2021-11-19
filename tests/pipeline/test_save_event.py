@@ -1,15 +1,54 @@
-"""Test cases for SaveDetectionSamples."""
+"""Test cases for SaveDetectionEvents."""
 import json
 import logging
 import os
 import shutil
+from pathlib import Path
 
 import numpy as np
-from ambianic.pipeline.store import JsonEncoder, SaveDetectionSamples
-from ambianic.pipeline.timeline_event import PipelineContext
+import pytest
+from ambianic.configuration import get_root_config, init_config
+from ambianic.pipeline.pipeline_event import PipelineContext
+from ambianic.pipeline.save_event import JsonEncoder, SaveDetectionEvents
 from PIL import Image
 
 log = logging.getLogger(__name__)
+
+inf_meta = {"display": "Test Detection"}
+
+
+# test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="function")
+def setup(request, tmp_path):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    saved_amb_dir = os.environ.get("AMBIANIC_DIR", "")
+    saved_amb_config_save = os.environ.get("AMBIANIC_SAVE_CONFIG_TO", "")
+    # change env settings
+    save_config_path = str(Path(tmp_path / "test-config.save.yaml"))
+    os.environ["AMBIANIC_CONFIG_FILES"] = (
+        str(Path(request.fspath.dirname) / "test-config-no-pipelines.yaml")
+        + ","
+        + save_config_path
+    )
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = save_config_path
+    log.debug(
+        f'os.environ["AMBIANIC_CONFIG_FILES"] = {os.environ["AMBIANIC_CONFIG_FILES"]}'
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = saved_amb_config_save
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+
+
+@pytest.fixture(scope="function")
+def config():
+    return get_root_config()
 
 
 def test_json_encoder():
@@ -50,7 +89,7 @@ def test_json_encoder_arrayData():
 
 
 def test_process_sample_none():
-    store = SaveDetectionSamples()
+    store = SaveDetectionEvents()
     processed_samples = store.process_sample(image=None, inference_result=None)
     processed_samples = list(processed_samples)
     assert len(processed_samples) == 1
@@ -136,11 +175,9 @@ def test_process_sample():
     shutil.rmtree(out_dir)
 
 
-class _TestSaveDetectionSamples(SaveDetectionSamples):
-    _save_sample_called = False
-    _img_path = None
-    _json_path = None
-    _inf_result = None
+class _TestSaveDetectionSamples(SaveDetectionEvents):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def _save_sample(
         self,
@@ -157,7 +194,7 @@ class _TestSaveDetectionSamples(SaveDetectionSamples):
             image=image,
             thumbnail=thumbnail,
             inference_result=inference_result,
-            inference_meta=inference_meta,
+            inference_meta=inf_meta,
         )
 
 
@@ -180,7 +217,12 @@ def test_store_positive_detection():
     ]
 
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -245,7 +287,12 @@ def test_store_negative_detection():
     img = Image.new("RGB", (60, 30), color="red")
     detections = []
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -297,7 +344,12 @@ def test_store_negative_detection_no_inference():
     img = Image.new("RGB", (60, 30), color="red")
     detections = None
     processed_samples = list(
-        store.process_sample(image=img, thumbnail=img, inference_result=detections)
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
     )
     assert len(processed_samples) == 1
     print(processed_samples)
@@ -335,24 +387,29 @@ def test_store_negative_detection_no_inference():
     shutil.rmtree(out_dir)
 
 
-class _TestSaveDetectionSamples2(SaveDetectionSamples):
-    _save_sample_called = False
-    result = {
-        "id": "140343867415240",
-        "datetime": "2021-05-05 14:04:45.428473",
-        "inference_result": [
-            {
-                "confidence": 0.98828125,
-                "datetime": "2021-05-05 14:04:45.428473",
-                "label": "cat",
-                "id": "140343867415240",
-            }
-        ],
-    }
-    context = PipelineContext(unique_pipeline_name="test pipeline")
-    context.data_dir = "./tmp/"
-    store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
-    store.notify(save_json=result)
+class _TestSaveDetectionSamples2(SaveDetectionEvents):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        result = {
+            "id": "140343867415240",
+            "datetime": "2021-05-05 14:04:45.428473",
+            "inference_result": [
+                {
+                    "confidence": 0.98828125,
+                    "datetime": "2021-05-05 14:04:45.428473",
+                    "label": "cat",
+                    "id": "140343867415240",
+                }
+            ],
+            "inference_meta": {"display": "Test Object Detection"},
+        }
+        context = PipelineContext(unique_pipeline_name="test pipeline")
+        context.data_dir = "./tmp/"
+        store = _TestSaveDetectionSamples(
+            context=context, event_log=logging.getLogger()
+        )
+        data = {"message": "Test Event", "priority": "INFO", "args": result}
+        store.notify(event_data=data)
 
     def _save_sample(
         self,
@@ -382,7 +439,7 @@ def test_process_sample_exception():
 
     processed_samples = list(
         store.process_sample(
-            image=img, inference_result=detections, inference_meta=None
+            image=img, inference_result=detections, inference_meta=inf_meta
         )
     )
     assert store._save_sample_called

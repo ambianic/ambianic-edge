@@ -3,8 +3,8 @@ image:
   file: .gitpod.Dockerfile
 tasks:
   - init: |
-      pyenv global system
       echo "Gitpod init. Setting up ambianic-edge dev environment."
+      touch /tmp/.gitpod-init-lock
       pyenv global system
       python3 -m pip install --upgrade pip
       python3 -m pip install --upgrade setuptools
@@ -14,26 +14,51 @@ tasks:
       export PIP_USER=false
       python3 -m pip install -U --user pylint isort mccabe pre-commit black flake8
       pre-commit install
+      # installing and upgrading requirements.txt packages
+      sudo
+      # convoluted way to install and upgrade requirements.txt packages without failing if one errors
+      # ref: https://stackoverflow.com/questions/22250483/stop-pip-from-failing-on-single-package-when-installing-with-requirements-txt
+      cat ./build/requirements.txt | sudo xargs -n 1 python3 -m pip install --upgrade
       echo "Installing local ambianic-edge package from ./src"
       python3 -m pip install --user -e ./src
-  - command: |
+      # set local config file list for ambianic env settings
+      rm /tmp/.gitpod-init-lock
+    command: |
+      source ./.gitpod.env.sh
+  - init: |
+      echo "Waiting for main init to complete"
+      sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+    command: |
       echo "Starting amgianic-edge core"
       pyenv global system
+      source ./.gitpod.env.sh
       sudo mkdir /opt/ambianic-edge/
       sudo ln -s /workspace/ambianic-edge/ai_models/ /opt/ambianic-edge/ai_models
-      python3 -m ambianic --config "dev/dev-config.yaml"
-  - command: |
+      sudo ln -s /workspace/ambianic-edge/.peerjsrc /workspace/ambianic-edge/.peerjsrc.json
+      python3 -m ambianic
+  - init: |
+      echo "Waiting for main init to complete"
+      sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+    command: |
       echo "Starting WebRTC to HTTP proxy"
       pyenv global system
+      source ./.gitpod.env.sh
       python3 -m peerjs.ext.http_proxy
-  - command: |
+  - init: |
+      echo "Waiting for main init to complete"
+      sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+    command: |
       echo "Starting OpenAPI server (fastapi/uvicorn)"
       pyenv global system
+      source ./.gitpod.env.sh
       python3 -m uvicorn ambianic.webapp.fastapi_app:app --reload --port 8778 --log-level debug
-  - command: |
+  - init: |
+      echo "Waiting for main init to complete"
+      sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
+    command: |
       echo "Running ambianic-edge testsuite:"
       pyenv global system
-      export PIP_USER=false
+      source ./.gitpod.env.sh
       python3 -m pytest -v --log-cli-level=DEBUG --cov=ambianic --cov-report=term tests/
 
 vscode:
@@ -41,3 +66,4 @@ vscode:
     - ms-python.python
     - github.vscode-pull-request-github
     - eamodio.gitlens
+    #

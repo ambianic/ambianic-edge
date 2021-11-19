@@ -7,22 +7,18 @@ import uuid
 from typing import Iterable
 
 import numpy as np
-from ambianic import DEFAULT_DATA_DIR
-from ambianic.notification import (
-    Notification,
-    NotificationHandler,
-    sendCloudNotification,
-)
+from ambianic.configuration import DEFAULT_DATA_DIR
+from ambianic.notification import Notification, NotificationHandler
 from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
 
-class SaveDetectionSamples(PipeElement):
-    """Saves AI detection samples to an external storage location."""
+class SaveDetectionEvents(PipeElement):
+    """Saves AI detection events(inference samples) to an external storage location."""
 
     def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
-        """Create SaveDetectionSamples element with the provided arguments.
+        """Create SaveDetectionEvents element with the provided arguments.
         :Parameters:
         ----------
         output_directory: *object_detect_dir
@@ -71,13 +67,16 @@ class SaveDetectionSamples(PipeElement):
         self._time_latest_saved_idle = self._time_latest_saved_detection
 
         # setup notification handler
-        self.notification = None
-        self.notification_config = notify
+        self.notifier = None
+        self.notification_config = notify or {}
 
-        if self.notification_config is not None and self.notification_config.get(
-            "providers"
-        ):
-            self.notification = NotificationHandler()
+        notification_providers = self.notification_config.get("providers")
+        if notification_providers is None or len(notification_providers) == 0:
+            # if no notification providers are explicitly configured
+            # use a default provider
+            self.notification_config["providers"] = ["default"]
+
+        self.notifier = NotificationHandler()
 
     def _save_sample(
         self,
@@ -120,10 +119,18 @@ class SaveDetectionSamples(PipeElement):
         # e = PipelineEvent('Detected Objects', type='ObjectDetection')
 
         json_encoded_obj = json.loads(json_str)
-        self.event_log.info("Detection Event", json_encoded_obj)
-
+        log_message = "Detection Event"
+        event_priority = logging.INFO
+        self.event_log.log(event_priority, log_message, json_encoded_obj)
         log.debug("Saved sample (detection event): %r ", save_json)
-        self.notify(save_json)
+        # format notification message in a way consistent with event log file formatting
+        # used by PipelineEventFormatter
+        event_data = {
+            "message": log_message,
+            "priority": logging.getLevelName(event_priority),
+            "args": save_json,
+        }
+        self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:
@@ -184,28 +191,25 @@ class SaveDetectionSamples(PipeElement):
                 log.debug("Passing sample on: %r ", processed_sample)
                 yield processed_sample
 
-    def notify(self, save_json: dict):
-        # TODO extract inference data
-        if save_json["inference_result"] is None:
+    def notify(self, event_data: dict):
+        """Send out a notification with an event payload"""
+
+        # don't bother sending notifications for idle events
+        # used as history log markers
+        if event_data["args"]["inference_result"] is None:
             return
 
-        for inference_result in save_json["inference_result"]:
-            data = {
-                "id": save_json["id"],
-                "label": inference_result["label"],
-                "confidence": inference_result["confidence"],
-                "datetime": save_json["datetime"],
-            }
+        log.info(f"Preparing notification with event payload: {event_data}")
 
-            sendCloudNotification(data=data)
+        if self.notifier is None:
+            log.debug("No notifier specified. Skipping notification send.")
+            return
 
-            if self.notification is None:
-                return
-
-            notification = Notification(
-                data=data, providers=self.notification_config["providers"]
-            )
-            self.notification.send(notification)
+        notification = Notification(
+            envelope=event_data,
+            providers=self.notification_config["providers"],
+        )
+        self.notifier.send(notification)
 
 
 class JsonEncoder(json.JSONEncoder):

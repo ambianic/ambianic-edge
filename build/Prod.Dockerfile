@@ -16,6 +16,10 @@ RUN ls -al ./src/* && pip3 install -e src
 # copy entrypoint script to docker image
 COPY ["./build/ambianic-docker-entrypoint.sh", "./"]
 
+# copy config defaults to docker image
+COPY ["./config.defaults.yaml", "./"]
+
+
 WORKDIR /workspace
 
 # expose http port

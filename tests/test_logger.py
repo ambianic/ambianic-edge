@@ -3,11 +3,14 @@ import logging
 import logging.handlers
 import os
 
-from ambianic import config, logger
+from ambianic import logger
+from ambianic.configuration import get_root_config
 
 log = logging.getLogger(__name__)
 
 _dir = os.path.dirname(os.path.abspath(__file__))
+
+config = get_root_config()
 
 
 def setup_module(module):

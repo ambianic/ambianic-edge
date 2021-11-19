@@ -1,3 +1,4 @@
+import logging
 import os
 import signal
 import threading
@@ -6,14 +7,46 @@ from pathlib import Path
 
 import ambianic
 import pytest
-from ambianic import __main__, config, load_config
+from ambianic import __main__
+from ambianic.configuration import get_root_config, init_config
 from ambianic.server import AmbianicServer
 from ambianic.util import ManagedService, ServiceExit
 
+log = logging.getLogger(__name__)
+
 
 @pytest.fixture
-def my_dir():
-    return os.path.dirname(os.path.abspath(__file__))
+def my_dir(request):
+    return request.fspath.dirname
+
+
+# module scoped test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="function")
+def setup_module(request):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    saved_amb_dir = os.environ.get("AMBIANIC_DIR", "")
+    # change env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = str(
+        Path(request.fspath.dirname) / "test-config-no-pipelines.yaml"
+    )
+    log.debug(
+        f'os.environ["AMBIANIC_CONFIG_FILES"] = {os.environ["AMBIANIC_CONFIG_FILES"]}'
+    )
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+
+
+@pytest.fixture(scope="function")
+def config():
+    return get_root_config()
 
 
 def test_no_work_dir():
@@ -63,8 +96,7 @@ def _stop_mock_server(server=None, thread=None):
     assert not thread.is_alive()
 
 
-def test_no_pipelines(my_dir):
-    load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), clean=True)
+def test_no_pipelines(my_dir, config):
     assert config.get("pipelines") is None
     hb_flag = threading.Event()
     srv, t = None, None
@@ -81,14 +113,8 @@ def test_no_pipelines(my_dir):
         _stop_mock_server(server=srv, thread=t)
 
 
-def test_main(my_dir):
-
-    os.environ["AMBIANIC_DIR"] = my_dir
-
-    config.clean()
-    load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), clean=True)
-
-    t = threading.Thread(target=__main__.main, daemon=True)
+def test_main(my_dir, config):
+    t = threading.Thread(target=__main__.start, daemon=True)
     t.start()
     t.join(timeout=1)
     __main__.stop()
@@ -121,7 +147,6 @@ class _BadPipelineServer(ManagedService):
 
 
 def test_heartbeat_threshold(my_dir):
-    load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), clean=True)
     # replace default with test pipeline server
     # remove all root servers which we won't test here
     ambianic.server.ROOT_SERVERS.clear()
@@ -134,8 +159,7 @@ def test_heartbeat_threshold(my_dir):
     _stop_mock_server(server=srv, thread=t)
 
 
-def test_main_heartbeat_log(my_dir):
-    load_config(os.path.join(my_dir, "test-config-no-pipelines.yaml"), True)
+def test_main_heartbeat_log(my_dir, config):
     # remove all root servers which we will not test here
     ambianic.server.ROOT_SERVERS.clear()
     # set heartbeat log interval to a small enough
@@ -149,7 +173,6 @@ def test_main_heartbeat_log(my_dir):
 
 def test_config_change(my_dir):
     config_file = os.path.join(my_dir, "test-config-no-pipelines.yaml")
-    load_config(config_file, True)
     hb_flag = threading.Event()
     srv, t = None, None
     try:
