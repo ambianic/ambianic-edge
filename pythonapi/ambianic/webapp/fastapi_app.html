@@ -34,8 +34,16 @@ from typing import List
 
 import pkg_resources
 import yaml
-from ambianic import DEFAULT_DATA_DIR, __version__, config, save_config
+from ambianic.configuration import (
+    DEFAULT_DATA_DIR,
+    __version__,
+    get_all_config_files,
+    get_root_config,
+    init_config,
+    save_config,
+)
 from ambianic.device import DeviceInfo
+from ambianic.notification import Notification, NotificationHandler
 from ambianic.webapp.server import config_sources, timeline_dao
 from ambianic.webapp.server.config_sources import SensorSource
 from fastapi import FastAPI, HTTPException, Response, status
@@ -105,9 +113,13 @@ app.add_middleware(
 
 @app.on_event(&#34;startup&#34;)
 async def startup_event():
+    init_config()
+    conf_files = get_all_config_files()
+    log.info(f&#34;Loaded config from files: {conf_files}&#34;)
     # set an initial data dir location
-    if config:
-        cfg_data_dir = config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
+    root_config = get_root_config()
+    if root_config:
+        cfg_data_dir = root_config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
         set_data_dir(data_dir=cfg_data_dir)
     if not app.data_dir:
         set_data_dir(data_dir=DEFAULT_DATA_DIR)
@@ -135,9 +147,16 @@ class StatusResponse(BaseResponse, DeviceInfo):
 def get_status():
     &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
     other device details such as release version.&#34;&#34;&#34;
-    name = config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
+    root_config = get_root_config()
+    name = root_config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
+    notifications_config = root_config.get(&#34;notifications&#34;, {})
+    default_config = notifications_config.get(&#34;default&#34;, {})
+    notify_enabled = default_config.get(&#34;enabled&#34;, True)
     response_object = StatusResponse(
-        status=&#34;OK&#34;, version=__version__, display_name=name
+        status=&#34;OK&#34;,
+        version=__version__,
+        display_name=name,
+        notifications_enabled=notify_enabled,
     )
     return response_object
 
@@ -185,9 +204,10 @@ def get_timeline(page: int = 1):
 @app.get(&#34;/api/config&#34;, response_model=dict)
 def get_config():
     &#34;&#34;&#34;
-    Get the configuration settings for this Ambianic Edge device.
+    Get the root level configuration settings for this Ambianic Edge device.
     &#34;&#34;&#34;
-    return config.as_dict()
+    root_config = get_root_config()
+    return root_config.as_dict()
 
 
 @app.get(&#34;/api/device/display_name&#34;, response_model=str)
@@ -195,7 +215,8 @@ def get_device_display_name():
     &#34;&#34;&#34;
     Get the user friendly display name for this Ambianic Edge device.
     &#34;&#34;&#34;
-    display_name = config.get(&#34;display_name&#34;, None)
+    root_config = get_root_config()
+    display_name = root_config.get(&#34;display_name&#34;, None)
     return display_name
 
 
@@ -209,7 +230,8 @@ def set_device_display_name(display_name: str):
     Set a user friendly dispaly name for this Ambianic Edge device.
     &#34;&#34;&#34;
     if display_name:
-        config[&#34;display_name&#34;] = display_name
+        root_config = get_root_config()
+        root_config[&#34;display_name&#34;] = display_name
         save_config()
         log.debug(f&#34;saved device display_name: {display_name}&#34;)
     else:
@@ -217,6 +239,72 @@ def set_device_display_name(display_name: str):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=&#34;Empty string not allowed as device display name value.&#34;,
         )
+
+
+@app.get(&#34;/api/notifications/test&#34;, response_model=str)
+def test_notifications():
+    &#34;&#34;&#34;
+    Run a live test with configured notification providers and return status result.
+    &#34;&#34;&#34;
+    notification_envelope = {
+        &#34;message&#34;: &#34;Ambianic Test Event&#34;,
+        &#34;priority&#34;: logging.getLevelName(logging.INFO),
+        &#34;args&#34;: {
+            &#34;id&#34;: &#34;test_id&#34;,
+            &#34;inference_meta&#34;: {&#34;display&#34;: &#34;Test Detection&#34;},
+            &#34;inference_result&#34;: [{&#34;label&#34;: &#34;test_person&#34;}],
+        },
+    }
+    notifier = NotificationHandler()
+    notification = Notification(envelope=notification_envelope, providers=[&#34;default&#34;])
+    notifier.send(notification)
+    log.info(&#34;Test notification sent.&#34;)
+
+
+@app.put(
+    &#34;/api/integrations/ifttt/api_key/{api_key}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_ifttt_api_key(api_key: str):
+    &#34;&#34;&#34;
+    Set API_KEY for the IFTTT integration.
+    &#34;&#34;&#34;
+    if api_key:
+        root_config = get_root_config()
+        root_config[&#34;ifttt_webhook_id&#34;] = api_key
+        notifications_config = root_config.get(&#34;notifications&#34;, {})
+        default_config = notifications_config.get(&#34;default&#34;, {})
+        default_config[&#34;providers&#34;] = [f&#34;ifttt://{api_key}@ambianic&#34;]
+        notifications_config[&#34;default&#34;] = default_config
+        root_config.set(&#34;notifications&#34;, notifications_config)
+        save_config()
+        log.debug(f&#34;saved IFTTT API_KEY (WebhookID): {api_key}&#34;)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=&#34;Empty string not allowed for IFTTT Webhooks API_KEY.&#34;,
+        )
+
+
+@app.put(
+    &#34;/api/notifications/enable/{enable}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def enable_notifications(enable: bool):
+    &#34;&#34;&#34;
+    Enable or disable all notifications.
+    &#34;&#34;&#34;
+    root_config = get_root_config()
+    notifications_config = root_config.get(&#34;notifications&#34;, {})
+    default_config = notifications_config.get(&#34;default&#34;, {})
+    default_config[&#34;enabled&#34;] = enable
+    notifications_config[&#34;default&#34;] = default_config
+    root_config.set(&#34;notifications&#34;, notifications_config)
+    save_config()
+    log.debug(f&#34;Saved notifications enabled setting: {enable}&#34;)
+    return
 
 
 @app.get(&#34;/api/config/source/{source_id}&#34;, include_in_schema=False)
@@ -267,11 +355,40 @@ def delete_config_source(source_id: str):
     return {&#34;status&#34;: &#34;success&#34;}</code></pre>
 </details>
 </dd>
+<dt id="ambianic.webapp.fastapi_app.enable_notifications"><code class="name flex">
+<span>def <span class="ident">enable_notifications</span></span>(<span>enable: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Enable or disable all notifications.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.put(
+    &#34;/api/notifications/enable/{enable}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def enable_notifications(enable: bool):
+    &#34;&#34;&#34;
+    Enable or disable all notifications.
+    &#34;&#34;&#34;
+    root_config = get_root_config()
+    notifications_config = root_config.get(&#34;notifications&#34;, {})
+    default_config = notifications_config.get(&#34;default&#34;, {})
+    default_config[&#34;enabled&#34;] = enable
+    notifications_config[&#34;default&#34;] = default_config
+    root_config.set(&#34;notifications&#34;, notifications_config)
+    save_config()
+    log.debug(f&#34;Saved notifications enabled setting: {enable}&#34;)
+    return</code></pre>
+</details>
+</dd>
 <dt id="ambianic.webapp.fastapi_app.get_config"><code class="name flex">
 <span>def <span class="ident">get_config</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the configuration settings for this Ambianic Edge device.</p></div>
+<div class="desc"><p>Get the root level configuration settings for this Ambianic Edge device.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -279,9 +396,10 @@ def delete_config_source(source_id: str):
 <pre><code class="python">@app.get(&#34;/api/config&#34;, response_model=dict)
 def get_config():
     &#34;&#34;&#34;
-    Get the configuration settings for this Ambianic Edge device.
+    Get the root level configuration settings for this Ambianic Edge device.
     &#34;&#34;&#34;
-    return config.as_dict()</code></pre>
+    root_config = get_root_config()
+    return root_config.as_dict()</code></pre>
 </details>
 </dd>
 <dt id="ambianic.webapp.fastapi_app.get_config_source"><code class="name flex">
@@ -312,7 +430,8 @@ def get_device_display_name():
     &#34;&#34;&#34;
     Get the user friendly display name for this Ambianic Edge device.
     &#34;&#34;&#34;
-    display_name = config.get(&#34;display_name&#34;, None)
+    root_config = get_root_config()
+    display_name = root_config.get(&#34;display_name&#34;, None)
     return display_name</code></pre>
 </details>
 </dd>
@@ -330,9 +449,16 @@ other device details such as release version.</p></div>
 def get_status():
     &#34;&#34;&#34;Returns overall status of the Ambianic Edge device along with
     other device details such as release version.&#34;&#34;&#34;
-    name = config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
+    root_config = get_root_config()
+    name = root_config.get(&#34;display_name&#34;, &#34;My Ambianic Edge device&#34;)
+    notifications_config = root_config.get(&#34;notifications&#34;, {})
+    default_config = notifications_config.get(&#34;default&#34;, {})
+    notify_enabled = default_config.get(&#34;enabled&#34;, True)
     response_object = StatusResponse(
-        status=&#34;OK&#34;, version=__version__, display_name=name
+        status=&#34;OK&#34;,
+        version=__version__,
+        display_name=name,
+        notifications_enabled=notify_enabled,
     )
     return response_object</code></pre>
 </details>
@@ -466,13 +592,49 @@ def set_device_display_name(display_name: str):
     Set a user friendly dispaly name for this Ambianic Edge device.
     &#34;&#34;&#34;
     if display_name:
-        config[&#34;display_name&#34;] = display_name
+        root_config = get_root_config()
+        root_config[&#34;display_name&#34;] = display_name
         save_config()
         log.debug(f&#34;saved device display_name: {display_name}&#34;)
     else:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=&#34;Empty string not allowed as device display name value.&#34;,
+        )</code></pre>
+</details>
+</dd>
+<dt id="ambianic.webapp.fastapi_app.set_ifttt_api_key"><code class="name flex">
+<span>def <span class="ident">set_ifttt_api_key</span></span>(<span>api_key: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set API_KEY for the IFTTT integration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.put(
+    &#34;/api/integrations/ifttt/api_key/{api_key}&#34;,
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def set_ifttt_api_key(api_key: str):
+    &#34;&#34;&#34;
+    Set API_KEY for the IFTTT integration.
+    &#34;&#34;&#34;
+    if api_key:
+        root_config = get_root_config()
+        root_config[&#34;ifttt_webhook_id&#34;] = api_key
+        notifications_config = root_config.get(&#34;notifications&#34;, {})
+        default_config = notifications_config.get(&#34;default&#34;, {})
+        default_config[&#34;providers&#34;] = [f&#34;ifttt://{api_key}@ambianic&#34;]
+        notifications_config[&#34;default&#34;] = default_config
+        root_config.set(&#34;notifications&#34;, notifications_config)
+        save_config()
+        log.debug(f&#34;saved IFTTT API_KEY (WebhookID): {api_key}&#34;)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=&#34;Empty string not allowed for IFTTT Webhooks API_KEY.&#34;,
         )</code></pre>
 </details>
 </dd>
@@ -487,12 +649,45 @@ def set_device_display_name(display_name: str):
 </summary>
 <pre><code class="python">@app.on_event(&#34;startup&#34;)
 async def startup_event():
+    init_config()
+    conf_files = get_all_config_files()
+    log.info(f&#34;Loaded config from files: {conf_files}&#34;)
     # set an initial data dir location
-    if config:
-        cfg_data_dir = config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
+    root_config = get_root_config()
+    if root_config:
+        cfg_data_dir = root_config.get(&#34;data_dir&#34;, DEFAULT_DATA_DIR)
         set_data_dir(data_dir=cfg_data_dir)
     if not app.data_dir:
         set_data_dir(data_dir=DEFAULT_DATA_DIR)</code></pre>
+</details>
+</dd>
+<dt id="ambianic.webapp.fastapi_app.test_notifications"><code class="name flex">
+<span>def <span class="ident">test_notifications</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run a live test with configured notification providers and return status result.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.get(&#34;/api/notifications/test&#34;, response_model=str)
+def test_notifications():
+    &#34;&#34;&#34;
+    Run a live test with configured notification providers and return status result.
+    &#34;&#34;&#34;
+    notification_envelope = {
+        &#34;message&#34;: &#34;Ambianic Test Event&#34;,
+        &#34;priority&#34;: logging.getLevelName(logging.INFO),
+        &#34;args&#34;: {
+            &#34;id&#34;: &#34;test_id&#34;,
+            &#34;inference_meta&#34;: {&#34;display&#34;: &#34;Test Detection&#34;},
+            &#34;inference_result&#34;: [{&#34;label&#34;: &#34;test_person&#34;}],
+        },
+    }
+    notifier = NotificationHandler()
+    notification = Notification(envelope=notification_envelope, providers=[&#34;default&#34;])
+    notifier.send(notification)
+    log.info(&#34;Test notification sent.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="ambianic.webapp.fastapi_app.update_config_source"><code class="name flex">
@@ -631,6 +826,7 @@ def update_config_source(source: SensorSource):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="ambianic.webapp.fastapi_app.delete_config_source" href="#ambianic.webapp.fastapi_app.delete_config_source">delete_config_source</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.enable_notifications" href="#ambianic.webapp.fastapi_app.enable_notifications">enable_notifications</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_config" href="#ambianic.webapp.fastapi_app.get_config">get_config</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_config_source" href="#ambianic.webapp.fastapi_app.get_config_source">get_config_source</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.get_device_display_name" href="#ambianic.webapp.fastapi_app.get_device_display_name">get_device_display_name</a></code></li>
@@ -642,7 +838,9 @@ def update_config_source(source: SensorSource):
 <li><code><a title="ambianic.webapp.fastapi_app.ping" href="#ambianic.webapp.fastapi_app.ping">ping</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.set_data_dir" href="#ambianic.webapp.fastapi_app.set_data_dir">set_data_dir</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.set_device_display_name" href="#ambianic.webapp.fastapi_app.set_device_display_name">set_device_display_name</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.set_ifttt_api_key" href="#ambianic.webapp.fastapi_app.set_ifttt_api_key">set_ifttt_api_key</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.startup_event" href="#ambianic.webapp.fastapi_app.startup_event">startup_event</a></code></li>
+<li><code><a title="ambianic.webapp.fastapi_app.test_notifications" href="#ambianic.webapp.fastapi_app.test_notifications">test_notifications</a></code></li>
 <li><code><a title="ambianic.webapp.fastapi_app.update_config_source" href="#ambianic.webapp.fastapi_app.update_config_source">update_config_source</a></code></li>
 </ul>
 </li>

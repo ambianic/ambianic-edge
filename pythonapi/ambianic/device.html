@@ -35,6 +35,9 @@ class DeviceInfo(BaseModel):
     version: str = Field(None, description=&#34;Ambianic Edge software version.&#34;)
     display_name: str = Field(
         None, description=&#34;User friendly display name for this device.&#34;
+    )
+    notifications_enabled: bool = Field(
+        False, description=&#34;Indicates whether device notifications are enabled.&#34;
     )</code></pre>
 </details>
 </section>
@@ -62,6 +65,9 @@ class DeviceInfo(BaseModel):
     version: str = Field(None, description=&#34;Ambianic Edge software version.&#34;)
     display_name: str = Field(
         None, description=&#34;User friendly display name for this device.&#34;
+    )
+    notifications_enabled: bool = Field(
+        False, description=&#34;Indicates whether device notifications are enabled.&#34;
     )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -76,6 +82,10 @@ class DeviceInfo(BaseModel):
 <h3>Class variables</h3>
 <dl>
 <dt id="ambianic.device.DeviceInfo.display_name"><code class="name">var <span class="ident">display_name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ambianic.device.DeviceInfo.notifications_enabled"><code class="name">var <span class="ident">notifications_enabled</span> : bool</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -105,6 +115,7 @@ class DeviceInfo(BaseModel):
 <h4><code><a title="ambianic.device.DeviceInfo" href="#ambianic.device.DeviceInfo">DeviceInfo</a></code></h4>
 <ul class="">
 <li><code><a title="ambianic.device.DeviceInfo.display_name" href="#ambianic.device.DeviceInfo.display_name">display_name</a></code></li>
+<li><code><a title="ambianic.device.DeviceInfo.notifications_enabled" href="#ambianic.device.DeviceInfo.notifications_enabled">notifications_enabled</a></code></li>
 <li><code><a title="ambianic.device.DeviceInfo.version" href="#ambianic.device.DeviceInfo.version">version</a></code></li>
 </ul>
 </li>

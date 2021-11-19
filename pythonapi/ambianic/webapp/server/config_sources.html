@@ -28,7 +28,7 @@
 </summary>
 <pre><code class="python">import logging
 
-from ambianic import config
+from ambianic.configuration import get_root_config
 from dynaconf.vendor.box.exceptions import BoxKeyError
 from fastapi import HTTPException, status
 from pydantic import BaseModel
@@ -51,7 +51,8 @@ def get(source_id):
     &#34;&#34;&#34;Retrieve a source by id&#34;&#34;&#34;
     log.info(&#34;Get source_id=%s&#34;, source_id)
     try:
-        source = config.sources[source_id]
+        root_config = get_root_config()
+        source = root_config.sources[source_id]
     except BoxKeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=&#34;source id not found&#34;
@@ -63,14 +64,16 @@ def remove(source_id):
     &#34;&#34;&#34;Remove source by id&#34;&#34;&#34;
     log.info(&#34;Removing source_id=%s&#34;, source_id)
     get(source_id)
-    del config.sources[source_id]
+    root_config = get_root_config()
+    del root_config.sources[source_id]
 
 
 def save(source: SensorSource):
     &#34;&#34;&#34;Save source configuration information&#34;&#34;&#34;
     log.info(&#34;Saving source_id=%s&#34;, source.id)
-    config.sources[source.id] = source
-    return config.sources[source.id]</code></pre>
+    root_config = get_root_config()
+    root_config.sources[source.id] = source
+    return root_config.sources[source.id]</code></pre>
 </details>
 </section>
 <section>
@@ -93,7 +96,8 @@ def save(source: SensorSource):
     &#34;&#34;&#34;Retrieve a source by id&#34;&#34;&#34;
     log.info(&#34;Get source_id=%s&#34;, source_id)
     try:
-        source = config.sources[source_id]
+        root_config = get_root_config()
+        source = root_config.sources[source_id]
     except BoxKeyError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=&#34;source id not found&#34;
@@ -114,7 +118,8 @@ def save(source: SensorSource):
     &#34;&#34;&#34;Remove source by id&#34;&#34;&#34;
     log.info(&#34;Removing source_id=%s&#34;, source_id)
     get(source_id)
-    del config.sources[source_id]</code></pre>
+    root_config = get_root_config()
+    del root_config.sources[source_id]</code></pre>
 </details>
 </dd>
 <dt id="ambianic.webapp.server.config_sources.save"><code class="name flex">
@@ -129,8 +134,9 @@ def save(source: SensorSource):
 <pre><code class="python">def save(source: SensorSource):
     &#34;&#34;&#34;Save source configuration information&#34;&#34;&#34;
     log.info(&#34;Saving source_id=%s&#34;, source.id)
-    config.sources[source.id] = source
-    return config.sources[source.id]</code></pre>
+    root_config = get_root_config()
+    root_config.sources[source.id] = source
+    return root_config.sources[source.id]</code></pre>
 </details>
 </dd>
 </dl>

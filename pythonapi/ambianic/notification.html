@@ -29,61 +29,28 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Utilities to send notifications.&#34;&#34;&#34;
 
+import hashlib
 import logging
 import os
+import urllib
+from string import Template
 
 import ambianic
 import apprise
-import pkg_resources
-import yaml
-from requests import post
+from ambianic.configuration import get_root_config
 
 log = logging.getLogger(__name__)
 
-UI_BASEURL = &#34;https://ui.ambianic.ai&#34;
-
-
-def sendCloudNotification(data):
-    # r+ flag causes a permission error
-    try:
-        premiumFile = pkg_resources.resource_filename(&#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
-
-        with open(premiumFile) as file:
-            configFile = yaml.safe_load(file)
-
-            userId = configFile[&#34;credentials&#34;][&#34;USER_AUTH0_ID&#34;]
-            endpoint = configFile[&#34;credentials&#34;][&#34;NOTIFICATION_ENDPOINT&#34;]
-            if userId:
-                return post(
-                    url=f&#34;{endpoint}/notification&#34;,
-                    json={
-                        &#34;userId&#34;: userId,
-                        &#34;notification&#34;: {
-                            &#34;title&#34;: &#34;Ambianic.ai New {} event&#34;.format(data[&#34;label&#34;]),
-                            &#34;message&#34;: &#34;New {} detected with a {} confidence level&#34;.format(
-                                data[&#34;label&#34;], data[&#34;confidence&#34;]
-                            ),
-                        },
-                    },
-                )
-
-    except FileNotFoundError as err:
-        log.warning(f&#34;Error locating file: {err}&#34;)
-
-    except Exception as error:
-        log.warning(f&#34;Error sending email: {str(error)}&#34;)
+UI_BASE_URL_DEFAULT = &#34;https://ui.ambianic.ai&#34;
 
 
 class Notification:
-    def __init__(
-        self, event: str = &#34;detection&#34;, data: dict = {}, providers: list = [&#34;all&#34;]
-    ):
-        self.event: str = event
+    def __init__(self, envelope: dict = {}, providers: list = [&#34;all&#34;]):
         self.providers: list = providers
         self.title: str = None
         self.message: str = None
         self.attach: list = []
-        self.data: dict = data
+        self.envelope: dict = envelope
 
     def add_attachments(self, *args):
         self.attach.append(*args)
@@ -95,7 +62,7 @@ class Notification:
 class NotificationHandler:
     def __init__(self, config: dict = None):
         if config is None:
-            config = ambianic.config
+            config = ambianic.configuration.get_root_config()
         self.apobj = apprise.Apprise(debug=True)
         self.config = config.get(&#34;notifications&#34;, {})
         for name, cfg in self.config.items():
@@ -105,62 +72,112 @@ class NotificationHandler:
                     log.warning(
                         f&#34;Failed to add notification provider: {name}={provider}&#34;
                     )
+                else:
+                    log.info(f&#34;Apprise: added notification provider: {name}={provider}&#34;)
 
     def send(self, notification: Notification):
-        templates = self.config.get(&#34;templates&#34;, {})
-
-        title = notification.title
-        if title is None:
-            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
-
-        message = notification.message
-        if message is None:
-            message = templates.get(&#34;message&#34;, &#34;New ${event} recognized&#34;)
-
-        attachments = []
-        for a in notification.attach:
-            if not os.path.exists(a) or not os.path.isfile(a):
-                log.warning(&#34;Attachment is not a valid file %s&#34;)
-                continue
-            attachments.append(a)
-
-        template_args = {
-            &#34;event_type&#34;: notification.event,
-            &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-            &#34;event_details_url&#34;: &#34;%s/%s&#34;
-            % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;)),
-        }
-        template_args = {**template_args, **notification.data}
-
-        for key, value in template_args.items():
-            k = &#34;${%s}&#34; % (str(key))
-            v = str(value)
-            title = title.replace(k, v)
-            message = message.replace(k, v)
-
+        log.debug(&#34;preparing notification&#34;)
         for provider in notification.providers:
+            log.debug(f&#34;preparing notification payload for provider {provider}&#34;)
             cfg = self.config.get(provider, None)
 
             if cfg:
+                enabled = cfg.get(&#34;enabled&#34;, True)
+                if not enabled:
+                    log.debug(f&#34;notification disabled for provider {provider}&#34;)
+                    return
+                else:
+                    log.debug(f&#34;notification enabled for provider {provider}&#34;)
+
+                templates = cfg.get(&#34;templates&#34;, {})
+
+                title = notification.title
+                if title is None:
+                    title = templates.get(
+                        &#34;title&#34;,
+                        &#34;[Ambianic.ai] New event - ${event_type}: ${event_labels}&#34;,
+                    )
+
+                log.debug(f&#34;template title: {title}&#34;)
+
+                message = notification.message
+                if message is None:
+                    message = templates.get(
+                        &#34;message&#34;, &#34;New event\n ${event_type}: ${event_labels}&#34;
+                    )
+
+                log.debug(f&#34;template message: {message}&#34;)
+
+                attachments = []
+                for a in notification.attach:
+                    if not os.path.exists(a) or not os.path.isfile(a):
+                        log.warning(&#34;Attachment is not a valid file %s&#34;)
+                        continue
+                    attachments.append(a)
+
+                url_params = {**notification.envelope}
+
+                peer_id = get_root_config().get(&#34;peerId&#34;, None)
+                if peer_id is None:
+                    log.warning(
+                        &#34;peerId not found. Notification will not include link back to peer.&#34;
+                    )
+                else:
+                    peerid_hash_input = peer_id + notification.envelope[&#34;args&#34;][&#34;id&#34;]
+                    peerid_hash = hashlib.sha256(
+                        peerid_hash_input.encode(&#34;utf-8&#34;)
+                    ).hexdigest()
+                    # send peerid hashed with event_id as salt to avoid replay attacks
+                    # UI can lookup the actual peerid be going over its stored peerid&#39;s
+                    # and generating salted hashes for each
+                    # until one matches the URL paramter.
+                    url_params[&#34;peerid_hash&#34;] = peerid_hash
+
+                url_query = urllib.parse.urlencode(url_params)
+
+                ui_config = get_root_config().get(&#34;ui&#34;, {})
+                ui_base_url = ui_config.get(&#34;baseurl&#34;, UI_BASE_URL_DEFAULT)
+
+                event_labels = list(
+                    map(
+                        lambda i: i[&#34;label&#34;],
+                        notification.envelope[&#34;args&#34;][&#34;inference_result&#34;],
+                    )
+                )
+                event_labels_str = &#34;,&#34;.join(event_labels)
+
+                template_args = {
+                    &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
+                        &#34;display&#34;
+                    ],
+                    &#34;event_labels&#34;: event_labels_str,
+                    &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
+                }
+
+                log.debug(f&#34;template_args: {template_args}&#34;)
+
+                # resolve template references for title and message
+                title = Template(title).safe_substitute(template_args)
+                message = Template(message).safe_substitute(template_args)
+
+                log.debug(f&#34;template resolved title: {title}&#34;)
+                log.debug(f&#34;template resolved message: {message}&#34;)
+
                 include_attachments = cfg.get(&#34;include_attachments&#34;, False)
                 ok = self.apobj.notify(
-                    message,
                     title=title,
+                    body=message,
                     tag=provider,
                     attach=attachments if include_attachments else [],
                 )
                 if ok:
-                    log.debug(
-                        &#34;Sent notification for %s to %s&#34;
-                        % (notification.event, provider)
-                    )
+                    log.debug(f&#34;Sent notification {template_args} to {provider}&#34;)
                 else:
                     log.warning(
-                        &#34;Error sending notification for %s to %s&#34;
-                        % (notification.event, provider)
+                        f&#34;Error sending notification {template_args} to {provider}&#34;
                     )
             else:
-                log.warning(&#34;Skip unknown provider %s&#34; % provider)
+                log.warning(&#34;Skipping unknown provider %s&#34; % provider)
                 continue</code></pre>
 </details>
 </section>
@@ -169,56 +186,13 @@ class NotificationHandler:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="ambianic.notification.sendCloudNotification"><code class="name flex">
-<span>def <span class="ident">sendCloudNotification</span></span>(<span>data)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sendCloudNotification(data):
-    # r+ flag causes a permission error
-    try:
-        premiumFile = pkg_resources.resource_filename(&#34;ambianic.webapp&#34;, &#34;premium.yaml&#34;)
-
-        with open(premiumFile) as file:
-            configFile = yaml.safe_load(file)
-
-            userId = configFile[&#34;credentials&#34;][&#34;USER_AUTH0_ID&#34;]
-            endpoint = configFile[&#34;credentials&#34;][&#34;NOTIFICATION_ENDPOINT&#34;]
-            if userId:
-                return post(
-                    url=f&#34;{endpoint}/notification&#34;,
-                    json={
-                        &#34;userId&#34;: userId,
-                        &#34;notification&#34;: {
-                            &#34;title&#34;: &#34;Ambianic.ai New {} event&#34;.format(data[&#34;label&#34;]),
-                            &#34;message&#34;: &#34;New {} detected with a {} confidence level&#34;.format(
-                                data[&#34;label&#34;], data[&#34;confidence&#34;]
-                            ),
-                        },
-                    },
-                )
-
-    except FileNotFoundError as err:
-        log.warning(f&#34;Error locating file: {err}&#34;)
-
-    except Exception as error:
-        log.warning(f&#34;Error sending email: {str(error)}&#34;)</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="ambianic.notification.Notification"><code class="flex name class">
 <span>class <span class="ident">Notification</span></span>
-<span>(</span><span>event: str = 'detection', data: dict = {}, providers: list = ['all'])</span>
+<span>(</span><span>envelope: dict = {}, providers: list = ['all'])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -227,15 +201,12 @@ class NotificationHandler:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Notification:
-    def __init__(
-        self, event: str = &#34;detection&#34;, data: dict = {}, providers: list = [&#34;all&#34;]
-    ):
-        self.event: str = event
+    def __init__(self, envelope: dict = {}, providers: list = [&#34;all&#34;]):
         self.providers: list = providers
         self.title: str = None
         self.message: str = None
         self.attach: list = []
-        self.data: dict = data
+        self.envelope: dict = envelope
 
     def add_attachments(self, *args):
         self.attach.append(*args)
@@ -286,7 +257,7 @@ class NotificationHandler:
 <pre><code class="python">class NotificationHandler:
     def __init__(self, config: dict = None):
         if config is None:
-            config = ambianic.config
+            config = ambianic.configuration.get_root_config()
         self.apobj = apprise.Apprise(debug=True)
         self.config = config.get(&#34;notifications&#34;, {})
         for name, cfg in self.config.items():
@@ -296,62 +267,112 @@ class NotificationHandler:
                     log.warning(
                         f&#34;Failed to add notification provider: {name}={provider}&#34;
                     )
+                else:
+                    log.info(f&#34;Apprise: added notification provider: {name}={provider}&#34;)
 
     def send(self, notification: Notification):
-        templates = self.config.get(&#34;templates&#34;, {})
-
-        title = notification.title
-        if title is None:
-            title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
-
-        message = notification.message
-        if message is None:
-            message = templates.get(&#34;message&#34;, &#34;New ${event} recognized&#34;)
-
-        attachments = []
-        for a in notification.attach:
-            if not os.path.exists(a) or not os.path.isfile(a):
-                log.warning(&#34;Attachment is not a valid file %s&#34;)
-                continue
-            attachments.append(a)
-
-        template_args = {
-            &#34;event_type&#34;: notification.event,
-            &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-            &#34;event_details_url&#34;: &#34;%s/%s&#34;
-            % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;)),
-        }
-        template_args = {**template_args, **notification.data}
-
-        for key, value in template_args.items():
-            k = &#34;${%s}&#34; % (str(key))
-            v = str(value)
-            title = title.replace(k, v)
-            message = message.replace(k, v)
-
+        log.debug(&#34;preparing notification&#34;)
         for provider in notification.providers:
+            log.debug(f&#34;preparing notification payload for provider {provider}&#34;)
             cfg = self.config.get(provider, None)
 
             if cfg:
+                enabled = cfg.get(&#34;enabled&#34;, True)
+                if not enabled:
+                    log.debug(f&#34;notification disabled for provider {provider}&#34;)
+                    return
+                else:
+                    log.debug(f&#34;notification enabled for provider {provider}&#34;)
+
+                templates = cfg.get(&#34;templates&#34;, {})
+
+                title = notification.title
+                if title is None:
+                    title = templates.get(
+                        &#34;title&#34;,
+                        &#34;[Ambianic.ai] New event - ${event_type}: ${event_labels}&#34;,
+                    )
+
+                log.debug(f&#34;template title: {title}&#34;)
+
+                message = notification.message
+                if message is None:
+                    message = templates.get(
+                        &#34;message&#34;, &#34;New event\n ${event_type}: ${event_labels}&#34;
+                    )
+
+                log.debug(f&#34;template message: {message}&#34;)
+
+                attachments = []
+                for a in notification.attach:
+                    if not os.path.exists(a) or not os.path.isfile(a):
+                        log.warning(&#34;Attachment is not a valid file %s&#34;)
+                        continue
+                    attachments.append(a)
+
+                url_params = {**notification.envelope}
+
+                peer_id = get_root_config().get(&#34;peerId&#34;, None)
+                if peer_id is None:
+                    log.warning(
+                        &#34;peerId not found. Notification will not include link back to peer.&#34;
+                    )
+                else:
+                    peerid_hash_input = peer_id + notification.envelope[&#34;args&#34;][&#34;id&#34;]
+                    peerid_hash = hashlib.sha256(
+                        peerid_hash_input.encode(&#34;utf-8&#34;)
+                    ).hexdigest()
+                    # send peerid hashed with event_id as salt to avoid replay attacks
+                    # UI can lookup the actual peerid be going over its stored peerid&#39;s
+                    # and generating salted hashes for each
+                    # until one matches the URL paramter.
+                    url_params[&#34;peerid_hash&#34;] = peerid_hash
+
+                url_query = urllib.parse.urlencode(url_params)
+
+                ui_config = get_root_config().get(&#34;ui&#34;, {})
+                ui_base_url = ui_config.get(&#34;baseurl&#34;, UI_BASE_URL_DEFAULT)
+
+                event_labels = list(
+                    map(
+                        lambda i: i[&#34;label&#34;],
+                        notification.envelope[&#34;args&#34;][&#34;inference_result&#34;],
+                    )
+                )
+                event_labels_str = &#34;,&#34;.join(event_labels)
+
+                template_args = {
+                    &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
+                        &#34;display&#34;
+                    ],
+                    &#34;event_labels&#34;: event_labels_str,
+                    &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
+                }
+
+                log.debug(f&#34;template_args: {template_args}&#34;)
+
+                # resolve template references for title and message
+                title = Template(title).safe_substitute(template_args)
+                message = Template(message).safe_substitute(template_args)
+
+                log.debug(f&#34;template resolved title: {title}&#34;)
+                log.debug(f&#34;template resolved message: {message}&#34;)
+
                 include_attachments = cfg.get(&#34;include_attachments&#34;, False)
                 ok = self.apobj.notify(
-                    message,
                     title=title,
+                    body=message,
                     tag=provider,
                     attach=attachments if include_attachments else [],
                 )
                 if ok:
-                    log.debug(
-                        &#34;Sent notification for %s to %s&#34;
-                        % (notification.event, provider)
-                    )
+                    log.debug(f&#34;Sent notification {template_args} to {provider}&#34;)
                 else:
                     log.warning(
-                        &#34;Error sending notification for %s to %s&#34;
-                        % (notification.event, provider)
+                        f&#34;Error sending notification {template_args} to {provider}&#34;
                     )
             else:
-                log.warning(&#34;Skip unknown provider %s&#34; % provider)
+                log.warning(&#34;Skipping unknown provider %s&#34; % provider)
                 continue</code></pre>
 </details>
 <h3>Methods</h3>
@@ -366,60 +387,108 @@ class NotificationHandler:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def send(self, notification: Notification):
-    templates = self.config.get(&#34;templates&#34;, {})
-
-    title = notification.title
-    if title is None:
-        title = templates.get(&#34;title&#34;, &#34;[Ambianic.ai] New ${event} event&#34;)
-
-    message = notification.message
-    if message is None:
-        message = templates.get(&#34;message&#34;, &#34;New ${event} recognized&#34;)
-
-    attachments = []
-    for a in notification.attach:
-        if not os.path.exists(a) or not os.path.isfile(a):
-            log.warning(&#34;Attachment is not a valid file %s&#34;)
-            continue
-        attachments.append(a)
-
-    template_args = {
-        &#34;event_type&#34;: notification.event,
-        &#34;event&#34;: notification.data.get(&#34;label&#34;, notification.event),
-        &#34;event_details_url&#34;: &#34;%s/%s&#34;
-        % (UI_BASEURL, notification.data.get(&#34;id&#34;, &#34;&#34;)),
-    }
-    template_args = {**template_args, **notification.data}
-
-    for key, value in template_args.items():
-        k = &#34;${%s}&#34; % (str(key))
-        v = str(value)
-        title = title.replace(k, v)
-        message = message.replace(k, v)
-
+    log.debug(&#34;preparing notification&#34;)
     for provider in notification.providers:
+        log.debug(f&#34;preparing notification payload for provider {provider}&#34;)
         cfg = self.config.get(provider, None)
 
         if cfg:
+            enabled = cfg.get(&#34;enabled&#34;, True)
+            if not enabled:
+                log.debug(f&#34;notification disabled for provider {provider}&#34;)
+                return
+            else:
+                log.debug(f&#34;notification enabled for provider {provider}&#34;)
+
+            templates = cfg.get(&#34;templates&#34;, {})
+
+            title = notification.title
+            if title is None:
+                title = templates.get(
+                    &#34;title&#34;,
+                    &#34;[Ambianic.ai] New event - ${event_type}: ${event_labels}&#34;,
+                )
+
+            log.debug(f&#34;template title: {title}&#34;)
+
+            message = notification.message
+            if message is None:
+                message = templates.get(
+                    &#34;message&#34;, &#34;New event\n ${event_type}: ${event_labels}&#34;
+                )
+
+            log.debug(f&#34;template message: {message}&#34;)
+
+            attachments = []
+            for a in notification.attach:
+                if not os.path.exists(a) or not os.path.isfile(a):
+                    log.warning(&#34;Attachment is not a valid file %s&#34;)
+                    continue
+                attachments.append(a)
+
+            url_params = {**notification.envelope}
+
+            peer_id = get_root_config().get(&#34;peerId&#34;, None)
+            if peer_id is None:
+                log.warning(
+                    &#34;peerId not found. Notification will not include link back to peer.&#34;
+                )
+            else:
+                peerid_hash_input = peer_id + notification.envelope[&#34;args&#34;][&#34;id&#34;]
+                peerid_hash = hashlib.sha256(
+                    peerid_hash_input.encode(&#34;utf-8&#34;)
+                ).hexdigest()
+                # send peerid hashed with event_id as salt to avoid replay attacks
+                # UI can lookup the actual peerid be going over its stored peerid&#39;s
+                # and generating salted hashes for each
+                # until one matches the URL paramter.
+                url_params[&#34;peerid_hash&#34;] = peerid_hash
+
+            url_query = urllib.parse.urlencode(url_params)
+
+            ui_config = get_root_config().get(&#34;ui&#34;, {})
+            ui_base_url = ui_config.get(&#34;baseurl&#34;, UI_BASE_URL_DEFAULT)
+
+            event_labels = list(
+                map(
+                    lambda i: i[&#34;label&#34;],
+                    notification.envelope[&#34;args&#34;][&#34;inference_result&#34;],
+                )
+            )
+            event_labels_str = &#34;,&#34;.join(event_labels)
+
+            template_args = {
+                &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
+                    &#34;display&#34;
+                ],
+                &#34;event_labels&#34;: event_labels_str,
+                &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
+            }
+
+            log.debug(f&#34;template_args: {template_args}&#34;)
+
+            # resolve template references for title and message
+            title = Template(title).safe_substitute(template_args)
+            message = Template(message).safe_substitute(template_args)
+
+            log.debug(f&#34;template resolved title: {title}&#34;)
+            log.debug(f&#34;template resolved message: {message}&#34;)
+
             include_attachments = cfg.get(&#34;include_attachments&#34;, False)
             ok = self.apobj.notify(
-                message,
                 title=title,
+                body=message,
                 tag=provider,
                 attach=attachments if include_attachments else [],
             )
             if ok:
-                log.debug(
-                    &#34;Sent notification for %s to %s&#34;
-                    % (notification.event, provider)
-                )
+                log.debug(f&#34;Sent notification {template_args} to {provider}&#34;)
             else:
                 log.warning(
-                    &#34;Error sending notification for %s to %s&#34;
-                    % (notification.event, provider)
+                    f&#34;Error sending notification {template_args} to {provider}&#34;
                 )
         else:
-            log.warning(&#34;Skip unknown provider %s&#34; % provider)
+            log.warning(&#34;Skipping unknown provider %s&#34; % provider)
             continue</code></pre>
 </details>
 </dd>
@@ -437,11 +506,6 @@ class NotificationHandler:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="ambianic" href="index.html">ambianic</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="ambianic.notification.sendCloudNotification" href="#ambianic.notification.sendCloudNotification">sendCloudNotification</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

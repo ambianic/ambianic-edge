@@ -33,8 +33,9 @@ import logging.handlers
 import os
 import time
 
-from ambianic import config, get_config_file, get_secrets_file, load_config, logger
-from ambianic.pipeline import timeline_event
+from ambianic import logger
+from ambianic.configuration import get_all_config_files, get_root_config, reload_config
+from ambianic.pipeline import pipeline_event
 from ambianic.pipeline.interpreter import PipelineServer
 from ambianic.util import ServiceExit
 from watchdog.observers import Observer
@@ -83,10 +84,7 @@ class AmbianicServer:
         if self._config_observer:
             self.stop_watch_config()
         self._config_observer = Observer()
-        config_paths = [
-            get_config_file(),
-            get_secrets_file(),
-        ]
+        config_paths = get_all_config_files()
         for filepath in config_paths:
             if not os.path.exists(filepath):
                 log.warning(&#34;File %s not found, skip changes watch&#34; % filepath)
@@ -152,10 +150,17 @@ class AmbianicServer:
 
         assert os.path.exists(self._env_work_dir)
 
-        # reload configuration
-        load_config(get_config_file())
+        config = get_root_config()
         logger.configure(config.get(&#34;logging&#34;))
-        timeline_event.configure_timeline(config.get(&#34;timeline&#34;))
+        # dynamically (re)load fresh configuration settings
+        log.debug(&#34;server start: before config reload&#34;)
+        reload_config()
+        log.debug(&#34;server start: after config reload&#34;)
+        # Re-configure logging in case config file just changed
+        # on disk and caused config reload.
+        logger.configure(config.get(&#34;logging&#34;))
+
+        pipeline_event.configure_timeline(config.get(&#34;timeline&#34;))
 
         # watch configuration changes
         self.start_watch_config()
@@ -260,10 +265,7 @@ The working directory where config and data reside.</p></div>
         if self._config_observer:
             self.stop_watch_config()
         self._config_observer = Observer()
-        config_paths = [
-            get_config_file(),
-            get_secrets_file(),
-        ]
+        config_paths = get_all_config_files()
         for filepath in config_paths:
             if not os.path.exists(filepath):
                 log.warning(&#34;File %s not found, skip changes watch&#34; % filepath)
@@ -329,10 +331,17 @@ The working directory where config and data reside.</p></div>
 
         assert os.path.exists(self._env_work_dir)
 
-        # reload configuration
-        load_config(get_config_file())
+        config = get_root_config()
         logger.configure(config.get(&#34;logging&#34;))
-        timeline_event.configure_timeline(config.get(&#34;timeline&#34;))
+        # dynamically (re)load fresh configuration settings
+        log.debug(&#34;server start: before config reload&#34;)
+        reload_config()
+        log.debug(&#34;server start: after config reload&#34;)
+        # Re-configure logging in case config file just changed
+        # on disk and caused config reload.
+        logger.configure(config.get(&#34;logging&#34;))
+
+        pipeline_event.configure_timeline(config.get(&#34;timeline&#34;))
 
         # watch configuration changes
         self.start_watch_config()
@@ -426,10 +435,17 @@ The working directory where config and data reside.</p></div>
 
     assert os.path.exists(self._env_work_dir)
 
-    # reload configuration
-    load_config(get_config_file())
+    config = get_root_config()
     logger.configure(config.get(&#34;logging&#34;))
-    timeline_event.configure_timeline(config.get(&#34;timeline&#34;))
+    # dynamically (re)load fresh configuration settings
+    log.debug(&#34;server start: before config reload&#34;)
+    reload_config()
+    log.debug(&#34;server start: after config reload&#34;)
+    # Re-configure logging in case config file just changed
+    # on disk and caused config reload.
+    logger.configure(config.get(&#34;logging&#34;))
+
+    pipeline_event.configure_timeline(config.get(&#34;timeline&#34;))
 
     # watch configuration changes
     self.start_watch_config()
@@ -487,10 +503,7 @@ The working directory where config and data reside.</p></div>
     if self._config_observer:
         self.stop_watch_config()
     self._config_observer = Observer()
-    config_paths = [
-        get_config_file(),
-        get_secrets_file(),
-    ]
+    config_paths = get_all_config_files()
     for filepath in config_paths:
         if not os.path.exists(filepath):
             log.warning(&#34;File %s not found, skip changes watch&#34; % filepath)

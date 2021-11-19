@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>ambianic.pipeline.store API documentation</title>
+<title>ambianic.pipeline.save_event API documentation</title>
 <meta name="description" content="Pipeline sample storage elements." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ambianic.pipeline.store</code></h1>
+<h1 class="title">Module <code>ambianic.pipeline.save_event</code></h1>
 </header>
 <section id="section-intro">
 <p>Pipeline sample storage elements.</p>
@@ -36,22 +36,18 @@ import uuid
 from typing import Iterable
 
 import numpy as np
-from ambianic import DEFAULT_DATA_DIR
-from ambianic.notification import (
-    Notification,
-    NotificationHandler,
-    sendCloudNotification,
-)
+from ambianic.configuration import DEFAULT_DATA_DIR
+from ambianic.notification import Notification, NotificationHandler
 from ambianic.pipeline import PipeElement
 
 log = logging.getLogger(__name__)
 
 
-class SaveDetectionSamples(PipeElement):
-    &#34;&#34;&#34;Saves AI detection samples to an external storage location.&#34;&#34;&#34;
+class SaveDetectionEvents(PipeElement):
+    &#34;&#34;&#34;Saves AI detection events(inference samples) to an external storage location.&#34;&#34;&#34;
 
     def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
-        &#34;&#34;&#34;Create SaveDetectionSamples element with the provided arguments.
+        &#34;&#34;&#34;Create SaveDetectionEvents element with the provided arguments.
         :Parameters:
         ----------
         output_directory: *object_detect_dir
@@ -100,13 +96,16 @@ class SaveDetectionSamples(PipeElement):
         self._time_latest_saved_idle = self._time_latest_saved_detection
 
         # setup notification handler
-        self.notification = None
-        self.notification_config = notify
+        self.notifier = None
+        self.notification_config = notify or {}
 
-        if self.notification_config is not None and self.notification_config.get(
-            &#34;providers&#34;
-        ):
-            self.notification = NotificationHandler()
+        notification_providers = self.notification_config.get(&#34;providers&#34;)
+        if notification_providers is None or len(notification_providers) == 0:
+            # if no notification providers are explicitly configured
+            # use a default provider
+            self.notification_config[&#34;providers&#34;] = [&#34;default&#34;]
+
+        self.notifier = NotificationHandler()
 
     def _save_sample(
         self,
@@ -149,10 +148,18 @@ class SaveDetectionSamples(PipeElement):
         # e = PipelineEvent(&#39;Detected Objects&#39;, type=&#39;ObjectDetection&#39;)
 
         json_encoded_obj = json.loads(json_str)
-        self.event_log.info(&#34;Detection Event&#34;, json_encoded_obj)
-
+        log_message = &#34;Detection Event&#34;
+        event_priority = logging.INFO
+        self.event_log.log(event_priority, log_message, json_encoded_obj)
         log.debug(&#34;Saved sample (detection event): %r &#34;, save_json)
-        self.notify(save_json)
+        # format notification message in a way consistent with event log file formatting
+        # used by PipelineEventFormatter
+        event_data = {
+            &#34;message&#34;: log_message,
+            &#34;priority&#34;: logging.getLevelName(event_priority),
+            &#34;args&#34;: save_json,
+        }
+        self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -&gt; Iterable[dict]:
@@ -213,28 +220,25 @@ class SaveDetectionSamples(PipeElement):
                 log.debug(&#34;Passing sample on: %r &#34;, processed_sample)
                 yield processed_sample
 
-    def notify(self, save_json: dict):
-        # TODO extract inference data
-        if save_json[&#34;inference_result&#34;] is None:
+    def notify(self, event_data: dict):
+        &#34;&#34;&#34;Send out a notification with an event payload&#34;&#34;&#34;
+
+        # don&#39;t bother sending notifications for idle events
+        # used as history log markers
+        if event_data[&#34;args&#34;][&#34;inference_result&#34;] is None:
             return
 
-        for inference_result in save_json[&#34;inference_result&#34;]:
-            data = {
-                &#34;id&#34;: save_json[&#34;id&#34;],
-                &#34;label&#34;: inference_result[&#34;label&#34;],
-                &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
-                &#34;datetime&#34;: save_json[&#34;datetime&#34;],
-            }
+        log.info(f&#34;Preparing notification with event payload: {event_data}&#34;)
 
-            sendCloudNotification(data=data)
+        if self.notifier is None:
+            log.debug(&#34;No notifier specified. Skipping notification send.&#34;)
+            return
 
-            if self.notification is None:
-                return
-
-            notification = Notification(
-                data=data, providers=self.notification_config[&#34;providers&#34;]
-            )
-            self.notification.send(notification)
+        notification = Notification(
+            envelope=event_data,
+            providers=self.notification_config[&#34;providers&#34;],
+        )
+        self.notifier.send(notification)
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -258,7 +262,7 @@ class JsonEncoder(json.JSONEncoder):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="ambianic.pipeline.store.JsonEncoder"><code class="flex name class">
+<dt id="ambianic.pipeline.save_event.JsonEncoder"><code class="flex name class">
 <span>class <span class="ident">JsonEncoder</span></span>
 <span>(</span><span>*, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, default=None)</span>
 </code></dt>
@@ -359,7 +363,7 @@ version of the object or raise a <code>TypeError</code>.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="ambianic.pipeline.store.JsonEncoder.default"><code class="name flex">
+<dt id="ambianic.pipeline.save_event.JsonEncoder.default"><code class="name flex">
 <span>def <span class="ident">default</span></span>(<span>self, obj)</span>
 </code></dt>
 <dd>
@@ -395,13 +399,13 @@ implement default like this::</p>
 </dd>
 </dl>
 </dd>
-<dt id="ambianic.pipeline.store.SaveDetectionSamples"><code class="flex name class">
-<span>class <span class="ident">SaveDetectionSamples</span></span>
+<dt id="ambianic.pipeline.save_event.SaveDetectionEvents"><code class="flex name class">
+<span>class <span class="ident">SaveDetectionEvents</span></span>
 <span>(</span><span>positive_interval=2, idle_interval=600, notify=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Saves AI detection samples to an external storage location.</p>
-<p>Create SaveDetectionSamples element with the provided arguments.
+<div class="desc"><p>Saves AI detection events(inference samples) to an external storage location.</p>
+<p>Create SaveDetectionEvents element with the provided arguments.
 :Parameters:</p>
 <hr>
 <p>output_directory: *object_detect_dir
@@ -415,11 +419,11 @@ Default it 10 minutes (600 seconds.)</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SaveDetectionSamples(PipeElement):
-    &#34;&#34;&#34;Saves AI detection samples to an external storage location.&#34;&#34;&#34;
+<pre><code class="python">class SaveDetectionEvents(PipeElement):
+    &#34;&#34;&#34;Saves AI detection events(inference samples) to an external storage location.&#34;&#34;&#34;
 
     def __init__(self, positive_interval=2, idle_interval=600, notify=None, **kwargs):
-        &#34;&#34;&#34;Create SaveDetectionSamples element with the provided arguments.
+        &#34;&#34;&#34;Create SaveDetectionEvents element with the provided arguments.
         :Parameters:
         ----------
         output_directory: *object_detect_dir
@@ -468,13 +472,16 @@ Default it 10 minutes (600 seconds.)</p></div>
         self._time_latest_saved_idle = self._time_latest_saved_detection
 
         # setup notification handler
-        self.notification = None
-        self.notification_config = notify
+        self.notifier = None
+        self.notification_config = notify or {}
 
-        if self.notification_config is not None and self.notification_config.get(
-            &#34;providers&#34;
-        ):
-            self.notification = NotificationHandler()
+        notification_providers = self.notification_config.get(&#34;providers&#34;)
+        if notification_providers is None or len(notification_providers) == 0:
+            # if no notification providers are explicitly configured
+            # use a default provider
+            self.notification_config[&#34;providers&#34;] = [&#34;default&#34;]
+
+        self.notifier = NotificationHandler()
 
     def _save_sample(
         self,
@@ -517,10 +524,18 @@ Default it 10 minutes (600 seconds.)</p></div>
         # e = PipelineEvent(&#39;Detected Objects&#39;, type=&#39;ObjectDetection&#39;)
 
         json_encoded_obj = json.loads(json_str)
-        self.event_log.info(&#34;Detection Event&#34;, json_encoded_obj)
-
+        log_message = &#34;Detection Event&#34;
+        event_priority = logging.INFO
+        self.event_log.log(event_priority, log_message, json_encoded_obj)
         log.debug(&#34;Saved sample (detection event): %r &#34;, save_json)
-        self.notify(save_json)
+        # format notification message in a way consistent with event log file formatting
+        # used by PipelineEventFormatter
+        event_data = {
+            &#34;message&#34;: log_message,
+            &#34;priority&#34;: logging.getLevelName(event_priority),
+            &#34;args&#34;: save_json,
+        }
+        self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -&gt; Iterable[dict]:
@@ -581,28 +596,25 @@ Default it 10 minutes (600 seconds.)</p></div>
                 log.debug(&#34;Passing sample on: %r &#34;, processed_sample)
                 yield processed_sample
 
-    def notify(self, save_json: dict):
-        # TODO extract inference data
-        if save_json[&#34;inference_result&#34;] is None:
+    def notify(self, event_data: dict):
+        &#34;&#34;&#34;Send out a notification with an event payload&#34;&#34;&#34;
+
+        # don&#39;t bother sending notifications for idle events
+        # used as history log markers
+        if event_data[&#34;args&#34;][&#34;inference_result&#34;] is None:
             return
 
-        for inference_result in save_json[&#34;inference_result&#34;]:
-            data = {
-                &#34;id&#34;: save_json[&#34;id&#34;],
-                &#34;label&#34;: inference_result[&#34;label&#34;],
-                &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
-                &#34;datetime&#34;: save_json[&#34;datetime&#34;],
-            }
+        log.info(f&#34;Preparing notification with event payload: {event_data}&#34;)
 
-            sendCloudNotification(data=data)
+        if self.notifier is None:
+            log.debug(&#34;No notifier specified. Skipping notification send.&#34;)
+            return
 
-            if self.notification is None:
-                return
-
-            notification = Notification(
-                data=data, providers=self.notification_config[&#34;providers&#34;]
-            )
-            self.notification.send(notification)</code></pre>
+        notification = Notification(
+            envelope=event_data,
+            providers=self.notification_config[&#34;providers&#34;],
+        )
+        self.notifier.send(notification)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -611,40 +623,37 @@ Default it 10 minutes (600 seconds.)</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="ambianic.pipeline.store.SaveDetectionSamples.notify"><code class="name flex">
-<span>def <span class="ident">notify</span></span>(<span>self, save_json: dict)</span>
+<dt id="ambianic.pipeline.save_event.SaveDetectionEvents.notify"><code class="name flex">
+<span>def <span class="ident">notify</span></span>(<span>self, event_data: dict)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Send out a notification with an event payload</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def notify(self, save_json: dict):
-    # TODO extract inference data
-    if save_json[&#34;inference_result&#34;] is None:
+<pre><code class="python">def notify(self, event_data: dict):
+    &#34;&#34;&#34;Send out a notification with an event payload&#34;&#34;&#34;
+
+    # don&#39;t bother sending notifications for idle events
+    # used as history log markers
+    if event_data[&#34;args&#34;][&#34;inference_result&#34;] is None:
         return
 
-    for inference_result in save_json[&#34;inference_result&#34;]:
-        data = {
-            &#34;id&#34;: save_json[&#34;id&#34;],
-            &#34;label&#34;: inference_result[&#34;label&#34;],
-            &#34;confidence&#34;: inference_result[&#34;confidence&#34;],
-            &#34;datetime&#34;: save_json[&#34;datetime&#34;],
-        }
+    log.info(f&#34;Preparing notification with event payload: {event_data}&#34;)
 
-        sendCloudNotification(data=data)
+    if self.notifier is None:
+        log.debug(&#34;No notifier specified. Skipping notification send.&#34;)
+        return
 
-        if self.notification is None:
-            return
-
-        notification = Notification(
-            data=data, providers=self.notification_config[&#34;providers&#34;]
-        )
-        self.notification.send(notification)</code></pre>
+    notification = Notification(
+        envelope=event_data,
+        providers=self.notification_config[&#34;providers&#34;],
+    )
+    self.notifier.send(notification)</code></pre>
 </details>
 </dd>
-<dt id="ambianic.pipeline.store.SaveDetectionSamples.process_sample"><code class="name flex">
+<dt id="ambianic.pipeline.save_event.SaveDetectionEvents.process_sample"><code class="name flex">
 <span>def <span class="ident">process_sample</span></span>(<span>self, **sample) ‑> Iterable[dict]</span>
 </code></dt>
 <dd>
@@ -751,16 +760,16 @@ Default it 10 minutes (600 seconds.)</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="ambianic.pipeline.store.JsonEncoder" href="#ambianic.pipeline.store.JsonEncoder">JsonEncoder</a></code></h4>
+<h4><code><a title="ambianic.pipeline.save_event.JsonEncoder" href="#ambianic.pipeline.save_event.JsonEncoder">JsonEncoder</a></code></h4>
 <ul class="">
-<li><code><a title="ambianic.pipeline.store.JsonEncoder.default" href="#ambianic.pipeline.store.JsonEncoder.default">default</a></code></li>
+<li><code><a title="ambianic.pipeline.save_event.JsonEncoder.default" href="#ambianic.pipeline.save_event.JsonEncoder.default">default</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="ambianic.pipeline.store.SaveDetectionSamples" href="#ambianic.pipeline.store.SaveDetectionSamples">SaveDetectionSamples</a></code></h4>
+<h4><code><a title="ambianic.pipeline.save_event.SaveDetectionEvents" href="#ambianic.pipeline.save_event.SaveDetectionEvents">SaveDetectionEvents</a></code></h4>
 <ul class="">
-<li><code><a title="ambianic.pipeline.store.SaveDetectionSamples.notify" href="#ambianic.pipeline.store.SaveDetectionSamples.notify">notify</a></code></li>
-<li><code><a title="ambianic.pipeline.store.SaveDetectionSamples.process_sample" href="#ambianic.pipeline.store.SaveDetectionSamples.process_sample">process_sample</a></code></li>
+<li><code><a title="ambianic.pipeline.save_event.SaveDetectionEvents.notify" href="#ambianic.pipeline.save_event.SaveDetectionEvents.notify">notify</a></code></li>
+<li><code><a title="ambianic.pipeline.save_event.SaveDetectionEvents.process_sample" href="#ambianic.pipeline.save_event.SaveDetectionEvents.process_sample">process_sample</a></code></li>
 </ul>
 </li>
 </ul>

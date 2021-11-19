@@ -32,7 +32,7 @@ import logging
 import time
 from typing import Iterable
 
-from ambianic.pipeline.timeline_event import PipelineContext
+from ambianic.pipeline.pipeline_event import PipelineContext
 from ambianic.util import ManagedService
 
 log = logging.getLogger(__name__)
@@ -292,13 +292,13 @@ class HealthChecker(PipeElement):
 <dd>
 <div class="desc"><p>Ambianic pipeline interpreter module.</p></div>
 </dd>
-<dt><code class="name"><a title="ambianic.pipeline.store" href="store.html">ambianic.pipeline.store</a></code></dt>
-<dd>
-<div class="desc"><p>Pipeline sample storage elements.</p></div>
-</dd>
-<dt><code class="name"><a title="ambianic.pipeline.timeline_event" href="timeline_event.html">ambianic.pipeline.timeline_event</a></code></dt>
+<dt><code class="name"><a title="ambianic.pipeline.pipeline_event" href="pipeline_event.html">ambianic.pipeline.pipeline_event</a></code></dt>
 <dd>
 <div class="desc"><p>Pipeline event timeline read/write/search functions.</p></div>
+</dd>
+<dt><code class="name"><a title="ambianic.pipeline.save_event" href="save_event.html">ambianic.pipeline.save_event</a></code></dt>
+<dd>
+<div class="desc"><p>Pipeline sample storage elements.</p></div>
 </dd>
 </dl>
 </section>
@@ -410,7 +410,7 @@ health.</p></div>
 </dd>
 <dt id="ambianic.pipeline.PipeElement"><code class="flex name class">
 <span>class <span class="ident">PipeElement</span></span>
-<span>(</span><span>element_name=None, context: <a title="ambianic.pipeline.timeline_event.PipelineContext" href="timeline_event.html#ambianic.pipeline.timeline_event.PipelineContext">PipelineContext</a> = None, event_log: logging.Logger = None, **kwargs)</span>
+<span>(</span><span>element_name=None, context: <a title="ambianic.pipeline.pipeline_event.PipelineContext" href="pipeline_event.html#ambianic.pipeline.pipeline_event.PipelineContext">PipelineContext</a> = None, event_log: logging.Logger = None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The basic building block of an Ambianic pipeline.</p>
@@ -628,11 +628,11 @@ health.</p></div>
 <li><a title="ambianic.pipeline.HealthChecker" href="#ambianic.pipeline.HealthChecker">HealthChecker</a></li>
 <li><a title="ambianic.pipeline.ai.tf_detect.TFDetectionModel" href="ai/tf_detect.html#ambianic.pipeline.ai.tf_detect.TFDetectionModel">TFDetectionModel</a></li>
 <li><a title="ambianic.pipeline.avsource.av_element.AVSourceElement" href="avsource/av_element.html#ambianic.pipeline.avsource.av_element.AVSourceElement">AVSourceElement</a></li>
-<li><a title="ambianic.pipeline.store.SaveDetectionSamples" href="store.html#ambianic.pipeline.store.SaveDetectionSamples">SaveDetectionSamples</a></li>
+<li><a title="ambianic.pipeline.save_event.SaveDetectionEvents" href="save_event.html#ambianic.pipeline.save_event.SaveDetectionEvents">SaveDetectionEvents</a></li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ambianic.pipeline.PipeElement.context"><code class="name">var <span class="ident">context</span> : <a title="ambianic.pipeline.timeline_event.PipelineContext" href="timeline_event.html#ambianic.pipeline.timeline_event.PipelineContext">PipelineContext</a></code></dt>
+<dt id="ambianic.pipeline.PipeElement.context"><code class="name">var <span class="ident">context</span> : <a title="ambianic.pipeline.pipeline_event.PipelineContext" href="pipeline_event.html#ambianic.pipeline.pipeline_event.PipelineContext">PipelineContext</a></code></dt>
 <dd>
 <div class="desc"><p>Pipeline execution context.</p>
 <h2 id="returns">:Returns:</h2>
@@ -1029,8 +1029,8 @@ through steps specific to stopping their ongoing sample processing.</p></div>
 <li><code><a title="ambianic.pipeline.ai" href="ai/index.html">ambianic.pipeline.ai</a></code></li>
 <li><code><a title="ambianic.pipeline.avsource" href="avsource/index.html">ambianic.pipeline.avsource</a></code></li>
 <li><code><a title="ambianic.pipeline.interpreter" href="interpreter.html">ambianic.pipeline.interpreter</a></code></li>
-<li><code><a title="ambianic.pipeline.store" href="store.html">ambianic.pipeline.store</a></code></li>
-<li><code><a title="ambianic.pipeline.timeline_event" href="timeline_event.html">ambianic.pipeline.timeline_event</a></code></li>
+<li><code><a title="ambianic.pipeline.pipeline_event" href="pipeline_event.html">ambianic.pipeline.pipeline_event</a></code></li>
+<li><code><a title="ambianic.pipeline.save_event" href="save_event.html">ambianic.pipeline.save_event</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

@@ -22,113 +22,14 @@
 <h1 class="title">Package <code>ambianic</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">import os
-from argparse import ArgumentParser
-from typing import Union
-
-import importlib_metadata as metadata
-from dynaconf import Dynaconf, loaders
-from dynaconf.utils.boxing import DynaBox
-
-parser = ArgumentParser()
-parser.add_argument(&#34;-c&#34;, &#34;--config&#34;, help=&#34;Specify config YAML file location&#34;)
-
-args, unknown = parser.parse_known_args()
-
-DEFAULT_WORK_DIR: str = &#34;/workspace&#34;
-DEFAULT_DATA_DIR: str = &#34;./data&#34;
-
-DEFAULT_CONFIG_FILE: str = args.config or &#34;config.yaml&#34;
-DEFAULT_SECRETS_FILE: str = &#34;secrets.yaml&#34;
-
-__CONFIG_FILE: str = None
-__SECRETS_FILE: str = None
-__version__: str = metadata.version(&#34;ambianic-edge&#34;)
-
-
-def get_config_file() -&gt; str:
-    return __CONFIG_FILE
-
-
-def get_secrets_file() -&gt; str:
-    if __SECRETS_FILE:
-        return __SECRETS_FILE
-    return os.path.join(get_work_dir(), DEFAULT_SECRETS_FILE)
-
-
-def __merge_secrets(config: Union[Dynaconf, DynaBox], src_config: Dynaconf = None):
-    if src_config is None:
-        src_config = config
-    for key, val in config.items():
-        if isinstance(val, dict):
-            __merge_secrets(val, src_config)
-            continue
-        # NOTE value must be an exact match to avoid interfering
-        # with other templates
-        if isinstance(val, str) and (val[0:2] == &#34;${&#34; and val[-1] == &#34;}&#34;):
-            ref_key = val[2:-1]
-            ref_val = src_config.get(ref_key, None)
-            if ref_val is not None:
-                config[key] = ref_val
-            continue
-
-
-def __init_config() -&gt; Dynaconf:
-    config = Dynaconf(
-        settings_files=[get_config_file(), get_secrets_file()],
-        # secrets=[],
-        merge=True,
-        environments=False,
-    )
-    __merge_secrets(config)
-    return config
-
-
-def load_config(filename: str, clean: bool = False) -&gt; Dynaconf:
-    &#34;&#34;&#34;Loads configuration settings from the given filename.
-    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
-    Otherwise save() will persist to the filename path (where the settings are to be loaded from).&#34;&#34;&#34;
-    if clean:
-        config.clean()
-    if filename:
-        config.load_file(path=[filename, get_secrets_file()])
-        __merge_secrets(config)
-        global __CONFIG_FILE
-        __CONFIG_FILE = filename
-    return config
-
-
-def save_config():
-    &#34;&#34;&#34;Persist configuration settings to disk.&#34;&#34;&#34;
-    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
-    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
-    file_to_save = get_config_file()
-    data = config.as_dict()
-    loaders.write(file_to_save, DynaBox(data).to_dict())
-
-
-def get_work_dir() -&gt; str:
-    &#34;&#34;&#34;Retrieve the ambianic working directory&#34;&#34;&#34;
-    env_work_dir = os.environ.get(&#34;AMBIANIC_DIR&#34;, os.getcwd())
-    if not env_work_dir:
-        env_work_dir = DEFAULT_WORK_DIR
-    return env_work_dir
-
-
-# initialization
-server_instance = None
-
-__CONFIG_FILE = os.path.join(get_work_dir(), DEFAULT_CONFIG_FILE)
-config: Dynaconf = __init_config()</code></pre>
-</details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="ambianic.configuration" href="configuration.html">ambianic.configuration</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="ambianic.device" href="device.html">ambianic.device</a></code></dt>
 <dd>
 <div class="desc"><p>Base classes for an Ambianic Edge device abstraction</p></div>
@@ -162,97 +63,6 @@ config: Dynaconf = __init_config()</code></pre>
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="ambianic.get_config_file"><code class="name flex">
-<span>def <span class="ident">get_config_file</span></span>(<span>) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_config_file() -&gt; str:
-    return __CONFIG_FILE</code></pre>
-</details>
-</dd>
-<dt id="ambianic.get_secrets_file"><code class="name flex">
-<span>def <span class="ident">get_secrets_file</span></span>(<span>) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_secrets_file() -&gt; str:
-    if __SECRETS_FILE:
-        return __SECRETS_FILE
-    return os.path.join(get_work_dir(), DEFAULT_SECRETS_FILE)</code></pre>
-</details>
-</dd>
-<dt id="ambianic.get_work_dir"><code class="name flex">
-<span>def <span class="ident">get_work_dir</span></span>(<span>) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Retrieve the ambianic working directory</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_work_dir() -&gt; str:
-    &#34;&#34;&#34;Retrieve the ambianic working directory&#34;&#34;&#34;
-    env_work_dir = os.environ.get(&#34;AMBIANIC_DIR&#34;, os.getcwd())
-    if not env_work_dir:
-        env_work_dir = DEFAULT_WORK_DIR
-    return env_work_dir</code></pre>
-</details>
-</dd>
-<dt id="ambianic.load_config"><code class="name flex">
-<span>def <span class="ident">load_config</span></span>(<span>filename: str, clean: bool = False) ‑> dynaconf.base.LazySettings</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Loads configuration settings from the given filename.
-If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
-Otherwise save() will persist to the filename path (where the settings are to be loaded from).</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def load_config(filename: str, clean: bool = False) -&gt; Dynaconf:
-    &#34;&#34;&#34;Loads configuration settings from the given filename.
-    If file_to_save is provided then consequent calls to save() will persist settings to the given file path.
-    Otherwise save() will persist to the filename path (where the settings are to be loaded from).&#34;&#34;&#34;
-    if clean:
-        config.clean()
-    if filename:
-        config.load_file(path=[filename, get_secrets_file()])
-        __merge_secrets(config)
-        global __CONFIG_FILE
-        __CONFIG_FILE = filename
-    return config</code></pre>
-</details>
-</dd>
-<dt id="ambianic.save_config"><code class="name flex">
-<span>def <span class="ident">save_config</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Persist configuration settings to disk.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_config():
-    &#34;&#34;&#34;Persist configuration settings to disk.&#34;&#34;&#34;
-    # ref: https://dynaconf.readthedocs.io/en/docs_223/guides/advanced_usage.html#exporting
-    # ref: https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader
-    file_to_save = get_config_file()
-    data = config.as_dict()
-    loaders.write(file_to_save, DynaBox(data).to_dict())</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -265,6 +75,7 @@ Otherwise save() will persist to the filename path (where the settings are to be
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="ambianic.configuration" href="configuration.html">ambianic.configuration</a></code></li>
 <li><code><a title="ambianic.device" href="device.html">ambianic.device</a></code></li>
 <li><code><a title="ambianic.logger" href="logger.html">ambianic.logger</a></code></li>
 <li><code><a title="ambianic.notification" href="notification.html">ambianic.notification</a></code></li>
@@ -272,15 +83,6 @@ Otherwise save() will persist to the filename path (where the settings are to be
 <li><code><a title="ambianic.server" href="server.html">ambianic.server</a></code></li>
 <li><code><a title="ambianic.util" href="util.html">ambianic.util</a></code></li>
 <li><code><a title="ambianic.webapp" href="webapp/index.html">ambianic.webapp</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="ambianic.get_config_file" href="#ambianic.get_config_file">get_config_file</a></code></li>
-<li><code><a title="ambianic.get_secrets_file" href="#ambianic.get_secrets_file">get_secrets_file</a></code></li>
-<li><code><a title="ambianic.get_work_dir" href="#ambianic.get_work_dir">get_work_dir</a></code></li>
-<li><code><a title="ambianic.load_config" href="#ambianic.load_config">load_config</a></code></li>
-<li><code><a title="ambianic.save_config" href="#ambianic.save_config">save_config</a></code></li>
 </ul>
 </li>
 </ul>

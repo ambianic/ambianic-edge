@@ -107,10 +107,7 @@ def configure(config=None):
     root_logger.setLevel(numeric_level)
     effective_level = log.getEffectiveLevel()
     assert numeric_level == effective_level
-    log.info(&#34;Logging configured with level %s&#34;, logging.getLevelName(effective_level))
-    if effective_level &lt;= logging.DEBUG:
-        log.debug(&#34;Configuration yaml dump:&#34;)
-        log.debug(config)</code></pre>
+    log.info(&#34;Logging configured with level %s&#34;, logging.getLevelName(effective_level))</code></pre>
 </details>
 </section>
 <section>
@@ -175,10 +172,7 @@ def configure(config=None):
     root_logger.setLevel(numeric_level)
     effective_level = log.getEffectiveLevel()
     assert numeric_level == effective_level
-    log.info(&#34;Logging configured with level %s&#34;, logging.getLevelName(effective_level))
-    if effective_level &lt;= logging.DEBUG:
-        log.debug(&#34;Configuration yaml dump:&#34;)
-        log.debug(config)</code></pre>
+    log.info(&#34;Logging configured with level %s&#34;, logging.getLevelName(effective_level))</code></pre>
 </details>
 </dd>
 </dl>
