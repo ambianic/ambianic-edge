@@ -3,8 +3,11 @@ import json
 import logging
 import os
 import shutil
+from pathlib import Path
 
 import numpy as np
+import pytest
+from ambianic.configuration import get_root_config, init_config
 from ambianic.pipeline.pipeline_event import PipelineContext
 from ambianic.pipeline.save_event import JsonEncoder, SaveDetectionEvents
 from PIL import Image
@@ -12,6 +15,40 @@ from PIL import Image
 log = logging.getLogger(__name__)
 
 inf_meta = {"display": "Test Detection"}
+
+
+# test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="function")
+def setup(request, tmp_path):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    saved_amb_dir = os.environ.get("AMBIANIC_DIR", "")
+    saved_amb_config_save = os.environ.get("AMBIANIC_SAVE_CONFIG_TO", "")
+    # change env settings
+    save_config_path = str(Path(tmp_path / "test-config.save.yaml"))
+    os.environ["AMBIANIC_CONFIG_FILES"] = (
+        str(Path(request.fspath.dirname) / "test-config-no-pipelines.yaml")
+        + ","
+        + save_config_path
+    )
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = save_config_path
+    log.debug(
+        f'os.environ["AMBIANIC_CONFIG_FILES"] = {os.environ["AMBIANIC_CONFIG_FILES"]}'
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    os.environ["AMBIANIC_SAVE_CONFIG_TO"] = saved_amb_config_save
+    os.environ["AMBIANIC_DIR"] = saved_amb_dir
+    init_config()
+
+
+@pytest.fixture(scope="function")
+def config():
+    return get_root_config()
 
 
 def test_json_encoder():
@@ -139,10 +176,8 @@ def test_process_sample():
 
 
 class _TestSaveDetectionSamples(SaveDetectionEvents):
-    _save_sample_called = False
-    _img_path = None
-    _json_path = None
-    _inf_result = None
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def _save_sample(
         self,
@@ -353,25 +388,28 @@ def test_store_negative_detection_no_inference():
 
 
 class _TestSaveDetectionSamples2(SaveDetectionEvents):
-    _save_sample_called = False
-    result = {
-        "id": "140343867415240",
-        "datetime": "2021-05-05 14:04:45.428473",
-        "inference_result": [
-            {
-                "confidence": 0.98828125,
-                "datetime": "2021-05-05 14:04:45.428473",
-                "label": "cat",
-                "id": "140343867415240",
-            }
-        ],
-        "inference_meta": {"display": "Test Object Detection"},
-    }
-    context = PipelineContext(unique_pipeline_name="test pipeline")
-    context.data_dir = "./tmp/"
-    store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
-    data = {"message": "Test Event", "priority": "INFO", "args": result}
-    store.notify(event_data=data)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        result = {
+            "id": "140343867415240",
+            "datetime": "2021-05-05 14:04:45.428473",
+            "inference_result": [
+                {
+                    "confidence": 0.98828125,
+                    "datetime": "2021-05-05 14:04:45.428473",
+                    "label": "cat",
+                    "id": "140343867415240",
+                }
+            ],
+            "inference_meta": {"display": "Test Object Detection"},
+        }
+        context = PipelineContext(unique_pipeline_name="test pipeline")
+        context.data_dir = "./tmp/"
+        store = _TestSaveDetectionSamples(
+            context=context, event_log=logging.getLogger()
+        )
+        data = {"message": "Test Event", "priority": "INFO", "args": result}
+        store.notify(event_data=data)
 
     def _save_sample(
         self,

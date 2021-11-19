@@ -5,11 +5,12 @@ import logging
 import os
 import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
 from threading import Event, Thread
 
 import httpretty
-from ambianic.configuration import get_root_config
-from ambianic.notification import sendCloudNotification
+import pytest
+from ambianic.configuration import get_root_config, init_config
 from ambianic.pipeline.pipeline_event import PipelineContext
 from ambianic.pipeline.save_event import SaveDetectionEvents
 from PIL import Image
@@ -17,6 +18,24 @@ from PIL import Image
 log = logging.getLogger(__name__)
 
 inf_meta = {"display": "Test Detection"}
+
+
+# module scoped test setup and teardown
+# ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
+@pytest.fixture(autouse=True, scope="module")
+def setup_module(request):
+    """setup any state specific to the execution of the given module."""
+    # save original env settings
+    saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
+    # change env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = str(
+        Path(request.fspath.dirname) / "test-config-no-pipelines.yaml"
+    )
+    init_config()
+    yield
+    # restore env settings
+    os.environ["AMBIANIC_CONFIG_FILES"] = saved_amb_load
+    init_config()
 
 
 class MockRequestHandler(BaseHTTPRequestHandler):
@@ -96,8 +115,6 @@ class _TestSaveDetectionSamples(SaveDetectionEvents):
         "http://localhost:5050/.netlify/functions/notification",
         status=200,
     )
-
-    sendCloudNotification(data=data)
 
 
 def test_notification_with_attachments():

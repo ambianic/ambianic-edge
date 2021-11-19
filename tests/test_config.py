@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 # module scoped test setup and teardown
 # ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
 @pytest.fixture(autouse=True, scope="module")
-def setup_module(request):
+def setup(request):
     """setup any state specific to the execution of the given module."""
     # save original env settings
     saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")

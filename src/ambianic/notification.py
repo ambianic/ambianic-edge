@@ -8,45 +8,11 @@ from string import Template
 
 import ambianic
 import apprise
-import pkg_resources
-import yaml
 from ambianic.configuration import get_root_config
-from requests import post
 
 log = logging.getLogger(__name__)
 
 UI_BASE_URL_DEFAULT = "https://ui.ambianic.ai"
-
-
-def sendCloudNotification(data):
-    # r+ flag causes a permission error
-    try:
-        premiumFile = pkg_resources.resource_filename("ambianic.webapp", "premium.yaml")
-
-        with open(premiumFile) as file:
-            configFile = yaml.safe_load(file)
-
-            userId = configFile["credentials"]["USER_AUTH0_ID"]
-            endpoint = configFile["credentials"]["NOTIFICATION_ENDPOINT"]
-            if userId:
-                return post(
-                    url=f"{endpoint}/notification",
-                    json={
-                        "userId": userId,
-                        "notification": {
-                            "title": "Ambianic.ai New {} event".format(data["label"]),
-                            "message": "New {} detected with a {} confidence level".format(
-                                data["label"], data["confidence"]
-                            ),
-                        },
-                    },
-                )
-
-    except FileNotFoundError as err:
-        log.warning(f"Error locating file: {err}")
-
-    except Exception as error:
-        log.warning(f"Error sending email: {str(error)}")
 
 
 class Notification:
@@ -124,8 +90,8 @@ class NotificationHandler:
 
                 peer_id = get_root_config().get("peerId", None)
                 if peer_id is None:
-                    log.warn(
-                        "peerId not found. Notification will not include link bank to peer."
+                    log.warning(
+                        "peerId not found. Notification will not include link back to peer."
                     )
                 else:
                     peerid_hash_input = peer_id + notification.envelope["args"]["id"]
@@ -140,10 +106,8 @@ class NotificationHandler:
 
                 url_query = urllib.parse.urlencode(url_params)
 
-                ui_config = get_root_config().get(
-                    "ui", {"baseurl", UI_BASE_URL_DEFAULT}
-                )
-                ui_base_url = ui_config["baseurl"]
+                ui_config = get_root_config().get("ui", {})
+                ui_base_url = ui_config.get("baseurl", UI_BASE_URL_DEFAULT)
 
                 event_labels = list(
                     map(

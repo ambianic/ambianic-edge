@@ -199,11 +199,7 @@ class SaveDetectionEvents(PipeElement):
         if event_data["args"]["inference_result"] is None:
             return
 
-        log.warning(f"Preparing notification with event payload: {event_data}")
-
-        # paid premium notifications disabled for the time being
-        # in favor of FREE 3rd party integrations such as IFTTT
-        # sendCloudNotification(data=data)
+        log.info(f"Preparing notification with event payload: {event_data}")
 
         if self.notifier is None:
             log.debug("No notifier specified. Skipping notification send.")

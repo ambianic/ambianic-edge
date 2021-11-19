@@ -43,10 +43,10 @@ def change_test_dir(request):
     os.chdir(request.config.invocation_dir)
 
 
-# module scoped test setup and teardown
+# test setup and teardown
 # ref: https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
 @pytest.fixture(autouse=True, scope="function")
-def setup_module(request, tmp_path):
+def setup(request, tmp_path):
     """setup any state specific to the execution of the given module."""
     # save original env settings
     saved_amb_load = os.environ.get("AMBIANIC_CONFIG_FILES", "")
@@ -262,8 +262,10 @@ def test_test_notifications(client, config):
         nonlocal sent
         sent = True
 
+    orig_send = NotificationHandler.send
     NotificationHandler.send = fake_send
     rv = client.get("/api/notifications/test")
     log.debug(f"put -> /api/integrations/ifttt/api_key/: JSON response: {rv})")
+    NotificationHandler.send = orig_send
     assert rv.status_code == status.HTTP_200_OK
     assert sent is True
