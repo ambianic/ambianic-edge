@@ -21,7 +21,7 @@ fi
 
 # set env list of config files
 export AMBIANIC_CONFIG_FILES="/opt/ambianic-edge/config.defaults.yaml, /workspace/.peerjsrc.json, config.yaml, config.local.yaml"
-export AMBIANIC_SAVE_CONFIG_TO="config.local.yaml"
+export AMBIANIC_SAVE_CONFIG_TO="config.yaml"
 # start peerjs HTTP proxy
 python3 -m peerjs.ext.http_proxy   &
 # start OpenAPI (fastapi/uvicorn) server
