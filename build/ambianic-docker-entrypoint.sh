@@ -27,7 +27,7 @@ python3 -m peerjs.ext.http_proxy   &
 # start OpenAPI (fastapi/uvicorn) server
 python3 -m uvicorn ambianic.webapp.fastapi_app:app --port 8778 &
 # create symbolic link from .peerjsrc to .peerjsrc.json to allow dynaconf loading as config file
-while [ ! -f /workspace/.peerjsrc.json ]
+if [ ! -f /workspace/.peerjsrc.json ]
 # if the symlink already exists, skip this step
 then
   # wait until .peerjsrc is created by peerjs.http_proxy
