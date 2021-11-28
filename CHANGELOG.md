@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+# [1.19.0](https://github.com/ambianic/ambianic-edge/compare/v1.18.1...v1.19.0) (2021-11-19)
+
+
+### Features
+
+* notifications API ([#392](https://github.com/ambianic/ambianic-edge/issues/392)) ([5038de8](https://github.com/ambianic/ambianic-edge/commit/5038de8c19c71e002785bc2e4ea8ee5c50c63c05))
+
 ## [1.18.1](https://github.com/ambianic/ambianic-edge/compare/v1.18.0...v1.18.1) (2021-10-06)
 
 
