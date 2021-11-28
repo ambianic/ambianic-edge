@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.19.2](https://github.com/ambianic/ambianic-edge/compare/v1.19.1...v1.19.2) (2021-11-28)
+
+
+### Bug Fixes
+
+* docker entrypoint script ([#394](https://github.com/ambianic/ambianic-edge/issues/394)) ([333fccc](https://github.com/ambianic/ambianic-edge/commit/333fcccc68fb95956e19e192e8aec81b4ddc39b3))
+
 ## [1.19.1](https://github.com/ambianic/ambianic-edge/compare/v1.19.0...v1.19.1) (2021-11-28)
 
 
