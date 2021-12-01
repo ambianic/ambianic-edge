@@ -48,7 +48,13 @@ class MockRequestHandler(BaseHTTPRequestHandler):
         length = int(self.headers.get("content-length"))
         message = json.loads(self.rfile.read(length))
 
-        assert message.get("title") is not None
+        title = message.get("title")
+        assert title is not None
+        log.debug(f"Received Notification Title: {title}")
+        msg = message.get("message")
+        assert "https://" in msg
+        assert "None" not in msg
+        log.debug(f"Received Notification Message: {msg}")
 
         self.send_response(200)
         self.end_headers()
@@ -126,12 +132,17 @@ def test_notification_with_attachments():
     config = get_root_config()
     config.update(
         {
+            "peerId": "123",
             "notifications": {
                 "test": {
                     "include_attachments": True,
                     "providers": ["json://localhost:%s/webhook" % (mock_server.port)],
+                    "templates": {
+                        "title": "${event_labels}",
+                        "message": "${event_details_url}",
+                    },
                 }
-            }
+            },
         }
     )
 
@@ -178,12 +189,17 @@ def test_notification_without_attachments():
     # register the mock server endpoint
     config.update(
         {
+            "peerId": "123",
             "notifications": {
                 "test": {
                     "include_attachments": False,
-                    "providers": [],
+                    "providers": ["json://localhost:%s/webhook" % (mock_server.port)],
+                    "templates": {
+                        "title": "${event_labels}",
+                        "message": "${event_details_url}",
+                    },
                 }
-            }
+            },
         }
     )
 
@@ -205,6 +221,7 @@ def test_notification_without_attachments():
             "label": "person",
             "confidence": 0.98,
             "box": {"xmin": 0, "ymin": 1, "xmax": 2, "ymax": 3},
+            "keypoint_corr": None,
         }
     ]
 
@@ -218,6 +235,7 @@ def test_notification_without_attachments():
     )
     assert len(processed_samples) == 1
     mock_server.stop()
+    assert called.is_set()
 
 
 def test_plain_notification():
@@ -229,12 +247,17 @@ def test_plain_notification():
     # register the mock server endpoint
     config.update(
         {
+            "peerId": "123",
             "notifications": {
                 "test": {
                     "include_attachments": True,
                     "providers": ["json://localhost:%s/webhook" % (mock_server.port)],
+                    "templates": {
+                        "title": "${event_labels}",
+                        "message": "${event_details_url}",
+                    },
                 }
-            }
+            },
         }
     )
 

@@ -9,7 +9,8 @@ import numpy as np
 import pytest
 from ambianic.configuration import get_root_config, init_config
 from ambianic.pipeline.pipeline_event import PipelineContext
-from ambianic.pipeline.save_event import JsonEncoder, SaveDetectionEvents
+from ambianic.pipeline.save_event import SaveDetectionEvents
+from ambianic.util import JsonEncoder
 from PIL import Image
 
 log = logging.getLogger(__name__)

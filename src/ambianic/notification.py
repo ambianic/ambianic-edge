@@ -9,6 +9,7 @@ from string import Template
 import ambianic
 import apprise
 from ambianic.configuration import get_root_config
+from ambianic.util import jsonify
 
 log = logging.getLogger(__name__)
 
@@ -104,7 +105,11 @@ class NotificationHandler:
                     # until one matches the URL paramter.
                     url_params["peerid_hash"] = peerid_hash
 
-                url_query = urllib.parse.urlencode(url_params)
+                # convert parameter values to JSON format to ensure
+                # smooth conversion to JavaScript values on the UI side
+                jsonified_params = {k: jsonify(v) for k, v in url_params.items()}
+                # URL encode all parameters
+                url_query = urllib.parse.urlencode(jsonified_params)
 
                 ui_config = get_root_config().get("ui", {})
                 ui_base_url = ui_config.get("baseurl", UI_BASE_URL_DEFAULT)

@@ -6,10 +6,10 @@ import pathlib
 import uuid
 from typing import Iterable
 
-import numpy as np
 from ambianic.configuration import DEFAULT_DATA_DIR
 from ambianic.notification import Notification, NotificationHandler
 from ambianic.pipeline import PipeElement
+from ambianic.util import jsonify
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class SaveDetectionEvents(PipeElement):
         thumbnail.save(thumbnail_path)
         # save samples to local disk
 
-        json_str = json.dumps(save_json, cls=JsonEncoder)
+        json_str = jsonify(save_json)
 
         with open(json_path, "w", encoding="utf-8") as f:
             f.write(json_str)
@@ -210,15 +210,3 @@ class SaveDetectionEvents(PipeElement):
             providers=self.notification_config["providers"],
         )
         self.notifier.send(notification)
-
-
-class JsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-
-        return super().default(obj)
