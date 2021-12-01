@@ -1,10 +1,13 @@
 """Service classes for OS interaction and multithreading."""
 import asyncio
+import json
 import logging
 import time
 import traceback
 from abc import abstractmethod
 from threading import Event, Thread
+
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -145,3 +148,19 @@ def stacktrace():
     formatted_lines = traceback.format_exc().splitlines()
     strace = "Runtime stack trace:\n %s" + "\n".join(formatted_lines)
     return strace
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+
+        return super().default(obj)
+
+
+def jsonify(val: any = None):
+    return json.dumps(val, cls=JsonEncoder)
