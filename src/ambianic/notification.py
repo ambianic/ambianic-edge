@@ -105,11 +105,13 @@ class NotificationHandler:
                     # until one matches the URL paramter.
                     url_params["peerid_hash"] = peerid_hash
 
-                # convert parameter values to JSON format to ensure
+                # convert args values to JSON format to ensure
                 # smooth conversion to JavaScript values on the UI side
-                jsonified_params = {k: jsonify(v) for k, v in url_params.items()}
+                # Fix for bug: https://github.com/ambianic/ambianic-edge/issues/397
+                args = url_params["args"]
+                url_params["args"] = jsonify(args)
                 # URL encode all parameters
-                url_query = urllib.parse.urlencode(jsonified_params)
+                url_query = urllib.parse.urlencode(url_params)
 
                 ui_config = get_root_config().get("ui", {})
                 ui_base_url = ui_config.get("baseurl", UI_BASE_URL_DEFAULT)
