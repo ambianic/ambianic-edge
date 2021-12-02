@@ -14,6 +14,7 @@ tasks:
       export PIP_USER=false
       python3 -m pip install -U --user pylint isort mccabe pre-commit black flake8
       pre-commit install
+      pre-commit autoupdate
       # installing and upgrading requirements.txt packages
       sudo
       # convoluted way to install and upgrade requirements.txt packages without failing if one errors
@@ -56,6 +57,8 @@ tasks:
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
     command: |
+      echo "Running code formatting tests:"
+      pre-commit run --all-files
       echo "Running ambianic-edge testsuite:"
       pyenv global system
       source ./.gitpod.env.sh
