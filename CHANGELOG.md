@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.19.4](https://github.com/ambianic/ambianic-edge/compare/v1.19.3...v1.19.4) (2021-12-01)
+
+
+### Bug Fixes
+
+* notifications url bug; closes [#397](https://github.com/ambianic/ambianic-edge/issues/397) ([#398](https://github.com/ambianic/ambianic-edge/issues/398)) ([825c791](https://github.com/ambianic/ambianic-edge/commit/825c791cbacff3d7312091b62de894da5c0d0828))
+
 ## [1.19.3](https://github.com/ambianic/ambianic-edge/compare/v1.19.2...v1.19.3) (2021-11-28)
 
 
