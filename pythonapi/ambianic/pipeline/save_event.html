@@ -159,7 +159,9 @@ class SaveDetectionEvents(PipeElement):
             &#34;priority&#34;: logging.getLevelName(event_priority),
             &#34;args&#34;: save_json,
         }
-        self.notify(event_data)
+        # only send notification if there is a non-empty inference result
+        if inference_result:
+            self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -&gt; Iterable[dict]:
@@ -386,7 +388,9 @@ Default it 10 minutes (600 seconds.)</p></div>
             &#34;priority&#34;: logging.getLevelName(event_priority),
             &#34;args&#34;: save_json,
         }
-        self.notify(event_data)
+        # only send notification if there is a non-empty inference result
+        if inference_result:
+            self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -&gt; Iterable[dict]:
