@@ -130,7 +130,9 @@ class SaveDetectionEvents(PipeElement):
             "priority": logging.getLevelName(event_priority),
             "args": save_json,
         }
-        self.notify(event_data)
+        # only send notification if there is a non-empty inference result
+        if inference_result:
+            self.notify(event_data)
         return image_path, json_path
 
     def process_sample(self, **sample) -> Iterable[dict]:

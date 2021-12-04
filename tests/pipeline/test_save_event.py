@@ -12,6 +12,7 @@ from ambianic.pipeline.pipeline_event import PipelineContext
 from ambianic.pipeline.save_event import SaveDetectionEvents
 from ambianic.util import JsonEncoder
 from PIL import Image
+from pytest_mock import MockerFixture
 
 log = logging.getLogger(__name__)
 
@@ -276,6 +277,37 @@ def test_store_positive_detection():
     shutil.rmtree(out_dir)
 
 
+def test_notify_positive_detection(tmpdir, mocker: MockerFixture):
+    """The first time a positive sample is processed, a notification should be sent out."""
+    out_dir = tmpdir
+    context = PipelineContext(unique_pipeline_name="test pipeline")
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
+    notify_mock = mocker.patch.object(store, "notify")
+    img = Image.new("RGB", (60, 30), color="red")
+
+    detections = [
+        {
+            "label": "person",
+            "confidence": 0.98,
+            "box": {"xmin": 0, "ymin": 1, "xmax": 2, "ymax": 3},
+        }
+    ]
+
+    processed_samples = list(
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
+    )
+    assert len(processed_samples) == 1
+    print(processed_samples)
+    # notify should have been called
+    notify_mock.assert_called_once()
+
+
 def test_store_negative_detection():
     """The first time a negative sample is processed, it should be saved."""
     out_dir = os.path.dirname(os.path.abspath(__file__))
@@ -329,6 +361,28 @@ def test_store_negative_detection():
         assert not json_inf_res
 
     shutil.rmtree(out_dir)
+
+
+def test_notify_negative_detection(tmpdir, mocker: MockerFixture):
+    """The first time a negative sample is processed, it should be saved but no notification sent."""
+    out_dir = tmpdir
+    context = PipelineContext(unique_pipeline_name="test pipeline")
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
+    notify_mock = mocker.patch.object(store, "notify")
+    img = Image.new("RGB", (60, 30), color="red")
+    detections = []
+    processed_samples = list(
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
+    )
+    assert len(processed_samples) == 1
+    # notify should NOT have been called
+    assert not notify_mock.called
 
 
 def test_store_negative_detection_no_inference():
@@ -386,6 +440,30 @@ def test_store_negative_detection_no_inference():
         assert not json_inf_res
 
     shutil.rmtree(out_dir)
+
+
+def test_notify_negative_detection_no_inference(tmpdir, mocker: MockerFixture):
+    """
+    Expect store to save the image from an inference without any detection but not send a notification for it.
+    """
+    out_dir = tmpdir
+    context = PipelineContext(unique_pipeline_name="test pipeline")
+    context.data_dir = out_dir
+    store = _TestSaveDetectionSamples(context=context, event_log=logging.getLogger())
+    notify_mock = mocker.patch.object(store, "notify")
+    img = Image.new("RGB", (60, 30), color="red")
+    detections = None
+    processed_samples = list(
+        store.process_sample(
+            image=img,
+            thumbnail=img,
+            inference_result=detections,
+            inference_meta=inf_meta,
+        )
+    )
+    assert len(processed_samples) == 1
+    # notify should NOT have been called
+    assert not notify_mock.called
 
 
 class _TestSaveDetectionSamples2(SaveDetectionEvents):
