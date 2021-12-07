@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.19.6](https://github.com/ambianic/ambianic-edge/compare/v1.19.5...v1.19.6) (2021-12-04)
+
+
+### Bug Fixes
+
+* filter out notifications for non-detections during idle periods ([#402](https://github.com/ambianic/ambianic-edge/issues/402)) ([331780a](https://github.com/ambianic/ambianic-edge/commit/331780a5e6c3efca054c19d0f2da69b571da5c08))
+
 ## [1.19.5](https://github.com/ambianic/ambianic-edge/compare/v1.19.4...v1.19.5) (2021-12-02)
 
 
