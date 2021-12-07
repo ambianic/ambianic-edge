@@ -50,6 +50,8 @@ class MockRequestHandler(BaseHTTPRequestHandler):
 
         title = message.get("title")
         assert title is not None
+        assert title.startswith("Front Door")
+        assert "person" in title
         log.debug(f"Received Notification Title: {title}")
         msg = message.get("message")
         assert "https://" in msg
@@ -133,6 +135,7 @@ def test_notification_with_attachments():
     config.update(
         {
             "peerId": "123",
+            "display_name": "Front Door",
             "notifications": {
                 "test": {
                     "include_attachments": True,
@@ -190,6 +193,7 @@ def test_notification_without_attachments():
     config.update(
         {
             "peerId": "123",
+            "display_name": "Front Door",
             "notifications": {
                 "test": {
                     "include_attachments": False,
@@ -248,6 +252,7 @@ def test_plain_notification():
     config.update(
         {
             "peerId": "123",
+            "display_name": "Front Door",
             "notifications": {
                 "test": {
                     "include_attachments": True,

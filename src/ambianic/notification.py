@@ -123,12 +123,16 @@ class NotificationHandler:
                     )
                 )
                 event_labels_str = ",".join(event_labels)
+                event_source_str = get_root_config().get(
+                    "display_name", "My Ambianic Edge Device"
+                )
 
                 template_args = {
+                    "event_source": event_source_str,
                     "event_type": notification.envelope["args"]["inference_meta"][
                         "display"
                     ],
-                    "event_labels": event_labels_str,
+                    "event_labels": event_source_str + ": " + event_labels_str,
                     "event_details_url": f"{ui_base_url}/event?{url_query}",
                 }
 

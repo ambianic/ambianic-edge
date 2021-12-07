@@ -1,7 +1,7 @@
 #################################################################
 # Ambianic main configuration file with default settings        #
 # This file is periodically committed to the git repo.          #
-# And is also shipped with updates of the ambianic-edge binary. #
+# It is also shipped with updates of the ambianic-edge binary. #
 #################################################################
 version: '2021.11.11'
 
