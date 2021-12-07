@@ -1,3 +1,4 @@
+# runtime dependencies
 aiofiles>=0.7
 apprise>=0.9.5
 absl-py>=0.7.1
@@ -30,7 +31,6 @@ oauthlib>=2.1.0
 httpretty>=1.1
 Pillow>=5.4.1
 pyOpenSSL>=19.0.0
-pytest-mock>=3.6.1
 PyYAML>=5.1.2
 peerjs>1.5
 requests>=2.25
@@ -41,3 +41,9 @@ simplejson>=3.16.0
 uvicorn>=0.15
 webencodings>=0.5.1
 watchdog>=0.10
+
+# test tools
+codecov>=2.1.12
+pytest>=6.2.5
+pytest-mock>=3.6.1
+pytest-cov>=3.0.0

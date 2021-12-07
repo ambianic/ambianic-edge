@@ -8,11 +8,9 @@ tasks:
       pyenv global system
       python3 -m pip install --upgrade pip
       python3 -m pip install --upgrade setuptools
-      echo "Installing test frameworks"
-      python3 -m pip install -U pytest codecov pytest-cov
       echo "Installing pre-commit hooks."
       export PIP_USER=false
-      python3 -m pip install -U --user pylint isort mccabe pre-commit black flake8
+      python3 -m pip install -U --user pre-commit
       pre-commit install
       pre-commit autoupdate
       # installing and upgrading requirements.txt packages
@@ -57,10 +55,10 @@ tasks:
       echo "Waiting for main init to complete"
       sleep 1 && while [ -f /tmp/.gitpod-init-lock ]; do sleep 1; done
     command: |
-      echo "Running code formatting tests:"
+      echo "Running code linting:"
+      pyenv global system
       pre-commit run --all-files
       echo "Running ambianic-edge testsuite:"
-      pyenv global system
       source ./.gitpod.env.sh
       python3 -m pytest -v --log-cli-level=DEBUG --cov=ambianic --cov-report=term tests/
 
