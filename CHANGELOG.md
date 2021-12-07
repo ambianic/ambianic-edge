@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.19.7](https://github.com/ambianic/ambianic-edge/compare/v1.19.6...v1.19.7) (2021-12-07)
+
+
+### Bug Fixes
+
+* add device friendly name to notification message ([#403](https://github.com/ambianic/ambianic-edge/issues/403)) ([395b8ec](https://github.com/ambianic/ambianic-edge/commit/395b8ece606b909da6641ed6dcf119b9515b2ed7))
+
 ## [1.19.6](https://github.com/ambianic/ambianic-edge/compare/v1.19.5...v1.19.6) (2021-12-04)
 
 
