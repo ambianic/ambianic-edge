@@ -5,7 +5,10 @@ secure: true
 # STUN/TURN servers info
 ice_servers:
   - urls: 'stun:stun.l.google.com:19302'
-  - urls: 'turn:numb.viagenie.ca'
-    username: 'turn@ambianic.ai'
-    credential: 'DAEidbG!xHavEX7'
+#  - urls: 'turn:numb.viagenie.ca'
+#    username: 'turn@ambianic.ai'
+#    credential: 'DAEidbG!xHavEX7'
+#  - urls: 'turn:turn1.webrtc.tools:80?transport=udp'
+#    username: 'turn@ambianic.ai'
+#    credential: 'Stj72BqN'
 log_level: INFO
