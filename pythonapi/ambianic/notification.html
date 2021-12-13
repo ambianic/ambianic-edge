@@ -152,12 +152,16 @@ class NotificationHandler:
                     )
                 )
                 event_labels_str = &#34;,&#34;.join(event_labels)
+                event_source_str = get_root_config().get(
+                    &#34;display_name&#34;, &#34;My Ambianic Edge Device&#34;
+                )
 
                 template_args = {
+                    &#34;event_source&#34;: event_source_str,
                     &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
                         &#34;display&#34;
                     ],
-                    &#34;event_labels&#34;: event_labels_str,
+                    &#34;event_labels&#34;: event_source_str + &#34;: &#34; + event_labels_str,
                     &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
                 }
 
@@ -353,12 +357,16 @@ class NotificationHandler:
                     )
                 )
                 event_labels_str = &#34;,&#34;.join(event_labels)
+                event_source_str = get_root_config().get(
+                    &#34;display_name&#34;, &#34;My Ambianic Edge Device&#34;
+                )
 
                 template_args = {
+                    &#34;event_source&#34;: event_source_str,
                     &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
                         &#34;display&#34;
                     ],
-                    &#34;event_labels&#34;: event_labels_str,
+                    &#34;event_labels&#34;: event_source_str + &#34;: &#34; + event_labels_str,
                     &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
                 }
 
@@ -475,12 +483,16 @@ class NotificationHandler:
                 )
             )
             event_labels_str = &#34;,&#34;.join(event_labels)
+            event_source_str = get_root_config().get(
+                &#34;display_name&#34;, &#34;My Ambianic Edge Device&#34;
+            )
 
             template_args = {
+                &#34;event_source&#34;: event_source_str,
                 &#34;event_type&#34;: notification.envelope[&#34;args&#34;][&#34;inference_meta&#34;][
                     &#34;display&#34;
                 ],
-                &#34;event_labels&#34;: event_labels_str,
+                &#34;event_labels&#34;: event_source_str + &#34;: &#34; + event_labels_str,
                 &#34;event_details_url&#34;: f&#34;{ui_base_url}/event?{url_query}&#34;,
             }
 
