@@ -1,7 +1,9 @@
 host: ambianic-pnp.herokuapp.com
 ice_servers:
-- urls:
-  - stun:stun.l.google.com:19302
+  - urls: 'stun:stun.l.google.com:19302'
+  - urls: 'turn:numb.viagenie.ca'
+    username: 'turn@ambianic.ai'
+    credential: 'DAEidbG!xHavEX7'
 log_level: INFO
 port: 443
 secure: true
