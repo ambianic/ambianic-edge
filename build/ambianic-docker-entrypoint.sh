@@ -26,6 +26,11 @@ export AMBIANIC_SAVE_CONFIG_TO="config.yaml"
 python3 -m peerjs.ext.http_proxy   &
 # start OpenAPI (fastapi/uvicorn) server
 python3 -m uvicorn ambianic.webapp.fastapi_app:app --port 8778 &
+# copy defauly peerjs config file to workspace if the file doesn't already exist there
+if [ ! -f /workspace/peerjs-config.yaml ]
+then
+  sudo cp /opt/ambianic-edge/peerjs-config.yaml /workspace/
+fi
 # create symbolic link from .peerjsrc to .peerjsrc.json to allow dynaconf loading as config file
 if [ ! -f /workspace/.peerjsrc.json ]
 # if the symlink already exists, skip this step
