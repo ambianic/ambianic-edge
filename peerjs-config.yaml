@@ -5,6 +5,19 @@ secure: true
 # STUN/TURN servers info
 ice_servers:
   - urls: 'stun:stun.l.google.com:19302'
+# NOTE: aiortc does not behave well with multiple STUN and TURN server options
+#  - username: "1639539168:prj_2OPKFTM1cuVGO0uq4CmBWa"
+#    credential: "BdT+ctWfSdy9h1xqFf/jN1OM5Wc="
+#    urls: "turn:globalturn.subspace.com:3478?transport=tcp"
+#  - username: "1639539168:prj_2OPKFTM1cuVGO0uq4CmBWa"
+#    credential: "BdT+ctWfSdy9h1xqFf/jN1OM5Wc="
+#    urls: "turns:globalturn.subspace.com:5349?transport=udp"
+#  - username: "1639539168:prj_2OPKFTM1cuVGO0uq4CmBWa"
+#    credential: "BdT+ctWfSdy9h1xqFf/jN1OM5Wc="
+#    urls: "turns:globalturn.subspace.com:5349?transport=tcp"
+#  - username: "1639539168:prj_2OPKFTM1cuVGO0uq4CmBWa"
+#    credential: "BdT+ctWfSdy9h1xqFf/jN1OM5Wc="
+#    urls: "turns:globalturn.subspace.com:443?transport=tcp"
 #  - urls: 'turn:numb.viagenie.ca'
 #    username: 'turn@ambianic.ai'
 #    credential: 'DAEidbG!xHavEX7'

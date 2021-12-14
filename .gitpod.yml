@@ -60,6 +60,7 @@ tasks:
       pre-commit run --all-files
       echo "Running ambianic-edge testsuite:"
       source ./.gitpod.env.sh
+      sudo python3 -m pip install pytest pytest-mock pytest-cov
       python3 -m pytest -v --log-cli-level=DEBUG --cov=ambianic --cov-report=term tests/
 
 vscode:
