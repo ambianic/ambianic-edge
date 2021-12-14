@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.19.9](https://github.com/ambianic/ambianic-edge/compare/v1.19.8...v1.19.9) (2021-12-14)
+
+
+### Bug Fixes
+
+* tune up NAT traversal; TURN settings ([#407](https://github.com/ambianic/ambianic-edge/issues/407)) ([fa9053e](https://github.com/ambianic/ambianic-edge/commit/fa9053e0c753a8b8ffbb07dc6abcd938ae67f663))
+
 ## [1.19.8](https://github.com/ambianic/ambianic-edge/compare/v1.19.7...v1.19.8) (2021-12-13)
 
 
