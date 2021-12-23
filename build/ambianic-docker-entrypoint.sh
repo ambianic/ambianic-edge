@@ -30,7 +30,7 @@ python3 -m uvicorn ambianic.webapp.fastapi_app:app --port 8778 &
 if [ -f /workspace/peerjs-config.yaml ]
 then
   # make a backup copy of existing config file
-  sudo mv --force /workspace/peerjs-config.yaml /workspace/workspace/peerjs-config.yaml.bak
+  sudo mv --force /workspace/peerjs-config.yaml /workspace/peerjs-config.yaml.bak
 fi
 sudo cp /opt/ambianic-edge/peerjs-config.yaml /workspace/
 # create symbolic link from .peerjsrc to .peerjsrc.json to allow dynaconf loading as config file

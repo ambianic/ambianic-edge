@@ -1,5 +1,26 @@
 # Semantic Versioning Changelog
 
+## [1.19.12](https://github.com/ambianic/ambianic-edge/compare/v1.19.11...v1.19.12) (2021-12-14)
+
+
+### Bug Fixes
+
+* include peerjs-config.yaml in docker image ([7024125](https://github.com/ambianic/ambianic-edge/commit/70241256a6045758e92f77ccb62e8bdb550c1986))
+
+## [1.19.11](https://github.com/ambianic/ambianic-edge/compare/v1.19.10...v1.19.11) (2021-12-14)
+
+
+### Bug Fixes
+
+* docker script bug ([ae2ba7a](https://github.com/ambianic/ambianic-edge/commit/ae2ba7a92da0a0cc79e31290df860befec16d696))
+
+## [1.19.10](https://github.com/ambianic/ambianic-edge/compare/v1.19.9...v1.19.10) (2021-12-14)
+
+
+### Bug Fixes
+
+* docker entrypoint script ([#408](https://github.com/ambianic/ambianic-edge/issues/408)) ([9c3a5cd](https://github.com/ambianic/ambianic-edge/commit/9c3a5cd0063ec7a634dbf0010566f40d81ab20a3))
+
 ## [1.19.9](https://github.com/ambianic/ambianic-edge/compare/v1.19.8...v1.19.9) (2021-12-14)
 
 

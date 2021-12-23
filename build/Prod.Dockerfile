@@ -19,6 +19,8 @@ COPY ["./build/ambianic-docker-entrypoint.sh", "./"]
 # copy config defaults to docker image
 COPY ["./config.defaults.yaml", "./"]
 
+# copy peerjs config defaults to docker image
+COPY ["./peerjs-config.yaml", "./"]
 
 WORKDIR /workspace
 
