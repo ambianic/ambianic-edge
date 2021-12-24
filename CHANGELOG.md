@@ -1,5 +1,28 @@
 # Semantic Versioning Changelog
 
+## [1.19.13](https://github.com/ambianic/ambianic-edge/compare/v1.19.12...v1.19.13) (2021-12-24)
+
+
+### Bug Fixes
+
+* add device friendly name to notification message ([84ede7d](https://github.com/ambianic/ambianic-edge/commit/84ede7d304f4c72b74fdb1bc111f3015dfefbbaf))
+* do not send notifications for non-detections ([db52aee](https://github.com/ambianic/ambianic-edge/commit/db52aee15a7b000c89a529c6cd66ed017dfd2e8b))
+* docker entrypoint script ([7439c27](https://github.com/ambianic/ambianic-edge/commit/7439c27386944b088eeaec5697e62dffb62874af))
+* docker entrypoint script ([3640677](https://github.com/ambianic/ambianic-edge/commit/3640677f97772f5aca8b4c3c7a81b0efe08cda24))
+* docker entrypoint script ([a6bc20c](https://github.com/ambianic/ambianic-edge/commit/a6bc20c85f0f5bc31920781b0a4d3555c11ce7dd))
+* docker entrypoint script ([72c1624](https://github.com/ambianic/ambianic-edge/commit/72c16244e2bc8cd53bd9df12096db3effa7774f4))
+* docker entrypoint script ([d63817d](https://github.com/ambianic/ambianic-edge/commit/d63817d7e3689b494bb10bba947595e311258e33))
+* docker entrypoint script ([1111866](https://github.com/ambianic/ambianic-edge/commit/1111866b131b40b942bd9307ba455b2a83ec4396))
+* docker entrypoint script ([ff64211](https://github.com/ambianic/ambianic-edge/commit/ff642113dd43948de5f93bbdc86b4c16d8143fb4))
+* docker entrypoint script ([3d4bb0c](https://github.com/ambianic/ambianic-edge/commit/3d4bb0c9ececf7b3f0d4c7982203b082c984c870))
+* docker entrypoint script ([6c7094e](https://github.com/ambianic/ambianic-edge/commit/6c7094ef6c7ff92c28361cfbab48db5117442bc2))
+* docker entrypoint script ([453b0f5](https://github.com/ambianic/ambianic-edge/commit/453b0f57c6420aed98a1e4f2d643bac436bedf79))
+* improve NAT traversal ([d51af5e](https://github.com/ambianic/ambianic-edge/commit/d51af5e5f987596086f81ec80798f619ec6c7928))
+* notification url bug; closes [#774](https://github.com/ambianic/ambianic-edge/issues/774) ([732affd](https://github.com/ambianic/ambianic-edge/commit/732affd83bc3506742da7557ae6d12b56046fcb0))
+* notification URL formatting ([90a6c11](https://github.com/ambianic/ambianic-edge/commit/90a6c11138af926f4366e6b011c01c0d1bc0b6b5))
+* tune up ICE STUN/TURN config ([d6d96d5](https://github.com/ambianic/ambianic-edge/commit/d6d96d5b0fa97d4c11cbff63a730014bf273769e))
+* tune up ICE STUN/TURN config ([0e0ec45](https://github.com/ambianic/ambianic-edge/commit/0e0ec458fddbaeded022fbc8c4cee8060cc9c25a))
+
 ## [1.19.12](https://github.com/ambianic/ambianic-edge/compare/v1.19.11...v1.19.12) (2021-12-14)
 
 
